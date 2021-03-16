@@ -1,0 +1,459 @@
+// Copyright 2021 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#import <UIKit/UIKit.h>
+#import <XCTest/XCTest.h>
+
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDSignInStrings.h"
+
+#import <GoogleUtilities/GULSwizzler.h>
+#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
+#import <OCMock/OCMock.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+// Addtional methods added to UIAlertAction for testing.
+@interface UIAlertAction (Testing)
+
+// Returns the handler block for this alert action.
+- (void (^)(UIAlertAction *))actionHandler;
+
+@end
+
+@implementation UIAlertAction (Testing)
+
+- (void (^)(UIAlertAction *))actionHandler {
+  return [self valueForKey:@"handler"];
+}
+
+@end
+
+// Unit test for GIDEMMErrorHandler.
+@interface GIDEMMErrorHandlerTest : XCTestCase
+@end
+
+@implementation GIDEMMErrorHandlerTest {
+  // Whether or not the current device runs on iOS 10.
+  BOOL _isIOS10;
+
+  // Whether key window has been set.
+  BOOL _keyWindowSet;
+
+  // The view controller that has been presented, if any.
+  UIViewController *_presentedViewController;
+}
+
+- (void)setUp {
+  [super setUp];
+  _isIOS10 = [UIDevice currentDevice].systemVersion.integerValue == 10;
+  _keyWindowSet = NO;
+  _presentedViewController = nil;
+  [GULSwizzler swizzleClass:[UIWindow class]
+                   selector:@selector(makeKeyAndVisible)
+            isClassSelector:NO
+                  withBlock:^() { _keyWindowSet = YES; }];
+  [GULSwizzler swizzleClass:[UIViewController class]
+                   selector:@selector(presentViewController:animated:completion:)
+            isClassSelector:NO
+                  withBlock:^(id obj, id arg1) { _presentedViewController = arg1; }];
+  [GULSwizzler swizzleClass:[GIDSignInStrings class]
+                   selector:@selector(localizedStringForKey:text:)
+            isClassSelector:YES
+                  withBlock:^(id obj, NSString *key, NSString *text) { return text; }];
+}
+
+- (void)tearDown {
+  [GULSwizzler unswizzleClass:[UIWindow class]
+                     selector:@selector(makeKeyAndVisible)
+              isClassSelector:NO];
+  [GULSwizzler unswizzleClass:[UIViewController class]
+                     selector:@selector(presentViewController:animated:completion:)
+              isClassSelector:NO];
+  [GULSwizzler unswizzleClass:[GIDSignInStrings class]
+                     selector:@selector(localizedStringForKey:text:)
+              isClassSelector:YES];
+  _presentedViewController = nil;
+  [super tearDown];
+}
+
+// Expects opening a particular URL string in performing an action.
+- (void)expectOpenURLString:(NSString *)urlString inAction:(void (^)())action {
+  // Swizzle and mock [UIApplication sharedApplication] since it is unavailable in unit tests.
+  id mockApplication = OCMStrictClassMock([UIApplication class]);
+  [GULSwizzler swizzleClass:[UIApplication class]
+                   selector:@selector(sharedApplication)
+            isClassSelector:YES
+                  withBlock:^() { return mockApplication; }];
+  [[mockApplication expect] openURL:[NSURL URLWithString:urlString]];
+  action();
+  [mockApplication verify];
+  [GULSwizzler unswizzleClass:[UIApplication class]
+                     selector:@selector(sharedApplication)
+              isClassSelector:YES];
+}
+
+// Verifies that the handler doesn't handle non-exist error.
+- (void)testNoError {
+  __block BOOL completionCalled = NO;
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"abc" : @123 }
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  XCTAssertFalse(result);
+  XCTAssertTrue(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+}
+
+// Verifies that the handler doesn't handle non-EMM error.
+- (void)testNoEMMError {
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"invalid_token" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  XCTAssertFalse(result);
+  XCTAssertTrue(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+}
+
+// Verifies that the handler handles general EMM error with user tapping 'OK'.
+- (void)testGeneralEMMErrorOK {
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_something_wrong" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Should handle no more error while the previous one is being handled.
+  __block BOOL secondCompletionCalled = NO;
+  BOOL secondResult = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    secondCompletionCalled = YES;
+  }];
+  XCTAssertFalse(secondResult);
+  XCTAssertTrue(secondCompletionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 1);
+
+  // Pretend to touch the "OK" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"OK");
+  action.actionHandler(action);
+  XCTAssertTrue(completionCalled);
+}
+
+// Verifies that the handler handles EMM screenlock required error with user tapping 'Cancel'.
+- (void)testScreenlockRequiredCancel {
+  if (_isIOS10) {
+    // The dialog is different on iOS 10.
+    return;
+  }
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 2);
+
+  // Pretend to touch the "Cancel" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"Cancel");
+  action.actionHandler(action);
+  XCTAssertTrue(completionCalled);
+}
+
+// Verifies that the handler handles EMM screenlock required error with user tapping 'Settings'.
+- (void)testScreenlockRequiredSettings {
+  if (_isIOS10) {
+    // The dialog is different on iOS 10.
+    return;
+  }
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 2);
+
+  // Pretend to touch the "Settings" button.
+  UIAlertAction *action = alert.actions[1];
+  XCTAssertEqualObjects(action.title, @"Settings");
+  [self expectOpenURLString:UIApplicationOpenSettingsURLString inAction:^() {
+    action.actionHandler(action);
+  }];
+  XCTAssertTrue(completionCalled);
+}
+
+- (void)testScreenlockRequiredOkOnIOS10 {
+  if (!_isIOS10) {
+    // A more useful dialog is used for other iOS versions.
+    return;
+  }
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 1);
+
+  // Pretend to touch the "OK" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"OK");
+  action.actionHandler(action);
+  XCTAssertTrue(completionCalled);
+}
+
+// Verifies that the handler handles EMM app verification required error without a URL.
+- (void)testAppVerificationNoURL {
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_app_verification_required" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 1);
+
+  // Pretend to touch the "OK" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"OK");
+  action.actionHandler(action);
+  XCTAssertTrue(completionCalled);
+}
+
+// Verifies that the handler handles EMM app verification required error user tapping 'Cancel'.
+- (void)testAppVerificationCancel {
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response =
+      @{ @"error" : @"emm_app_verification_required: https://host.domain/path" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 2);
+
+  // Pretend to touch the "Cancel" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"Cancel");
+  action.actionHandler(action);
+  XCTAssertTrue(completionCalled);
+}
+
+// Verifies that the handler handles EMM app verification required error user tapping 'Connect'.
+- (void)testAppVerificationConnect {
+  __block BOOL completionCalled = NO;
+  NSDictionary<NSString *, NSString *> *response =
+      @{ @"error" : @"emm_app_verification_required: https://host.domain/path" };
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                  completion:^() {
+    completionCalled = YES;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+    XCTAssertFalse(_keyWindowSet);
+    XCTAssertNil(_presentedViewController);
+    return;
+  }
+  XCTAssertTrue(result);
+  XCTAssertFalse(completionCalled);
+  XCTAssertFalse(_keyWindowSet);
+  XCTAssertNil(_presentedViewController);
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse(completionCalled);
+  XCTAssertTrue(_keyWindowSet);
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 2);
+
+  // Pretend to touch the "Connect" button.
+  UIAlertAction *action = alert.actions[1];
+  XCTAssertEqualObjects(action.title, @"Connect");
+  [self expectOpenURLString:@"https://host.domain/path" inAction:^() {
+    action.actionHandler(action);
+  }];
+  XCTAssertTrue(completionCalled);
+}
+
+// Verifies that the handler can handle sequential errors independently.
+- (void)testSequentialErrors {
+  [self testGeneralEMMErrorOK];
+  _keyWindowSet = NO;
+  _presentedViewController = nil;
+  [self testScreenlockRequiredCancel];
+}
+
+@end
+
+NS_ASSUME_NONNULL_END
