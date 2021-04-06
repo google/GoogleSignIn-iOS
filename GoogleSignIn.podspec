@@ -7,10 +7,10 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
                        DESC
   s.homepage         = 'https://developers.google.com/identity/sign-in/ios/'
   s.license          = { :type => 'Apache', :file => 'LICENSE' }
-  s.authors          = 'Google, Inc.'
+  s.authors          = 'Google LLC'
   s.source           = {
-    :git => 'https://developers.google.com/identity/sign-in/ios/',
-    :tag => 'CocoaPods-' + s.version.to_s
+    :git => 'https://github.com/google/GoogleSignIn-iOS.git',
+    :tag => s.version.to_s
   }
   ios_deployment_target = '9.0'
   s.ios.deployment_target = ios_deployment_target
@@ -34,7 +34,6 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   s.dependency 'GTMSessionFetcher/Core', '~> 1.1'
   s.resources = 'GoogleSignIn/Resources/GoogleSignIn.bundle'
   s.pod_target_xcconfig = {
-    'GCC_C_LANGUAGE_STANDARD' => 'c99',
     'GCC_PREPROCESSOR_DEFINITIONS' => 'GID_SDK_VERSION=' + s.version.to_s,
     'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}"'
   }

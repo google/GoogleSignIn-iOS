@@ -62,7 +62,5 @@ let package = Package(
         .linkedFramework("UIKit"),
       ]
     )
-  ],
-  cLanguageStandard: .c99,
-  cxxLanguageStandard: CXXLanguageStandard.gnucxx14
+  ]
 )
