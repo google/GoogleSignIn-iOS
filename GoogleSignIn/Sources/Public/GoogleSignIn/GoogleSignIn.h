@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInButton.h"
+#import "GIDAuthentication.h"
+#import "GIDConfiguration.h"
+#import "GIDGoogleUser.h"
+#import "GIDProfileData.h"
+#import "GIDSignIn.h"
+#import "GIDSignInButton.h"
