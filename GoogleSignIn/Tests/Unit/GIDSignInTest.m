@@ -66,6 +66,8 @@
     return YES;\
 }]
 
+static NSString * const kFakeGaiaID = @"123456789";
+static NSString * const kFakeIDToken = @"FakeIDToken";
 static NSString * const kClientId = @"FakeClientID";
 static NSString * const kDotReversedClientId = @"FakeClientID";
 static NSString * const kClientId2 = @"FakeClientID2";
@@ -345,6 +347,35 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertTrue([[signIn scopes] count] == 0,
                 @"there should be no default scope");
   [_signIn startMocking];
+}
+
+- (void)testRestoredGoogleUserFromPreviousSignIn_hasPreviousUser {
+  [[[_authorization expect] andReturn:_authState] authState];
+  OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
+  OCMStub([_tokenResponse scope]).andReturn(nil);
+  OCMStub([_tokenResponse additionalParameters]).andReturn(nil);
+  OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
+
+  id idTokenDecoded = OCMClassMock([OIDIDToken class]);
+  OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
+  OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
+  OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
+
+  GIDGoogleUser *previousUser = [_signIn restoredGoogleUserFromPreviousSignIn];
+
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+  XCTAssertEqual(previousUser.userID, kFakeGaiaID);
+}
+
+- (void)testRestoredGoogleUserFromPreviousSignIn_hasNoPreviousUser {
+  [[[_authorization expect] andReturn:nil] authState];
+
+  GIDGoogleUser *previousUser = [_signIn restoredGoogleUserFromPreviousSignIn];
+
+  [_authorization verify];
+  XCTAssertNil(previousUser);
 }
 
 - (void)testHasPreviousSignIn_HasBeenAuthenticated {

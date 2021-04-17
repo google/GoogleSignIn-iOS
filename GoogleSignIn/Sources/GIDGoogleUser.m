@@ -39,7 +39,7 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
 @implementation GIDGoogleUser
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(GIDProfileData *)profileData {
+                      profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];

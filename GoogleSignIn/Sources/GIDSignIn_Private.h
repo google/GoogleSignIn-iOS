@@ -18,6 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 
 // Private |GIDSignIn| methods that are used internally in this SDK and other Google SDKs.
@@ -28,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;
+
+// Returns the previous sign-in user in the keychain without refreshing the access token.
+- (nullable GIDGoogleUser *)restoredGoogleUserFromPreviousSignIn;
 
 @end
 
