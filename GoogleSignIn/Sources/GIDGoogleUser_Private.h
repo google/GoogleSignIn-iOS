@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Create a object with an auth state, scopes, and profile data.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(GIDProfileData *)profileData;
+                      profileData:(nullable GIDProfileData *)profileData;
 
 @end
 

@@ -186,6 +186,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return [authState isAuthorized];
 }
 
+- (nullable GIDGoogleUser *)restoredGoogleUserFromPreviousSignIn {
+  OIDAuthState *authState = [self loadAuthState];
+  
+  if (!authState) {
+    return nil;
+  }
+
+  return [[GIDGoogleUser alloc] initWithAuthState:authState
+                                      profileData:nil];
+}
+
 - (void)restorePreviousSignIn {
   [self signInWithOptions:[GIDSignInInternalOptions silentOptions]];
 }
