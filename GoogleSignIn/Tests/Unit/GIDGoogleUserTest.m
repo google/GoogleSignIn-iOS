@@ -26,7 +26,11 @@
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDAuthState.h>
+#endif
 
 @interface GIDGoogleUserTest : XCTestCase
 @end

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDAuthorizationResponse.h>
+#endif
 
 @interface OIDAuthorizationResponse (Testing)
 

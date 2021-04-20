@@ -17,9 +17,13 @@
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenRequest+Testing.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDScopeUtilities.h>
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
+#endif
 
 NSString *const kAccessToken = @"access_token";
 NSTimeInterval const kAccessTokenExpiresIn = 3600;

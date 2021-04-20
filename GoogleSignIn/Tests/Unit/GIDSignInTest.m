@@ -33,6 +33,12 @@
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GTMAppAuth;
+@import GTMSessionFetcherCore;
+@import OCMock;
+#else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
@@ -47,6 +53,7 @@
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #import <OCMock/OCMock.h>
+#endif
 
 // Create a BLOCK to store the actual address for arg in param.
 #define SAVE_TO_ARG_BLOCK(param) [OCMArg checkWithBlock:^(id arg) {\

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDTokenResponse.h>
+#endif
 
 extern NSString *const kAccessToken;
 extern NSTimeInterval const kAccessTokenExpiresIn;

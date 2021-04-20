@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDAuthorizationRequest.h>
+#endif
 
 extern NSString *const OIDAuthorizationRequestTestingClientID;
 extern NSString *const OIDAuthorizationRequestTestingScope;

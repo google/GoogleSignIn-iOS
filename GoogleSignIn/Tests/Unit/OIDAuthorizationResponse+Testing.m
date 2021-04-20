@@ -16,7 +16,11 @@
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDGrantTypes.h>
+#endif
 
 @implementation OIDAuthorizationResponse (Testing)
 

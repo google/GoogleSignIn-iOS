@@ -17,11 +17,17 @@
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GTMAppAuth;
+@import OCMock;
+#else
 #import <AppAuth/AppAuth.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
 #import <GTMAppAuth/GTMKeychain.h>
 #import <GTMAppAuth/GTMOAuth2KeychainCompatibility.h>
 #import <OCMock/OCMock.h>
+#endif
 
 static NSString *const kTokenURL = @"https://host.com/example/token/url";
 static NSString *const kCallbackPath = @"/callback/path";

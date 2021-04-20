@@ -18,9 +18,15 @@
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDSignInStrings.h"
 
+#ifdef SWIFT_PACKAGE
+@import GoogleUtilities_MethodSwizzler;
+@import GoogleUtilities_SwizzlerTestHelpers;
+@import OCMock;
+#else
 #import <GoogleUtilities/GULSwizzler.h>
 #import <GoogleUtilities/GULSwizzler+Unswizzle.h>
 #import <OCMock/OCMock.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 

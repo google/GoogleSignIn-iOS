@@ -16,9 +16,13 @@
 
 #import "GoogleSignIn/Tests/Unit/OIDServiceConfiguration+Testing.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
+#endif
 
 NSString *const OIDAuthorizationRequestTestingClientID = @"87654321.googleusercontent.com";
 NSString *const OIDAuthorizationRequestTestingScope = @"email";

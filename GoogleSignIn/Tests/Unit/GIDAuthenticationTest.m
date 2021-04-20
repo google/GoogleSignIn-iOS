@@ -25,6 +25,14 @@
 #import "GoogleSignIn/Tests/Unit/OIDTokenRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GoogleUtilities_MethodSwizzler;
+@import GoogleUtilities_SwizzlerTestHelpers;
+@import GTMAppAuth;
+@import GTMSessionFetcherCore;
+@import OCMock;
+#else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
@@ -39,6 +47,7 @@
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #import <OCMock/OCMock.h>
+#endif
 
 static NSString *const kClientID = @"87654321.googleusercontent.com";
 static NSString *const kNewAccessToken = @"new_access_token";

@@ -19,7 +19,7 @@ import PackageDescription
 
 let package = Package(
   name: "GoogleSignIn",
-  platforms: [.iOS(.v9)],
+  platforms: [.iOS(.v10)],
   products: [
     .library(
       name: "GoogleSignIn",
@@ -39,14 +39,22 @@ let package = Package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
       "1.5.0" ..< "2.0.0"),
+    .package(
+      name: "OCMock",
+      url: "https://github.com/firebase/ocmock.git",
+      .revision("7291762d3551c5c7e31c49cce40a0e391a52e889")),
+    .package(
+      name: "GoogleUtilities",
+      url: "https://github.com/google/GoogleUtilities.git",
+      "7.3.0" ..< "8.0.0"),
   ],
   targets: [
     .target(
       name: "GoogleSignIn",
       dependencies: [
-        .product(name:"AppAuth", package: "AppAuth"),
-	.product(name:"GTMAppAuth", package: "GTMAppAuth"),
-	.product(name:"GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "AppAuth", package: "AppAuth"),
+	      .product(name: "GTMAppAuth", package: "GTMAppAuth"),
+	      .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
       ],
       path: "GoogleSignIn/Sources",
       publicHeadersPath: "Public",
@@ -61,6 +69,22 @@ let package = Package(
         .linkedFramework("Security"),
         .linkedFramework("UIKit"),
       ]
-    )
+    ),
+    .testTarget(
+      name: "GoogleSignIn-UnitTests",
+      dependencies: [
+        "GoogleSignIn",
+        "OCMock",
+        .product(name: "AppAuth", package: "AppAuth"),
+        .product(name: "GTMAppAuth", package: "GTMAppAuth"),
+        .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
+        .product(name: "GULSwizzlerTestHelpers", package: "GoogleUtilities"),
+      ],
+      path: "GoogleSignIn/Tests/Unit",
+      cSettings: [
+        .headerSearchPath("../../../"),
+      ]
+    ),
   ]
 )

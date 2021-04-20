@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#ifdef SWIFT_PACKAGE
+@import GTMSessionFetcherCore;
+#else
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
+#endif
 
 // A fake |GTMHTTPFetcher| for testing.
 @interface GIDFakeFetcher : GTMSessionFetcher
