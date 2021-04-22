@@ -8,6 +8,8 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Update Bundler
+      run: bundle update --bundler
     - name: Install Ruby gems with Bundler
       run: bundle install
     - name: Lint podspec using local source
