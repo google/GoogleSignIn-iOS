@@ -21,10 +21,17 @@ jobs:
     - uses: actions/checkout@v2
     - name: Initialize xcodebuild
       run: xcodebuild -list
+    - name: Build unit test target
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn \
+          -sdk 'iphonesimulator' \
+          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          build-for-testing
     - name: Run unit test target
       run: |
         xcodebuild \
           -scheme GoogleSignIn \
           -sdk 'iphonesimulator' \
           -destination 'platform=iOS Simulator,name=iPhone 11' \
-          test
+          test-without-building
