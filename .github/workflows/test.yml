@@ -24,7 +24,7 @@ jobs:
     - name: Run unit test target
       run: |
         xcodebuild \
-	  -scheme GoogleSignIn \
+          -scheme GoogleSignIn \
           -sdk 'iphonesimulator' \
-	  -destination 'platform=iOS Simulator,name=iPhone 11' \
-	  test
+          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          test
