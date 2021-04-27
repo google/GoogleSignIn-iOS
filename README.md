@@ -1,3 +1,5 @@
+[![tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/tests.yml/badge.svg?event=push)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/tests.yml)
+
 # Google Sign-In for iOS
 
 Google Sign-In for iOS allows users to sign in with their Google account from
