@@ -17,6 +17,8 @@
 
 import PackageDescription
 
+let googleSignInVersion = "6.0.0"
+
 let package = Package(
   name: "GoogleSignIn",
   platforms: [.iOS(.v10)],
@@ -53,13 +55,14 @@ let package = Package(
       name: "GoogleSignIn",
       dependencies: [
         .product(name: "AppAuth", package: "AppAuth"),
-	      .product(name: "GTMAppAuth", package: "GTMAppAuth"),
-	      .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "GTMAppAuth", package: "GTMAppAuth"),
+        .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
       ],
       path: "GoogleSignIn/Sources",
       publicHeadersPath: "Public",
       cSettings: [
         .headerSearchPath("../../"),
+        .define("GID_SDK_VERSION", to: googleSignInVersion),
       ],
       linkerSettings: [
         .linkedFramework("CoreGraphics"),
@@ -84,6 +87,7 @@ let package = Package(
       path: "GoogleSignIn/Tests/Unit",
       cSettings: [
         .headerSearchPath("../../../"),
+        .define("GID_SDK_VERSION", to: googleSignInVersion),
       ]
     ),
   ]
