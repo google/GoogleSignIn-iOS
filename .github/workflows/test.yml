@@ -14,3 +14,15 @@ jobs:
       run: bundle install
     - name: Lint podspec using local source
       run: pod lib lint --allow-warnings
+
+  spm-build-test:
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Initialize xcodebuild
+      run: xcodebuild -list
+    - name: Run unit test target
+      run: xcodebuild -scheme GoogleSignIn \
+                      -sdk 'iphonesimulator' \
+		      -destination 'platform=iOS Simulator,name=iPhone 11' \
+		      test
