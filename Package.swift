@@ -21,7 +21,7 @@ let googleSignInVersion = "6.0.0"
 
 let package = Package(
   name: "GoogleSignIn",
-  platforms: [.iOS(.v10)],
+  platforms: [.iOS(.v9)],
   products: [
     .library(
       name: "GoogleSignIn",
