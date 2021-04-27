@@ -22,7 +22,9 @@ jobs:
     - name: Initialize xcodebuild
       run: xcodebuild -list
     - name: Run unit test target
-      run: xcodebuild -scheme GoogleSignIn \
-                      -sdk 'iphonesimulator' \
-		      -destination 'platform=iOS Simulator,name=iPhone 11' \
-		      test
+      run: |
+        xcodebuild \
+	  -scheme GoogleSignIn \
+          -sdk 'iphonesimulator' \
+	  -destination 'platform=iOS Simulator,name=iPhone 11' \
+	  test
