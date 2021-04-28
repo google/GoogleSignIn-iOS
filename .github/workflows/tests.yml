@@ -19,8 +19,6 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Initialize xcodebuild
-      run: xcodebuild -list
     - name: Build unit test target
       run: |
         xcodebuild \
