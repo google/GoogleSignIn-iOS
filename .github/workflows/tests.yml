@@ -13,7 +13,7 @@ jobs:
     - name: Install Ruby gems with Bundler
       run: bundle install
     - name: Lint podspec using local source
-      run: pod lib lint --allow-warnings
+      run: pod lib lint --verbose --allow-warnings
 
   spm-build-test:
     runs-on: macOS-latest
