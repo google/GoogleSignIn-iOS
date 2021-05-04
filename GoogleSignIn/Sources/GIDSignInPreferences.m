@@ -20,20 +20,23 @@ static NSString *const kLSOServer = @"accounts.google.com";
 static NSString *const kTokenServer = @"oauth2.googleapis.com";
 static NSString *const kUserInfoServer = @"www.googleapis.com";
 
-// This convolved list of C macros is needed because the Xcode project generated
-// by blaze build and the command itself have inconsistent escaping of the
-// quotation marks in -D flags, which makes passing '"' as part of the macro
-// value impossible.
-#define STR(x) STR_EXPAND(x)
-#define STR_EXPAND(x) #x
-
 // The name of the query parameter used for logging the SDK version.
 NSString *const kSDKVersionLoggingParameter = @"gpsdk";
+
+#ifndef GID_SDK_VERSION
+#error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
+#endif
+
+// Because macro expansions aren't performed on a token following the # preprocessor operator, we
+// wrap STR_EXPAND(x) with the STR(x) to produce a quoted string representation of a macro.
+// https://www.guyrutenberg.com/2008/12/20/expanding-macros-into-string-constants-in-c/
+#define STR(x) STR_EXPAND(x)
+#define STR_EXPAND(x) #x
 
 // The prefixed sdk version string to differentiate gid version values used with the legacy gpsdk
 // logging key.
 NSString* GIDVersion(void) {
-  return [NSString stringWithFormat:@"gid-%s",(const char* const)STR(GID_SDK_VERSION)];
+  return [NSString stringWithFormat:@"gid-%@", @STR(GID_SDK_VERSION)];
 }
 
 @implementation GIDSignInPreferences
