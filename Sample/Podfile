@@ -1,0 +1,7 @@
+platform :ios, '9.0'
+use_frameworks!
+
+target 'SampleForPod' do
+  pod 'GoogleSignIn', :path => '../'
+  project 'SignInSampleForPod.xcodeproj'
+end
