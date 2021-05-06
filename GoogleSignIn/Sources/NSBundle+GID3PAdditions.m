@@ -17,6 +17,8 @@
 #import <CoreText/CoreText.h>
 #import <UIKit/UIKit.h>
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #if SWIFT_PACKAGE
@@ -32,9 +34,9 @@ NSString *const GoogleSignInBundleName = @"GoogleSignIn";
   NSString *path = [[NSBundle mainBundle] pathForResource:GoogleSignInBundleName
                                                    ofType:@"bundle"];
   if (!path) {
-    // If we can't find the resource bundle in the main bundle, use the framework bundle instead.
-    NSString *path = [[NSBundle mainBundle] pathForResource:GoogleSignInBundleName
-                                                     ofType:@"framework"];
+    // If we can't find the resource bundle in the main bundle, look for it in the framework bundle.
+    path = [[NSBundle bundleForClass:[GIDSignIn class]] pathForResource:GoogleSignInBundleName
+                                                                 ofType:@"bundle"];
   }
   return [NSBundle bundleWithPath:path];
 }
