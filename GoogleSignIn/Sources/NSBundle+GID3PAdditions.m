@@ -19,13 +19,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#if SWIFT_PACKAGE
+NSString *const GoogleSignInBundleName = @"GoogleSignIn_GoogleSignIn";
+#else
+NSString *const GoogleSignInBundleName = @"GoogleSignIn";
+#endif
+
 @implementation NSBundle (GID3PAdditions)
 
 + (nullable NSBundle *)gid_frameworkBundle {
-  NSString* mainBundlePath = [[NSBundle mainBundle] resourcePath];
-  NSString* frameworkBundlePath = [mainBundlePath
-      stringByAppendingPathComponent:@"GoogleSignIn.bundle"];
-  return [NSBundle bundleWithPath:frameworkBundlePath];
+  // Look for the resource bundle in the main bundle.
+  NSString *path = [[NSBundle mainBundle] pathForResource:GoogleSignInBundleName
+                                                   ofType:@"bundle"];
+  if (!path) {
+    // If we can't find the resource bundle in the main bundle, use the framework bundle instead.
+    NSString *path = [[NSBundle mainBundle] pathForResource:GoogleSignInBundleName
+                                                     ofType:@"framework"];
+  }
+  return [NSBundle bundleWithPath:path];
 }
 
 + (void)gid_registerFonts {

@@ -32,7 +32,9 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   s.dependency 'AppAuth', '~> 1.4'
   s.dependency 'GTMAppAuth', '~> 1.0'
   s.dependency 'GTMSessionFetcher/Core', '~> 1.1'
-  s.resources = 'GoogleSignIn/Resources/GoogleSignIn.bundle'
+  s.resource_bundle = {
+    'GoogleSignIn' => ['GoogleSignIn/Sources/{Resources,Strings}/*']
+  }
   s.pod_target_xcconfig = {
     'GCC_PREPROCESSOR_DEFINITIONS' => 'GID_SDK_VERSION=' + s.version.to_s,
     'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}"'
