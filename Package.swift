@@ -21,6 +21,7 @@ let googleSignInVersion = "6.0.0"
 
 let package = Package(
   name: "GoogleSignIn",
+  defaultLocalization: "en",
   platforms: [.iOS(.v9)],
   products: [
     .library(
@@ -59,6 +60,10 @@ let package = Package(
         .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
       ],
       path: "GoogleSignIn/Sources",
+      resources: [
+        .process("Resources"),
+        .process("Strings"),
+      ],
       publicHeadersPath: "Public",
       cSettings: [
         .headerSearchPath("../../"),
