@@ -113,11 +113,19 @@ static NSString *const kFIFEAvatarURL2WithDimension =
 }
 
 - (void)testImageURLWithDimension {
+  GIDProfileData *profileData;
   // Test FIFE Image URLs
-  GIDProfileData *profileData = [self profileDataWithImageURL:kFIFEImageURL];
+  profileData = [self profileDataWithImageURL:kFIFEImageURL];
   XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                         kFIFEImageURLWithDimension);
   profileData = [self profileDataWithImageURL:kFIFEImageURL2];
+  XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
+                        kFIFEImageURL2WithDimension);
+  // with preexisting options
+  profileData = [self profileDataWithImageURL:kFIFEImageURLWithDimension];
+  XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
+                        kFIFEImageURLWithDimension);
+  profileData = [self profileDataWithImageURL:kFIFEImageURL2WithDimension];
   XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                         kFIFEImageURL2WithDimension);
 
@@ -126,6 +134,13 @@ static NSString *const kFIFEAvatarURL2WithDimension =
   XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                         kFIFEAvatarURLWithDimension);
   profileData = [self profileDataWithImageURL:kFIFEAvatarURL2];
+  XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
+                        kFIFEAvatarURL2WithDimension);
+  // with preexisting options
+  profileData = [self profileDataWithImageURL:kFIFEAvatarURLWithDimension];
+  XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
+                        kFIFEAvatarURLWithDimension);
+  profileData = [self profileDataWithImageURL:kFIFEAvatarURL2WithDimension];
   XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                         kFIFEAvatarURL2WithDimension);
 }
