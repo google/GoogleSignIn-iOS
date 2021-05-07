@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The callback block that takes a `GIDAuthentication` or an error if the attempt to refresh tokens
 /// was unsuccessful.
-typedef void (^GIDAuthenticationAction)(GIDAuthentication *authentication,
+typedef void (^GIDAuthenticationAction)(GIDAuthentication *_Nullable authentication,
                                         NSError *_Nullable error);
 
 /// This class represents the OAuth 2.0 entities needed for sign-in.
