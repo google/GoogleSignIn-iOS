@@ -247,11 +247,11 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   dispatch_queue_t backgroundQueue =
       dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
   __weak SignInViewController *weakSelf = self;
+  NSUInteger dimension = round(self.userAvatar.frame.size.width * [[UIScreen mainScreen] scale]);
+  NSURL *imageURL =
+      [[GIDSignIn sharedInstance].currentUser.profile imageURLWithDimension:dimension];
 
   dispatch_async(backgroundQueue, ^{
-    NSUInteger dimension = round(self.userAvatar.frame.size.width * [[UIScreen mainScreen] scale]);
-    NSURL *imageURL =
-        [[GIDSignIn sharedInstance].currentUser.profile imageURLWithDimension:dimension];
     NSData *avatarData = [NSData dataWithContentsOfURL:imageURL];
 
     if (avatarData) {
