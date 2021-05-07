@@ -54,19 +54,36 @@ static NSString *const kOldImageURLStringKey = @"picture";
   if (!_imageURL) {
     return nil;
   }
+  NSURLComponents *url = [NSURLComponents componentsWithURL:_imageURL
+                                    resolvingAgainstBaseURL:YES];
   if ([self isFIFEAvatarURL:_imageURL]) {
-    return [NSURL URLWithString:
-        [NSString stringWithFormat:@"%@=s%lu", _imageURL, (unsigned long)dimension]];
+    // Remove any preexisting FIFE Avatar URL options
+    NSError *error;
+    NSRegularExpression *regex =
+        [NSRegularExpression regularExpressionWithPattern:@"=.*"
+                                                  options:0
+                                                    error:&error];
+    url.path = [regex stringByReplacingMatchesInString:url.path
+                                               options:0
+                                                 range:NSMakeRange(0, url.path.length)
+                                          withTemplate:@""];
+    // Append our own FIFE Avatar URL options to the path
+    url.path = [NSString stringWithFormat:@"%@=s%@", url.path, @(dimension)];
+    return url.URL;
   } else {
-    return [NSURL URLWithString:
-        [NSString stringWithFormat:@"%@?sz=%lu", _imageURL, (unsigned long)dimension]];
+    // Append our own FIFE image URL options query string, replacing any existing query string.
+    NSURLQueryItem *queryItem =
+        [NSURLQueryItem queryItemWithName:@"sz"
+                                    value:[NSString stringWithFormat:@"%@", @(dimension)]];
+    url.queryItems = @[ queryItem ];
+    return url.URL;
   }
 }
 
 - (BOOL)isFIFEAvatarURL:(NSURL *)url {
   static NSString *const AvatarURLPattern =
       @"lh[3-6](-tt|-d[a-g,z]|-testonly)?\\.(google|googleusercontent)\\.[a-z]+\\/(a|a-)\\/";
-  NSError *error = NULL;
+  NSError *error;
   NSRegularExpression *regex =
       [NSRegularExpression regularExpressionWithPattern:AvatarURLPattern
                                                 options:0
