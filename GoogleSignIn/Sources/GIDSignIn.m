@@ -211,8 +211,47 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signOutWithUser:_currentUser];
 }
 
-- (void)disconnect {
-  [self disconnectWithUser:_currentUser];
+- (void)disconnectWithCallback:(GIDSignInCallback)callback {
+  GIDGoogleUser *user = _currentUser;
+  OIDAuthState *authState = user.authentication.authState;
+  if (!authState) {
+    // Even the user is not signed in right now, we still need to remove any token saved in the
+    // keychain.
+    authState = [self loadAuthState];
+  }
+  // Either access or refresh token would work, but we won't have access token if the auth is
+  // retrieved from keychain.
+  NSString *token = authState.lastTokenResponse.accessToken;
+  if (!token) {
+    token = authState.lastTokenResponse.refreshToken;
+  }
+  if (!token) {
+    [self signOut];
+    // Nothing to do here, consider the operation successful.
+    callback(user, nil);
+    return;
+  }
+  NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
+      [GIDSignInPreferences googleAuthorizationServer], token];
+  // Append logging parameter
+  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@",
+                     revokeURLString,
+                     kSDKVersionLoggingParameter,
+                     GIDVersion()];
+  NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
+  [self startFetchURL:revokeURL
+              fromAuthState:authState
+                withComment:@"GIDSignIn: revoke tokens"
+      withCompletionHandler:^(NSData *data, NSError *error) {
+    // Revoking an already revoked token seems always successful, which saves the trouble here for
+    // us.
+    if (error) {
+      callback(nil, error);
+    } else {
+      [self signOut];
+      callback(user, nil);
+    }
+  }];
 }
 
 #pragma mark - Custom getters and setters
@@ -738,48 +777,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   // TODO(petea): Mark user as signed out rather than removing auth from keychain.
   [self clearAuthentication];
   [self removeAllKeychainEntries];
-}
-
-- (void)disconnectWithUser:(GIDGoogleUser *)user {
-  OIDAuthState *authState = user.authentication.authState;
-  if (!authState) {
-    // Even the user is not signed in right now, we still need to remove any token saved in the
-    // keychain.
-    authState = [self loadAuthState];
-  }
-  // Either access or refresh token would work, but we won't have access token if the auth is
-  // retrieved from keychain.
-  NSString *token = authState.lastTokenResponse.accessToken;
-  if (!token) {
-    token = authState.lastTokenResponse.refreshToken;
-  }
-  if (!token) {
-    [self removeAllKeychainEntries];
-    // Nothing to do here, consider the operation successful.
-    [self didDisconnectWithUser:user error:nil];
-    return;
-  }
-  NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
-      [GIDSignInPreferences googleAuthorizationServer], token];
-  // Append logging parameter
-  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@",
-                     revokeURLString,
-                     kSDKVersionLoggingParameter,
-                     GIDVersion()];
-  NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [self startFetchURL:revokeURL
-              fromAuthState:authState
-                withComment:@"GIDSignIn: revoke tokens"
-      withCompletionHandler:^(NSData *data, NSError *error) {
-    // Revoking an already revoked token seems always successful, which saves the trouble here for
-    // us.
-    if (error) {
-      [self didDisconnectWithUser:user error:error];
-    } else {
-      [self signOutWithUser:user];
-      [self didDisconnectWithUser:user error:nil];
-    }
-  }];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {
