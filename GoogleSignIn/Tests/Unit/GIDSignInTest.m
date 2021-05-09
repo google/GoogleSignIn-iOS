@@ -593,17 +593,22 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertFalse(_delegateCalled, @"should not call delegate");
 }
 
+#pragma mark - Tests - disconnectWithCallback:
+
 // Verifies disconnect calls delegate disconnect method with no errors if access token is present.
 - (void)testDisconnect_accessToken {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  OCMockObject *mockDelegate = OCMStrictProtocolMock(@protocol(GIDSignInDelegate));
-  _signIn.delegate = (id <GIDSignInDelegate>)mockDelegate;
-  [_signIn disconnect];
-  [mockDelegate verify];
-  [self verifyAndRevokeToken:kAccessToken delegate:mockDelegate];
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with nil user and nil error"];
+  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    if (user == nil && error == nil) {
+      [expectation fulfill];
+    }
+  }];
+  [self verifyAndRevokeToken:kAccessToken];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -617,11 +622,14 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kRefreshToken] refreshToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  OCMockObject *mockDelegate = OCMStrictProtocolMock(@protocol(GIDSignInDelegate));
-  _signIn.delegate = (id <GIDSignInDelegate>)mockDelegate;
-  [_signIn disconnect];
-  [mockDelegate verify];
-  [self verifyAndRevokeToken:kRefreshToken delegate:mockDelegate];
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with nil user and nil error"];
+  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    if (user == nil && error == nil) {
+      [expectation fulfill];
+    }
+  }];
+  [self verifyAndRevokeToken:kRefreshToken];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -633,16 +641,18 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  OCMockObject *mockDelegate = OCMStrictProtocolMock(@protocol(GIDSignInDelegate));
-  _signIn.delegate = (id <GIDSignInDelegate>)mockDelegate;
-  [_signIn disconnect];
-  [mockDelegate verify];
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with nil user and an error"];
+  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    if (user == nil && error != nil) {
+      [expectation fulfill];
+    }
+  }];
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   // Emulate result back from server.
   NSError *error = [self error];
-  [[mockDelegate expect] signIn:_signIn didDisconnectWithUser:nil withError:error];
   [self didFetch:nil error:error];
-  [mockDelegate verify];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -656,13 +666,14 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
-  OCMockObject *mockDelegate = OCMStrictProtocolMock(@protocol(GIDSignInDelegate));
-  [[mockDelegate expect] signIn:_signIn
-          didDisconnectWithUser:nil
-                      withError:nil];
-  _signIn.delegate = (id <GIDSignInDelegate>)mockDelegate;
-  [_signIn disconnect];
-  [mockDelegate verify];
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with nil user and nil error"];
+  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    if (user == nil && error == nil) {
+      [expectation fulfill];
+    }
+  }];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse([self isFetcherStarted], @"should not fetch");
   XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
   [_authorization verify];
@@ -720,48 +731,6 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (void)testAssertValidPresentingViewControllerWithNilPresentingViewController {
   _signIn.presentingViewController = nil;
   XCTAssertThrows([_signIn assertValidPresentingViewContoller]);
-}
-
-#pragma mark - Tests - GIDSignInDelegate
-
-- (void)testDisconnectWithUserWithoutAuth {
-  [[[_authorization expect] andReturn:_authState] authState];
-  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
-  [[[_tokenResponse expect] andReturn:nil] accessToken];
-  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
-  [[[_tokenResponse expect] andReturn:nil] refreshToken];
-  id signInDelegateMock = OCMStrictProtocolMock(@protocol(GIDSignInDelegate));
-  [[signInDelegateMock expect] signIn:[OCMArg any]
-                didDisconnectWithUser:[OCMArg any]
-                            withError:[OCMArg isNil]];
-
-  _signIn.delegate = signInDelegateMock;
-  [_signIn disconnect];
-
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
-  [signInDelegateMock verify];
-}
-
-- (void)testDisconnectWithUserWithAccessToken {
-  [[[_authorization expect] andReturn:_authState] authState];
-  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
-  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  id signInDelegateMock = OCMStrictProtocolMock(@protocol(GIDSignInDelegate));
-  [[signInDelegateMock expect] signIn:[OCMArg any]
-                didDisconnectWithUser:[OCMArg any]
-                            withError:[OCMArg isNil]];
-
-  _signIn.delegate = signInDelegateMock;
-  [_signIn disconnect];
-  [_fetcherService.fetchers[0] didFinishWithData:nil error:nil];
-
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
-  [signInDelegateMock verify];
 }
 
 #pragma mark - Restarting Authentication Tests
@@ -941,7 +910,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 // Verifies a fetcher has started for revoking token and emulates a server response.
-- (void)verifyAndRevokeToken:(NSString *)token delegate:(OCMockObject *)mockDelegate {
+- (void)verifyAndRevokeToken:(NSString *)token {
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   NSURL *url = [self fetchedURL];
   XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
@@ -952,9 +921,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertEqualObjects([params valueForKey:@"token"], token,
                         @"token parameter should match");
   // Emulate result back from server.
-  [[mockDelegate expect] signIn:_signIn didDisconnectWithUser:nil withError:nil];
   [self didFetch:nil error:nil];
-  [mockDelegate verify];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 

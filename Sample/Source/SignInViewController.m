@@ -151,18 +151,6 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   [self updateButtons];
 }
 
-- (void)signIn:(GIDSignIn *)signIn
-    didDisconnectWithUser:(GIDGoogleUser *)user
-                withError:(NSError *)error {
-  if (error) {
-    _signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to disconnect: %@", error];
-  } else {
-    _signInAuthStatus.text = [NSString stringWithFormat:@"Status: Disconnected"];
-  }
-  [self reportAuthStatus];
-  [self updateButtons];
-}
-
 - (void)presentSignInViewController:(UIViewController *)viewController {
   [[self navigationController] pushViewController:viewController animated:YES];
 }
@@ -295,7 +283,17 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 }
 
 - (IBAction)disconnect:(id)sender {
-  [[GIDSignIn sharedInstance] disconnect];
+  [[GIDSignIn sharedInstance] disconnectWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                       NSError * _Nullable error) {
+    if (error) {
+      self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to disconnect: %@",
+                                      error];
+    } else {
+      self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Disconnected"];
+    }
+    [self reportAuthStatus];
+    [self updateButtons];
+  }];
 }
 
 - (IBAction)showAuthInspector:(id)sender {
