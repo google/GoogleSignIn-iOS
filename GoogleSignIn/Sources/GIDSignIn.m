@@ -208,7 +208,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)signOut {
-  [self signOutWithUser:_currentUser];
+  // Clear the current user if there is one.
+  if (_currentUser) {
+    [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+    _currentUser = nil;
+    [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+  }
+  // Remove all state from the keychain.
+  [self removeAllKeychainEntries];
 }
 
 - (void)disconnectWithCallback:(GIDSignInCallback)callback {
@@ -751,13 +758,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName];
 }
 
-// Clears the saved authentication object and other user information.
-- (void)clearAuthentication {
-  [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-  _currentUser = nil;
-  [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-}
-
 // Adds basic profile scopes to |scopes| if |shouldFetchBasicProfile| is set.
 - (NSArray *)adjustedScopes {
   NSArray<NSString *> *adjustedScopes = _scopes;
@@ -770,13 +770,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (NSURL *)redirectURI {
   NSString *scheme = [_schemes clientIdentifierScheme];
   return [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@", scheme, kBrowserCallbackPath]];
-}
-
-- (void)signOutWithUser:(GIDGoogleUser *)user {
-  // TODO(petea): Respond to user parameter.
-  // TODO(petea): Mark user as signed out rather than removing auth from keychain.
-  [self clearAuthentication];
-  [self removeAllKeychainEntries];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {

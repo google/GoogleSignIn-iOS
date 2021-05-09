@@ -573,6 +573,18 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testSignOut {
+  // Sign in a user so that we can then sign them out.
+  [self OAuthLoginWithOptions:nil
+                    authError:nil
+                   tokenError:nil
+      emmPasscodeInfoRequired:NO
+                keychainError:NO
+               restoredSignIn:YES
+               oldAccessToken:NO
+                  modalCancel:NO];
+
+  XCTAssertNotNil(_signIn.currentUser);
+
   [_signIn signOut];
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertTrue(_keychainRemoved, @"should remove keychain");
