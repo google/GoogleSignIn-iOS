@@ -398,18 +398,23 @@ static void *kTestObserverContext = &kTestObserverContext;
   _delegateCalled = NO;
   _authError = nil;
 
-  [_signIn restorePreviousSignIn];
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
 
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                               NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNotNil(error, @"error should not have been nil");
+    XCTAssertEqual(error.domain,
+                   kGIDSignInErrorDomain,
+                   @"error domain should have been the sign-in error domain.");
+    XCTAssertEqual(error.code,
+                   kGIDSignInErrorCodeHasNoAuthInKeychain,
+                   @"error code should have been the 'NoAuthInKeychain' error code.");
+  }];
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [_authorization verify];
   [_authState verify];
-  XCTAssertTrue(_delegateCalled, @"should have called delegate");
-  XCTAssertNotNil(_authError, @"error should not have been nil");
-  XCTAssertEqual(_authError.domain,
-                 kGIDSignInErrorDomain,
-                 @"error domain should have been the sign-in error domain.");
-  XCTAssertEqual(_authError.code,
-                 kGIDSignInErrorCodeHasNoAuthInKeychain,
-                 @"error code should have been the 'NoAuthInKeychain' error code.");
 }
 
 // Verifies |shouldFetchBasicProfile| is default YES.
@@ -696,8 +701,15 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:NO]] isAuthorized];
 
   _signIn.presentingViewController = nil;
-  [_signIn restorePreviousSignIn];
 
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
+
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                               NSError * _Nullable error) {
+    [expectation fulfill];
+  }];
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [_authorization verify];
   [_authState verify];
 }
@@ -1022,7 +1034,12 @@ static void *kTestObserverContext = &kTestObserverContext;
   }
 
   if (restoredSignIn && oldAccessToken) {
-    [_signIn restorePreviousSignIn];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
+    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                 NSError * _Nullable error) {
+      [expectation fulfill];
+      XCTAssertNil(error, @"should have no error");
+    }];
   }
 
   if (!restoredSignIn || (restoredSignIn && oldAccessToken)) {
@@ -1058,7 +1075,12 @@ static void *kTestObserverContext = &kTestObserverContext;
   }
 
   if (restoredSignIn && !oldAccessToken) {
-    [_signIn restorePreviousSignIn];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
+    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                 NSError * _Nullable error) {
+      [expectation fulfill];
+      XCTAssertNil(error, @"should have no error");
+    }];
   } else {
     // Simulate token endpoint response.
     _savedTokenCallback(tokenResponse, nil);
@@ -1068,9 +1090,10 @@ static void *kTestObserverContext = &kTestObserverContext;
   if (keychainError) {
     return;
   }
+  if (restoredSignIn) {
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+  }
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
-  XCTAssertTrue(_delegateCalled, @"should call delegate");
-  XCTAssertNil(_authError, @"should have no error");
   XCTAssertNotNil(authState);
   // Check fat ID token decoding
   XCTAssertEqualObjects(profileData.name, kFatName);
@@ -1088,13 +1111,19 @@ static void *kTestObserverContext = &kTestObserverContext;
   __block GIDAuthenticationAction action;
   [[_authentication expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(action)];
 
-  [_signIn restorePreviousSignIn];
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
+
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                               NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(error, @"should have no error");
+  }];
+
   action(_authentication, nil);
 
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain again");
-  XCTAssertTrue(_delegateCalled, @"should call delegate");
-  XCTAssertNil(_authError, @"should have no error");
 }
 
 
