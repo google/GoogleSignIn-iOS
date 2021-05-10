@@ -123,7 +123,7 @@ static CGFloat const kTableViewCellPadding = 22.f;
 
 - (NSString *)contentForRowAtIndexPath:(NSIndexPath *)indexPath {
   NSString *keyPath = _keyPaths[indexPath.section];
-  return [[[GIDSignIn sharedInstance].currentUser valueForKeyPath:keyPath] description];
+  return [[GIDSignIn.sharedInstance.currentUser valueForKeyPath:keyPath] description];
 }
 
 - (CGFloat)heightForTableView:(UITableView *)tableView content:(NSString *)content {

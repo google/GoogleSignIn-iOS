@@ -343,7 +343,7 @@ static UIColor *colorForStyleState(GIDSignInButtonColorScheme style,
                                                         (long)_style,
                                                         (long)_colorScheme];
   NSDictionary *params = @{ kLoggingParameter : appearanceCode };
-  [[GIDSignIn sharedInstance]
+  [GIDSignIn.sharedInstance
       signInWithOptions:[GIDSignInInternalOptions optionsWithExtraParams:params]];
 }
 
