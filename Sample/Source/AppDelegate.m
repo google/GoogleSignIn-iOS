@@ -32,10 +32,10 @@ static NSString * const kClientID =
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   // Set app's client ID for |GIDSignIn|.
-  [GIDSignIn sharedInstance].clientID = kClientID;
+  GIDSignIn.sharedInstance.clientID = kClientID;
   // Restore any previous sign-in session before displaying main view.
-  [[GIDSignIn sharedInstance] restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
-                                                                  NSError * _Nullable error) {
+  [GIDSignIn.sharedInstance restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                                NSError * _Nullable error) {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     SignInViewController *masterViewController =
         [[SignInViewController alloc] initWithNibName:@"SignInViewController"
@@ -52,7 +52,7 @@ static NSString * const kClientID =
 - (BOOL)application:(UIApplication *)app
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-  return [[GIDSignIn sharedInstance] handleURL:url];
+  return [GIDSignIn.sharedInstance handleURL:url];
 }
 
 

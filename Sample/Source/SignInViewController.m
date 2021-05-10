@@ -97,11 +97,11 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   // xib file doesn't count.
   [GIDSignInButton class];
 
-  GIDSignIn *signIn = [GIDSignIn sharedInstance];
+  GIDSignIn *signIn = GIDSignIn.sharedInstance;
   signIn.shouldFetchBasicProfile = YES;
   signIn.delegate = self;
   signIn.presentingViewController = self;
-  [GIDSignIn sharedInstance].scopes = @[ @"email" ];
+  GIDSignIn.sharedInstance.scopes = @[ @"email" ];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil
@@ -204,7 +204,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 }
 
 - (void)reportAuthStatus {
-  GIDGoogleUser *googleUser = [[GIDSignIn sharedInstance] currentUser];
+  GIDGoogleUser *googleUser = [GIDSignIn.sharedInstance currentUser];
   if (googleUser.authentication) {
     _signInAuthStatus.text = @"Status: Authenticated";
   } else {
@@ -218,16 +218,16 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 // Update the interface elements containing user data to reflect the
 // currently signed in user.
 - (void)refreshUserInfo {
-  if ([GIDSignIn sharedInstance].currentUser.authentication == nil) {
+  if (GIDSignIn.sharedInstance.currentUser.authentication == nil) {
     self.userName.text = kPlaceholderUserName;
     self.userEmailAddress.text = kPlaceholderEmailAddress;
     self.userAvatar.image = [UIImage imageNamed:kPlaceholderAvatarImageName];
     return;
   }
-  self.userEmailAddress.text = [GIDSignIn sharedInstance].currentUser.profile.email;
-  self.userName.text = [GIDSignIn sharedInstance].currentUser.profile.name;
+  self.userEmailAddress.text = GIDSignIn.sharedInstance.currentUser.profile.email;
+  self.userName.text = GIDSignIn.sharedInstance.currentUser.profile.name;
 
-  if (![GIDSignIn sharedInstance].currentUser.profile.hasImage) {
+  if (!GIDSignIn.sharedInstance.currentUser.profile.hasImage) {
     // There is no Profile Image to be loaded.
     return;
   }
@@ -237,7 +237,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   __weak SignInViewController *weakSelf = self;
   NSUInteger dimension = round(self.userAvatar.frame.size.width * [[UIScreen mainScreen] scale]);
   NSURL *imageURL =
-      [[GIDSignIn sharedInstance].currentUser.profile imageURLWithDimension:dimension];
+      [GIDSignIn.sharedInstance.currentUser.profile imageURLWithDimension:dimension];
 
   dispatch_async(backgroundQueue, ^{
     NSData *avatarData = [NSData dataWithContentsOfURL:imageURL];
@@ -258,7 +258,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 // the current sign-in state (ie, the "Sign in" button becomes disabled
 // when a user is already signed in).
 - (void)updateButtons {
-  BOOL authenticated = ([GIDSignIn sharedInstance].currentUser.authentication != nil);
+  BOOL authenticated = (GIDSignIn.sharedInstance.currentUser.authentication != nil);
 
   self.signInButton.enabled = !authenticated;
   self.signOutButton.enabled = authenticated;
@@ -277,13 +277,13 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 #pragma mark - IBActions
 
 - (IBAction)signOut:(id)sender {
-  [[GIDSignIn sharedInstance] signOut];
+  [GIDSignIn.sharedInstance signOut];
   [self reportAuthStatus];
   [self updateButtons];
 }
 
 - (IBAction)disconnect:(id)sender {
-  [[GIDSignIn sharedInstance] disconnectWithCallback:^(NSError * _Nullable error) {
+  [GIDSignIn.sharedInstance disconnectWithCallback:^(NSError * _Nullable error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to disconnect: %@",
                                       error];
@@ -305,7 +305,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 }
 
 - (void)toggleBasicProfile:(UISwitch *)sender {
-  [GIDSignIn sharedInstance].shouldFetchBasicProfile = sender.on;
+  GIDSignIn.sharedInstance.shouldFetchBasicProfile = sender.on;
 }
 
 - (void)changeSignInButtonWidth:(UISlider *)sender {
@@ -391,7 +391,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
       [toggle addTarget:self
                     action:@selector(toggleBasicProfile:)
           forControlEvents:UIControlEventValueChanged];
-      toggle.on = [GIDSignIn sharedInstance].shouldFetchBasicProfile;
+      toggle.on = GIDSignIn.sharedInstance.shouldFetchBasicProfile;
     }
 
     toggle.accessibilityLabel = [NSString stringWithFormat:@"%@ Switch", cell.accessibilityLabel];

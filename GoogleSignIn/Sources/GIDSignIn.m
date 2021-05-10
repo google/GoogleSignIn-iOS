@@ -151,15 +151,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 #pragma mark - Public methods
 
-+ (GIDSignIn *)sharedInstance {
-  static dispatch_once_t once;
-  static GIDSignIn *sharedInstance;
-  dispatch_once(&once, ^{
-    sharedInstance = [[self alloc] initPrivate];
-  });
-  return sharedInstance;
-}
-
 // Invoked when the app delegate receives a callback at |application:openURL:options:| or
 // |application:openURL:sourceApplication:annotation|.
 - (BOOL)handleURL:(NSURL *)url {
@@ -262,6 +253,15 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 #pragma mark - Custom getters and setters
+
++ (GIDSignIn *)sharedInstance {
+  static dispatch_once_t once;
+  static GIDSignIn *sharedInstance;
+  dispatch_once(&once, ^{
+    sharedInstance = [[self alloc] initPrivate];
+  });
+  return sharedInstance;
+}
 
 - (void)setClientID:(nullable NSString *)clientID {
   if (![_clientID isEqualToString:clientID]) {

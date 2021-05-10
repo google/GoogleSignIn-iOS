@@ -73,13 +73,16 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// Here is sample code to use `GIDSignIn`:
 /// 1. Get a reference to the `GIDSignIn` shared instance:
 ///    ```
-///    GIDSignIn *signIn = [GIDSignIn sharedInstance];
+///    GIDSignIn *signIn = GIDSignIn.sharedInstance;
 ///    ```
 /// 2. Call `[signIn setDelegate:self]`;
 /// 3. Set up delegate method `signIn:didSignInForUser:withError:`.
 /// 4. Call `handleURL` on the shared instance from `application:openUrl:...` in your app delegate.
 /// 5. Call `signIn` on the shared instance;
 @interface GIDSignIn : NSObject
+
+/// A shared `GIDSignIn` instance.
+@property(class, nonatomic, readonly) GIDSignIn *sharedInstance;
 
 /// The authentication object for the current user, or `nil` if there is currently no logged in
 /// user.
@@ -130,9 +133,6 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// This property is optional. If you set it, set it before calling `signIn`.
 @property(nonatomic, copy, nullable) NSString *hostedDomain;
-
-/// Returns a shared `GIDSignIn` instance.
-+ (GIDSignIn *)sharedInstance;
 
 /// Unavailable. Use `sharedInstance` to instantiate `GIDSignIn`.
 + (instancetype)new NS_UNAVAILABLE;

@@ -331,13 +331,13 @@ static void *kTestObserverContext = &kTestObserverContext;
 #pragma mark - Tests
 
 - (void)testShareInstance {
-  GIDSignIn *signIn1 = [GIDSignIn sharedInstance];
-  GIDSignIn *signIn2 = [GIDSignIn sharedInstance];
+  GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
+  GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
 }
 
 - (void)testDefaultScope {
-  GIDSignIn *signIn = [GIDSignIn sharedInstance];
+  GIDSignIn *signIn = GIDSignIn.sharedInstance;
   XCTAssertTrue([[signIn scopes] count] == 0,
                 @"there should be no default scope");
 }
