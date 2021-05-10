@@ -33,16 +33,17 @@ static NSString * const kClientID =
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   // Set app's client ID for |GIDSignIn|.
   GIDSignIn.sharedInstance.clientID = kClientID;
-  // Restore any previous sign-in session before displaying main view.
+  // Restore any previous sign-in session at app launch before displaying main view.  If the restore
+  // succeeds, we'll have a currentUser and the view will be able to draw its UI for the signed-in
+  // state.  If the restore fails, currentUser will be nil and we'll draw the signed-out state
+  // prompting the user to sign in.
   [GIDSignIn.sharedInstance restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
                                                                 NSError * _Nullable error) {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     SignInViewController *masterViewController =
-        [[SignInViewController alloc] initWithNibName:@"SignInViewController"
-                                               bundle:nil];
+        [[SignInViewController alloc] initWithNibName:@"SignInViewController" bundle:nil];
     self.navigationController =
-        [[UINavigationController alloc]
-            initWithRootViewController:masterViewController];
+        [[UINavigationController alloc] initWithRootViewController:masterViewController];
     self.window.rootViewController = self.navigationController;
     [self.window makeKeyAndVisible];
   }];

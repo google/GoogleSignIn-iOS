@@ -171,7 +171,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// Disconnects the current user from the app and revokes previous authentication. If the operation
 /// succeeds, the OAuth 2.0 token is also removed from keychain.
 ///
-/// @param callback The optional `GIDSignInCallback` block that is called on completion.
+/// @param callback The optional `GIDDisconnectCallback` block that is called on completion.
 - (void)disconnectWithCallback:(nullable GIDDisconnectCallback)callback;
 
 @end
