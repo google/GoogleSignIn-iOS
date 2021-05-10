@@ -150,10 +150,9 @@ typedef void (^GIDSignInCallback)(GIDGoogleUser *_Nullable user, NSError *_Nulla
 - (BOOL)hasPreviousSignIn;
 
 /// Attempts to restore a previously authenticated user without interaction.
-
-/// The delegate will be called at the end of this process indicating success or failure.  The
-/// current values of `GIDSignIn`'s configuration properties will not impact the restored user.
-- (void)restorePreviousSignIn;
+///
+/// @param callback The `GIDSignInCallback` block that is called on completion.
+- (void)restorePreviousSignInWithCallback:(GIDSignInCallback)callback;
 
 /// Starts an interactive sign-in flow using `GIDSignIn`'s configuration properties.
 ///
@@ -168,7 +167,7 @@ typedef void (^GIDSignInCallback)(GIDGoogleUser *_Nullable user, NSError *_Nulla
 
 /// Disconnects the current user from the app and revokes previous authentication. If the operation
 /// succeeds, the OAuth 2.0 token is also removed from keychain.
-/// 
+///
 /// @param callback The `GIDSignInCallback` block that is called on completion.
 - (void)disconnectWithCallback:(GIDSignInCallback)callback;
 

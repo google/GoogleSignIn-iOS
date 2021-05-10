@@ -27,10 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
   return options;
 }
 
-+ (instancetype)silentOptions {
++ (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [self defaultOptions];
   if (options) {
     options->_interactive = NO;
+    options->_callback = callback;
   }
   return options;
 }

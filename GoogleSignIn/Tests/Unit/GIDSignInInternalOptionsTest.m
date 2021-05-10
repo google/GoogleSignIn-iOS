@@ -29,10 +29,12 @@
 }
 
 - (void)testSilentOptions {
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions silentOptions];
+  GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
+  GIDSignInInternalOptions *options = [GIDSignInInternalOptions silentOptionsWithCallback:callback];
   XCTAssertFalse(options.interactive);
   XCTAssertFalse(options.continuation);
   XCTAssertNil(options.extraParams);
+  XCTAssertEqual(options.callback, callback);
 }
 
 - (void)testSilentOptionsWithExtraParams {

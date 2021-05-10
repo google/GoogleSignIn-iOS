@@ -33,17 +33,19 @@ static NSString * const kClientID =
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   // Set app's client ID for |GIDSignIn|.
   [GIDSignIn sharedInstance].clientID = kClientID;
-
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  SignInViewController *masterViewController =
-      [[SignInViewController alloc] initWithNibName:@"SignInViewController"
-                                             bundle:nil];
-  self.navigationController =
-      [[UINavigationController alloc]
-          initWithRootViewController:masterViewController];
-  self.window.rootViewController = self.navigationController;
-  [self.window makeKeyAndVisible];
-
+  // Restore any previous sign-in session before displaying main view.
+  [[GIDSignIn sharedInstance] restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                                  NSError * _Nullable error) {
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    SignInViewController *masterViewController =
+        [[SignInViewController alloc] initWithNibName:@"SignInViewController"
+                                               bundle:nil];
+    self.navigationController =
+        [[UINavigationController alloc]
+            initWithRootViewController:masterViewController];
+    self.window.rootViewController = self.navigationController;
+    [self.window makeKeyAndVisible];
+  }];
   return YES;
 }
 

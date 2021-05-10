@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// The options used internally for aspects of the sign-in flow.
@@ -30,11 +32,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// The extra parameters used in the sign-in URL.
 @property(nonatomic, readonly, nullable) NSDictionary *extraParams;
 
+/// The callback block to be called at the completion of the flow.
+@property(nonatomic, readonly, nullable) GIDSignInCallback callback;
+
 /// Creates the default options.
 + (instancetype)defaultOptions;
 
 /// Creates the options to sign in silently.
-+ (instancetype)silentOptions;
++ (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
 
 /// Creates the options to sign in with extra parameters.
 + (instancetype)optionsWithExtraParams:(NSDictionary *)extraParams;

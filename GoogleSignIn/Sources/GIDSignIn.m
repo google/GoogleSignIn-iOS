@@ -197,8 +197,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                       profileData:nil];
 }
 
-- (void)restorePreviousSignIn {
-  [self signInWithOptions:[GIDSignInInternalOptions silentOptions]];
+- (void)restorePreviousSignInWithCallback:(GIDSignInCallback)callback {
+  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
 }
 
 // Authenticates the user by first searching the keychain, then attempting to retrieve the refresh
@@ -360,7 +360,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       if (error) {
         [self authenticateWithOptions:options];
       } else {
-        [_delegate signIn:self didSignInForUser:_currentUser withError:nil];
+        if (options.callback) {
+          options.callback(_currentUser, nil);
+        } else {
+          [_delegate signIn:self didSignInForUser:_currentUser withError:nil];
+        }
       }
     }];
   } else {
@@ -465,7 +469,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
-    [_delegate signIn:self didSignInForUser:nil withError:error];
+    if (options.callback) {
+      options.callback(nil, error);
+    } else {
+      [_delegate signIn:self didSignInForUser:nil withError:error];
+    }
     return;
   }
 
@@ -630,7 +638,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
-    [_delegate signIn:self didSignInForUser:_currentUser withError:handlerAuthFlow.error];
+    if (_currentOptions.callback) {
+      _currentOptions.callback(_currentUser, handlerAuthFlow.error);
+    } else {
+      [_delegate signIn:self didSignInForUser:_currentUser withError:handlerAuthFlow.error];
+    }
   }];
 }
 
