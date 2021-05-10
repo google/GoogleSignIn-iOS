@@ -209,7 +209,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self removeAllKeychainEntries];
 }
 
-- (void)disconnectWithCallback:(GIDDisconnectCallback)callback {
+- (void)disconnectWithCallback:(nullable GIDDisconnectCallback)callback {
   GIDGoogleUser *user = _currentUser;
   OIDAuthState *authState = user.authentication.authState;
   if (!authState) {
@@ -226,7 +226,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (!token) {
     [self signOut];
     // Nothing to do here, consider the operation successful.
-    callback(nil);
+    if (callback) {
+      callback(nil);
+    }
     return;
   }
   NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
@@ -241,13 +243,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
               fromAuthState:authState
                 withComment:@"GIDSignIn: revoke tokens"
       withCompletionHandler:^(NSData *data, NSError *error) {
-    // Revoking an already revoked token seems always successful, which saves the trouble here for
-    // us.
-    if (error) {
-      callback(error);
-    } else {
+    // Revoking an already revoked token seems always successful, which helps us here.
+    if (!error) {
       [self signOut];
-      callback(nil);
+    }
+    if (callback) {
+      callback(error);
     }
   }];
 }

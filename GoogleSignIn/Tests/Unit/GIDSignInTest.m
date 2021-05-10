@@ -605,7 +605,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 #pragma mark - Tests - disconnectWithCallback:
 
-// Verifies disconnect calls delegate disconnect method with no errors if access token is present.
+// Verifies disconnect calls callback with no errors if access token is present.
 - (void)testDisconnect_accessToken {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -618,13 +618,26 @@ static void *kTestObserverContext = &kTestObserverContext;
       [expectation fulfill];
     }
   }];
-  [self verifyAndRevokeToken:kAccessToken];
+  [self verifyAndRevokeToken:kAccessToken hasCallback:YES];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
 }
 
-// Verifies disconnect calls delegate disconnect method with no errors if refresh token is present.
+// Verifies disconnect if access token is present.
+- (void)testDisconnectNoCallback_accessToken {
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCallback:nil];
+  [self verifyAndRevokeToken:kAccessToken hasCallback:NO];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshToken {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -639,13 +652,13 @@ static void *kTestObserverContext = &kTestObserverContext;
       [expectation fulfill];
     }
   }];
-  [self verifyAndRevokeToken:kRefreshToken];
+  [self verifyAndRevokeToken:kRefreshToken hasCallback:YES];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
 }
 
-// Verifies disconnect errors are passed along to the delegate.
+// Verifies disconnect errors are passed along to the callback.
 - (void)testDisconnect_errors {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -668,8 +681,24 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_tokenResponse verify];
 }
 
-// Verifies disconnect calls delegate disconnect method and clear keychain with no errors if no
-// tokens are present.
+// Verifies disconnect with errors
+- (void)testDisconnectNoCallback_errors {
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCallback:nil];
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  // Emulate result back from server.
+  NSError *error = [self error];
+  [self didFetch:nil error:error];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+
+// Verifies disconnect calls callback with no errors and clears keychain if no tokens are present.
 - (void)testDisconnect_noTokens {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -684,6 +713,21 @@ static void *kTestObserverContext = &kTestObserverContext;
     }
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertFalse([self isFetcherStarted], @"should not fetch");
+  XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Verifies disconnect clears keychain if no tokens are present.
+- (void)testDisconnectNoCallback_noTokens {
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:nil] accessToken];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:nil] refreshToken];
+  [_signIn disconnectWithCallback:nil];
   XCTAssertFalse([self isFetcherStarted], @"should not fetch");
   XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
   [_authorization verify];
@@ -927,7 +971,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 // Verifies a fetcher has started for revoking token and emulates a server response.
-- (void)verifyAndRevokeToken:(NSString *)token {
+- (void)verifyAndRevokeToken:(NSString *)token hasCallback:(BOOL)hasCallback {
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   NSURL *url = [self fetchedURL];
   XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
@@ -939,7 +983,9 @@ static void *kTestObserverContext = &kTestObserverContext;
                         @"token parameter should match");
   // Emulate result back from server.
   [self didFetch:nil error:nil];
-  [self waitForExpectationsWithTimeout:1 handler:nil];
+  if (hasCallback) {
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+  }
   XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 
