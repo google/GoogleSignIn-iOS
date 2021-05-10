@@ -17,7 +17,6 @@
 
 #import "GoogleSignIn/Sources/GIDSignInButton_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
-#import "GoogleSignIn/Tests/Unit/GIDFakeSignIn.h"
 
 #ifdef SWIFT_PACKAGE
 @import OCMock;
@@ -42,18 +41,7 @@ static NSString * const kAppBundleId = @"FakeBundleID";
 
 @end
 
-@implementation GIDSignInButtonTest {
-  GIDFakeSignIn *_signIn;
-}
-
-- (void)setUp {
-  _signIn = [[GIDFakeSignIn alloc] init];
-  [_signIn startMocking];
-}
-
-- (void)tearDown {
-  [_signIn stopMocking];
-}
+@implementation GIDSignInButtonTest
 
 #pragma mark - Tests
 

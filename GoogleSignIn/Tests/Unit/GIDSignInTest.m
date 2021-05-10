@@ -29,7 +29,6 @@
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
-#import "GoogleSignIn/Tests/Unit/GIDFakeSignIn.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
@@ -210,7 +209,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   BOOL _keychainRemoved;
 
   // The |GIDSignIn| object being tested.
-  GIDFakeSignIn *_signIn;
+  GIDSignIn *_signIn;
 
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
@@ -251,7 +250,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   _changedKeyPaths = [[NSMutableSet alloc] init];
 
   // Mocks
-  // TODO(b/136089202): Prefer fakes over mocks.
   _presentingViewController = OCMStrictClassMock([UIViewController class]);
   _authState = OCMStrictClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
@@ -291,7 +289,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDFakeSignIn alloc] init];
+  _signIn = [[GIDSignIn alloc] initPrivate];
+  _signIn.clientID = kClientId;
+  _signIn.scopes = [NSArray arrayWithObject:kScope];
   _signIn.delegate = self;
   _signIn.presentingViewController = _presentingViewController;
 
@@ -303,8 +303,6 @@ static void *kTestObserverContext = &kTestObserverContext;
             forKeyPath:NSStringFromSelector(@selector(currentUser))
                options:0
                context:kTestObserverContext];
-
-  [_signIn startMocking];
 }
 
 - (void)tearDown {
@@ -318,7 +316,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMVerifyAll(_oidAuthorizationService);
 
   [_fakeMainBundle stopFaking];
-  [_signIn stopMocking];
   _signIn.delegate = nil;
   _signIn.presentingViewController = nil;
   [super tearDown];
@@ -340,13 +337,9 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testDefaultScope {
-  // Stop mocking |[GIDSignIn sharedInstance]|, since we are testing the default scopes,
-  // which is modified in GIDFakeSignIn.
-  [_signIn stopMocking];
   GIDSignIn *signIn = [GIDSignIn sharedInstance];
   XCTAssertTrue([[signIn scopes] count] == 0,
                 @"there should be no default scope");
-  [_signIn startMocking];
 }
 
 - (void)testRestoredGoogleUserFromPreviousSignIn_hasPreviousUser {
