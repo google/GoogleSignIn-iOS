@@ -40,9 +40,12 @@ typedef NS_ENUM(NSInteger, GIDSignInErrorCode) {
   kGIDSignInErrorCodeEMM = -6,
 };
 
-/// Represents a callback block that takes a `GIDGoogleUser` or an error if the operation was
-/// unsuccessful.
+/// Represents a callback block that takes a `GIDGoogleUser` on success or an error if the operation
+/// was unsuccessful.
 typedef void (^GIDSignInCallback)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
+
+/// Represents a callback block that takes an error if the operation was unsuccessful.
+typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 
 /// A protocol implemented by the delegate of `GIDSignIn` to receive a refresh token or an error.
 @protocol GIDSignInDelegate <NSObject>
@@ -169,7 +172,7 @@ typedef void (^GIDSignInCallback)(GIDGoogleUser *_Nullable user, NSError *_Nulla
 /// succeeds, the OAuth 2.0 token is also removed from keychain.
 ///
 /// @param callback The `GIDSignInCallback` block that is called on completion.
-- (void)disconnectWithCallback:(GIDSignInCallback)callback;
+- (void)disconnectWithCallback:(GIDDisconnectCallback)callback;
 
 @end
 

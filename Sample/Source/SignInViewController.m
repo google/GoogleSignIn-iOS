@@ -283,8 +283,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 }
 
 - (IBAction)disconnect:(id)sender {
-  [[GIDSignIn sharedInstance] disconnectWithCallback:^(GIDGoogleUser * _Nullable user,
-                                                       NSError * _Nullable error) {
+  [[GIDSignIn sharedInstance] disconnectWithCallback:^(NSError * _Nullable error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to disconnect: %@",
                                       error];

@@ -612,9 +612,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with nil user and nil error"];
-  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
-    if (user == nil && error == nil) {
+      [self expectationWithDescription:@"Callback called with nil error"];
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
+    if (error == nil) {
       [expectation fulfill];
     }
   }];
@@ -633,9 +633,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_tokenResponse expect] andReturn:kRefreshToken] refreshToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with nil user and nil error"];
-  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
-    if (user == nil && error == nil) {
+      [self expectationWithDescription:@"Callback called with nil error"];
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
+    if (error == nil) {
       [expectation fulfill];
     }
   }];
@@ -652,9 +652,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with nil user and an error"];
-  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
-    if (user == nil && error != nil) {
+      [self expectationWithDescription:@"Callback called with an error"];
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
+    if (error != nil) {
       [expectation fulfill];
     }
   }];
@@ -677,9 +677,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
   XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with nil user and nil error"];
-  [_signIn disconnectWithCallback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
-    if (user == nil && error == nil) {
+      [self expectationWithDescription:@"Callback called with nil error"];
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
+    if (error == nil) {
       [expectation fulfill];
     }
   }];
