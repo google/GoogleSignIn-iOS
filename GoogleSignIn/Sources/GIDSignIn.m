@@ -17,6 +17,7 @@
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 
@@ -141,10 +142,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
-  // Scheme information for this sign-in instance.
-  GIDSignInCallbackSchemes *_schemes;
   // AppAuth configuration object.
-  OIDServiceConfiguration *_configuration;
+  OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
@@ -194,8 +193,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 // Authenticates the user by first searching the keychain, then attempting to retrieve the refresh
 // token from a Google Sign In app, and finally through the standard OAuth 2.0 web flow.
-- (void)signIn {
-  [self signInWithOptions:[GIDSignInInternalOptions defaultOptions]];
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+       presentingViewController:(UIViewController *)presentingViewController
+                       callback:(GIDSignInCallback)callback {
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                       presentingViewController:presentingViewController
+                                                       callback:callback];
+  [self signInWithOptions:options];
 }
 
 - (void)signOut {
@@ -264,44 +269,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return sharedInstance;
 }
 
-- (void)setClientID:(nullable NSString *)clientID {
-  if (![_clientID isEqualToString:clientID]) {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(clientID))];
-    _clientID = [clientID copy];
-    _schemes = [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:_clientID];
-    [self didChangeValueForKey:NSStringFromSelector(@selector(clientID))];
-  }
-}
-
-- (void)setScopes:(nullable NSArray<NSString *> *)scopes {
-  scopes = [scopes sortedArrayUsingSelector:@selector(compare:)];
-  if (![_scopes isEqualToArray:scopes]) {
-    _scopes = [[NSArray alloc] initWithArray:scopes copyItems:YES];
-  }
-}
-
-- (void)setShouldFetchBasicProfile:(BOOL)shouldFetchBasicProfile {
-  shouldFetchBasicProfile = !!shouldFetchBasicProfile;
-  if (_shouldFetchBasicProfile != shouldFetchBasicProfile) {
-    _shouldFetchBasicProfile = shouldFetchBasicProfile;
-  }
-}
-
-- (void)setHostedDomain:(nullable NSString *)hostedDomain {
-  if (!(_hostedDomain == hostedDomain || [_hostedDomain isEqualToString:hostedDomain])) {
-    _hostedDomain = [hostedDomain copy];
-  }
-}
-
 #pragma mark - Private methods
 
 - (id)initPrivate {
   self = [super init];
   if (self) {
-    // Default scope settings.
-    _scopes = @[];
-    _shouldFetchBasicProfile = YES;
-
     // Check to see if the 3P app is being run for the first time after a fresh install.
     BOOL isFreshInstall = [self isFreshInstall];
 
@@ -314,12 +286,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         [GIDSignInPreferences googleAuthorizationServer]];
     NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
         [GIDSignInPreferences googleTokenServer]];
-    _configuration = [[OIDServiceConfiguration alloc]
+    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
 
     // Perform migration of auth state from old versions of the SDK if needed.
-    [GIDAuthStateMigration migrateIfNeededWithTokenURL:_configuration.tokenEndpoint
+    [GIDAuthStateMigration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
                                           callbackPath:kBrowserCallbackPath
                                           keychainName:kGTMAppAuthKeychainName
                                         isFreshInstall:isFreshInstall];
@@ -336,17 +308,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     _currentOptions = options;
   }
 
-  // Explicitly throw exception for missing client ID (and scopes) here. This must come before
-  // scheme check because schemes rely on reverse client IDs.
-  [self assertValidParameters];
-
   if (options.interactive) {
+    // Explicitly throw exception for missing client ID here. This must come before
+    // scheme check because schemes rely on reverse client IDs.
+    [self assertValidParameters];
+
     [self assertValidPresentingViewController];
-  }
 
-  // If the application does not support the required URL schemes tell the developer so.
-  if (options.interactive) {
-    NSArray<NSString *> *unsupportedSchemes = [_schemes unsupportedSchemes];
+    // If the application does not support the required URL schemes tell the developer so.
+    GIDSignInCallbackSchemes *schemes =
+        [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+    NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
     if (unsupportedSchemes.count != 0) {
       // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
       [NSException raise:NSInvalidArgumentException
@@ -361,11 +333,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       if (error) {
         [self authenticateWithOptions:options];
       } else {
-        if (options.callback) {
-          options.callback(_currentUser, nil);
-        } else {
-          [_delegate signIn:self didSignInForUser:_currentUser withError:nil];
-        }
+        options.callback(_currentUser, nil);
       }
     }];
   } else {
@@ -376,31 +344,36 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 # pragma mark - Authentication flow
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
+  GIDSignInCallbackSchemes *schemes =
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
+                                             [schemes clientIdentifierScheme],
+                                             kBrowserCallbackPath]];
   NSString *emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  if (_serverClientID) {
-    additionalParameters[kAudienceParameter] = _serverClientID;
+  if (options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
-  if (_loginHint) {
-    additionalParameters[@"login_hint"] = _loginHint;
+  if (options.configuration.loginHint) {
+    additionalParameters[@"login_hint"] = options.configuration.loginHint;
   }
-  if (_hostedDomain) {
-    additionalParameters[@"hd"] = _hostedDomain;
+  if (options.configuration.hostedDomain) {
+    additionalParameters[@"hd"] = options.configuration.hostedDomain;
   }
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
   OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_configuration
-                                                    clientId:_clientID
-                                                      scopes:[self adjustedScopes]
-                                                 redirectURL:[self redirectURI]
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:options.scopes
+                                                 redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
-         presentingViewController:_presentingViewController
+         presentingViewController:options.presentingViewController
                          callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                     NSError *_Nullable error) {
     GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
@@ -470,11 +443,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
-    if (options.callback) {
-      options.callback(nil, error);
-    } else {
-      [_delegate signIn:self didSignInForUser:nil withError:error];
-    }
+    options.callback(nil, error);
     return;
   }
 
@@ -501,11 +470,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     return;
   }
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  if (_serverClientID) {
-    additionalParameters[kAudienceParameter] = _serverClientID;
+  if (_currentOptions.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = _currentOptions.configuration.serverClientID;
   }
-  if (_openIDRealm) {
-    additionalParameters[kOpenIDRealmParameter] = _openIDRealm;
+  if (_currentOptions.configuration.openIDRealm) {
+    additionalParameters[kOpenIDRealmParameter] = _currentOptions.configuration.openIDRealm;
   }
   NSDictionary<NSString *, NSObject *> *params =
       authState.lastAuthorizationResponse.additionalParameters;
@@ -585,50 +554,48 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     OIDIDToken *idToken =
         [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
     if (idToken) {
-      if (_shouldFetchBasicProfile) {
-        // If the picture and name fields are present in the ID token, use them, otherwise make
-        // a userinfo request to fetch them.
-        if (idToken.claims[kBasicProfilePictureKey] &&
-            idToken.claims[kBasicProfileNameKey] &&
-            idToken.claims[kBasicProfileGivenNameKey] &&
-            idToken.claims[kBasicProfileFamilyNameKey]) {
-          handlerAuthFlow.profileData = [[GIDProfileData alloc]
-              initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                       name:idToken.claims[kBasicProfileNameKey]
-                  givenName:idToken.claims[kBasicProfileGivenNameKey]
-                 familyName:idToken.claims[kBasicProfileFamilyNameKey]
-                   imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
-        } else {
-          [handlerAuthFlow wait];
-          NSURL *infoURL = [NSURL URLWithString:
-              [NSString stringWithFormat:kUserInfoURLTemplate,
-                  [GIDSignInPreferences googleUserInfoServer],
-                  authState.lastTokenResponse.accessToken]];
-          [self startFetchURL:infoURL
-                      fromAuthState:authState
-                        withComment:@"GIDSignIn: fetch basic profile info"
-              withCompletionHandler:^(NSData *data, NSError *error) {
-            if (data && !error) {
-              NSError *jsonDeserializationError;
-              NSDictionary<NSString *, NSString *> *profileDict =
-                  [NSJSONSerialization JSONObjectWithData:data
-                                                  options:NSJSONReadingMutableContainers
-                                                    error:&jsonDeserializationError];
-              if (profileDict) {
-                handlerAuthFlow.profileData = [[GIDProfileData alloc]
-                    initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                             name:profileDict[kBasicProfileNameKey]
-                        givenName:profileDict[kBasicProfileGivenNameKey]
-                       familyName:profileDict[kBasicProfileFamilyNameKey]
-                         imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
-              }
+      // If the picture and name fields are present in the ID token, use them, otherwise make
+      // a userinfo request to fetch them.
+      if (idToken.claims[kBasicProfilePictureKey] &&
+          idToken.claims[kBasicProfileNameKey] &&
+          idToken.claims[kBasicProfileGivenNameKey] &&
+          idToken.claims[kBasicProfileFamilyNameKey]) {
+        handlerAuthFlow.profileData = [[GIDProfileData alloc]
+            initWithEmail:idToken.claims[kBasicProfileEmailKey]
+                     name:idToken.claims[kBasicProfileNameKey]
+                givenName:idToken.claims[kBasicProfileGivenNameKey]
+               familyName:idToken.claims[kBasicProfileFamilyNameKey]
+                 imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
+      } else {
+        [handlerAuthFlow wait];
+        NSURL *infoURL = [NSURL URLWithString:
+            [NSString stringWithFormat:kUserInfoURLTemplate,
+                [GIDSignInPreferences googleUserInfoServer],
+                authState.lastTokenResponse.accessToken]];
+        [self startFetchURL:infoURL
+                    fromAuthState:authState
+                      withComment:@"GIDSignIn: fetch basic profile info"
+            withCompletionHandler:^(NSData *data, NSError *error) {
+          if (data && !error) {
+            NSError *jsonDeserializationError;
+            NSDictionary<NSString *, NSString *> *profileDict =
+                [NSJSONSerialization JSONObjectWithData:data
+                                                options:NSJSONReadingMutableContainers
+                                                  error:&jsonDeserializationError];
+            if (profileDict) {
+              handlerAuthFlow.profileData = [[GIDProfileData alloc]
+                  initWithEmail:idToken.claims[kBasicProfileEmailKey]
+                           name:profileDict[kBasicProfileNameKey]
+                      givenName:profileDict[kBasicProfileGivenNameKey]
+                     familyName:profileDict[kBasicProfileFamilyNameKey]
+                       imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
             }
-            if (error) {
-              handlerAuthFlow.error = error;
-            }
-            [handlerAuthFlow next];
-          }];
-        }
+          }
+          if (error) {
+            handlerAuthFlow.error = error;
+          }
+          [handlerAuthFlow next];
+        }];
       }
     }
   }];
@@ -639,11 +606,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
-    if (_currentOptions.callback) {
-      _currentOptions.callback(_currentUser, handlerAuthFlow.error);
-    } else {
-      [_delegate signIn:self didSignInForUser:_currentUser withError:handlerAuthFlow.error];
-    }
+    _currentOptions.callback(_currentUser, handlerAuthFlow.error);
   }];
 }
 
@@ -667,13 +630,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [fetcher beginFetchWithCompletionHandler:handler];
 }
 
-- (void)didDisconnectWithUser:(GIDGoogleUser *)user
-                        error:(nullable NSError *)error {
-  if ([_delegate respondsToSelector:@selector(signIn:didDisconnectWithUser:withError:)]) {
-    [_delegate signIn:self didDisconnectWithUser:user withError:error];
-  }
-}
-
 // Parse incoming URL from the Google Device Policy app.
 - (BOOL)handleDevicePolicyAppURL:(NSURL *)url {
   OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
@@ -684,7 +640,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (![@"restart_auth" isEqualToString:actionString]) {
     return NO;
   }
-  if (!_presentingViewController) {
+  if (!_currentOptions.presentingViewController) {
     return NO;
   }
   if (!_currentAuthorizationFlow) {
@@ -737,23 +693,19 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 // Asserts the parameters being valid.
 - (void)assertValidParameters {
-  if (![_clientID length]) {
+  if (![_currentOptions.configuration.clientID length]) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
-                format:@"You must specify |clientID| for |GIDSignIn|"];
-  }
-  if ([self adjustedScopes].count == 0) {
-    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
-    [NSException raise:NSInvalidArgumentException
-                format:@"You must specify |shouldFetchBasicProfile| or |scopes| for |GIDSignIn|"];
+                format:@"You must specify |clientID| in |GIDConfiguration|"];
   }
 }
 
 // Assert that the UI Delegate has been set.
 - (void)assertValidPresentingViewController {
-  if (!_presentingViewController) {
+  if (!_currentOptions.presentingViewController) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
-    [NSException raise:NSInvalidArgumentException format:@"presentingViewController must be set."];
+    [NSException raise:NSInvalidArgumentException
+                format:@"|presentingViewController| must be set."];
   }
 }
 
@@ -769,20 +721,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)removeAllKeychainEntries {
   [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName];
-}
-
-// Adds basic profile scopes to |scopes| if |shouldFetchBasicProfile| is set.
-- (NSArray *)adjustedScopes {
-  NSArray<NSString *> *adjustedScopes = _scopes;
-  if (_shouldFetchBasicProfile) {
-    adjustedScopes = [GIDScopes scopesWithBasicProfile:adjustedScopes];
-  }
-  return adjustedScopes;
-}
-
-- (NSURL *)redirectURI {
-  NSString *scheme = [_schemes clientIdentifierScheme];
-  return [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@", scheme, kBrowserCallbackPath]];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {

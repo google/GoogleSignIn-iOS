@@ -28,7 +28,6 @@ static NSString *const kPlaceholderEmailAddress = @"<Email>";
 static NSString *const kPlaceholderAvatarImageName = @"PlaceholderAvatar.png";
 
 // Labels for the cells that have in-cell control elements.
-static NSString *const kGetUserProfileCellLabel = @"Get user Basic Profile";
 static NSString *const kButtonWidthCellLabel = @"Width";
 
 // Labels for the cells that drill down to data pickers.
@@ -38,16 +37,19 @@ static NSString *const kStyleCellLabel = @"Style";
 // Accessibility Identifiers.
 static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials";
 
+// DO NOT USE THIS CLIENT ID. IT WILL NOT WORK FOR YOUR APP.
+// Please use the client ID created for you by Google.
+static NSString * const kClientID =
+    @"589453917038-qaoga89fitj2ukrsq27ko56fimmojac6.apps.googleusercontent.com";
+
 @implementation SignInViewController {
   // This is an array of arrays, each one corresponding to the cell
   // labels for its respective section.
   NSArray *_sectionCellLabels;
 
-  // These sets contain the labels corresponding to cells that have various
-  // types (each cell either drills down to another table view, contains an
-  // in-cell switch, or contains a slider).
+  // These sets contain the labels corresponding to cells that have various types (each cell either
+  // drills down to another table view or contains a slider).
   NSArray *_drillDownCells;
-  NSArray *_switchCells;
   NSArray *_sliderCells;
 
   // States storing the current set of selected elements for each data picker.
@@ -56,14 +58,16 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 
   // Map that keeps track of which cell corresponds to which DataPickerState.
   NSDictionary *_drilldownCellState;
+
+  // Configuration options for GIDSignIn.
+  GIDConfiguration *_configuration;
 }
 
 #pragma mark - View lifecycle
 
 - (void)setUp {
   _sectionCellLabels = @[
-    @[ kColorSchemeCellLabel, kStyleCellLabel, kButtonWidthCellLabel ],
-    @[ kGetUserProfileCellLabel ]
+    @[ kColorSchemeCellLabel, kStyleCellLabel, kButtonWidthCellLabel ]
   ];
 
   // Groupings of cell types.
@@ -71,9 +75,6 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
     kColorSchemeCellLabel,
     kStyleCellLabel
   ];
-
-  _switchCells =
-      @[ kGetUserProfileCellLabel ];
   _sliderCells = @[ kButtonWidthCellLabel ];
 
   // Initialize data picker states.
@@ -97,11 +98,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   // xib file doesn't count.
   [GIDSignInButton class];
 
-  GIDSignIn *signIn = GIDSignIn.sharedInstance;
-  signIn.shouldFetchBasicProfile = YES;
-  signIn.delegate = self;
-  signIn.presentingViewController = self;
-  GIDSignIn.sharedInstance.scopes = @[ @"email" ];
+  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientID];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil
@@ -138,21 +135,19 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   [super viewWillAppear:animated];
 }
 
-#pragma mark - GIDSignInDelegate
-
-- (void)signIn:(GIDSignIn *)signIn
-    didSignInForUser:(GIDGoogleUser *)user
-           withError:(NSError *)error {
-  if (error) {
-    _signInAuthStatus.text = [NSString stringWithFormat:@"Status: Authentication error: %@", error];
-    return;
-  }
-  [self reportAuthStatus];
-  [self updateButtons];
-}
-
-- (void)presentSignInViewController:(UIViewController *)viewController {
-  [[self navigationController] pushViewController:viewController animated:YES];
+- (IBAction)signInPressed:(id)sender {
+  [GIDSignIn.sharedInstance signInWithConfiguration:_configuration
+                           presentingViewController:self
+                                           callback:^(GIDGoogleUser * _Nullable user,
+                                                      NSError * _Nullable error) {
+    if (error) {
+      self->_signInAuthStatus.text =
+          [NSString stringWithFormat:@"Status: Authentication error: %@", error];
+      return;
+    }
+    [self reportAuthStatus];
+    [self updateButtons];
+  }];
 }
 
 #pragma mark - Helper methods
@@ -304,10 +299,6 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   [self reportAuthStatus];
 }
 
-- (void)toggleBasicProfile:(UISwitch *)sender {
-  GIDSignIn.sharedInstance.shouldFetchBasicProfile = sender.on;
-}
-
 - (void)changeSignInButtonWidth:(UISlider *)sender {
   CGRect frame = self.signInButton.frame;
   frame.size.width = sender.value;
@@ -351,7 +342,6 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   static NSString * const kDrilldownCell = @"DrilldownCell";
-  static NSString * const kSwitchCell = @"SwitchCell";
   static NSString * const kSliderCell = @"SliderCell";
 
   NSString *label = _sectionCellLabels[indexPath.section][indexPath.row];
@@ -360,8 +350,6 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 
   if ([_drillDownCells containsObject:label]) {
     identifier = kDrilldownCell;
-  } else if ([_switchCells containsObject:label]) {
-    identifier = kSwitchCell;
   } else if ([_sliderCells containsObject:label]) {
     identifier = kSliderCell;
   }
@@ -384,18 +372,6 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
       cell.detailTextLabel.text = [dataState.selectedCells anyObject];
     }
     cell.accessibilityValue = cell.detailTextLabel.text;
-  } else if (identifier == kSwitchCell) {
-    UISwitch *toggle = [[UISwitch alloc] initWithFrame:CGRectZero];
-
-    if ([label isEqualToString:kGetUserProfileCellLabel]) {
-      [toggle addTarget:self
-                    action:@selector(toggleBasicProfile:)
-          forControlEvents:UIControlEventValueChanged];
-      toggle.on = GIDSignIn.sharedInstance.shouldFetchBasicProfile;
-    }
-
-    toggle.accessibilityLabel = [NSString stringWithFormat:@"%@ Switch", cell.accessibilityLabel];
-    cell.accessoryView = toggle;
   } else if (identifier == kSliderCell) {
 
     UISlider *slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 150, 0)];

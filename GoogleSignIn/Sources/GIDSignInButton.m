@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "GoogleSignIn/Sources/GIDSignInButton_Private.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInButton.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
@@ -74,11 +74,6 @@ static const CGFloat kDropShadowBlur = 2;
 static const CGFloat kDropShadowYOffset = 2;
 
 static const CGFloat kDisabledIconAlpha = 40.0 / 100.0;
-
-#pragma mark - Misc. Constants
-
-// The query parameter name to log the appearance of the button.
-static NSString *const kLoggingParameter = @"gpbtn";
 
 #pragma mark - Colors
 
@@ -204,10 +199,8 @@ static UIColor *colorForStyleState(GIDSignInButtonColorScheme style,
                 action:@selector(switchToNormal)
       forControlEvents:UIControlEventTouchDragExit |
                        UIControlEventTouchDragOutside |
-                       UIControlEventTouchCancel];
-
-  // Setup convenience touch-up-inside handler:
-  [self addTarget:self action:@selector(pressed) forControlEvents:UIControlEventTouchUpInside];
+                       UIControlEventTouchCancel |
+                       UIControlEventTouchUpInside];
 
   // Update the icon, etc.
   [self updateUI];
@@ -333,18 +326,6 @@ static UIColor *colorForStyleState(GIDSignInButtonColorScheme style,
   [super setFrame:frame];
   [self setNeedsUpdateConstraints];
   [self setNeedsDisplay];
-}
-
-#pragma mark - UI Actions
-
-- (void)pressed {
-  [self switchToNormal];
-  NSString *appearanceCode = [NSString stringWithFormat:@"%ld.%ld",
-                                                        (long)_style,
-                                                        (long)_colorScheme];
-  NSDictionary *params = @{ kLoggingParameter : appearanceCode };
-  [GIDSignIn.sharedInstance
-      signInWithOptions:[GIDSignInInternalOptions optionsWithExtraParams:params]];
 }
 
 #pragma mark - Helpers

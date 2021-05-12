@@ -21,7 +21,7 @@
 // A view controller for the Google Sign-In button which initiates a standard
 // OAuth 2.0 flow and provides an access token and a refresh token. A "Sign out"
 // button is provided to allow users to sign out of this application.
-@interface SignInViewController : UITableViewController <GIDSignInDelegate>
+@interface SignInViewController : UITableViewController
 
 @property(weak, nonatomic) IBOutlet GIDSignInButton *signInButton;
 // A label to display the result of the sign-in action.
