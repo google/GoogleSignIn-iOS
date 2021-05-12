@@ -17,8 +17,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@class GIDConfiguration;
 @class GIDGoogleUser;
-@class GIDSignIn;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -47,101 +47,26 @@ typedef void (^GIDSignInCallback)(GIDGoogleUser *_Nullable user, NSError *_Nulla
 /// Represents a callback block that takes an error if the operation was unsuccessful.
 typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 
-/// A protocol implemented by the delegate of `GIDSignIn` to receive a refresh token or an error.
-@protocol GIDSignInDelegate <NSObject>
-
-/// The sign-in flow has finished and was successful if `error` is `nil`.
-- (void)signIn:(GIDSignIn *)signIn
-    didSignInForUser:(nullable GIDGoogleUser *)user
-           withError:(nullable NSError *)error;
-
-@optional
-
-/// Finished disconnecting `user` from the app successfully if `error` is `nil`.
-- (void)signIn:(GIDSignIn *)signIn
-    didDisconnectWithUser:(nullable GIDGoogleUser *)user
-                withError:(nullable NSError *)error;
-
-@end
-
-/// This class signs the user in with Google. It also provides single sign-on via a capable Google
-/// app if one is installed.
+/// This class signs the user in with Google.
 ///
 /// For reference, please see "Google Sign-In for iOS" at
 /// https://developers.google.com/identity/sign-in/ios
-///
-/// Here is sample code to use `GIDSignIn`:
-/// 1. Get a reference to the `GIDSignIn` shared instance:
-///    ```
-///    GIDSignIn *signIn = GIDSignIn.sharedInstance;
-///    ```
-/// 2. Call `[signIn setDelegate:self]`;
-/// 3. Set up delegate method `signIn:didSignInForUser:withError:`.
-/// 4. Call `handleURL` on the shared instance from `application:openUrl:...` in your app delegate.
-/// 5. Call `signIn` on the shared instance;
 @interface GIDSignIn : NSObject
 
 /// A shared `GIDSignIn` instance.
 @property(class, nonatomic, readonly) GIDSignIn *sharedInstance;
 
-/// The authentication object for the current user, or `nil` if there is currently no logged in
-/// user.
+/// The `GIDGoogleUser` object representing the current user or `nil` if there is no signed-in user.
 @property(nonatomic, readonly, nullable) GIDGoogleUser *currentUser;
 
-/// The object to be notified when authentication is finished.
-@property(nonatomic, weak, nullable) id<GIDSignInDelegate> delegate;
-
-/// The view controller used to present `SFSafariViewContoller` on iOS 9 and 10.
-@property(nonatomic, weak, nullable) UIViewController *presentingViewController;
-
-/// The client ID of the app from the Google APIs console.  Must set for sign-in to work.
-@property(nonatomic, copy, nullable) NSString *clientID;
-
-/// The API scopes requested by the app in an array of `NSString`s.  The default value is `@[]`.
-///
-/// This property is optional. If you set it, set it before calling `signIn`.
-@property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
-
-/// Whether or not to fetch basic profile data after signing in. The data is saved in the
-/// `GIDGoogleUser.profileData` object.
-///
-/// Setting the flag will add "email" and "profile" to scopes.
-/// Defaults to `YES`.
-@property(nonatomic, assign) BOOL shouldFetchBasicProfile;
-
-/// The login hint to the authorization server, for example the user's ID, or email address,
-/// to be prefilled if possible.
-///
-/// This property is optional. If you set it, set it before calling `signIn`.
-@property(nonatomic, copy, nullable) NSString *loginHint;
-
-/// The client ID of the home web server.  This will be returned as the `audience` property of the
-/// OpenID Connect ID token.  For more info on the ID token:
-/// https://developers.google.com/identity/sign-in/ios/backend-auth
-///
-/// This property is optional. If you set it, set it before calling `signIn`.
-@property(nonatomic, copy, nullable) NSString *serverClientID;
-
-/// The OpenID2 realm of the home web server. This allows Google to include the user's OpenID
-/// Identifier in the OpenID Connect ID token.
-///
-/// This property is optional. If you set it, set it before calling `signIn`.
-@property(nonatomic, copy, nullable) NSString *openIDRealm;
-
-/// The Google Apps domain to which users must belong to sign in.  To verify, check
-/// `GIDGoogleUser`'s `hostedDomain` property.
-///
-/// This property is optional. If you set it, set it before calling `signIn`.
-@property(nonatomic, copy, nullable) NSString *hostedDomain;
-
-/// Unavailable. Use `sharedInstance` to instantiate `GIDSignIn`.
+/// Unavailable. Use the `sharedInstance` property to instantiate `GIDSignIn`.
 + (instancetype)new NS_UNAVAILABLE;
 
-/// Unavailable. Use `sharedInstance` to instantiate `GIDSignIn`.
+/// Unavailable. Use the `sharedInstance` property to instantiate `GIDSignIn`.
 - (instancetype)init NS_UNAVAILABLE;
 
-/// This method should be called from your `UIApplicationDelegate`'s `application:openURL:options`
-/// and `application:openURL:sourceApplication:annotation` method(s).
+/// This method should be called from your `UIApplicationDelegate`'s `application:openURL:options:`
+/// method.
 ///
 /// @param url The URL that was passed to the app.
 /// @return `YES` if `GIDSignIn` handled this URL.
@@ -157,13 +82,20 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param callback The `GIDSignInCallback` block that is called on completion.
 - (void)restorePreviousSignInWithCallback:(GIDSignInCallback)callback;
 
-/// Starts an interactive sign-in flow using `GIDSignIn`'s configuration properties.
+/// Starts an interactive sign-in flow using the provided configuration.
 ///
-/// The delegate will be called at the end of this process.  Any saved sign-in state will be
+/// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
 /// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
-/// `restorePreviousSignIn` method to restore a previous sign-in.
-- (void)signIn;
+/// `restorePreviousSignInWithCallback` method to restore a previous sign-in.
+///
+/// @param configuration The configuration properties to be used for this flow.
+/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
+///     iOS 9 and 10.
+/// @param callback The `GIDSignInCallback` block that is called on completion.
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+       presentingViewController:(UIViewController *)presentingViewController
+                       callback:(GIDSignInCallback)callback;
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;

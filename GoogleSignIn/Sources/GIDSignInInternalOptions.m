@@ -14,30 +14,42 @@
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
+#import "GoogleSignIn/Sources/GIDScopes.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInInternalOptions
 
-+ (instancetype)defaultOptions {
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                       presentingViewController:(nullable UIViewController *)presentingViewController
+                                       callback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
     options->_continuation = NO;
+    options->_configuration = configuration;
+    options->_presentingViewController = presentingViewController;
+    options->_callback = callback;
+    options->_scopes = [GIDScopes scopesWithBasicProfile:@[]];
   }
   return options;
 }
 
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback {
-  GIDSignInInternalOptions *options = [self defaultOptions];
+  GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
+                                                   presentingViewController:nil
+                                                                   callback:callback];
   if (options) {
     options->_interactive = NO;
-    options->_callback = callback;
   }
   return options;
 }
 
-+ (instancetype)optionsWithExtraParams:(NSDictionary *)extraParams {
-  GIDSignInInternalOptions *options = [self defaultOptions];
++ (instancetype)optionsWithCallback:(GIDSignInCallback)callback
+                        extraParams:(NSDictionary *)extraParams {
+  GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
+                                                   presentingViewController:nil
+                                                                   callback:callback];
   if (options) {
     options->_extraParams = [extraParams copy];
   }
@@ -50,6 +62,10 @@ NS_ASSUME_NONNULL_BEGIN
   if (options) {
     options->_interactive = _interactive;
     options->_continuation = continuation;
+    options->_configuration = _configuration;
+    options->_presentingViewController = _presentingViewController;
+    options->_callback = _callback;
+    options->_scopes = _scopes;
     options->_extraParams = [extraParams copy];
   }
   return options;

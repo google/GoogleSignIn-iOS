@@ -22,17 +22,10 @@
 
 @implementation AppDelegate
 
-// DO NOT USE THIS CLIENT ID. IT WILL NOT WORK FOR YOUR APP.
-// Please use the client ID created for you by Google.
-static NSString * const kClientID =
-    @"589453917038-qaoga89fitj2ukrsq27ko56fimmojac6.apps.googleusercontent.com";
-
 #pragma mark Object life-cycle.
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  // Set app's client ID for |GIDSignIn|.
-  GIDSignIn.sharedInstance.clientID = kClientID;
   // Restore any previous sign-in session at app launch before displaying main view.  If the restore
   // succeeds, we'll have a currentUser and the view will be able to draw its UI for the signed-in
   // state.  If the restore fails, currentUser will be nil and we'll draw the signed-out state

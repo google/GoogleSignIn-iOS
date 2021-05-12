@@ -32,17 +32,29 @@ NS_ASSUME_NONNULL_BEGIN
 /// The extra parameters used in the sign-in URL.
 @property(nonatomic, readonly, nullable) NSDictionary *extraParams;
 
+/// The configuration to use during the flow.
+@property(nonatomic, readonly, nullable) GIDConfiguration *configuration;
+
+/// The the view controller to use during the flow.
+@property(nonatomic, readonly, nullable) UIViewController *presentingViewController;
+
 /// The callback block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCallback callback;
 
+/// The scopes to be used during the flow.
+@property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
+
 /// Creates the default options.
-+ (instancetype)defaultOptions;
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                       presentingViewController:(nullable UIViewController *)presentingViewController
+                                       callback:(GIDSignInCallback)callback;
 
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
 
 /// Creates the options to sign in with extra parameters.
-+ (instancetype)optionsWithExtraParams:(NSDictionary *)extraParams;
++ (instancetype)optionsWithCallback:(GIDSignInCallback)callback
+                        extraParams:(NSDictionary *)extraParams;
 
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.
