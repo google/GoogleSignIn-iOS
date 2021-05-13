@@ -135,21 +135,6 @@ static NSString * const kClientID =
   [super viewWillAppear:animated];
 }
 
-- (IBAction)signInPressed:(id)sender {
-  [GIDSignIn.sharedInstance signInWithConfiguration:_configuration
-                           presentingViewController:self
-                                           callback:^(GIDGoogleUser * _Nullable user,
-                                                      NSError * _Nullable error) {
-    if (error) {
-      self->_signInAuthStatus.text =
-          [NSString stringWithFormat:@"Status: Authentication error: %@", error];
-      return;
-    }
-    [self reportAuthStatus];
-    [self updateButtons];
-  }];
-}
-
 #pragma mark - Helper methods
 
 // Updates the GIDSignIn shared instance and the GIDSignInButton
@@ -249,27 +234,42 @@ static NSString * const kClientID =
   });
 }
 
-// Adjusts "Sign in", "Sign out", and "Disconnect" buttons to reflect
-// the current sign-in state (ie, the "Sign in" button becomes disabled
-// when a user is already signed in).
+// Adjusts "Sign in", "Sign out", "Disconnect", and "Add Scopes" buttons to reflect the current
+// sign-in state (ie, the "Sign in" button becomes disabled when a user is already signed in).
 - (void)updateButtons {
-  BOOL authenticated = (GIDSignIn.sharedInstance.currentUser.authentication != nil);
+  BOOL hasCurrentUser = (GIDSignIn.sharedInstance.currentUser != nil);
 
-  self.signInButton.enabled = !authenticated;
-  self.signOutButton.enabled = authenticated;
-  self.disconnectButton.enabled = authenticated;
-  self.credentialsButton.hidden = !authenticated;
+  self.signInButton.enabled = !hasCurrentUser;
+  self.signOutButton.enabled = hasCurrentUser;
+  self.disconnectButton.enabled = hasCurrentUser;
+  self.addScopesButton.enabled = hasCurrentUser;
+  self.credentialsButton.hidden = !hasCurrentUser;
 
-  if (authenticated) {
+  if (hasCurrentUser) {
     self.signInButton.alpha = 0.5;
-    self.signOutButton.alpha = self.disconnectButton.alpha = 1.0;
+    self.signOutButton.alpha = self.disconnectButton.alpha = self.addScopesButton.alpha = 1.0;
   } else {
     self.signInButton.alpha = 1.0;
-    self.signOutButton.alpha = self.disconnectButton.alpha = 0.5;
+    self.signOutButton.alpha = self.disconnectButton.alpha = self.addScopesButton.alpha = 0.5;
   }
 }
 
 #pragma mark - IBActions
+
+- (IBAction)signIn:(id)sender {
+  [GIDSignIn.sharedInstance signInWithConfiguration:_configuration
+                           presentingViewController:self
+                                           callback:^(GIDGoogleUser * _Nullable user,
+                                                      NSError * _Nullable error) {
+    if (error) {
+      self->_signInAuthStatus.text =
+          [NSString stringWithFormat:@"Status: Authentication error: %@", error];
+      return;
+    }
+    [self reportAuthStatus];
+    [self updateButtons];
+  }];
+}
 
 - (IBAction)signOut:(id)sender {
   [GIDSignIn.sharedInstance signOut];
@@ -287,6 +287,21 @@ static NSString * const kClientID =
     }
     [self reportAuthStatus];
     [self updateButtons];
+  }];
+}
+
+- (IBAction)addScopes:(id)sender {
+  [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/contacts.readonly" ]
+             presentingViewController:self
+                             callback:^(GIDGoogleUser * _Nullable user,
+                                        NSError * _Nullable error) {
+    if (error) {
+      self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to add scopes: %@",
+                                      error];
+    } else {
+      self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Scopes added"];
+    }
+    [self refreshUserInfo];
   }];
 }
 

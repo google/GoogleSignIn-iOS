@@ -38,6 +38,10 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   kGIDSignInErrorCodeCanceled = -5,
   /// Indicates an Enterprise Mobility Management related error has occurred.
   kGIDSignInErrorCodeEMM = -6,
+  /// Indicates there is no `currentUser`.
+  kGIDSignInErrorCodeNoCurrentUser = -7,
+  /// Indicates the requested scopes have already been granted to the `currentUser`.
+  kGIDSignInErrorCodeScopesAlreadyGranted = -8,
 };
 
 /// Represents a callback block that takes a `GIDGoogleUser` on success or an error if the operation
@@ -96,6 +100,16 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                        callback:(GIDSignInCallback)callback;
+
+/// Starts an interactive consent flow to add scopes to the current user's grants.
+///
+/// @param scopes The scopes to ask the user to consent to.
+/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
+///     iOS 9 and 10.
+/// @param callback The `GIDSignInCallback` block that is called on completion.
+- (void)addScopes:(NSArray<NSString *> *)scopes
+    presentingViewController:(UIViewController *)presentingViewController
+                    callback:(GIDSignInCallback)callback;
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;

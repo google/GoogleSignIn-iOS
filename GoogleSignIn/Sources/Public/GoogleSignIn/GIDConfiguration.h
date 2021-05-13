@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The client ID of the app from the Google Cloud Console.
 @property(nonatomic, readonly) NSString *clientID;
 
-/// The client ID of the home web server.  This will be returned as the `audience` property of the
+/// The client ID of the home server.  This will be returned as the `audience` property of the
 /// OpenID Connect ID token.  For more info on the ID token:
 /// https://developers.google.com/identity/sign-in/ios/backend-auth
 @property(nonatomic, readonly, nullable) NSString *serverClientID;
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// `GIDGoogleUser`'s `hostedDomain` property.
 @property(nonatomic, readonly, nullable) NSString *hostedDomain;
 
-/// The OpenID2 realm of the home web server. This allows Google to include the user's OpenID
+/// The OpenID2 realm of the home server. This allows Google to include the user's OpenID
 /// Identifier in the OpenID Connect ID token.
 @property(nonatomic, readonly, nullable) NSString *openIDRealm;
 

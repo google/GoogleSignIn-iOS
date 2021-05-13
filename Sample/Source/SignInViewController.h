@@ -36,6 +36,8 @@
 @property(weak, nonatomic) IBOutlet UIButton *signOutButton;
 // A button to disconnect user from this application.
 @property(weak, nonatomic) IBOutlet UIButton *disconnectButton;
+// A button to add scopes for this application.
+@property(weak, nonatomic) IBOutlet UIButton *addScopesButton;
 // A button to inspect the authorization object.
 @property(weak, nonatomic) IBOutlet UIButton *credentialsButton;
 // A dynamically-created slider for controlling the sign-in button width.

@@ -27,22 +27,27 @@ NS_ASSUME_NONNULL_BEGIN
 /// The Google user ID.
 @property(nonatomic, readonly, nullable) NSString *userID;
 
-/// Representation of the Basic profile data. It is only available if
-/// `GIDSignIn.shouldFetchBasicProfile` is set and either `-[GIDSignIn signIn]` or
-/// `-[GIDSignIn restorePreviousSignIn]` has been completed successfully.
+/// Representation of basic profile data for the user.
 @property(nonatomic, readonly, nullable) GIDProfileData *profile;
 
 /// The authentication object for the user.
 @property(nonatomic, readonly) GIDAuthentication *authentication;
 
 /// The API scopes granted to the app in an array of `NSString`.
-@property(nonatomic, readonly, nullable) NSArray *grantedScopes;
+@property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
 
 /// For Google Apps hosted accounts, the domain of the user.
 @property(nonatomic, readonly, nullable) NSString *hostedDomain;
 
+/// The client ID of the home server.
+@property(nonatomic, readonly, nullable) NSString *serverClientID;
+
 /// An OAuth2 authorization code for the home server.
 @property(nonatomic, readonly, nullable) NSString *serverAuthCode;
+
+/// The OpenID2 realm of the home server.
+@property(nonatomic, readonly, nullable) NSString *openIDRealm;
+
 
 @end
 

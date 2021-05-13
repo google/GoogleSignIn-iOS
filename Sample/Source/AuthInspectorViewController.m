@@ -133,7 +133,7 @@ static CGFloat const kTableViewCellPadding = 22.f;
   UIFont *font = [UIFont systemFontOfSize:kTableViewCellFontSize];
   NSDictionary *attributes = @{ NSFontAttributeName : font };
   size = [content boundingRectWithSize:constraintSize
-                               options:0
+                               options:NSStringDrawingUsesLineFragmentOrigin
                             attributes:attributes
                                context:NULL].size;
   return size.height + kTableViewCellPadding;

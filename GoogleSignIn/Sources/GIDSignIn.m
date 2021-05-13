@@ -150,8 +150,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 #pragma mark - Public methods
 
-// Invoked when the app delegate receives a callback at |application:openURL:options:| or
-// |application:openURL:sourceApplication:annotation|.
 - (BOOL)handleURL:(NSURL *)url {
   // Check if the callback path matches the expected one for a URL from Safari/Chrome/SafariVC.
   if ([url.path isEqual:kBrowserCallbackPath]) {
@@ -191,8 +189,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
 }
 
-// Authenticates the user by first searching the keychain, then attempting to retrieve the refresh
-// token from a Google Sign In app, and finally through the standard OAuth 2.0 web flow.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                        callback:(GIDSignInCallback)callback {
@@ -200,6 +196,51 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
                                                        callback:callback];
+  [self signInWithOptions:options];
+}
+
+- (void)addScopes:(NSArray<NSString *> *)scopes
+    presentingViewController:(UIViewController *)presentingViewController
+                    callback:(GIDSignInCallback)callback {
+  // A currentUser must be available in order to complete this flow.
+  if (!self.currentUser) {
+    // No currentUser is set, notify callback of failure.
+    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                         code:kGIDSignInErrorCodeNoCurrentUser
+                                     userInfo:nil];
+    callback(nil, error);
+    return;
+  }
+
+  GIDConfiguration *configuration =
+      [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
+                                  serverClientID:self.currentUser.serverClientID
+                                       loginHint:self.currentUser.profile.email
+                                    hostedDomain:self.currentUser.hostedDomain
+                                     openIDRealm:self.currentUser.openIDRealm];
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                       presentingViewController:presentingViewController
+                                                       callback:callback];
+
+  NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
+  NSMutableSet<NSString *> *grantedScopes =
+      [NSMutableSet setWithArray:self.currentUser.grantedScopes];
+
+  // Check to see if all requested scopes have already been granted.
+  if ([requestedScopes isSubsetOfSet:grantedScopes]) {
+    // All requested scopes have already been granted, notify callback of failure.
+    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                         code:kGIDSignInErrorCodeScopesAlreadyGranted
+                                     userInfo:nil];
+    callback(nil, error);
+    return;
+  }
+
+  // Use the union of granted and requested scopes.
+  [grantedScopes unionSet:requestedScopes];
+  options.scopes = [grantedScopes allObjects];
+
   [self signInWithOptions:options];
 }
 
@@ -422,7 +463,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
     [self addDecodeIdTokenCallback:authFlow];
     [self addSaveAuthCallback:authFlow];
-    [self addCallDelegateCallback:authFlow];
+    [self addCallbackCallback:authFlow];
   }];
 }
 
@@ -439,7 +480,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   OIDAuthState *authState = [self loadAuthState];
 
   if (![authState isAuthorized]) {
-    // No valid auth in keychain, per documentation/spec, notify delegate of failure.
+    // No valid auth in keychain, per documentation/spec, notify callback of failure.
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
@@ -455,7 +496,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   } : nil];
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
-  [self addCallDelegateCallback:authFlow];
+  [self addCallbackCallback:authFlow];
 }
 
 // Fetches the access token if necessary as part of the auth flow. If |fallback|
@@ -601,8 +642,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }];
 }
 
-// Adds a callback to the auth flow to call the sign-in delegate.
-- (void)addCallDelegateCallback:(GIDAuthFlow *)authFlow {
+// Adds a callback to the auth flow to call the sign-in callback.
+- (void)addCallbackCallback:(GIDAuthFlow *)authFlow {
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
@@ -700,7 +741,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 }
 
-// Assert that the UI Delegate has been set.
+// Assert that the presenting view controller has been set.
 - (void)assertValidPresentingViewController {
   if (!_currentOptions.presentingViewController) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
