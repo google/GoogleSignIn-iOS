@@ -36,6 +36,11 @@ static NSString *const kServerAuthCodeKey = @"serverAuthCode";
 static NSString *const kProfileDataKey = @"profileData";
 static NSString *const kHostedDomainKey = @"hostedDomain";
 
+// Parameters for the token exchange endpoint.
+static NSString *const kAudienceParameter = @"audience";
+static NSString *const kOpenIDRealmParameter = @"openid.realm";
+
+
 @implementation GIDGoogleUser
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
@@ -44,7 +49,7 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
   if (self) {
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
 
-    NSArray *grantedScopes;
+    NSArray<NSString *> *grantedScopes;
     NSString *grantedScopeString = authState.lastTokenResponse.scope;
     if (grantedScopeString) {
       // If we have a 'scope' parameter from the backend, this is authoritative.
@@ -52,8 +57,8 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
       grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
           [NSCharacterSet whitespaceCharacterSet]];
       // Tokenize with space as a delimiter.
-      NSMutableArray *parsedScopes = [[grantedScopeString componentsSeparatedByString:@" "]
-          mutableCopy];
+      NSMutableArray<NSString *> *parsedScopes =
+          [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
       // Remove empty strings.
       [parsedScopes removeObject:@""];
       grantedScopes = [parsedScopes copy];
@@ -73,6 +78,11 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
         _hostedDomain = [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
       }
     }
+
+    _serverClientID =
+        [authState.lastTokenResponse.request.additionalParameters[kAudienceParameter] copy];
+    _openIDRealm =
+        [authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
   }
   return self;
 }
