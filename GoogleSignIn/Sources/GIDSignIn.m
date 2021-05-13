@@ -191,13 +191,25 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
+                           hint:(nullable NSString *)hint
                        callback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
+                                                      loginHint:hint
                                                        callback:callback];
   [self signInWithOptions:options];
 }
+
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+       presentingViewController:(UIViewController *)presentingViewController
+                       callback:(GIDSignInCallback)callback {
+  [self signInWithConfiguration:configuration
+       presentingViewController:presentingViewController
+                           hint:nil
+                       callback:callback];
+}
+
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
@@ -215,12 +227,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   GIDConfiguration *configuration =
       [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
                                   serverClientID:self.currentUser.serverClientID
-                                       loginHint:self.currentUser.profile.email
                                     hostedDomain:self.currentUser.hostedDomain
                                      openIDRealm:self.currentUser.openIDRealm];
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
+                                                      loginHint:self.currentUser.profile.email
                                                        callback:callback];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
@@ -395,8 +407,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
-  if (options.configuration.loginHint) {
-    additionalParameters[@"login_hint"] = options.configuration.loginHint;
+  if (options.loginHint) {
+    additionalParameters[@"login_hint"] = options.loginHint;
   }
   if (options.configuration.hostedDomain) {
     additionalParameters[@"hd"] = options.configuration.hostedDomain;

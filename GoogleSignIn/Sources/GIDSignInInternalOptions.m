@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
                                        callback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_continuation = NO;
     options->_configuration = configuration;
     options->_presentingViewController = presentingViewController;
+    options->_loginHint = loginHint;
     options->_callback = callback;
     options->_scopes = [GIDScopes scopesWithBasicProfile:@[]];
   }
@@ -38,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
                                                    presentingViewController:nil
+                                                                  loginHint:nil
                                                                    callback:callback];
   if (options) {
     options->_interactive = NO;
@@ -49,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
                         extraParams:(NSDictionary *)extraParams {
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
                                                    presentingViewController:nil
+                                                                  loginHint:nil
                                                                    callback:callback];
   if (options) {
     options->_extraParams = [extraParams copy];
@@ -64,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_continuation = continuation;
     options->_configuration = _configuration;
     options->_presentingViewController = _presentingViewController;
+    options->_loginHint = _loginHint;
     options->_callback = _callback;
     options->_scopes = _scopes;
     options->_extraParams = [extraParams copy];
