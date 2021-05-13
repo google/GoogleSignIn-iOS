@@ -20,9 +20,6 @@ static NSString *const kClientIDKey = @"clientID";
 // The key for the serverClientID property to be used with NSSecureCoding.
 static NSString *const kServerClientIDKey = @"serverClientID";
 
-// The key for the loginHint property to be used with NSSecureCoding.
-static NSString *const kLoginHintKey = @"loginHint";
-
 // The key for the hostedDomain property to be used with NSSecureCoding.
 static NSString *const kHostedDomainKey = @"hostedDomain";
 
@@ -36,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithClientID:(NSString *)clientID {
   return [self initWithClientID:clientID
                  serverClientID:nil
-                      loginHint:nil
                    hostedDomain:nil
                     openIDRealm:nil];
 }
@@ -45,21 +41,18 @@ NS_ASSUME_NONNULL_BEGIN
                   serverClientID:(nullable NSString *)serverClientID {
   return [self initWithClientID:clientID
                  serverClientID:serverClientID
-                      loginHint:nil
                    hostedDomain:nil
                     openIDRealm:nil];
 }
 
 - (instancetype)initWithClientID:(NSString *)clientID
                   serverClientID:(nullable NSString *)serverClientID
-                       loginHint:(nullable NSString *)loginHint
                     hostedDomain:(nullable NSString *)hostedDomain
                      openIDRealm:(nullable NSString *)openIDRealm {
   self = [super init];
   if (self) {
     _clientID = [clientID copy];
     _serverClientID = [serverClientID copy];
-    _loginHint = [loginHint copy];
     _hostedDomain = [hostedDomain copy];
     _openIDRealm = [openIDRealm copy];
   }
@@ -69,13 +62,11 @@ NS_ASSUME_NONNULL_BEGIN
 // Extend NSObject's default description for easier debugging.
 - (NSString *)description {
   return [NSString stringWithFormat:
-      @"<%@: %p, clientID: %@, serverClientID: %@, loginHint: %@, hostedDomain: %@, "
-          "openIDRealm: %@>",
+      @"<%@: %p, clientID: %@, serverClientID: %@, hostedDomain: %@, openIDRealm: %@>",
       NSStringFromClass([self class]),
       self,
       _clientID,
       _serverClientID,
-      _loginHint,
       _hostedDomain,
       _openIDRealm];
 }
@@ -96,7 +87,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithCoder:(NSCoder *)coder {
   NSString *clientID = [coder decodeObjectOfClass:[NSString class] forKey:kClientIDKey];
   NSString *serverClientID = [coder decodeObjectOfClass:[NSString class] forKey:kServerClientIDKey];
-  NSString *loginHint = [coder decodeObjectOfClass:[NSString class] forKey:kLoginHintKey];
   NSString *hostedDomain = [coder decodeObjectOfClass:[NSString class] forKey:kHostedDomainKey];
   NSString *openIDRealm = [coder decodeObjectOfClass:[NSString class] forKey:kOpenIDRealmKey];
 
@@ -107,7 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 
   return [self initWithClientID:clientID
                  serverClientID:serverClientID
-                      loginHint:loginHint
                    hostedDomain:hostedDomain
                     openIDRealm:openIDRealm];
 }
@@ -115,7 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)encodeWithCoder:(NSCoder *)coder {
   [coder encodeObject:_clientID forKey:kClientIDKey];
   [coder encodeObject:_serverClientID forKey:kServerClientIDKey];
-  [coder encodeObject:_loginHint forKey:kLoginHintKey];
   [coder encodeObject:_hostedDomain forKey:kHostedDomainKey];
   [coder encodeObject:_openIDRealm forKey:kOpenIDRealmKey];
 }

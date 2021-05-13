@@ -29,10 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// https://developers.google.com/identity/sign-in/ios/backend-auth
 @property(nonatomic, readonly, nullable) NSString *serverClientID;
 
-/// The login hint to the authorization server, for example the user's ID, or email address,
-/// to be prefilled if possible.
-@property(nonatomic, readonly, nullable) NSString *loginHint;
-
 /// The Google Apps domain to which users must belong to sign in.  To verify, check
 /// `GIDGoogleUser`'s `hostedDomain` property.
 @property(nonatomic, readonly, nullable) NSString *hostedDomain;
@@ -62,13 +58,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param clientID The client ID of the app.
 /// @param serverClientID The server's client ID.
-/// @param loginHint The login hint to be used.
 /// @param hostedDomain The Google Apps domain to be used.
 /// @param openIDRealm The OpenID realm to be used.
 /// @return An initilized `GIDConfiguration` instance.
 - (instancetype)initWithClientID:(NSString *)clientID
                   serverClientID:(nullable NSString *)serverClientID
-                       loginHint:(nullable NSString *)loginHint
                     hostedDomain:(nullable NSString *)hostedDomain
                      openIDRealm:(nullable NSString *)openIDRealm NS_DESIGNATED_INITIALIZER;
 

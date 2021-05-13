@@ -44,9 +44,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// The scopes to be used during the flow.
 @property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
 
+/// The login hint to be used during the flow.
+@property(nonatomic, copy, nullable) NSString *loginHint;
+
 /// Creates the default options.
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
                                        callback:(GIDSignInCallback)callback;
 
 /// Creates the options to sign in silently.
