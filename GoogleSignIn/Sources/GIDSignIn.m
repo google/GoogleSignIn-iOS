@@ -210,7 +210,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                          code:kGIDSignInErrorCodeNoCurrentUser
                                      userInfo:nil];
     if (callback) {
-      callback(nil, error);
+      dispatch_async(dispatch_get_main_queue(), ^{
+        callback(nil, error);
+      });
     }
     return;
   }
@@ -237,7 +239,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                          code:kGIDSignInErrorCodeScopesAlreadyGranted
                                      userInfo:nil];
     if (callback) {
-      callback(nil, error);
+      dispatch_async(dispatch_get_main_queue(), ^{
+        callback(nil, error);
+      });
     }
     return;
   }
@@ -278,7 +282,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     [self signOut];
     // Nothing to do here, consider the operation successful.
     if (callback) {
-      callback(nil);
+      dispatch_async(dispatch_get_main_queue(), ^{
+        callback(nil);
+      });
     }
     return;
   }
@@ -299,7 +305,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [self signOut];
     }
     if (callback) {
-      callback(error);
+      dispatch_async(dispatch_get_main_queue(), ^{
+        callback(error);
+      });
     }
   }];
 }
@@ -503,7 +511,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
     if (options.callback) {
-      options.callback(nil, error);
+      dispatch_async(dispatch_get_main_queue(), ^{
+        options.callback(nil, error);
+      });
     }
     return;
   }
@@ -668,7 +678,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     if (_currentOptions.callback) {
-      _currentOptions.callback(_currentUser, handlerAuthFlow.error);
+      dispatch_async(dispatch_get_main_queue(), ^{
+        _currentOptions.callback(_currentUser, handlerAuthFlow.error);
+      });
     }
   }];
 }

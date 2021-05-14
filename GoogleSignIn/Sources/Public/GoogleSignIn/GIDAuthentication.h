@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// The callback block that takes a `GIDAuthentication` or an error if the attempt to refresh tokens
+/// A callback block that takes a `GIDAuthentication` or an error if the attempt to refresh tokens
 /// was unsuccessful.
 typedef void (^GIDAuthenticationAction)(GIDAuthentication *_Nullable authentication,
                                         NSError *_Nullable error);
@@ -58,7 +58,7 @@ typedef void (^GIDAuthenticationAction)(GIDAuthentication *_Nullable authenticat
 /// about to expire.
 ///
 /// @param action A callback block that takes a `GIDAuthentication` or an error if the attempt to
-///               refresh tokens was unsuccessful.
+///     refresh tokens was unsuccessful.  The block will be called asynchronously on the main queue.
 - (void)doWithFreshTokens:(GIDAuthenticationAction)action;
 
 @end

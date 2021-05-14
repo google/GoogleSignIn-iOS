@@ -209,7 +209,9 @@ static NSString *const kNewIOSSystemName = @"iOS";
 - (void)doWithFreshTokens:(GIDAuthenticationAction)action {
   if (!([self.accessTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
       (self.idToken && [self.idTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
-    action(self, nil);
+    dispatch_async(dispatch_get_main_queue(), ^{
+      action(self, nil);
+    });
     return;
   }
   @synchronized (_authenticationHandlerQueue) {
@@ -252,7 +254,9 @@ static NSString *const kNewIOSSystemName = @"iOS";
         [_authenticationHandlerQueue removeAllObjects];
       }
       for (GIDAuthenticationAction action in authenticationHandlerQueue) {
-        action(error ? nil : self, error);
+        dispatch_async(dispatch_get_main_queue(), ^{
+          action(error ? nil : self, error);
+        });
       }
     }];
   }];
