@@ -174,17 +174,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return [authState isAuthorized];
 }
 
-- (nullable GIDGoogleUser *)restoredGoogleUserFromPreviousSignIn {
-  OIDAuthState *authState = [self loadAuthState];
-  
-  if (!authState) {
-    return nil;
-  }
-
-  return [[GIDGoogleUser alloc] initWithAuthState:authState
-                                      profileData:nil];
-}
-
 - (void)restorePreviousSignInWithCallback:(nullable GIDSignInCallback)callback {
   [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
 }
@@ -398,6 +387,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   } else {
     [self authenticateWithOptions:options];
   }
+}
+
+- (nullable GIDGoogleUser *)restoredGoogleUserFromPreviousSignIn {
+  OIDAuthState *authState = [self loadAuthState];
+
+  if (!authState) {
+    return nil;
+  }
+
+  return [[GIDGoogleUser alloc] initWithAuthState:authState
+                                      profileData:nil];
 }
 
 # pragma mark - Authentication flow
