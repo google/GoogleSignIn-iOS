@@ -83,7 +83,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 
 /// Attempts to restore a previously authenticated user without interaction.
 ///
-/// @param callback The `GIDSignInCallback` block that is called on completion.
+/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
+///     called asynchronously on the main queue.
 - (void)restorePreviousSignInWithCallback:(nullable GIDSignInCallback)callback;
 
 /// Starts an interactive sign-in flow using the provided configuration.
@@ -96,7 +97,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param configuration The configuration properties to be used for this flow.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
 ///     iOS 9 and 10.
-/// @param callback The `GIDSignInCallback` block that is called on completion.
+/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
+///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback;
@@ -113,7 +115,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     iOS 9 and 10.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
-/// @param callback The `GIDSignInCallback` block that is called on completion.
+/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
+///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
@@ -124,7 +127,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param scopes The scopes to ask the user to consent to.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
 ///     iOS 9 and 10.
-/// @param callback The `GIDSignInCallback` block that is called on completion.
+/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
+///     called asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                     callback:(nullable GIDSignInCallback)callback;
@@ -135,7 +139,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// Disconnects the current user from the app and revokes previous authentication. If the operation
 /// succeeds, the OAuth 2.0 token is also removed from keychain.
 ///
-/// @param callback The optional `GIDDisconnectCallback` block that is called on completion.
+/// @param callback The optional `GIDDisconnectCallback` block that is called on completion.  This
+///     block will be called asynchronously on the main queue.
 - (void)disconnectWithCallback:(nullable GIDDisconnectCallback)callback;
 
 @end
