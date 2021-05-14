@@ -475,7 +475,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
     [self addDecodeIdTokenCallback:authFlow];
     [self addSaveAuthCallback:authFlow];
-    [self addCallbackCallback:authFlow];
+    [self addCompletionCallback:authFlow];
   }];
 }
 
@@ -508,7 +508,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   } : nil];
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
-  [self addCallbackCallback:authFlow];
+  [self addCompletionCallback:authFlow];
 }
 
 // Fetches the access token if necessary as part of the auth flow. If |fallback|
@@ -654,8 +654,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }];
 }
 
-// Adds a callback to the auth flow to call the sign-in callback.
-- (void)addCallbackCallback:(GIDAuthFlow *)authFlow {
+// Adds a callback to the auth flow to complete the flow by calling the sign-in callback.
+- (void)addCompletionCallback:(GIDAuthFlow *)authFlow {
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
