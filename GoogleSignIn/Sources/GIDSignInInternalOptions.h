@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, nullable) GIDConfiguration *configuration;
 
 /// The the view controller to use during the flow.
-@property(nonatomic, readonly, nullable) UIViewController *presentingViewController;
+@property(nonatomic, readonly, weak, nullable) UIViewController *presentingViewController;
 
 /// The callback block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCallback callback;
