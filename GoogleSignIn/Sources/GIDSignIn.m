@@ -82,7 +82,7 @@ static NSString *const kEMMCallbackPath = @"/emmcallback";
 static NSString *const kEMMVersion = @"1";
 
 // The error code for Google Identity.
-NSString *const kGIDSignInErrorDomain = @"com.google.GIDSignIn";
+NSErrorDomain const kGIDSignInErrorDomain = @"com.google.GIDSignIn";
 
 // Keychain constants for saving state in the authentication flow.
 static NSString *const kGTMAppAuthKeychainName = @"auth";

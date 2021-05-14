@@ -23,10 +23,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// The error domain for `NSError`s returned by the Google Identity SDK.
-extern NSString *const kGIDSignInErrorDomain;
+extern NSErrorDomain const kGIDSignInErrorDomain;
 
 /// A list of potential error codes returned from the Google Identity SDK.
-typedef NS_ENUM(NSInteger, GIDSignInErrorCode) {
+typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   /// Indicates an unknown error has occurred.
   kGIDSignInErrorCodeUnknown = -1,
   /// Indicates a problem reading or writing to the application keychain.
