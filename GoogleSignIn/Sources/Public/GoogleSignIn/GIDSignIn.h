@@ -84,7 +84,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// Attempts to restore a previously authenticated user without interaction.
 ///
 /// @param callback The `GIDSignInCallback` block that is called on completion.
-- (void)restorePreviousSignInWithCallback:(GIDSignInCallback)callback;
+- (void)restorePreviousSignInWithCallback:(nullable GIDSignInCallback)callback;
 
 /// Starts an interactive sign-in flow using the provided configuration.
 ///
@@ -99,7 +99,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param callback The `GIDSignInCallback` block that is called on completion.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                       callback:(GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback;
 
 /// Starts an interactive sign-in flow using the provided configuration and a login hint.
 ///
@@ -117,7 +117,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                       callback:(GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback;
 
 /// Starts an interactive consent flow to add scopes to the current user's grants.
 ///
@@ -127,7 +127,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param callback The `GIDSignInCallback` block that is called on completion.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                    callback:(GIDSignInCallback)callback;
+                    callback:(nullable GIDSignInCallback)callback;
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;

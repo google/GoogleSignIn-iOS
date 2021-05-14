@@ -185,14 +185,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                       profileData:nil];
 }
 
-- (void)restorePreviousSignInWithCallback:(GIDSignInCallback)callback {
+- (void)restorePreviousSignInWithCallback:(nullable GIDSignInCallback)callback {
   [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
 }
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                       callback:(GIDSignInCallback)callback {
+                       callback:(nullable GIDSignInCallback)callback {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
@@ -203,7 +203,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                       callback:(GIDSignInCallback)callback {
+                       callback:(nullable GIDSignInCallback)callback {
   [self signInWithConfiguration:configuration
        presentingViewController:presentingViewController
                            hint:nil
@@ -213,14 +213,16 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                    callback:(GIDSignInCallback)callback {
+                    callback:(nullable GIDSignInCallback)callback {
   // A currentUser must be available in order to complete this flow.
   if (!self.currentUser) {
     // No currentUser is set, notify callback of failure.
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeNoCurrentUser
                                      userInfo:nil];
-    callback(nil, error);
+    if (callback) {
+      callback(nil, error);
+    }
     return;
   }
 
@@ -245,7 +247,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeScopesAlreadyGranted
                                      userInfo:nil];
-    callback(nil, error);
+    if (callback) {
+      callback(nil, error);
+    }
     return;
   }
 
@@ -386,7 +390,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       if (error) {
         [self authenticateWithOptions:options];
       } else {
-        options.callback(_currentUser, nil);
+        if (options.callback) {
+          options.callback(_currentUser, nil);
+        }
       }
     }];
   } else {
@@ -496,7 +502,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
-    options.callback(nil, error);
+    if (options.callback) {
+      options.callback(nil, error);
+    }
     return;
   }
 
@@ -659,7 +667,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
-    _currentOptions.callback(_currentUser, handlerAuthFlow.error);
+    if (_currentOptions.callback) {
+      _currentOptions.callback(_currentUser, handlerAuthFlow.error);
+    }
   }];
 }
 
