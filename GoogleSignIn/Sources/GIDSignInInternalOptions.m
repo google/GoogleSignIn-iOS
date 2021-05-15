@@ -48,18 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
   return options;
 }
 
-+ (instancetype)optionsWithCallback:(GIDSignInCallback)callback
-                        extraParams:(NSDictionary *)extraParams {
-  GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
-                                                   presentingViewController:nil
-                                                                  loginHint:nil
-                                                                   callback:callback];
-  if (options) {
-    options->_extraParams = [extraParams copy];
-  }
-  return options;
-}
-
 - (instancetype)optionsWithExtraParameters:(NSDictionary *)extraParams
                            forContinuation:(BOOL)continuation {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
