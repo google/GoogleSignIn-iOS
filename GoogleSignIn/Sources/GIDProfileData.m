@@ -32,9 +32,9 @@ static NSString *const kOldImageURLStringKey = @"picture";
 
 - (instancetype)initWithEmail:(NSString *)email
                          name:(NSString *)name
-                    givenName:(NSString *)givenName
-                   familyName:(NSString *)familyName
-                     imageURL:(NSURL *)imageURL {
+                    givenName:(nullable NSString *)givenName
+                   familyName:(nullable NSString *)familyName
+                     imageURL:(nullable NSURL *)imageURL {
   self = [super init];
   if (self) {
     _email = [email copy];
@@ -50,7 +50,7 @@ static NSString *const kOldImageURLStringKey = @"picture";
   return _imageURL != nil;
 }
 
-- (NSURL *)imageURLWithDimension:(NSUInteger)dimension {
+- (nullable NSURL *)imageURLWithDimension:(NSUInteger)dimension {
   if (!_imageURL) {
     return nil;
   }

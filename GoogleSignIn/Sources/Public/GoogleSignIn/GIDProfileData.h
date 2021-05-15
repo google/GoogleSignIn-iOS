@@ -28,10 +28,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSString *name;
 
 /// The Google user's given name.
-@property(nonatomic, readonly) NSString *givenName;
+@property(nonatomic, readonly, nullable) NSString *givenName;
 
 /// The Google user's family name.
-@property(nonatomic, readonly) NSString *familyName;
+@property(nonatomic, readonly, nullable) NSString *familyName;
 
 /// Whether or not the user has profile image.
 @property(nonatomic, readonly) BOOL hasImage;
@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param dimension The desired height (and width) of the profile image.
 /// @return The URL of the user's profile image.
-- (NSURL *)imageURLWithDimension:(NSUInteger)dimension;
+- (nullable NSURL *)imageURLWithDimension:(NSUInteger)dimension;
 
 @end
 
