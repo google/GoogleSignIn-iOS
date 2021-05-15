@@ -56,10 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
 
-/// Creates the options to sign in with extra parameters.
-+ (instancetype)optionsWithCallback:(GIDSignInCallback)callback
-                        extraParams:(NSDictionary *)extraParams;
-
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.
 - (instancetype)optionsWithExtraParameters:(NSDictionary *)extraParams
