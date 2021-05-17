@@ -20,7 +20,6 @@
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
 NSString *const kServerClientID = @"fakeServerClientID";
-NSString *const kLoginHint = @"fakeLoginHint";
 NSString *const kOpenIDRealm = @"fakeOpenIDRealm";
 
 @implementation GIDConfiguration (Testing)
@@ -41,8 +40,6 @@ NSString *const kOpenIDRealm = @"fakeOpenIDRealm";
   return [self.clientID isEqual:other.clientID] &&
       ([self.serverClientID isEqual:other.serverClientID] ||
           self.serverClientID == other.serverClientID) &&
-      ([self.loginHint isEqual:other.loginHint] ||
-          self.loginHint == other.loginHint) &&
       ([self.hostedDomain isEqual:other.hostedDomain] ||
           self.hostedDomain == other.hostedDomain) &&
       ([self.openIDRealm isEqual:other.openIDRealm] ||
@@ -52,7 +49,6 @@ NSString *const kOpenIDRealm = @"fakeOpenIDRealm";
 + (instancetype)testInstance {
   return [[GIDConfiguration alloc] initWithClientID:OIDAuthorizationRequestTestingClientID
                                      serverClientID:kServerClientID
-                                          loginHint:kLoginHint
                                        hostedDomain:kHostedDomain
                                         openIDRealm:kOpenIDRealm];
 }

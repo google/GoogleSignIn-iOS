@@ -16,16 +16,36 @@
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+
+#ifdef SWIFT_PACKAGE
+@import OCMock;
+#else
+#import <OCMock/OCMock.h>
+#endif
+
 @interface GIDSignInInternalOptionsTest : XCTestCase
 @end
 
 @implementation GIDSignInInternalOptionsTest
 
 - (void)testDefaultOptions {
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions defaultOptions];
+  id configuration = OCMStrictClassMock([GIDConfiguration class]);
+  id presentingViewController = OCMStrictClassMock([UIViewController class]);
+  NSString *loginHint = @"login_hint";
+  GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
+  
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                       presentingViewController:presentingViewController
+                                                      loginHint:loginHint
+                                                       callback:callback];
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);
   XCTAssertNil(options.extraParams);
+
+  OCMVerifyAll(configuration);
+  OCMVerifyAll(presentingViewController);
 }
 
 - (void)testSilentOptions {
@@ -35,14 +55,6 @@
   XCTAssertFalse(options.continuation);
   XCTAssertNil(options.extraParams);
   XCTAssertEqual(options.callback, callback);
-}
-
-- (void)testSilentOptionsWithExtraParams {
-  NSDictionary *extraParams = @{ @"key" : @"value" };
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions optionsWithExtraParams:extraParams];
-  XCTAssertTrue(options.interactive);
-  XCTAssertFalse(options.continuation);
-  XCTAssertEqualObjects(options.extraParams, extraParams);
 }
 
 @end

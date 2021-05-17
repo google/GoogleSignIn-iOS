@@ -18,6 +18,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+@class GIDConfiguration;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// The options used internally for aspects of the sign-in flow.

@@ -15,8 +15,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/GIDSignInButton_Private.h"
-#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInButton.h"
 
 #ifdef SWIFT_PACKAGE
 @import OCMock;
@@ -97,14 +96,6 @@ static NSString * const kAppBundleId = @"FakeBundleID";
   button.style = kGIDSignInButtonStyleStandard;
   [buttonMock verify];
   XCTAssertEqual(button.style, kGIDSignInButtonStyleStandard);
-}
-
-- (void)testPressed {
-  id signInMock = OCMPartialMock([GIDSignIn sharedInstance]);
-  GIDSignInButton *button = [[GIDSignInButton alloc] init];
-  [[signInMock expect] signInWithOptions:[OCMArg any]];
-  [button pressed];
-  [signInMock verify];
 }
 
 - (void)testSetEnabled {
