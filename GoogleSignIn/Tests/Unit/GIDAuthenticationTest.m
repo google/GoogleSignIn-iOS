@@ -268,34 +268,35 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 - (void)testDoWithFreshTokensError {
   [self setTokensExpireTime:-10];  // expired 10 seconds ago
   GIDAuthentication *auth = [self observedAuth];
-  __block BOOL callbackCalled = NO;
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
-    callbackCalled = YES;
+    [expectation fulfill];
     XCTAssertNil(authentication);
     XCTAssertNotNil(error);
   }];
   _tokenFetchHandler(nil, [self fakeError]);
-  XCTAssertTrue(callbackCalled);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [self assertOldTokensInAuth:auth];
 }
 
 - (void)testDoWithFreshTokensQueue {
   GIDAuthentication *auth = [self observedAuth];
-  __block BOOL firstCallbackCalled = NO;
+  XCTestExpectation *firstExpectation =
+      [self expectationWithDescription:@"First callback is called"];
   [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
-    firstCallbackCalled = YES;
+    [firstExpectation fulfill];
     [self assertNewTokensInAuth:authentication];
     XCTAssertNil(error);
   }];
-  __block BOOL secondCallbackCalled = NO;
+  XCTestExpectation *secondExpectation =
+      [self expectationWithDescription:@"Second callback is called"];
   [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
-    secondCallbackCalled = YES;
+    [secondExpectation fulfill];
     [self assertNewTokensInAuth:authentication];
     XCTAssertNil(error);
   }];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
-  XCTAssertTrue(firstCallbackCalled);
-  XCTAssertTrue(secondCallbackCalled);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [self assertNewTokensInAuth:auth];
 }
 
@@ -379,9 +380,12 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"emm_support" : @"xyz",
   };
   GIDAuthentication *auth = [self auth];
-  __block BOOL callbackCalled = NO;
+  XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
+  notCalled.inverted = YES;
+  XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
   [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
-    callbackCalled = YES;
+    [notCalled fulfill];
+    [called fulfill];
     XCTAssertNil(authentication);
     XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeEMM);
@@ -391,9 +395,9 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   // Verify and clean up.
   [mockEMMErrorHandler verify];
   [mockEMMErrorHandler stopMocking];
-  XCTAssertFalse(callbackCalled);
+  [self waitForExpectations:@[ notCalled ] timeout:1];
   completion();
-  XCTAssertTrue(callbackCalled);
+  [self waitForExpectations:@[ called ] timeout:1];
   [self assertOldTokensInAuth:auth];
 }
 
@@ -417,9 +421,12 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"emm_support" : @"xyz",
   };
   GIDAuthentication *auth = [self auth];
-  __block BOOL callbackCalled = NO;
+  XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
+  notCalled.inverted = YES;
+  XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
   [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
-    callbackCalled = YES;
+    [notCalled fulfill];
+    [called fulfill];
     XCTAssertNil(authentication);
     XCTAssertEqualObjects(error.domain, @"anydomain");
     XCTAssertEqual(error.code, 12345);
@@ -429,9 +436,9 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   // Verify and clean up.
   [mockEMMErrorHandler verify];
   [mockEMMErrorHandler stopMocking];
-  XCTAssertFalse(callbackCalled);
+  [self waitForExpectations:@[ notCalled ] timeout:1];
   completion();
-  XCTAssertTrue(callbackCalled);
+  [self waitForExpectations:@[ called ] timeout:1];
   [self assertOldTokensInAuth:auth];
 }
 
@@ -610,35 +617,35 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 
 - (void)verifyTokensRefreshedWithMethod:(SEL)sel {
   GIDAuthentication *auth = [self observedAuth];
-  __block BOOL callbackCalled = NO;
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   // We know the method doesn't return anything, so there is no risk of leaking.
   [auth performSelector:sel withObject:^(GIDAuthentication *authentication, NSError *error) {
 #pragma clang diagnostic pop
-    callbackCalled = YES;
+    [expectation fulfill];
     [self assertNewTokensInAuth:authentication];
     XCTAssertNil(error);
   }];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
-  XCTAssertTrue(callbackCalled);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [self assertNewTokensInAuth:auth];
 }
 
 - (void)verifyTokensNotRefreshedWithMethod:(SEL)sel {
   GIDAuthentication *auth = [self observedAuth];
-  __block BOOL callbackCalled = NO;
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   // We know the method doesn't return anything, so there is no risk of leaking.
   [auth performSelector:sel withObject:^(GIDAuthentication *authentication, NSError *error) {
 #pragma clang diagnostic pop
-    callbackCalled = YES;
+    [expectation fulfill];
     [self assertOldTokensInAuth:authentication];
     XCTAssertNil(error);
   }];
   XCTAssertNil(_tokenFetchHandler);
-  XCTAssertTrue(callbackCalled);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [self assertOldTokensInAuth:auth];
 }
 

@@ -388,7 +388,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         [self authenticateWithOptions:options];
       } else {
         if (options.callback) {
-          options.callback(_currentUser, nil);
+          dispatch_async(dispatch_get_main_queue(), ^{
+            options.callback(_currentUser, nil);
+          });
         }
       }
     }];

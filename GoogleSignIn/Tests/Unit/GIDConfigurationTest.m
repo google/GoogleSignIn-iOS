@@ -33,7 +33,6 @@
       [[GIDConfiguration alloc] initWithClientID:OIDAuthorizationRequestTestingClientID];
   XCTAssertEqualObjects(configuration.clientID, OIDAuthorizationRequestTestingClientID);
   XCTAssertNil(configuration.serverClientID);
-  XCTAssertNil(configuration.loginHint);
   XCTAssertNil(configuration.hostedDomain);
   XCTAssertNil(configuration.openIDRealm);
 }
@@ -44,7 +43,6 @@
                                   serverClientID:kServerClientID];
   XCTAssertEqualObjects(configuration.clientID, OIDAuthorizationRequestTestingClientID);
   XCTAssertEqualObjects(configuration.serverClientID, kServerClientID);
-  XCTAssertNil(configuration.loginHint);
   XCTAssertNil(configuration.hostedDomain);
   XCTAssertNil(configuration.openIDRealm);
 }
@@ -53,7 +51,6 @@
   GIDConfiguration *configuration = [GIDConfiguration testInstance];
   XCTAssertEqualObjects(configuration.clientID, OIDAuthorizationRequestTestingClientID);
   XCTAssertEqualObjects(configuration.serverClientID, kServerClientID);
-  XCTAssertEqualObjects(configuration.loginHint, kLoginHint);
   XCTAssertEqualObjects(configuration.hostedDomain, kHostedDomain);
   XCTAssertEqualObjects(configuration.openIDRealm, kOpenIDRealm);
 }
