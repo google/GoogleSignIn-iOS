@@ -390,6 +390,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         if (options.callback) {
           dispatch_async(dispatch_get_main_queue(), ^{
             options.callback(_currentUser, nil);
+            _currentOptions = nil;
           });
         }
       }
@@ -515,6 +516,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     if (options.callback) {
       dispatch_async(dispatch_get_main_queue(), ^{
         options.callback(nil, error);
+        _currentOptions = nil;
       });
     }
     return;
@@ -682,6 +684,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     if (_currentOptions.callback) {
       dispatch_async(dispatch_get_main_queue(), ^{
         _currentOptions.callback(_currentUser, handlerAuthFlow.error);
+        _currentOptions = nil;
       });
     }
   }];
