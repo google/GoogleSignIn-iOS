@@ -146,6 +146,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
+   // Flag to indicate that the auth flow is restarting.
+   BOOL _restarting;
 }
 
 #pragma mark - Public methods
@@ -446,6 +448,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
          presentingViewController:options.presentingViewController
                          callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                     NSError *_Nullable error) {
+    if (_restarting) {
+      // The auth flow is restarting, so the work here would be performed in the next round.
+      _restarting = NO;
+      return;
+    }
+
     GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
     authFlow.emmSupport = emmSupport;
 
@@ -726,8 +734,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (!_currentAuthorizationFlow) {
     return NO;
   }
+  _restarting = YES;
   [_currentAuthorizationFlow cancel];
   _currentAuthorizationFlow = nil;
+  _restarting = NO;
   NSDictionary<NSString *, NSString *> *extraParameters = @{ kEMMRestartAuthParameter : @"1" };
   // In iOS 13 the presentation of ASWebAuthenticationSession needs an anchor window,
   // so we need to wait until the previous presentation is completely gone to ensure the right
