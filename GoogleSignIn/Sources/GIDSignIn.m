@@ -146,8 +146,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
-   // Flag to indicate that the auth flow is restarting.
-   BOOL _restarting;
+  // Flag to indicate that the auth flow is restarting.
+  BOOL _restarting;
 }
 
 #pragma mark - Public methods
