@@ -1,5 +1,2 @@
 try:
-  install:
-    pre:
-      - git clone https://github.com/googlesamples/google-services
-  project: 'google-services/ios/signin/SignInExample.xcodeproj'
+  project: 'Sample/SignInSampleForPod.xcodeproj'
