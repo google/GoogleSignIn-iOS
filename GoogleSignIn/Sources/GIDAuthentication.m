@@ -92,10 +92,10 @@ static NSString *const kNewIOSSystemName = @"iOS";
                request:(NSMutableURLRequest *)request
      finishedWithError:(nullable NSError *)error {
   [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
-    if (!_delegate || !_selector) {
+    if (!self->_delegate || !self->_selector) {
       return;
     }
-    NSMethodSignature *signature = [_delegate methodSignatureForSelector:_selector];
+    NSMethodSignature *signature = [self->_delegate methodSignatureForSelector:self->_selector];
     if (!signature) {
       return;
     }
@@ -103,8 +103,8 @@ static NSString *const kNewIOSSystemName = @"iOS";
     id argument2 = request;
     id argument3 = error;
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setTarget:_delegate];  // index 0
-    [invocation setSelector:_selector];  // index 1
+    [invocation setTarget:self->_delegate];  // index 0
+    [invocation setSelector:self->_selector];  // index 1
     [invocation setArgument:&argument1 atIndex:2];
     [invocation setArgument:&argument2 atIndex:3];
     [invocation setArgument:&argument3 atIndex:4];
@@ -236,22 +236,22 @@ static NSString *const kNewIOSSystemName = @"iOS";
       [self willChangeValueForKey:NSStringFromSelector(@selector(accessTokenExpirationDate))];
       [self willChangeValueForKey:NSStringFromSelector(@selector(idToken))];
       [self willChangeValueForKey:NSStringFromSelector(@selector(idTokenExpirationDate))];
-      [_authState updateWithTokenResponse:tokenResponse error:nil];
+      [self->_authState updateWithTokenResponse:tokenResponse error:nil];
       [self didChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
       [self didChangeValueForKey:NSStringFromSelector(@selector(accessTokenExpirationDate))];
       [self didChangeValueForKey:NSStringFromSelector(@selector(idToken))];
       [self didChangeValueForKey:NSStringFromSelector(@selector(idTokenExpirationDate))];
     } else {
       if (error.domain == OIDOAuthTokenErrorDomain) {
-        [_authState updateWithAuthorizationError:error];
+        [self->_authState updateWithAuthorizationError:error];
       }
     }
     [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
       NSArray *authenticationHandlerQueue;
-      @synchronized(_authenticationHandlerQueue) {
-        authenticationHandlerQueue = [_authenticationHandlerQueue copy];
-        [_authenticationHandlerQueue removeAllObjects];
+      @synchronized(self->_authenticationHandlerQueue) {
+        authenticationHandlerQueue = [self->_authenticationHandlerQueue copy];
+        [self->_authenticationHandlerQueue removeAllObjects];
       }
       for (GIDAuthenticationAction action in authenticationHandlerQueue) {
         dispatch_async(dispatch_get_main_queue(), ^{

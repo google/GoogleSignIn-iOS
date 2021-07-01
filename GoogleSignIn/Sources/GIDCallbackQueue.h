@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDCallbackQueue;
 
 // The block type of callbacks in the queue.
-typedef void (^GIDCallbackQueueCallback)();
+typedef void (^GIDCallbackQueueCallback)(void);
 
 // The class handles a queue for callbacks for asynchronous operations.
 // The queue starts in a ready state. Call |wait| and |next| to mark the

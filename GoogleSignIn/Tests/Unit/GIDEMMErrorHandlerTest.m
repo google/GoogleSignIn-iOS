@@ -69,11 +69,11 @@ NS_ASSUME_NONNULL_BEGIN
   [GULSwizzler swizzleClass:[UIWindow class]
                    selector:@selector(makeKeyAndVisible)
             isClassSelector:NO
-                  withBlock:^() { _keyWindowSet = YES; }];
+                  withBlock:^() { self->_keyWindowSet = YES; }];
   [GULSwizzler swizzleClass:[UIViewController class]
                    selector:@selector(presentViewController:animated:completion:)
             isClassSelector:NO
-                  withBlock:^(id obj, id arg1) { _presentedViewController = arg1; }];
+                  withBlock:^(id obj, id arg1) { self->_presentedViewController = arg1; }];
   [GULSwizzler swizzleClass:[GIDSignInStrings class]
                    selector:@selector(localizedStringForKey:text:)
             isClassSelector:YES
@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 // Expects opening a particular URL string in performing an action.
-- (void)expectOpenURLString:(NSString *)urlString inAction:(void (^)())action {
+- (void)expectOpenURLString:(NSString *)urlString inAction:(void (^)(void))action {
   // Swizzle and mock [UIApplication sharedApplication] since it is unavailable in unit tests.
   id mockApplication = OCMStrictClassMock([UIApplication class]);
   [GULSwizzler swizzleClass:[UIApplication class]

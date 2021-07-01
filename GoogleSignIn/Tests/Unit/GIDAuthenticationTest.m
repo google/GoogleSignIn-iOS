@@ -144,9 +144,9 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
                               OIDTokenCallback callback) {
     XCTAssertNotNil(authorizationResponse.request.clientID);
     XCTAssertNotNil(authorizationResponse.request.configuration.tokenEndpoint);
-    XCTAssertNil(_tokenFetchHandler);  // only one on-going fetch allowed
-    _tokenFetchHandler = [callback copy];
-    _tokenRequest = [request copy];
+    XCTAssertNil(self->_tokenFetchHandler);  // only one on-going fetch allowed
+    self->_tokenFetchHandler = [callback copy];
+    self->_tokenRequest = [request copy];
     return nil;
   }];
   _observedAuths = [[NSMutableArray alloc] init];
@@ -155,7 +155,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   [GULSwizzler swizzleClass:[UIDevice class]
                    selector:@selector(systemName)
             isClassSelector:NO
-                  withBlock:^(id sender) { return _fakeSystemName; }];
+                  withBlock:^(id sender) { return self->_fakeSystemName; }];
 }
 
 - (void)tearDown {
