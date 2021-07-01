@@ -54,7 +54,7 @@ typedef enum {
 }
 
 - (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)())completion {
+                     completion:(void (^)(void))completion {
   ErrorCode errorCode = ErrorCodeNone;
   NSURL *appVerificationURL;
   @synchronized(self) {  // for accessing _pendingDialog
@@ -99,11 +99,11 @@ typedef enum {
     alertWindow.rootViewController.view.backgroundColor = [UIColor clearColor];
     alertWindow.windowLevel = UIWindowLevelAlert;
     [alertWindow makeKeyAndVisible];
-    void (^finish)() = ^{
+    void (^finish)(void) = ^{
       alertWindow.hidden = YES;
       alertWindow.rootViewController = nil;
       [keyWindow makeKeyAndVisible];
-      _pendingDialog = NO;
+      self->_pendingDialog = NO;
       completion();
     };
     UIAlertController *alert;
@@ -133,7 +133,7 @@ typedef enum {
 #pragma mark - Alerts
 
 // Returns an alert controller for device not compliant error.
-- (UIAlertController *)deviceNotCompliantAlertWithCompletion:(void (^)())completion {
+- (UIAlertController *)deviceNotCompliantAlertWithCompletion:(void (^)(void))completion {
   UIAlertController *alert =
       [UIAlertController alertControllerWithTitle:[self unableToAccessString]
                                           message:[self deviceNotCompliantString]
@@ -147,7 +147,7 @@ typedef enum {
 };
 
 // Returns an alert controller for passcode required error.
-- (UIAlertController *)passcodeRequiredAlertWithCompletion:(void (^)())completion {
+- (UIAlertController *)passcodeRequiredAlertWithCompletion:(void (^)(void))completion {
   UIAlertController *alert =
       [UIAlertController alertControllerWithTitle:[self unableToAccessString]
                                           message:[self passcodeRequiredString]
@@ -188,7 +188,7 @@ typedef enum {
 
 // Returns an alert controller for app verification required error.
 - (UIAlertController *)appVerificationRequiredAlertWithURL:(nullable NSURL *)url
-                                                completion:(void (^)())completion {
+                                                completion:(void (^)(void))completion {
   UIAlertController *alert;
   if (url) {
     // If the URL is provided, prompt user to open this URL or cancel.

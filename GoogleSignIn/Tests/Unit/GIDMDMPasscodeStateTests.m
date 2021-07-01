@@ -48,12 +48,12 @@
   }
   _canEvaluatePolicyCalled = NO;
   id canEvaluatePolicyError = ^BOOL(id context, LAPolicy policy, NSError * _Nullable *error) {
-    _canEvaluatePolicyCalled = YES;
+    self->_canEvaluatePolicyCalled = YES;
     XCTAssertEqual(policy, LAPolicyDeviceOwnerAuthentication);
     if (error) {
-      *error = _nextCanEvaluatePolicyError;
+      *error = self->_nextCanEvaluatePolicyError;
     }
-    return _nextCanEvaluatePolicyResult;
+    return self->_nextCanEvaluatePolicyResult;
   };
   [GULSwizzler swizzleClass:[LAContext class]
                    selector:@selector(canEvaluatePolicy:error:)

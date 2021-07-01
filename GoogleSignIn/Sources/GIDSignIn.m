@@ -391,8 +391,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       } else {
         if (options.callback) {
           dispatch_async(dispatch_get_main_queue(), ^{
-            options.callback(_currentUser, nil);
-            _currentOptions = nil;
+            options.callback(self->_currentUser, nil);
+            self->_currentOptions = nil;
           });
         }
       }
@@ -448,9 +448,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
          presentingViewController:options.presentingViewController
                          callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                     NSError *_Nullable error) {
-    if (_restarting) {
+    if (self->_restarting) {
       // The auth flow is restarting, so the work here would be performed in the next round.
-      _restarting = NO;
+      self->_restarting = NO;
       return;
     }
 
@@ -524,7 +524,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     if (options.callback) {
       dispatch_async(dispatch_get_main_queue(), ^{
         options.callback(nil, error);
-        _currentOptions = nil;
+        self->_currentOptions = nil;
       });
     }
     return;
@@ -617,8 +617,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         return;
       }
       [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-      _currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
-                                                  profileData:handlerAuthFlow.profileData];
+      self->_currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                        profileData:handlerAuthFlow.profileData];
       [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
     }
   }];
@@ -689,10 +689,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
-    if (_currentOptions.callback) {
+    if (self->_currentOptions.callback) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        _currentOptions.callback(_currentUser, handlerAuthFlow.error);
-        _currentOptions = nil;
+        self->_currentOptions.callback(self->_currentUser, handlerAuthFlow.error);
+        self->_currentOptions = nil;
       });
     }
   }];
@@ -745,8 +745,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                  (int64_t)(kPresentationDelayAfterCancel * NSEC_PER_SEC)),
                  dispatch_get_main_queue(), ^{
-    [self signInWithOptions:[_currentOptions optionsWithExtraParameters:extraParameters
-                                                        forContinuation:YES]];
+    [self signInWithOptions:[self->_currentOptions optionsWithExtraParameters:extraParameters
+                                                              forContinuation:YES]];
   });
   return YES;
 }

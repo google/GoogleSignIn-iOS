@@ -86,7 +86,6 @@ static NSString * const kFakeUserName = @"fake username";
 static NSString * const kFakeUserGivenName = @"fake";
 static NSString * const kFakeUserFamilyName = @"username";
 static NSString * const kFakeUserPictureURL = @"fake_user_picture_url";
-static const NSTimeInterval kIDTokenExpiration = 12345;
 
 static NSString * const kContinueURL = @"com.google.UnitTests:/oauth2callback";
 static NSString * const kContinueURLWithClientID = @"FakeClientID:/oauth2callback";
@@ -272,22 +271,23 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
   OCMStub([_authorization saveAuthorization:OCMOCK_ANY toKeychainForName:OCMOCK_ANY])
       .andDo(^(NSInvocation *invocation) {
-        _keychainSaved = _saveAuthorizationReturnValue;
-        [invocation setReturnValue:&_saveAuthorizationReturnValue];
+        self->_keychainSaved = self->_saveAuthorizationReturnValue;
+        [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
       });
   OCMStub([_authorization removeAuthorizationFromKeychainForName:OCMOCK_ANY])
       .andDo(^(NSInvocation *invocation) {
-        _keychainRemoved = YES;
+        self->_keychainRemoved = YES;
       });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _authentication = OCMStrictClassMock([GIDAuthentication class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([_oidAuthorizationService
-      presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(_savedAuthorizationRequest)
-         presentingViewController:SAVE_TO_ARG_BLOCK(_savedPresentingViewController)
-                         callback:COPY_TO_ARG_BLOCK(_savedAuthorizationCallback)]);
-  OCMStub([_oidAuthorizationService performTokenRequest:SAVE_TO_ARG_BLOCK(_savedTokenRequest)
-                                               callback:COPY_TO_ARG_BLOCK(_savedTokenCallback)]);
+      presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
+         presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
+                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
+  OCMStub([self->_oidAuthorizationService
+      performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
+                 callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
   _fetcherService = [[GIDFakeFetcherService alloc] init];
@@ -1031,9 +1031,9 @@ static void *kTestObserverContext = &kTestObserverContext;
       if (!user) {
         XCTAssertNotNil(error, @"should have an error if user is nil");
       }
-      XCTAssertFalse(_callbackCalled, @"callback already called");
-      _callbackCalled = YES;
-      _authError = error;
+      XCTAssertFalse(self->_callbackCalled, @"callback already called");
+      self->_callbackCalled = YES;
+      self->_authError = error;
     }];
 
     [_authorization verify];

@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 // after the user interacts with the error dialog;
 // if the return value is |NO|, |completion| will be called before returning.
 - (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)())completion;
+                     completion:(void (^)(void))completion;
 
 @end
 
