@@ -4,6 +4,7 @@
 - Support for Simulator on M1 Macs.
 - API surface updates
     - `GIDSignIn`
+        - `sharedInstance` is now a class property.
         - `signIn` is now `signInWithConfiguration:presentingViewController:callback:` and always requests basic profile scopes.
         - `addScopes:presentingViewController:callback:` is the new way to add scopes beyond basic profile to a currently signed-in user.
         - `restorePreviousSignIn` is now `restorePreviousSignInWithCallback:`.
