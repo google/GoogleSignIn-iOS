@@ -25,5 +25,5 @@ service.
     ```
     open GoogleSignIn-iOS/Sample/SignInSample.xcodeproj
     ```
-* Start adding Google Sign-In to your own app by following our [getting started guides](https://developers.google.com/identity/sign-in/ios/start-integrating).
+* Add Google Sign-In to your own app by following our [getting started guides](https://developers.google.com/identity/sign-in/ios/start-integrating).
 * Take a look at the [API reference](https://developers.google.com/identity/sign-in/ios/api/).
