@@ -7,24 +7,23 @@
 
 Get users into your apps quickly and securely, using a registration system they already use and trust—their Google account.
 
-Please visit [our developer site](https://developers.google.com/identity/sign-in/ios/)
+Visit [our developer site](https://developers.google.com/identity/sign-in/ios/)
 for integration instructions, documentation, support information, and terms of
 service.
 
 ## Getting Started
 
-* Try the [sample app](Sample) using
-  * [CocoaPods](https://cocoapods.org)
+* Try the [sample app](Sample).
+  * Using [CocoaPods](https://cocoapods.org):
     ```
     pod try GoogleSignIn
     ```
-  * or [Swift Package Manager](https://swift.org/package-manager/)
+  * Using [Swift Package Manager](https://swift.org/package-manager/):
     ```
     git clone https://github.com/google/GoogleSignIn-iOS
     ```
     ```
     open GoogleSignIn-iOS/Sample/SignInSample.xcodeproj
     ```
-  and follow the directions [here](https://developers.google.com/identity/sign-in/ios/start).
 * Start adding Google Sign-In to your own app by following our [getting started guides](https://developers.google.com/identity/sign-in/ios/start-integrating).
 * Take a look at the [API reference](https://developers.google.com/identity/sign-in/ios/api/).
