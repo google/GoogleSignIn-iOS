@@ -1,22 +1,28 @@
-# 6.0.0 (2021-7-14)
+# 6.0.0 (2021-7-13)
 - Google Sign-In for iOS is now open source.
 - Swift Package Manager support.
 - Support for Simulator on M1 Macs.
 - API surface updates
-    - `GIDSignIn`
-        - `sharedInstance` is now a class property.
-        - `signIn` is now `signInWithConfiguration:presentingViewController:callback:` and always requests basic profile scopes.
-        - `addScopes:presentingViewController:callback:` is the new way to add scopes beyond basic profile to a currently signed-in user.
-        - `restorePreviousSignIn` is now `restorePreviousSignInWithCallback:`.
-        - `disconnect` is now `disconnectWithCallback:`.
-        - The `GIDSignInDelegate` protocol has been removed in favor of `GIDSignInCallback` and `GIDDisconnectCallback` blocks.
-        - All sign-in flow configuration properties have been moved to `GIDConfiguration`.
-    - The `GIDConfiguration` class had been added to represent the configuration needed to sign in a user.
-    - `GIDAuthentication`
-        - `getTokensWithHandler:` is now `doWithFreshTokens:`.
-        - The `GIDAuthenticationHandler` typedef has been renamed `GIDAuthenticationAction`.
-        - `refreshTokensWithHandler:` has been removed, use `doWithFreshTokens:` instead.
-    - `GIDSignInButton` no longer makes calls to `GIDSignIn` internally and will need to be wired to an `IBAction` or similar in order for you to call `signInWithConfiguration:presentingViewController:callback:` to initiate a sign-in flow.
+  - `GIDSignIn`
+    - `sharedInstance` is now a class property.
+    - `signIn` is now `signInWithConfiguration:presentingViewController:callback:` and always
+      requests basic profile scopes.
+    - `addScopes:presentingViewController:callback:` is the new way to add scopes beyond basic
+      profile to a currently signed-in user.
+    - `restorePreviousSignIn` is now `restorePreviousSignInWithCallback:`.
+    - `disconnect` is now `disconnectWithCallback:`.
+    - The `GIDSignInDelegate` protocol has been removed in favor of `GIDSignInCallback` and
+      `GIDDisconnectCallback` blocks.
+    - All sign-in flow configuration properties have been moved to `GIDConfiguration`.
+  - The `GIDConfiguration` class had been added to represent the configuration needed to sign in a
+    user.
+  - `GIDAuthentication`
+    - `getTokensWithHandler:` is now `doWithFreshTokens:`.
+    - The `GIDAuthenticationHandler` typedef has been renamed `GIDAuthenticationAction`.
+    - `refreshTokensWithHandler:` has been removed, use `doWithFreshTokens:` instead.
+  - `GIDSignInButton` no longer makes calls to `GIDSignIn` internally and will need to be wired to
+    an `IBAction` or similar in order for you to call
+    `signInWithConfiguration:presentingViewController:callback:` to initiate a sign-in flow.
 
 # 5.0.2 (2019-11-7)
 - Fixes the wrong error code being sent to `signIn:didSignInForUser:withError:` when the user
@@ -28,14 +34,14 @@
 
 # 5.0.0 (2019-8-14)
 - Changes to GIDSignIn
-    - `uiDelegate` has been replaced with `presentingViewController`.
-    - `hasAuthInKeychain` has been replaced with `hasPreviousSignIn`.
-    - `signInSilently` has been replaced with `restorePreviousSignIn`.
-    - Removed deprecated `kGIDSignInErrorCodeNoSignInHandlersInstalled` error code.
+  - `uiDelegate` has been replaced with `presentingViewController`.
+  - `hasAuthInKeychain` has been replaced with `hasPreviousSignIn`.
+  - `signInSilently` has been replaced with `restorePreviousSignIn`.
+  - Removed deprecated `kGIDSignInErrorCodeNoSignInHandlersInstalled` error code.
 - Changes to GIDAuthentication
-    - Removed deprecated methods `getAccessTokenWithHandler:` and `refreshAccessTokenWithHandler:`.
+  - Removed deprecated methods `getAccessTokenWithHandler:` and `refreshAccessTokenWithHandler:`.
 - Changes to GIDGoogleUser
-    - Removed deprecated property `accessibleScopes`, use `grantedScopes` instead.
+  - Removed deprecated property `accessibleScopes`, use `grantedScopes` instead.
 - Adds dependencies on AppAuth and GTMAppAuth.
 - Removes the dependency on GoogleToolboxForMac.
 - Drops support for iOS 7.

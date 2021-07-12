@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, nullable) NSString *openIDRealm;
 
 /// Unavailable.  Please use `initWithClientID:` or one of the other initializers below.
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /// Initialize a `GIDConfiguration` object with a client ID.
