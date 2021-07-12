@@ -42,7 +42,7 @@ typedef NS_ENUM(NSInteger, GIDSignInButtonColorScheme) {
 /// You can instantiate this class programmatically or from a NIB file. You
 /// should connect this control to an `IBAction`, or something similar, that
 /// calls signInWithConfiguration:presentingViewController:callback: on
-/// `GIDSignIn` and add it to your view heirarchy.
+/// `GIDSignIn` and add it to your view hierarchy.
 @interface GIDSignInButton : UIControl
 
 /// The layout style for the sign-in button.
