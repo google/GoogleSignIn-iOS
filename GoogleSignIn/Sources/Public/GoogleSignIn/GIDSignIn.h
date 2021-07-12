@@ -64,9 +64,11 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 @property(nonatomic, readonly, nullable) GIDGoogleUser *currentUser;
 
 /// Unavailable. Use the `sharedInstance` property to instantiate `GIDSignIn`.
+/// :nodoc:
 + (instancetype)new NS_UNAVAILABLE;
 
 /// Unavailable. Use the `sharedInstance` property to instantiate `GIDSignIn`.
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /// This method should be called from your `UIApplicationDelegate`'s `application:openURL:options:`
