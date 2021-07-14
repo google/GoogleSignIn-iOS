@@ -274,7 +274,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
                                   serverClientID:self.currentUser.serverClientID
                                     hostedDomain:self.currentUser.hostedDomain
-                                     openIDRealm:self.currentUser.openIDRealm];
+                                     openIDRealm:self.currentUser.openIDRealm
+                                           nonce:nil];
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
@@ -595,18 +596,29 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
+
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
+  NSString *codeVerifier = [OIDAuthorizationRequest generateCodeVerifier];
+  NSString *codeChallenge = [OIDAuthorizationRequest codeChallengeS256ForVerifier:codeVerifier];
+  NSString *nonce = options.configuration.nonce ? options.configuration.nonce : [OIDAuthorizationRequest generateState];
+
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
-                                                      scopes:options.scopes
+                                                clientSecret:nil
+                                                       scope:[OIDScopeUtilities scopesWithArray:options.scopes]
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
+                                                       state:[OIDAuthorizationRequest generateState]
+                                                       nonce:nonce
+                                                codeVerifier:codeVerifier
+                                               codeChallenge:codeChallenge
+                                         codeChallengeMethod:OIDOAuthorizationRequestCodeChallengeMethodS256
                                         additionalParameters:additionalParameters];
 
   _currentAuthorizationFlow = [OIDAuthorizationService

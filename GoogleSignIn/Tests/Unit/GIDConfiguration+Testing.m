@@ -50,7 +50,8 @@ NSString *const kOpenIDRealm = @"fakeOpenIDRealm";
   return [[GIDConfiguration alloc] initWithClientID:OIDAuthorizationRequestTestingClientID
                                      serverClientID:kServerClientID
                                        hostedDomain:kHostedDomain
-                                        openIDRealm:kOpenIDRealm];
+                                        openIDRealm:kOpenIDRealm
+                                              nonce:nil];
 }
 
 @end

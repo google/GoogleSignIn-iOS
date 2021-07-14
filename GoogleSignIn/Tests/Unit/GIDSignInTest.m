@@ -630,10 +630,11 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOpenIDRealm {
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                      serverClientID:nil
-                                                        hostedDomain:nil
-                                                         openIDRealm:kOpenIDRealm];
+  _signIn._configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                       serverClientID:nil
+                                                         hostedDomain:nil
+                                                          openIDRealm:kOpenIDRealm
+                                                                nonce:nil];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -665,10 +666,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOAuthLogin_HostedDomain {
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                      serverClientID:nil
-                                                        hostedDomain:kHostedDomain
-                                                         openIDRealm:nil];
+
+  _signIn._configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                               serverClientID:nil
+                                                 hostedDomain:kHostedDomain
+                                                  openIDRealm:nil
+                                                        nonce:nil];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
