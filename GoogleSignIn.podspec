@@ -9,7 +9,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   s.license          = { :type => 'Apache', :file => 'LICENSE' }
   s.authors          = 'Google LLC'
   s.source           = {
-    :git => 'https://github.com/google/GoogleSignIn-iOS.git',
+    :git => 'https://github.com/airgap-it/GoogleSignIn-iOS',
     :tag => s.version.to_s
   }
   ios_deployment_target = '9.0'
