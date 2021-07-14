@@ -467,7 +467,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                serverClientID:nil
                                                  hostedDomain:nil
-                                                  openIDRealm:kOpenIDRealm];
+                                                  openIDRealm:kOpenIDRealm
+                                                        nonce:nil];
 
   [self OAuthLoginWithOptions:nil
                     authError:nil
@@ -502,7 +503,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                serverClientID:nil
                                                  hostedDomain:kHostedDomain
-                                                  openIDRealm:nil];
+                                                  openIDRealm:nil
+                                                        nonce:nil];
 
   [self OAuthLoginWithOptions:nil
                     authError:nil
