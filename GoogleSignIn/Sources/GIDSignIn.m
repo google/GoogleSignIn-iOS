@@ -690,10 +690,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     if (self->_currentOptions.callback) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        self->_currentOptions.callback(self->_currentUser, handlerAuthFlow.error);
+        GIDSignInCallback callback = [self->_currentOptions.callback copy];
         self->_currentOptions = nil;
-      });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            callback(self->_currentUser, handlerAuthFlow.error);
+        });
     }
   }];
 }
