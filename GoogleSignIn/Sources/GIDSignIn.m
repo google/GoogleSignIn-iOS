@@ -390,9 +390,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         [self authenticateWithOptions:options];
       } else {
         if (options.callback) {
+          self->_currentOptions = nil;
           dispatch_async(dispatch_get_main_queue(), ^{
             options.callback(self->_currentUser, nil);
-            self->_currentOptions = nil;
           });
         }
       }
@@ -522,9 +522,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
     if (options.callback) {
+      self->_currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
         options.callback(nil, error);
-        self->_currentOptions = nil;
       });
     }
     return;
@@ -690,11 +690,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     if (self->_currentOptions.callback) {
-        GIDSignInCallback callback = [self->_currentOptions.callback copy];
-        self->_currentOptions = nil;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            callback(self->_currentUser, handlerAuthFlow.error);
-        });
+      GIDSignInCallback callback = self->_currentOptions.callback;
+      self->_currentOptions = nil;
+      dispatch_async(dispatch_get_main_queue(), ^{
+        callback(self->_currentUser, handlerAuthFlow.error);
+      });
     }
   }];
 }
