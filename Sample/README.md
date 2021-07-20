@@ -15,7 +15,7 @@ pod install
 open SignInSampleForPod.xcworkspace
 ```
 
-3. Run the 'SignInSample' target.
+3. Run the 'SampleForPod' target.
 
 ## Swift Pacakage Manager
 
