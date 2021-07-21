@@ -126,6 +126,9 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 
 /// Starts an interactive consent flow to add scopes to the current user's grants.
 ///
+/// The callback will be called at the end of this process.  If successful, a new `GIDGoogleUser`
+/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
+///
 /// @param scopes The scopes to ask the user to consent to.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
 ///     iOS 9 and 10.
