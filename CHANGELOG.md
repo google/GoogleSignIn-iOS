@@ -1,5 +1,6 @@
 # 6.0.1 (2021-7-21)
-- Fixes nested callbacks not being called for signIn and addScopes methods. ([#29](https://github.com/google/GoogleSignIn-iOS/pull/29))
+- Fixes nested callbacks not being called for signIn and addScopes methods.
+  ([#29](https://github.com/google/GoogleSignIn-iOS/pull/29))
 
 # 6.0.0 (2021-7-13)
 - Google Sign-In for iOS is now open source.
