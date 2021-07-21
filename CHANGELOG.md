@@ -1,4 +1,4 @@
-# 6.0.1 (2021-7-20)
+# 6.0.1 (2021-7-21)
 - Fixes nested callbacks not being called for signIn and addScopes methods.
 
 # 6.0.0 (2021-7-13)
