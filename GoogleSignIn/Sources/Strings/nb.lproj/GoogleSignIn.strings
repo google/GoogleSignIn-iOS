@@ -4,18 +4,6 @@
 /* Long form sign-in button text */
 "Sign in with Google" = "Logg på med Google";
 
-/* The title of the promotional prompt to install the Google app. */
-"PromoTitle" = "Logg på med Google";
-
-/* The body message of the promotional prompt to install the Google app. */
-"PromoMessage" = "Skaff deg den gratis Google-appen, og logg på apper med Google-kontoen din. Du trenger ikke å huske passord.";
-
-/* The cancel button on the promotional prompt to install the Google app. */
-"PromoActionCancel" = "Avbryt";
-
-/* The install button on the promotional prompt to install the Google app. */
-"PromoActionInstall" = "Hent";
-
 /* The text for the button for user to acknowledge and dismiss a dialog. */
 "OK" = "OK";
 
