@@ -98,7 +98,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param configuration The configuration properties to be used for this flow.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
@@ -114,7 +115,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param configuration The configuration properties to be used for this flow.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
@@ -131,7 +133,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param scopes The scopes to ask the user to consent to.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
