@@ -180,6 +180,27 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
 }
 
+- (BOOL)restorePreviousSignInNoRefresh {
+  if (_currentUser) {
+    return YES;
+  }
+
+  // Try retrieving an authorization object from the keychain.
+  OIDAuthState *authState = [self loadAuthState];
+  if (!authState) {
+    return NO;
+  }
+
+  // Restore current user without refreshing the access token.
+  OIDIDToken *idToken =
+      [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
+  GIDProfileData *profileData = [self profileDataWithIDToken:idToken];
+
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
+  [self setCurrentUserWithKVO:user];
+  return YES;
+}
+
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
@@ -200,7 +221,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                            hint:nil
                        callback:callback];
 }
-
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
@@ -402,18 +422,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 }
 
-- (nullable GIDGoogleUser *)restoredGoogleUserFromPreviousSignIn {
-  OIDAuthState *authState = [self loadAuthState];
-
-  if (!authState) {
-    return nil;
-  }
-
-  return [[GIDGoogleUser alloc] initWithAuthState:authState
-                                      profileData:nil];
-}
-
-# pragma mark - Authentication flow
+#pragma mark - Authentication flow
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
   GIDSignInCallbackSchemes *schemes =
@@ -616,10 +625,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                                  code:kGIDSignInErrorCodeKeychain];
         return;
       }
-      [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-      self->_currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
-                                                        profileData:handlerAuthFlow.profileData];
-      [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+      GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                         profileData:handlerAuthFlow.profileData];
+      [self setCurrentUserWithKVO:user];
     }
   }];
 }
@@ -636,50 +644,42 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     }
     OIDIDToken *idToken =
         [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
+    // If the profile data are present in the ID token, use them.
     if (idToken) {
-      // If the picture and name fields are present in the ID token, use them, otherwise make
-      // a userinfo request to fetch them.
-      if (idToken.claims[kBasicProfilePictureKey] &&
-          idToken.claims[kBasicProfileNameKey] &&
-          idToken.claims[kBasicProfileGivenNameKey] &&
-          idToken.claims[kBasicProfileFamilyNameKey]) {
-        handlerAuthFlow.profileData = [[GIDProfileData alloc]
-            initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                     name:idToken.claims[kBasicProfileNameKey]
-                givenName:idToken.claims[kBasicProfileGivenNameKey]
-               familyName:idToken.claims[kBasicProfileFamilyNameKey]
-                 imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
-      } else {
-        [handlerAuthFlow wait];
-        NSURL *infoURL = [NSURL URLWithString:
-            [NSString stringWithFormat:kUserInfoURLTemplate,
-                [GIDSignInPreferences googleUserInfoServer],
-                authState.lastTokenResponse.accessToken]];
-        [self startFetchURL:infoURL
-                    fromAuthState:authState
-                      withComment:@"GIDSignIn: fetch basic profile info"
-            withCompletionHandler:^(NSData *data, NSError *error) {
-          if (data && !error) {
-            NSError *jsonDeserializationError;
-            NSDictionary<NSString *, NSString *> *profileDict =
-                [NSJSONSerialization JSONObjectWithData:data
-                                                options:NSJSONReadingMutableContainers
-                                                  error:&jsonDeserializationError];
-            if (profileDict) {
-              handlerAuthFlow.profileData = [[GIDProfileData alloc]
-                  initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                           name:profileDict[kBasicProfileNameKey]
-                      givenName:profileDict[kBasicProfileGivenNameKey]
-                     familyName:profileDict[kBasicProfileFamilyNameKey]
-                       imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
-            }
+      handlerAuthFlow.profileData = [self profileDataWithIDToken:idToken];
+    }
+    
+    // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
+    if (!handlerAuthFlow.profileData) {
+      [handlerAuthFlow wait];
+      NSURL *infoURL = [NSURL URLWithString:
+          [NSString stringWithFormat:kUserInfoURLTemplate,
+              [GIDSignInPreferences googleUserInfoServer],
+              authState.lastTokenResponse.accessToken]];
+      [self startFetchURL:infoURL
+                  fromAuthState:authState
+                    withComment:@"GIDSignIn: fetch basic profile info"
+          withCompletionHandler:^(NSData *data, NSError *error) {
+        if (data && !error) {
+          NSError *jsonDeserializationError;
+          NSDictionary<NSString *, NSString *> *profileDict =
+              [NSJSONSerialization JSONObjectWithData:data
+                                              options:NSJSONReadingMutableContainers
+                                                error:&jsonDeserializationError];
+          if (profileDict) {
+            handlerAuthFlow.profileData = [[GIDProfileData alloc]
+                initWithEmail:idToken.claims[kBasicProfileEmailKey]
+                          name:profileDict[kBasicProfileNameKey]
+                    givenName:profileDict[kBasicProfileGivenNameKey]
+                    familyName:profileDict[kBasicProfileFamilyNameKey]
+                      imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
           }
-          if (error) {
-            handlerAuthFlow.error = error;
-          }
-          [handlerAuthFlow next];
-        }];
-      }
+        }
+        if (error) {
+          handlerAuthFlow.error = error;
+        }
+        [handlerAuthFlow next];
+      }];
     }
   }];
 }
@@ -825,6 +825,31 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   GTMAppAuthFetcherAuthorization *authorization =
       [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName];
   return authorization.authState;
+}
+
+// Generates user profile from OIDIDToken.
+- (GIDProfileData *)profileDataWithIDToken:(OIDIDToken *)idToken {
+  if (!idToken ||
+      !idToken.claims[kBasicProfilePictureKey] ||
+      !idToken.claims[kBasicProfileNameKey] || 
+      !idToken.claims[kBasicProfileGivenNameKey] ||
+      !idToken.claims[kBasicProfileFamilyNameKey]) {
+    return nil;
+  } 
+
+  return [[GIDProfileData alloc]
+      initWithEmail:idToken.claims[kBasicProfileEmailKey]
+               name:idToken.claims[kBasicProfileNameKey]
+          givenName:idToken.claims[kBasicProfileGivenNameKey]
+          familyName:idToken.claims[kBasicProfileFamilyNameKey]
+            imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
+}
+
+// Set currentUser making appropriate KVO calls.
+- (void)setCurrentUserWithKVO:(GIDGoogleUser *_Nullable)user {
+  [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+  self->_currentUser = user;
+  [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
 }
 
 @end
