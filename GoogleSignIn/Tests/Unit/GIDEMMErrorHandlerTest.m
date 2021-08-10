@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 // Expects opening a particular URL string in performing an action.
-- (void)expectOpenURLString:(NSString *)urlString inAction:(void (^)(void))action {
+- (void)expectOpenURLString:(NSString *)urlString inAction:(void (^)(void))action NS_EXTENSION_UNAVAILABLE("Uses APIs (i.e UIApplication.sharedApplication) not available for use in App Extensions.") {
   // Swizzle and mock [UIApplication sharedApplication] since it is unavailable in unit tests.
   id mockApplication = OCMStrictClassMock([UIApplication class]);
   [GULSwizzler swizzleClass:[UIApplication class]

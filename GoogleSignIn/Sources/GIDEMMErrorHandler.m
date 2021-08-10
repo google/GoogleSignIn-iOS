@@ -54,7 +54,7 @@ typedef enum {
 }
 
 - (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)(void))completion {
+                     completion:(void (^)(void))completion NS_EXTENSION_UNAVAILABLE("Uses APIs (i.e UIApplication.sharedApplication) not available for use in App Extensions.") {
   ErrorCode errorCode = ErrorCodeNone;
   NSURL *appVerificationURL;
   @synchronized(self) {  // for accessing _pendingDialog
@@ -147,7 +147,7 @@ typedef enum {
 };
 
 // Returns an alert controller for passcode required error.
-- (UIAlertController *)passcodeRequiredAlertWithCompletion:(void (^)(void))completion {
+- (UIAlertController *)passcodeRequiredAlertWithCompletion:(void (^)(void))completion NS_EXTENSION_UNAVAILABLE("Uses APIs (i.e UIApplication.sharedApplication) not available for use in App Extensions.") {
   UIAlertController *alert =
       [UIAlertController alertControllerWithTitle:[self unableToAccessString]
                                           message:[self passcodeRequiredString]
@@ -188,7 +188,7 @@ typedef enum {
 
 // Returns an alert controller for app verification required error.
 - (UIAlertController *)appVerificationRequiredAlertWithURL:(nullable NSURL *)url
-                                                completion:(void (^)(void))completion {
+                                                completion:(void (^)(void))completion NS_EXTENSION_UNAVAILABLE("Uses APIs (i.e UIApplication.sharedApplication) not available for use in App Extensions.") {
   UIAlertController *alert;
   if (url) {
     // If the URL is provided, prompt user to open this URL or cancel.
