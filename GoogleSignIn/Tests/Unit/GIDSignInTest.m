@@ -315,10 +315,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   };
 
   [_signIn addObserver:self
-            forKeyPath:NSStringFromSelector(@selector(clientID))
-               options:0
-               context:kTestObserverContext];
-  [_signIn addObserver:self
             forKeyPath:NSStringFromSelector(@selector(currentUser))
                options:0
                context:kTestObserverContext];
@@ -337,9 +333,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_fakeMainBundle stopFaking];
   [super tearDown];
 
-  [_signIn removeObserver:self
-               forKeyPath:NSStringFromSelector(@selector(clientID))
-                  context:kTestObserverContext];
   [_signIn removeObserver:self
                forKeyPath:NSStringFromSelector(@selector(currentUser))
                   context:kTestObserverContext];
