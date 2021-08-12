@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDSignInInternalOptions
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:(nullable UIViewController *)presentingViewController
+                       presentingViewController:
+                           (nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                        callback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];

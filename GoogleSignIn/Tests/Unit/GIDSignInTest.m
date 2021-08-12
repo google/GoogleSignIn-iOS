@@ -353,7 +353,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
 }
 
-- (void)testRestoredGoogleUserFromPreviousSignIn_hasPreviousUser {
+- (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization expect] andReturn:_authState] authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse scope]).andReturn(nil);
@@ -367,21 +367,21 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
 
-  GIDGoogleUser *previousUser = [_signIn restoredGoogleUserFromPreviousSignIn];
+  [_signIn restorePreviousSignInNoRefresh];
 
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
-  XCTAssertEqual(previousUser.userID, kFakeGaiaID);
+  XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
 }
 
-- (void)testRestoredGoogleUserFromPreviousSignIn_hasNoPreviousUser {
+- (void)testRestoredPreviousSignInNoRefresh_hasNoPreviousUser {
   [[[_authorization expect] andReturn:nil] authState];
 
-  GIDGoogleUser *previousUser = [_signIn restoredGoogleUserFromPreviousSignIn];
+  [_signIn restorePreviousSignInNoRefresh];
 
   [_authorization verify];
-  XCTAssertNil(previousUser);
+  XCTAssertNil(_signIn.currentUser);
 }
 
 - (void)testHasPreviousSignIn_HasBeenAuthenticated {
