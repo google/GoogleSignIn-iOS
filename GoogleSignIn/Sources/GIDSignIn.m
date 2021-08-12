@@ -755,10 +755,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 #pragma mark - Key-Value Observing
 
 // Override |NSObject(NSKeyValueObservingCustomization)| method in order to provide custom KVO
-// notifications for |clientID| and |currentUser| properties.
+// notifications for the |currentUser| property.
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
-  if ([key isEqual:NSStringFromSelector(@selector(clientID))] ||
-      [key isEqual:NSStringFromSelector(@selector(currentUser))]) {
+  if ([key isEqual:NSStringFromSelector(@selector(currentUser))]) {
     return NO;
   }
   return [super automaticallyNotifiesObserversForKey:key];
