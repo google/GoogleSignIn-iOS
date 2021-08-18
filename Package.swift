@@ -33,7 +33,7 @@ let package = Package(
     .package(
       name: "AppAuth",
       url: "https://github.com/Figo0o/AppAuth-iOS",
-      .revision("744e9f199baf48a104c6502bd4ca11bbc1d6c11f")),
+      .revision("591d17dae7ca2c3cd19785595080647781a2f2ec")),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
