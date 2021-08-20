@@ -16,10 +16,10 @@ jobs:
     strategy:
       matrix:
         flags: [
-	  '',
-	  '--use-libraries',
-	  '--use-static-frameworks'
-	]
+          '',
+          '--use-libraries',
+          '--use-static-frameworks'
+        ]
     steps:
     - uses: actions/checkout@v2
     - name: Update Bundler
