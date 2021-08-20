@@ -37,7 +37,8 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   }
   s.pod_target_xcconfig = {
     'GCC_PREPROCESSOR_DEFINITIONS' => 'GID_SDK_VERSION=' + s.version.to_s,
-    'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}"'
+    'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}"',
+    'DEFINES_MODULE' => 'YES'
   }
   s.test_spec 'unit' do |unit_tests|
     unit_tests.platforms = {:ios => ios_deployment_target}
