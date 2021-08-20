@@ -16,11 +16,8 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+// Test module imports
+@import GoogleSignIn;
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
