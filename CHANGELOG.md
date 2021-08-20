@@ -1,3 +1,7 @@
+# 6.0.2 (2021-8-20)
+- Ensure that module imports can be used when built as a library.
+  ([#53](https://github.com/google/GoogleSignIn-iOS/pull/53))
+
 # 6.0.1 (2021-7-21)
 - Fixes nested callbacks not being called for signIn and addScopes methods.
   ([#29](https://github.com/google/GoogleSignIn-iOS/pull/29))
