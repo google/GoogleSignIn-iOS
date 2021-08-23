@@ -648,7 +648,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     if (idToken) {
       handlerAuthFlow.profileData = [self profileDataWithIDToken:idToken];
     }
-    
+
     // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
     if (!handlerAuthFlow.profileData) {
       [handlerAuthFlow wait];
@@ -830,11 +830,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (GIDProfileData *)profileDataWithIDToken:(OIDIDToken *)idToken {
   if (!idToken ||
       !idToken.claims[kBasicProfilePictureKey] ||
-      !idToken.claims[kBasicProfileNameKey] || 
+      !idToken.claims[kBasicProfileNameKey] ||
       !idToken.claims[kBasicProfileGivenNameKey] ||
       !idToken.claims[kBasicProfileFamilyNameKey]) {
     return nil;
-  } 
+  }
 
   return [[GIDProfileData alloc]
       initWithEmail:idToken.claims[kBasicProfileEmailKey]
