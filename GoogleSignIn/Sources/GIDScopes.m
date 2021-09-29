@@ -20,6 +20,8 @@ static NSString *const kEmailScope = @"email";
 static NSString *const kOldEmailScope = @"https://www.googleapis.com/auth/userinfo.email";
 static NSString *const kProfileScope = @"profile";
 static NSString *const kOldProfileScope = @"https://www.googleapis.com/auth/userinfo.profile";
+static NSString *const kCalendarScope = @"calendar";
+static NSString *const kOldCalendarScope = @"https://www.googleapis.com/auth/calendar";
 
 static BOOL hasProfile(NSString *scope) {
   return [scope isEqualToString:kProfileScope] || [scope isEqualToString:kOldProfileScope];
@@ -27,6 +29,9 @@ static BOOL hasProfile(NSString *scope) {
 
 static BOOL hasEmail(NSString *scope) {
   return [scope isEqualToString:kEmailScope] || [scope isEqualToString:kOldEmailScope];
+}
+static BOOL hasCalendar(NSString *scope) {
+  return [scope isEqualToString:kCalendarScope] || [scope isEqualToString:kOldCalendarScope];
 }
 
 // Checks whether |scopes| contains or implies a particular scope, using
@@ -57,6 +62,7 @@ static NSArray *addScopeTo(NSArray *originalScopes,
 
 + (NSArray *)scopesWithBasicProfile:(NSArray *)scopes {
   scopes = addScopeTo(scopes, hasEmail, kEmailScope);
+  scopes = addScopeTo(scopes, hasCalendar, kOldCalendarScope);
   return addScopeTo(scopes, hasProfile, kProfileScope);
 }
 
