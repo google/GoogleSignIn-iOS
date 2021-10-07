@@ -33,9 +33,6 @@ struct BirthdayView: View {
     } else {
       ProgressView()
         .navigationTitle("Your Birthday")
-        .onAppear {
-          birthdayViewModel.fetchBirthday()
-        }
     }
   }
 }
