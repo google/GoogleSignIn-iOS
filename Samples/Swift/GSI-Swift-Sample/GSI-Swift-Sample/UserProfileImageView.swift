@@ -35,5 +35,6 @@ struct UserProfileImageView: View {
       .onReceive(userProfileImageLoader.didChange) { imageData in
         self.image = UIImage(data: imageData) ?? UIImage()
       }
+      .accessibility(hint: Text("Logged in user profile image."))
   }
 }

@@ -17,7 +17,7 @@
 import Foundation
 import GoogleSignIn
 
-class GoogleSignInAuthenticator: ObservableObject {
+final class GoogleSignInAuthenticator: ObservableObject {
   private let clientID = "256442014139-g0adlfr889u4k71ok75k2tnf0t4bgepb.apps.googleusercontent.com"
 
   private lazy var configuration: GIDConfiguration = {
@@ -51,15 +51,15 @@ class GoogleSignInAuthenticator: ObservableObject {
     authViewModel.state = .signedOut
   }
 
-  func addContactsReadOnlyScope(completion: @escaping () -> Void) {
+  func addBirthdayReadScope(completion: @escaping () -> Void) {
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       fatalError("No root view controller!")
     }
 
-    GIDSignIn.sharedInstance.addScopes([ContactsLoader.contactsReadonlyScope],
+    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
                                        presenting: rootViewController) { user, error in
       if let error = error {
-        print("Found error while adding contacts readonly scope: \(error).")
+        print("Found error while adding birthday read scope: \(error).")
         return
       }
 

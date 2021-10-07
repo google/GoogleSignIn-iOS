@@ -17,7 +17,7 @@
 import Foundation
 import Combine
 
-class ContactsViewModel: ObservableObject {
+final class ContactsViewModel: ObservableObject {
   @Published private(set) var allContacts = [Contact]()
   private let contactsLoader = ContactsLoader()
   private(set) var nextPageToken: ContactsLoader.NextPageToken = .firstLoad

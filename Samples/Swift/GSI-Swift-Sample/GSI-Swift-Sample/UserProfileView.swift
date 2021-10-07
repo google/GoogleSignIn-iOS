@@ -19,7 +19,7 @@ import GoogleSignIn
 
 struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
-  @StateObject var contactsViewModel = ContactsViewModel()
+  @StateObject var birthdayViewModel = BirthdayViewModel()
   private var user: GIDGoogleUser? {
     return GIDSignIn.sharedInstance.currentUser
   }
@@ -32,33 +32,38 @@ struct UserProfileView: View {
           UserProfileImageView(userProfile: userProfile)
           VStack(alignment: .leading) {
             Text(userProfile.name)
+              .accessibility(hint: Text("Logged in user name."))
             Text(userProfile.email)
+              .accessibility(hint: Text("Logged in user email."))
               .foregroundColor(.gray)
           }
           Spacer()
         }
-        let cv = ContactsView(userProfile: userProfile, contactsViewModel: contactsViewModel)
-        NavigationLink(NSLocalizedString("View Contacts", comment: "View Contacts button"),
-                       destination: cv.onAppear {
-          guard !self.authViewModel.authorizedScopes.contains(ContactsLoader.contactsReadonlyScope) else {
+        NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
+                       destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
+          if !self.authViewModel.authorizedScopes.contains(BirthdayLoader.birthdayReadScope) {
+            self.authViewModel.addBirthdayReadScope {
+              self.birthdayViewModel.fetchBirthday()
+            }
+          } else {
             print("User has already granted the scope!")
-            return
-          }
-          self.authViewModel.addContactsReadOnlyScope {
-            contactsViewModel.fetchContacts()
           }
         })
+          .accessibility(hint: Text("View days until birthday navigation button."))
         Spacer()
       }
       .toolbar {
         ToolbarItemGroup(placement: .navigationBarTrailing) {
           Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
+            .accessibility(hint: Text("Disconnect scope."))
           Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
+            .accessibility(hint: Text("Sign out button"))
         }
       }
       .navigationTitle(NSLocalizedString("User Profile", comment: "User profile navigation title"))
     } else {
       Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
+        .accessibility(hint: Text("Failed to get user profile"))
     }
   }
 

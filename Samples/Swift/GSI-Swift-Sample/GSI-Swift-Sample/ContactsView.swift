@@ -34,6 +34,7 @@ struct ContactsView: View {
           Text(contact.email ?? "<NA>")
             .foregroundColor(.gray)
         }
+        .accessibility(hint: Text("Contact name and email"))
       }
       if !contactsViewModel.hasAllContacts {
         HStack {

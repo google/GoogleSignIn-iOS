@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-import SwiftUI
+import Combine
 
-struct SignInView: View {
-  @EnvironmentObject var viewModel: AuthenticationViewModel
+final class BirthdayViewModel: ObservableObject {
+  @Published private(set) var birthday: Birthday?
+  private var cancellable: AnyCancellable?
+  private let birthdayLoader = BirthdayLoader()
 
-  var body: some View {
-    VStack {
-      GoogleSignInButtonWrapper(handler: viewModel.signIn)
-        .accessibility(hint: Text("Sign in with Google button."))
+  func fetchBirthday() {
+    let bdayPublisher = birthdayLoader.birthday()
+    self.cancellable = bdayPublisher.sink { completion in
+      switch completion {
+      case .finished:
+        break
+      case .failure(let error):
+        // Do something with the error
+        print("Error retrieving birthday: \(error)")
+      }
+    } receiveValue: { birthday in
+      self.birthday = birthday
     }
-    .navigationTitle(NSLocalizedString("Sign-in with Google", comment: "Sign-in navigation title"))
   }
 }

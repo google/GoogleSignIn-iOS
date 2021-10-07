@@ -17,7 +17,7 @@
 import Combine
 import GoogleSignIn
 
-class ContactsLoader: ObservableObject {
+final class ContactsLoader: ObservableObject {
   static let contactsReadonlyScope = "https://www.googleapis.com/auth/contacts.readonly"
   private let baseUrlString = "https://people.googleapis.com/v1/people/me/connections"
 

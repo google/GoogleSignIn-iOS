@@ -18,7 +18,7 @@ import Combine
 import SwiftUI
 import GoogleSignIn
 
-class UserProfileImageLoader: ObservableObject {
+final class UserProfileImageLoader: ObservableObject {
   private let userProfile: GIDProfileData
   var didChange = PassthroughSubject<Data, Never>()
   private let imageLoaderQueue = DispatchQueue(label: "com.google.gsi-swift-sample")

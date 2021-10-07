@@ -17,7 +17,7 @@
 import SwiftUI
 import GoogleSignIn
 
-class AuthenticationViewModel: ObservableObject {
+final class AuthenticationViewModel: ObservableObject {
   @Published var state: State
   private var authenticator: GoogleSignInAuthenticator {
     return GoogleSignInAuthenticator(authViewModel: self)
@@ -47,8 +47,8 @@ class AuthenticationViewModel: ObservableObject {
     authenticator.signOut()
   }
 
-  func addContactsReadOnlyScope(completion: @escaping () -> Void) {
-    authenticator.addContactsReadOnlyScope(completion: completion)
+  func addBirthdayReadScope(completion: @escaping () -> Void) {
+    authenticator.addBirthdayReadScope(completion: completion)
   }
 
   func disconnect() {
