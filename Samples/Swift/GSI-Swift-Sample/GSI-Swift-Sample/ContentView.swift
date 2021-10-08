@@ -24,15 +24,14 @@ struct ContentView: View {
     return Group {
       switch authViewModel.state {
       case .signedIn:
-        NavigationView {
-          UserProfileView()
-        }
-        .animation(.easeInOut)
-        .transition(.move(edge: .leading))
+#warning("Adding `.navigationViewStyle()` silences the console warnings about failing to satisfy constraints, but suppresses the toolbar items in `UserProfileView`.")
+        UserProfileView()
+//          .navigationViewStyle(.stack)
+          .animation(.easeInOut)
+          .transition(.move(edge: .leading))
       case .signedOut:
-        NavigationView {
-          SignInView()
-        }
+        SignInView()
+          .navigationViewStyle(.stack)
       }
     }
   }

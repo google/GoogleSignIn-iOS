@@ -21,18 +21,19 @@ struct BirthdayView: View {
   @ObservedObject var birthdayViewModel: BirthdayViewModel
 
   var body: some View {
-    if let birthday = birthdayViewModel.birthday {
+    if let _ = birthdayViewModel.birthday {
       VStack {
-        Text(NSLocalizedString("Your birthday:", comment: "Your birthday label"))
-          .accessibilityLabel("Your birthday label")
-        Text(birthday.description)
-          .accessibilityLabel("Your birthday text")
-        Text(NSLocalizedString("Days until your birthday:", comment: "Days until birthday label"))
+        Text(birthdayViewModel.daysUntilBirthday)
+          .font(.system(size: 80))
+          .accessibilityLabel("Number of days until your birthday")
+        Spacer()
       }
-      .navigationTitle("Your Birthday")
+      .navigationTitle(NSLocalizedString("Days Until Birthday",
+                                         comment: "Days until birthday label"))
     } else {
       ProgressView()
-        .navigationTitle("Your Birthday")
+        .navigationTitle(NSLocalizedString("Days Until Birthday",
+                                           comment: "Days until birthday label"))
     }
   }
 }

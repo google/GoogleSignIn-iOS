@@ -26,41 +26,44 @@ struct UserProfileView: View {
 
   var body: some View {
     if let userProfile = user?.profile {
-      VStack {
-        HStack(alignment: .top) {
-          Spacer().frame(width: 8)
-          UserProfileImageView(userProfile: userProfile)
-          VStack(alignment: .leading) {
-            Text(userProfile.name)
-              .accessibility(hint: Text("Logged in user name."))
-            Text(userProfile.email)
-              .accessibility(hint: Text("Logged in user email."))
-              .foregroundColor(.gray)
+      NavigationView {
+        VStack {
+          HStack(alignment: .top) {
+            Spacer().frame(width: 8)
+            UserProfileImageView(userProfile: userProfile)
+            VStack(alignment: .leading) {
+              Text(userProfile.name)
+                .accessibility(hint: Text("Logged in user name."))
+              Text(userProfile.email)
+                .accessibility(hint: Text("Logged in user email."))
+                .foregroundColor(.gray)
+            }
+            Spacer()
           }
-          Spacer()
-        }
-        NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
-                       destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
-          if !self.authViewModel.authorizedScopes.contains(BirthdayLoader.birthdayReadScope) {
-            self.authViewModel.addBirthdayReadScope {
+          NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
+                         destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
+            if !self.authViewModel.authorizedScopes.contains(BirthdayLoader.birthdayReadScope) {
+              self.authViewModel.addBirthdayReadScope {
+                self.birthdayViewModel.fetchBirthday()
+              }
+            } else {
+              print("User has already granted the scope!")
               self.birthdayViewModel.fetchBirthday()
             }
-          } else {
-            print("User has already granted the scope!")
-          }
-        })
-          .accessibility(hint: Text("View days until birthday navigation button."))
-        Spacer()
-      }
-      .toolbar {
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-          Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
-            .accessibility(hint: Text("Disconnect scope."))
-          Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
-            .accessibility(hint: Text("Sign out button"))
+          })
+            .accessibility(hint: Text("View days until birthday navigation button."))
+          Spacer()
         }
+        .toolbar {
+          ToolbarItemGroup(placement: .navigationBarTrailing) {
+            Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
+              .accessibility(hint: Text("Disconnect scope."))
+            Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
+              .accessibility(hint: Text("Sign out button"))
+          }
+        }
+        .navigationTitle(NSLocalizedString("User Profile", comment: "User profile navigation title"))
       }
-      .navigationTitle(NSLocalizedString("User Profile", comment: "User profile navigation title"))
     } else {
       Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
         .accessibility(hint: Text("Failed to get user profile"))

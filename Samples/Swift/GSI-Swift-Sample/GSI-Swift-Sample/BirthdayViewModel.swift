@@ -15,13 +15,35 @@
  */
 
 import Combine
+import Foundation
 
 final class BirthdayViewModel: ObservableObject {
   @Published private(set) var birthday: Birthday?
+  var daysUntilBirthday: String {
+    guard let bday = birthday?.date else { return "NA" }
+    let now = Date()
+    let calendar = Calendar.autoupdatingCurrent
+    let dayComps = calendar.dateComponents([.day], from: now, to: bday)
+    guard let days = dayComps.day else { return "NA" }
+    return String(days)
+  }
   private var cancellable: AnyCancellable?
   private let birthdayLoader = BirthdayLoader()
 
   func fetchBirthday() {
+#warning("This uses the 'do with fresh tokens' approach, but crashes the app...")
+//    birthdayLoader.birthdayPublisher { publisher in
+//      self.cancellable = publisher.sink { completion in
+//        switch completion {
+//        case .finished:
+//          break
+//        case .failure(let error):
+//          print("Error retrieving birthday: \(error)")
+//        }
+//      } receiveValue: { birthday in
+//        self.birthday = birthday
+//      }
+//    }
     let bdayPublisher = birthdayLoader.birthday()
     self.cancellable = bdayPublisher.sink { completion in
       switch completion {

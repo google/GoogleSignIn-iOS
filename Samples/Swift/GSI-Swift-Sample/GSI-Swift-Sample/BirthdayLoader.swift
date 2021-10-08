@@ -49,16 +49,53 @@ final class BirthdayLoader: ObservableObject {
     return URLSession(configuration: configuration)
   }()
 
+  private func sessionWithFreshToken(completion: @escaping (Result<URLSession, Error>) -> Void) {
+#warning("This crashes the app with an uncaught exception: 'Cannot create task from nil request'.")
+    GIDAuthentication().do { auth, error in
+      guard let token = auth?.accessToken else {
+        completion(.failure(.couldNotCreateURLSession(error)))
+        return
+      }
+      let configuration = URLSessionConfiguration.default
+      configuration.httpAdditionalHeaders = [
+        "Authorization": "Bearer \(token)"
+      ]
+      let session = URLSession(configuration: configuration)
+      completion(.success(session))
+    }
+  }
+
+  func birthdayPublisher(completion: @escaping (AnyPublisher<Birthday, Error>) -> Void) {
+    sessionWithFreshToken { [weak self] result in
+      switch result {
+      case .success(let authSession):
+        guard let request = self?.request else {
+          return completion(Fail(error: .couldNotCreateURLRequest).eraseToAnyPublisher())
+        }
+        let bdayPublisher = authSession.dataTaskPublisher(for: request)
+          .tryMap { data, error -> Birthday in
+            let decoder = JSONDecoder()
+            let birthdayResponse = try decoder.decode(BirthdayResponse.self, from: data)
+            return birthdayResponse.firstBirthday
+          }
+          .mapError { error in
+            return Error.couldNotFetchBirthday(error)
+          }
+          .receive(on: DispatchQueue.main)
+          .eraseToAnyPublisher()
+        completion(bdayPublisher)
+      case .failure(let error):
+        completion(Fail(error: error).eraseToAnyPublisher())
+      }
+    }
+  }
+
   func birthday() -> AnyPublisher<Birthday, Error> {
     return session!.dataTaskPublisher(for: request!)
       .tryMap { data, error -> Birthday in
         let decoder = JSONDecoder()
         let birthdayResponse = try decoder.decode(BirthdayResponse.self, from: data)
-        guard let birthday = birthdayResponse.birthdays.first else {
-          #warning("This should not fataError")
-          fatalError("Could not get bday")
-        }
-        return birthday
+        return birthdayResponse.firstBirthday
       }
       .mapError { error in
         return .couldNotFetchBirthday(error)
@@ -70,6 +107,9 @@ final class BirthdayLoader: ObservableObject {
 
 extension BirthdayLoader {
   enum Error: Swift.Error {
+    case couldNotCreateURLSession(Swift.Error?)
+    case couldNotCreateURLRequest
+    case userHasNoBirthday
     case couldNotFetchBirthday(Swift.Error)
   }
 }

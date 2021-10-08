@@ -12,13 +12,10 @@
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
 		7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD092703D9480020AFB1 /* Preview Assets.xcassets */; };
 		7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
-		7345AD1C2703D9C30020AFB1 /* ContactsLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD122703D9C30020AFB1 /* ContactsLoader.swift */; };
 		7345AD1D2703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */; };
 		7345AD1E2703D9C30020AFB1 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
-		7345AD1F2703D9C30020AFB1 /* ContactsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD152703D9C30020AFB1 /* ContactsViewModel.swift */; };
 		7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
 		7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
-		7345AD222703D9C30020AFB1 /* ContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD182703D9C30020AFB1 /* ContactsView.swift */; };
 		7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
 		7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */; };
 		7345AD272703DA3E0020AFB1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7345AD262703DA3E0020AFB1 /* GoogleSignIn */; };
@@ -36,13 +33,10 @@
 		7345AD092703D9480020AFB1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		7345AD0B2703D9480020AFB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7345AD112703D9C30020AFB1 /* SignInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
-		7345AD122703D9C30020AFB1 /* ContactsLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsLoader.swift; sourceTree = "<group>"; };
 		7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonWrapper.swift; sourceTree = "<group>"; };
 		7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageView.swift; sourceTree = "<group>"; };
-		7345AD152703D9C30020AFB1 /* ContactsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsViewModel.swift; sourceTree = "<group>"; };
 		7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 		7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
-		7345AD182703D9C30020AFB1 /* ContactsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsView.swift; sourceTree = "<group>"; };
 		7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageLoader.swift; sourceTree = "<group>"; };
 		7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		736F49B9270E05E200580053 /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
@@ -85,13 +79,10 @@
 				7345AD022703D9470020AFB1 /* GSI_Swift_SampleApp.swift */,
 				7345AD042703D9470020AFB1 /* ContentView.swift */,
 				7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */,
-				7345AD122703D9C30020AFB1 /* ContactsLoader.swift */,
 				736F49B9270E05E200580053 /* BirthdayLoader.swift */,
 				736F49BB270E102C00580053 /* BirthdayViewModel.swift */,
 				739FCC47270E659A00C92042 /* Birthday.swift */,
 				739FCC45270E467600C92042 /* BirthdayView.swift */,
-				7345AD182703D9C30020AFB1 /* ContactsView.swift */,
-				7345AD152703D9C30020AFB1 /* ContactsViewModel.swift */,
 				7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */,
 				7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */,
 				7345AD112703D9C30020AFB1 /* SignInView.swift */,
@@ -194,11 +185,8 @@
 				7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */,
 				7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */,
 				7345AD1E2703D9C30020AFB1 /* UserProfileImageView.swift in Sources */,
-				7345AD222703D9C30020AFB1 /* ContactsView.swift in Sources */,
 				736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */,
-				7345AD1C2703D9C30020AFB1 /* ContactsLoader.swift in Sources */,
 				736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */,
-				7345AD1F2703D9C30020AFB1 /* ContactsViewModel.swift in Sources */,
 				7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */,
 				7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */,
 				7345AD052703D9470020AFB1 /* ContentView.swift in Sources */,
