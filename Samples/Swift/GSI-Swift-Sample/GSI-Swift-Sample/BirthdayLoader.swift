@@ -17,7 +17,9 @@
 import Combine
 import GoogleSignIn
 
+/// An observable class to load the current user's birthday.
 final class BirthdayLoader: ObservableObject {
+  /// The scope required to read a user's birthday.
   static let birthdayReadScope = "https://www.googleapis.com/auth/user.birthday.read"
   private let baseUrlString = "https://people.googleapis.com/v1/people/me"
   private let personFieldsQuery = URLQueryItem(name: "personFields", value: "birthdays")
@@ -50,8 +52,8 @@ final class BirthdayLoader: ObservableObject {
   }()
 
   private func sessionWithFreshToken(completion: @escaping (Result<URLSession, Error>) -> Void) {
-#warning("This crashes the app with an uncaught exception: 'Cannot create task from nil request'.")
-    GIDAuthentication().do { auth, error in
+    let authentication = GIDSignIn.sharedInstance.currentUser?.authentication
+    authentication?.do { auth, error in
       guard let token = auth?.accessToken else {
         completion(.failure(.couldNotCreateURLSession(error)))
         return
@@ -65,6 +67,11 @@ final class BirthdayLoader: ObservableObject {
     }
   }
 
+  /// Creates a `Publisher` to fetch a user's `Birthday`.
+  /// - parameter completion: A closure passing back the `AnyPublisher<Birthday, Error>`
+  /// upon success.
+  /// - note: The `AnyPublisher` passed back through the `completion` closure is created with a
+  /// fresh token. See `sessionWithFreshToken(completion:)` for more details.
   func birthdayPublisher(completion: @escaping (AnyPublisher<Birthday, Error>) -> Void) {
     sessionWithFreshToken { [weak self] result in
       switch result {
@@ -78,8 +85,11 @@ final class BirthdayLoader: ObservableObject {
             let birthdayResponse = try decoder.decode(BirthdayResponse.self, from: data)
             return birthdayResponse.firstBirthday
           }
-          .mapError { error in
-            return Error.couldNotFetchBirthday(error)
+          .mapError { error -> Error in
+            guard let loaderError = error as? Error else {
+              return Error.couldNotFetchBirthday(underlying: error)
+            }
+            return loaderError
           }
           .receive(on: DispatchQueue.main)
           .eraseToAnyPublisher()
@@ -89,27 +99,14 @@ final class BirthdayLoader: ObservableObject {
       }
     }
   }
-
-  func birthday() -> AnyPublisher<Birthday, Error> {
-    return session!.dataTaskPublisher(for: request!)
-      .tryMap { data, error -> Birthday in
-        let decoder = JSONDecoder()
-        let birthdayResponse = try decoder.decode(BirthdayResponse.self, from: data)
-        return birthdayResponse.firstBirthday
-      }
-      .mapError { error in
-        return .couldNotFetchBirthday(error)
-      }
-      .receive(on: DispatchQueue.main)
-      .eraseToAnyPublisher()
-  }
 }
 
 extension BirthdayLoader {
+  /// An error representing what went wrong in fetching a user's number of day until their birthday.
   enum Error: Swift.Error {
     case couldNotCreateURLSession(Swift.Error?)
     case couldNotCreateURLRequest
     case userHasNoBirthday
-    case couldNotFetchBirthday(Swift.Error)
+    case couldNotFetchBirthday(underlying: Swift.Error)
   }
 }

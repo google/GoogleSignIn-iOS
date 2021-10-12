@@ -17,6 +17,7 @@
 import Foundation
 import GoogleSignIn
 
+/// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
   private let clientID = "256442014139-g0adlfr889u4k71ok75k2tnf0t4bgepb.apps.googleusercontent.com"
 
@@ -26,10 +27,14 @@ final class GoogleSignInAuthenticator: ObservableObject {
 
   private var authViewModel: AuthenticationViewModel
 
+  /// Creates an instance of this authenticator.
+  /// - parameter authViewModel: The view model this authenticator will set logged in status on.
   init(authViewModel: AuthenticationViewModel) {
     self.authViewModel = authViewModel
   }
 
+  /// Signs in the user based upon the selected account.'
+  /// - note: Successful calls to this will set the `authViewModel`'s `state` property.
   func signIn() {
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       print("There is no root view controller!")
@@ -46,11 +51,17 @@ final class GoogleSignInAuthenticator: ObservableObject {
     }
   }
 
+  /// Signs out the current user.
   func signOut() {
     GIDSignIn.sharedInstance.signOut()
     authViewModel.state = .signedOut
   }
 
+  /// Adds the birthday read scope for the current user.
+  /// - parameter completion: An escaping closure that is called upon successful completion of the
+  /// `addScopes(_:presenting:)` request.
+  /// - note: Successful requests will update the `authViewModel.state` with a new current user that
+  /// has the granted scope.
   func addBirthdayReadScope(completion: @escaping () -> Void) {
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       fatalError("No root view controller!")
@@ -69,6 +80,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
     }
   }
 
+  /// Disconnects the previously granted scope and signs the user out.
   func disconnect() {
     GIDSignIn.sharedInstance.disconnect { error in
       if let error = error {

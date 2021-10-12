@@ -17,6 +17,7 @@
 import SwiftUI
 import GoogleSignIn
 
+/// A wrapper for `GIDSignInButton` so that it can be used in SwiftUI.
 struct GoogleSignInButtonWrapper: UIViewRepresentable {
   let handler: () -> Void
 

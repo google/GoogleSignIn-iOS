@@ -17,8 +17,12 @@
 import Combine
 import Foundation
 
+/// An observable class representing the current user's `Birthday` and the number of days until that date.
 final class BirthdayViewModel: ObservableObject {
+  /// The `Birthday` of the current user.
+  /// - note: Changes to this property will be published to observers.
   @Published private(set) var birthday: Birthday?
+  /// Computed property calculating the number of days until the current user's birthday.
   var daysUntilBirthday: String {
     guard let bday = birthday?.date else { return "NA" }
     let now = Date()
@@ -30,31 +34,19 @@ final class BirthdayViewModel: ObservableObject {
   private var cancellable: AnyCancellable?
   private let birthdayLoader = BirthdayLoader()
 
+  /// Fetches the birthday of the current user.
   func fetchBirthday() {
-#warning("This uses the 'do with fresh tokens' approach, but crashes the app...")
-//    birthdayLoader.birthdayPublisher { publisher in
-//      self.cancellable = publisher.sink { completion in
-//        switch completion {
-//        case .finished:
-//          break
-//        case .failure(let error):
-//          print("Error retrieving birthday: \(error)")
-//        }
-//      } receiveValue: { birthday in
-//        self.birthday = birthday
-//      }
-//    }
-    let bdayPublisher = birthdayLoader.birthday()
-    self.cancellable = bdayPublisher.sink { completion in
-      switch completion {
-      case .finished:
-        break
-      case .failure(let error):
-        // Do something with the error
-        print("Error retrieving birthday: \(error)")
+    birthdayLoader.birthdayPublisher { publisher in
+      self.cancellable = publisher.sink { completion in
+        switch completion {
+        case .finished:
+          break
+        case .failure(let error):
+          print("Error retrieving birthday: \(error)")
+        }
+      } receiveValue: { birthday in
+        self.birthday = birthday
       }
-    } receiveValue: { birthday in
-      self.birthday = birthday
     }
   }
 }

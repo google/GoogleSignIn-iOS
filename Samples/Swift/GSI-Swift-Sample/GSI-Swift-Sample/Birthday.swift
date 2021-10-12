@@ -16,9 +16,11 @@
 
 import Foundation
 
+/// A model type representing the current user's birthday.
 struct Birthday: Decodable {
   let integerDate: Birthday.IntegerDate
 
+  /// The birthday as a `Date`.
   var date: Date? {
     let now = Date()
     let currentCalendar = Calendar.autoupdatingCurrent
@@ -46,6 +48,7 @@ struct Birthday: Decodable {
 }
 
 extension Birthday {
+  /// A nested type representing the month and day values of a birthday as integers.
   struct IntegerDate: Decodable {
     let month: Int
     let day: Int
@@ -59,20 +62,26 @@ extension Birthday {
 }
 
 extension Birthday: CustomStringConvertible {
+  /// Converts the instances `date` to a `String`.
   var description: String {
     return date?.description ?? "NA"
   }
 }
 
+/// A model type representing the response from the request for the current user's birthday.
 struct BirthdayResponse: Decodable {
+  /// The requested user's birthdays.
   let birthdays: [Birthday]
+  /// The first birthday in the returned results.
+  /// - note: We only care about the birthday's month and day, and so we just use the first
+  /// birthday in the results.
   let firstBirthday: Birthday
 
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.birthdays = try container.decode([Birthday].self, forKey: .birthdays)
     guard let first = birthdays.first else {
-      throw Error.failedToDecodeBirthday
+      throw Error.noBirthdayInResult
     }
     self.firstBirthday = first
   }
@@ -85,8 +94,10 @@ extension BirthdayResponse {
 }
 
 extension BirthdayResponse {
+  /// An error representing what may go wrong in processing the birthday request.
   enum Error: Swift.Error {
-    case failedToDecodeBirthday
+    /// There was no birthday in the returned results.
+    case noBirthdayInResult
   }
 }
 
