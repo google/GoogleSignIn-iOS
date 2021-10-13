@@ -19,6 +19,7 @@ import GoogleSignIn
 
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
+  // TODO: Replace this with your own ID.
   private let clientID = "256442014139-g0adlfr889u4k71ok75k2tnf0t4bgepb.apps.googleusercontent.com"
 
   private lazy var configuration: GIDConfiguration = {
@@ -46,7 +47,6 @@ final class GoogleSignInAuthenticator: ObservableObject {
         print("Error! \(String(describing: error))")
         return
       }
-      print("Signed in with user: \(user)")
       self.authViewModel.state = .signedIn(user)
     }
   }
@@ -74,7 +74,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
         return
       }
 
-      guard let currentUser = GIDSignIn.sharedInstance.currentUser else { return }
+      guard let currentUser = user else { return }
       self.authViewModel.state = .signedIn(currentUser)
       completion()
     }

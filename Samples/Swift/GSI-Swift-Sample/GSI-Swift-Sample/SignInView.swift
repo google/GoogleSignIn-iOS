@@ -20,12 +20,9 @@ struct SignInView: View {
   @EnvironmentObject var viewModel: AuthenticationViewModel
 
   var body: some View {
-    NavigationView {
       VStack {
         GoogleSignInButtonWrapper(handler: viewModel.signIn)
           .accessibility(hint: Text("Sign in with Google button."))
-      }
-      .navigationTitle(NSLocalizedString("Sign-in with Google", comment: "Sign-in navigation title"))
     }
   }
 }

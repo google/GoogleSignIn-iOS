@@ -36,6 +36,10 @@ final class AuthenticationViewModel: ObservableObject {
     }
   }
 
+  var hasBirthdayReadScope: Bool {
+    return authorizedScopes.contains(BirthdayLoader.birthdayReadScope)
+  }
+
   /// Creates an instance of this view model.
   init() {
     if let user = GIDSignIn.sharedInstance.currentUser {

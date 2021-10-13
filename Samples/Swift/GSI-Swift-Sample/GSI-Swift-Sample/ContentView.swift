@@ -22,17 +22,25 @@ struct ContentView: View {
 
   var body: some View {
     return Group {
-      switch authViewModel.state {
-      case .signedIn:
-#warning("Adding `.navigationViewStyle()` silences the console warnings about failing to satisfy constraints, but suppresses the toolbar items in `UserProfileView`.")
-        UserProfileView()
-//          .navigationViewStyle(.stack)
-          .animation(.easeInOut)
-          .transition(.move(edge: .leading))
-      case .signedOut:
-        SignInView()
-          .navigationViewStyle(.stack)
+      NavigationView {
+        switch authViewModel.state {
+        case .signedIn:
+          UserProfileView()
+            .navigationTitle(
+              NSLocalizedString(
+                "User Profile",
+                comment: "User profile navigation title"
+              ))
+        case .signedOut:
+          SignInView()
+            .navigationTitle(
+              NSLocalizedString(
+                "Sign-in with Google",
+                comment: "Sign-in navigation title"
+              ))
+        }
       }
+      .navigationViewStyle(.stack)
     }
   }
 }

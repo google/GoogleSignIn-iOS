@@ -25,8 +25,8 @@ struct UserProfileView: View {
   }
 
   var body: some View {
-    if let userProfile = user?.profile {
-      NavigationView {
+    return Group {
+      if let userProfile = user?.profile {
         VStack {
           HStack(alignment: .top) {
             Spacer().frame(width: 8)
@@ -42,7 +42,7 @@ struct UserProfileView: View {
           }
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
                          destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
-            if !self.authViewModel.authorizedScopes.contains(BirthdayLoader.birthdayReadScope) {
+            if !self.authViewModel.hasBirthdayReadScope {
               self.authViewModel.addBirthdayReadScope {
                 self.birthdayViewModel.fetchBirthday()
               }
@@ -58,15 +58,15 @@ struct UserProfileView: View {
           ToolbarItemGroup(placement: .navigationBarTrailing) {
             Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
               .accessibility(hint: Text("Disconnect scope."))
+              .disabled(!authViewModel.hasBirthdayReadScope)
             Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
               .accessibility(hint: Text("Sign out button"))
           }
         }
-        .navigationTitle(NSLocalizedString("User Profile", comment: "User profile navigation title"))
+      } else {
+        Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
+          .accessibility(hint: Text("Failed to get user profile"))
       }
-    } else {
-      Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
-        .accessibility(hint: Text("Failed to get user profile"))
     }
   }
 
