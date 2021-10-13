@@ -29,43 +29,44 @@ struct UserProfileView: View {
       if let userProfile = user?.profile {
         VStack {
           HStack(alignment: .top) {
-            Spacer().frame(width: 8)
             UserProfileImageView(userProfile: userProfile)
+              .padding(.leading)
             VStack(alignment: .leading) {
               Text(userProfile.name)
-                .accessibility(hint: Text("Logged in user name."))
+                .accessibilityLabel(Text("User name."))
               Text(userProfile.email)
-                .accessibility(hint: Text("Logged in user email."))
+                .accessibilityLabel(Text("User email."))
                 .foregroundColor(.gray)
             }
             Spacer()
           }
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
                          destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
-            if !self.authViewModel.hasBirthdayReadScope {
-              self.authViewModel.addBirthdayReadScope {
+            guard self.birthdayViewModel.birthday != nil else {
+              if !self.authViewModel.hasBirthdayReadScope {
+                self.authViewModel.addBirthdayReadScope {
+                  self.birthdayViewModel.fetchBirthday()
+                }
+              } else {
                 self.birthdayViewModel.fetchBirthday()
               }
-            } else {
-              print("User has already granted the scope!")
-              self.birthdayViewModel.fetchBirthday()
+              return
             }
           })
-            .accessibility(hint: Text("View days until birthday navigation button."))
+            .accessibilityLabel(Text("View days until birthday."))
           Spacer()
         }
         .toolbar {
           ToolbarItemGroup(placement: .navigationBarTrailing) {
             Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
-              .accessibility(hint: Text("Disconnect scope."))
-              .disabled(!authViewModel.hasBirthdayReadScope)
+              .accessibilityLabel(Text("Disconnect scope button."))
             Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
-              .accessibility(hint: Text("Sign out button"))
+              .accessibilityLabel(Text("Sign out button"))
           }
         }
       } else {
         Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
-          .accessibility(hint: Text("Failed to get user profile"))
+          .accessibilityLabel(Text("Failed to get user profile"))
       }
     }
   }

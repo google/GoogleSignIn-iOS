@@ -31,6 +31,6 @@ struct UserProfileImageView: View {
       .frame(width: 45, height: 45, alignment: .center)
       .scaledToFit()
       .clipShape(Circle())
-      .accessibility(hint: Text("Logged in user profile image."))
+      .accessibilityLabel(Text("User profile image."))
   }
 }
