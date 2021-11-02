@@ -21,7 +21,7 @@ import GoogleSignIn
 /// An observable class for loading the current user's profile image.
 final class UserProfileImageLoader: ObservableObject {
   private let userProfile: GIDProfileData
-  private let imageLoaderQueue = DispatchQueue(label: "com.google.gsi-swift-sample")
+  private let imageLoaderQueue = DispatchQueue(label: "com.google.days-until-birthday")
   /// A `UIImage` property containing the current user's profile image.
   /// - note: This will default to a placeholder, and updates will be published to subscribers.
   @Published var image = UIImage(named: "PlaceholderAvatar")!

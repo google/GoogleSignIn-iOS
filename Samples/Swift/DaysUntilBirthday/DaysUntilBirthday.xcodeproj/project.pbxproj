@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7345AD032703D9470020AFB1 /* GSI_Swift_SampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* GSI_Swift_SampleApp.swift */; };
+		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
 		7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD092703D9480020AFB1 /* Preview Assets.xcassets */; };
@@ -26,8 +26,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7345ACFF2703D9470020AFB1 /* GSI-Swift-Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GSI-Swift-Sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7345AD022703D9470020AFB1 /* GSI_Swift_SampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GSI_Swift_SampleApp.swift; sourceTree = "<group>"; };
+		7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DaysUntilBirthday.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7345AD062703D9480020AFB1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7345AD092703D9480020AFB1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -60,7 +60,7 @@
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
-				7345AD012703D9470020AFB1 /* GSI-Swift-Sample */,
+				7345AD012703D9470020AFB1 /* Sources */,
 				7345AD002703D9470020AFB1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,15 +68,15 @@
 		7345AD002703D9470020AFB1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7345ACFF2703D9470020AFB1 /* GSI-Swift-Sample.app */,
+				7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		7345AD012703D9470020AFB1 /* GSI-Swift-Sample */ = {
+		7345AD012703D9470020AFB1 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				7345AD022703D9470020AFB1 /* GSI_Swift_SampleApp.swift */,
+				7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */,
 				7345AD042703D9470020AFB1 /* ContentView.swift */,
 				7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */,
 				736F49B9270E05E200580053 /* BirthdayLoader.swift */,
@@ -93,7 +93,7 @@
 				7345AD0B2703D9480020AFB1 /* Info.plist */,
 				7345AD082703D9480020AFB1 /* Preview Content */,
 			);
-			path = "GSI-Swift-Sample";
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		7345AD082703D9480020AFB1 /* Preview Content */ = {
@@ -107,9 +107,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7345ACFE2703D9470020AFB1 /* GSI-Swift-Sample */ = {
+		7345ACFE2703D9470020AFB1 /* DaysUntilBirthday */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "GSI-Swift-Sample" */;
+			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday" */;
 			buildPhases = (
 				7345ACFB2703D9470020AFB1 /* Sources */,
 				7345ACFC2703D9470020AFB1 /* Frameworks */,
@@ -119,12 +119,12 @@
 			);
 			dependencies = (
 			);
-			name = "GSI-Swift-Sample";
+			name = DaysUntilBirthday;
 			packageProductDependencies = (
 				7345AD262703DA3E0020AFB1 /* GoogleSignIn */,
 			);
 			productName = "GSI-Swift-Sample";
-			productReference = 7345ACFF2703D9470020AFB1 /* GSI-Swift-Sample.app */;
+			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -141,7 +141,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7345ACFA2703D9470020AFB1 /* Build configuration list for PBXProject "GSI-Swift-Sample" */;
+			buildConfigurationList = 7345ACFA2703D9470020AFB1 /* Build configuration list for PBXProject "DaysUntilBirthday" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -157,7 +157,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7345ACFE2703D9470020AFB1 /* GSI-Swift-Sample */,
+				7345ACFE2703D9470020AFB1 /* DaysUntilBirthday */,
 			);
 		};
 /* End PBXProject section */
@@ -191,7 +191,7 @@
 				7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */,
 				7345AD052703D9470020AFB1 /* ContentView.swift in Sources */,
 				7345AD1D2703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift in Sources */,
-				7345AD032703D9470020AFB1 /* GSI_Swift_SampleApp.swift in Sources */,
+				7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,15 +320,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"GSI-Swift-Sample/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Sources/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "GSI-Swift-Sample/Info.plist";
+				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.google.GSI-Swift-Sample";
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -341,15 +341,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"GSI-Swift-Sample/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Sources/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "GSI-Swift-Sample/Info.plist";
+				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.google.GSI-Swift-Sample";
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -359,7 +359,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7345ACFA2703D9470020AFB1 /* Build configuration list for PBXProject "GSI-Swift-Sample" */ = {
+		7345ACFA2703D9470020AFB1 /* Build configuration list for PBXProject "DaysUntilBirthday" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7345AD0C2703D9480020AFB1 /* Debug */,
@@ -368,7 +368,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "GSI-Swift-Sample" */ = {
+		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7345AD0F2703D9480020AFB1 /* Debug */,

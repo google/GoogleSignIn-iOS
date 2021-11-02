@@ -18,7 +18,7 @@ import SwiftUI
 import GoogleSignIn
 
 @main
-struct GSI_Swift_SampleApp: App {
+struct DaysUntilBirthday: App {
   @StateObject var authViewModel = AuthenticationViewModel()
 
   var body: some Scene {
