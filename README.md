@@ -13,17 +13,7 @@ service.
 
 ## Getting Started
 
-* Try the [sample app](Sample).
-  * Using [CocoaPods](https://cocoapods.org):
-    ```
-    pod try GoogleSignIn
-    ```
-  * Using [Swift Package Manager](https://swift.org/package-manager/):
-    ```
-    git clone https://github.com/google/GoogleSignIn-iOS
-    ```
-    ```
-    open GoogleSignIn-iOS/Sample/SignInSample.xcodeproj
-    ```
+* Try either the Swift or Objective-C sample [sample apps](Samples).
+  * See each sample project's `README.md` for more specific instructions.
 * Add Google Sign-In to your own app by following our [getting started guides](https://developers.google.com/identity/sign-in/ios/start-integrating).
 * Take a look at the [API reference](https://developers.google.com/identity/sign-in/ios/api/).
