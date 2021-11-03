@@ -12,7 +12,7 @@ pod install
 2. Open the generated workspace:
 
 ```
-open SignInSampleForPod.xcworkspace
+open `DaysUntilBirthdayForPod.xcworkspace`
 ```
 
 3. Run the `SampleForPod` target.

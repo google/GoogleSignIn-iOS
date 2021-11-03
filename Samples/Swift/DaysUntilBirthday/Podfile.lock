@@ -1,0 +1,61 @@
+PODS:
+  - AppAuth (1.4.0):
+    - AppAuth/Core (= 1.4.0)
+    - AppAuth/ExternalUserAgent (= 1.4.0)
+  - AppAuth/Core (1.4.0)
+  - AppAuth/ExternalUserAgent (1.4.0)
+  - GoogleSignIn (6.0.2):
+    - AppAuth (~> 1.4)
+    - GTMAppAuth (~> 1.0)
+    - GTMSessionFetcher/Core (~> 1.1)
+  - GoogleSignIn/unit (6.0.2):
+    - AppAuth (~> 1.4)
+    - GoogleUtilities/MethodSwizzler (~> 7.2)
+    - GoogleUtilities/SwizzlerTestHelpers (~> 7.2)
+    - GTMAppAuth (~> 1.0)
+    - GTMSessionFetcher/Core (~> 1.1)
+    - OCMock
+  - GoogleUtilities/Environment (7.6.0):
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.6.0):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/MethodSwizzler (7.6.0):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/SwizzlerTestHelpers (7.6.0):
+    - GoogleUtilities/MethodSwizzler
+  - GTMAppAuth (1.2.2):
+    - AppAuth/Core (~> 1.4)
+    - GTMSessionFetcher/Core (~> 1.5)
+  - GTMSessionFetcher/Core (1.7.0)
+  - OCMock (3.9.1)
+  - PromisesObjC (2.0.0)
+
+DEPENDENCIES:
+  - GoogleSignIn (from `../../../`)
+  - GoogleSignIn/unit (from `../../../`)
+
+SPEC REPOS:
+  trunk:
+    - AppAuth
+    - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
+    - OCMock
+    - PromisesObjC
+
+EXTERNAL SOURCES:
+  GoogleSignIn:
+    :path: "../../../"
+
+SPEC CHECKSUMS:
+  AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
+  GoogleSignIn: fd381840dbe7c1137aa6dc30849a5c3e070c034a
+  GoogleUtilities: 684ee790a24f73ebb2d1d966e9711c203f2a4237
+  GTMAppAuth: ad5c2b70b9a8689e1a04033c9369c4915bfcbe89
+  GTMSessionFetcher: 43748f93435c2aa068b1cbe39655aaf600652e91
+  OCMock: 9491e4bec59e0b267d52a9184ff5605995e74be8
+  PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
+
+PODFILE CHECKSUM: de72e7ff5fbc696ef64bf1a91203454e815f4a1a
+
+COCOAPODS: 1.11.2
