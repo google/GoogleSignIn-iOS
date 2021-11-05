@@ -1,2 +1,2 @@
 try:
-  project: 'Sample/SignInSampleForPod.xcodeproj'
+  project: 'Samples/ObjC/SignInSample/SignInSampleForPod.xcodeproj'

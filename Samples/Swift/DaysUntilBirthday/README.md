@@ -2,8 +2,8 @@
 
 ## Cocoa Pods
 
-1. In the `../Samples/Swift/` folder, run the following 
-   [CocoaPods](https://cocoapods.org) command.
+1. In the `../Samples/Swift/DaysUntilBirthday/` folder, run the following 
+[CocoaPods](https://cocoapods.org) command.
 
 ```
 pod install
@@ -12,14 +12,17 @@ pod install
 2. Open the generated workspace:
 
 ```
-open `DaysUntilBirthdayForPod.xcworkspace`
+open DaysUntilBirthdayForPod.xcworkspace
 ```
 
-3. Run the `SampleForPod` target.
+3. Run the `DaysUntilBirthdayForPod` target.
 
 ## Swift Package Manager
 
-1. In the `../Samples/Swift/` folder, open the project:
-   `open DaysUntilBirthday.xcodeproj`.
+1. In the `../Samples/Swift/DaysUntilBirthday/` folder, open the project:
+
+```
+open DaysUntilBirthday.xcodeproj
+```
 
 2. Run the `DaysUntilBirthday` target.
