@@ -25,6 +25,19 @@ NS_ASSUME_NONNULL_BEGIN
                            (nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                        callback:(GIDSignInCallback)callback {
+  return [self defaultOptionsWithConfiguration:configuration
+                              additionalScopes:@[]
+                      presentingViewController:presentingViewController
+                                     loginHint:loginHint
+                                      callback:callback];
+}
+
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                               additionalScopes:(NSArray<NSString *> *)additionalScopes
+                       presentingViewController:
+                           (nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
+                                       callback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
@@ -33,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_presentingViewController = presentingViewController;
     options->_loginHint = loginHint;
     options->_callback = callback;
-    options->_scopes = [GIDScopes scopesWithBasicProfile:@[]];
+    options->_scopes = [GIDScopes scopesWithBasicProfile:additionalScopes];
   }
   return options;
 }

@@ -203,23 +203,47 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                           hint:(nullable NSString *)hint
-                       callback:(nullable GIDSignInCallback)callback {
-  GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
-                                       presentingViewController:presentingViewController
-                                                      loginHint:hint
-                                                       callback:callback];
-  [self signInWithOptions:options];
-}
-
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback {
   [self signInWithConfiguration:configuration
        presentingViewController:presentingViewController
                            hint:nil
                        callback:callback];
+}
+
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+       presentingViewController:(UIViewController *)presentingViewController
+                           hint:(nullable NSString *)hint
+                       callback:(nullable GIDSignInCallback)callback {
+  [self signInWithConfiguration:configuration
+               additionalScopes:@[]
+       presentingViewController:presentingViewController
+                           hint:hint
+                       callback:callback];
+}
+
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+               additionalScopes:(NSArray<NSString *> *)additionalScopes
+       presentingViewController:(UIViewController *)presentingViewController
+                       callback:(nullable GIDSignInCallback)callback {
+  [self signInWithConfiguration:configuration
+               additionalScopes:additionalScopes
+       presentingViewController:presentingViewController
+                           hint:nil
+                       callback:callback];
+}
+
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+               additionalScopes:(NSArray<NSString *> *)additionalScopes
+       presentingViewController:(UIViewController *)presentingViewController
+                           hint:(nullable NSString *)hint
+                       callback:(nullable GIDSignInCallback)callback {
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                               additionalScopes:additionalScopes
+                                       presentingViewController:presentingViewController
+                                                      loginHint:hint
+                                                       callback:callback];
+  [self signInWithOptions:options];
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes

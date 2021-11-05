@@ -126,6 +126,47 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                            hint:(nullable NSString *)hint
                        callback:(nullable GIDSignInCallback)callback;
 
+/// Starts an interactive sign-in flow using the provided configuration and a login hint.
+///
+/// The callback will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCallback:` method to restore a previous sign-in.
+///
+/// @param configuration The configuration properties to be used for this flow.
+/// @param additionalScopes Additional scopes to request
+/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
+/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
+///     called asynchronously on the main queue.
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+               additionalScopes:(NSArray<NSString *> *)additionalScopes
+       presentingViewController:(UIViewController *)presentingViewController
+                       callback:(nullable GIDSignInCallback)callback;
+
+/// Starts an interactive sign-in flow using the provided configuration and a login hint.
+///
+/// The callback will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCallback:` method to restore a previous sign-in.
+///
+/// @param configuration The configuration properties to be used for this flow.
+/// @param additionalScopes Additional scopes to request
+/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
+///     called asynchronously on the main queue.
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+               additionalScopes:(NSArray<NSString *> *)additionalScopes
+       presentingViewController:(UIViewController *)presentingViewController
+                           hint:(nullable NSString *)hint
+                       callback:(nullable GIDSignInCallback)callback;
+
 /// Starts an interactive consent flow to add scopes to the current user's grants.
 ///
 /// The callback will be called at the end of this process.  If successful, a new `GIDGoogleUser`

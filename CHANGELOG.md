@@ -1,3 +1,7 @@
+# 6.0.3 (2021-11-5)
+- Allow for additional scopes to be requested at sign in
+  ([#2](https://github.com/elliottech/GoogleSignIn-iOS/pull/2))
+
 # 6.0.2 (2021-8-20)
 - Ensure that module imports can be used when built as a library.
   ([#53](https://github.com/google/GoogleSignIn-iOS/pull/53))

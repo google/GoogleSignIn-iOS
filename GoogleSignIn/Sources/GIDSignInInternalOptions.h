@@ -56,6 +56,14 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                        callback:(GIDSignInCallback)callback;
 
+/// Creates the default options, with the ability to add additional scopes.
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                               additionalScopes:(NSArray<NSString *> *)additionalScopes
+                       presentingViewController:
+                           (nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
+                                       callback:(GIDSignInCallback)callback;
+
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
 
