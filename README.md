@@ -13,7 +13,6 @@ service.
 
 ## Getting Started
 
-* Try either the Swift or Objective-C sample [sample apps](Samples).
-  * See each sample project's `README.md` for more specific instructions.
+* Try either the [Swift](Samples/Swift) or [Objective-C](Samples/ObjC) sample app.
 * Add Google Sign-In to your own app by following our [getting started guides](https://developers.google.com/identity/sign-in/ios/start-integrating).
 * Take a look at the [API reference](https://developers.google.com/identity/sign-in/ios/api/).

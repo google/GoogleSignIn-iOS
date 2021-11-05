@@ -20,6 +20,6 @@ open `DaysUntilBirthdayForPod.xcworkspace`
 ## Swift Package Manager
 
 1. In the `../Samples/Swift/` folder, open the project:
-   `DaysUntilBirthday.xcodeproj`.
+   `open DaysUntilBirthday.xcodeproj`.
 
 2. Run the `DaysUntilBirthday` target.
