@@ -432,6 +432,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
   NSString *emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
   additionalParameters[kIncludeGrantedScopesParameter] = @"true";
   if (options.configuration.serverClientID) {
@@ -447,6 +448,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
+
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
