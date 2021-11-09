@@ -116,10 +116,11 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
-// Extra parameters for the token exchange endpoint.
+// Parameters for the auth and token exchange endpoints.
 static NSString *const kAudienceParameter = @"audience";
 // See b/11669751 .
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
+static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -432,6 +433,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                              kBrowserCallbackPath]];
   NSString *emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
