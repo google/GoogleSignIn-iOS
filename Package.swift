@@ -26,7 +26,10 @@ let package = Package(
   products: [
     .library(
       name: "GoogleSignIn",
-      targets: ["GoogleSignIn"]
+      targets: [
+        "GoogleSignIn",
+        "GIDSignInButton_SwiftUI"
+      ]
     ),
   ],
   dependencies: [
@@ -76,6 +79,16 @@ let package = Package(
         .linkedFramework("LocalAuthentication"),
         .linkedFramework("Security"),
         .linkedFramework("UIKit"),
+      ]
+    ),
+    .target(
+      name: "GIDSignInButton_SwiftUI",
+      dependencies: [
+        "GoogleSignIn"
+      ],
+      path: "GoogleSignIn/SwiftUI_Sources",
+      linkerSettings: [
+        .linkedLibrary("SwiftUI")
       ]
     ),
     .testTarget(
