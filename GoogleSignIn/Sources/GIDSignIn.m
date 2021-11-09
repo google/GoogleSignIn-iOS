@@ -121,6 +121,8 @@ static NSString *const kAudienceParameter = @"audience";
 // See b/11669751 .
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
+static NSString *const kLoginHintParameter = @"login_hint";
+static NSString *const kHostedDomainParameter = @"hd";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -439,10 +441,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
   if (options.loginHint) {
-    additionalParameters[@"login_hint"] = options.loginHint;
+    additionalParameters[kLoginHintParameter] = options.loginHint;
   }
   if (options.configuration.hostedDomain) {
-    additionalParameters[@"hd"] = options.configuration.hostedDomain;
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:options.extraParams
