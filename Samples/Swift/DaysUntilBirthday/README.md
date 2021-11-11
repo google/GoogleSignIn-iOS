@@ -1,6 +1,6 @@
 # Google Sign-In Swift Sample App
 
-## Cocoa Pods
+## CocoaPods
 
 1. In the `../Samples/Swift/DaysUntilBirthday/` folder, run the following 
 [CocoaPods](https://cocoapods.org) command.
