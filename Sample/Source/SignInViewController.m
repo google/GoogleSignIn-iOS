@@ -291,7 +291,7 @@ static NSString * const kClientID =
 }
 
 - (IBAction)addScopes:(id)sender {
-  [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/contacts.readonly" ]
+  [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
              presentingViewController:self
                              callback:^(GIDGoogleUser * _Nullable user,
                                         NSError * _Nullable error) {
