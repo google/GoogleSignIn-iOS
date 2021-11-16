@@ -20,7 +20,7 @@ import GoogleSignIn
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
   // TODO: Replace this with your own ID.
-  private let clientID = "256442014139-g0adlfr889u4k71ok75k2tnf0t4bgepb.apps.googleusercontent.com"
+  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
 
   private lazy var configuration: GIDConfiguration = {
     return GIDConfiguration(clientID: clientID)
