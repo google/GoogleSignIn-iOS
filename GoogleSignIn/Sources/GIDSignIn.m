@@ -116,10 +116,13 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
-// Extra parameters for the token exchange endpoint.
+// Parameters for the auth and token exchange endpoints.
 static NSString *const kAudienceParameter = @"audience";
 // See b/11669751 .
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
+static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
+static NSString *const kLoginHintParameter = @"login_hint";
+static NSString *const kHostedDomainParameter = @"hd";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -431,20 +434,23 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
   NSString *emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
   if (options.loginHint) {
-    additionalParameters[@"login_hint"] = options.loginHint;
+    additionalParameters[kLoginHintParameter] = options.loginHint;
   }
   if (options.configuration.hostedDomain) {
-    additionalParameters[@"hd"] = options.configuration.hostedDomain;
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
+
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
