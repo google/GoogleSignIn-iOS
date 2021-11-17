@@ -2,8 +2,9 @@
 
 ## CocoaPods
 
-1. In the Sample folder, run the following [CocoaPods](https://cocoapods.org) command
-   to install the required dependencies:
+1. In the `../Samples/ObjC/SignInSample/` folder, run the following 
+[CocoaPods](https://cocoapods.org) command to install the require
+dependencies:
 
 ```
 pod install
@@ -19,8 +20,8 @@ open SignInSampleForPod.xcworkspace
 
 ## Swift Pacakage Manager
 
-1. In the Sample folder, open the
-   [Swift Package Manager](https://swift.org/package-manager/) project:
+1. In the `../Sample/ObjC/SignInSample/` folder, open the
+[Swift Package Manager](https://swift.org/package-manager/) project:
 
 ```
 open SignInSample.xcodeproj

@@ -1,6 +1,6 @@
 platform :ios, '9.0'
 
 target 'SampleForPod' do
-  pod 'GoogleSignIn', :path => '../', :testspecs => ['unit']
+  pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
   project 'SignInSampleForPod.xcodeproj'
 end
