@@ -1030,6 +1030,8 @@ static void *kTestObserverContext = &kTestObserverContext;
     [_authState verify];
 
     XCTAssertNotNil(_savedAuthorizationRequest);
+    NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+    XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
     XCTAssertNotNil(_savedAuthorizationCallback);
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
 
