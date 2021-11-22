@@ -209,6 +209,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
                                                       loginHint:hint
+                                                   addScopesFlow:NO
                                                        callback:callback];
   [self signInWithOptions:options];
 }
@@ -248,6 +249,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
                                                       loginHint:self.currentUser.profile.email
+                                                   addScopesFlow:YES
                                                        callback:callback];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
@@ -625,9 +627,15 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                                  code:kGIDSignInErrorCodeKeychain];
         return;
       }
-      GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
-                                                         profileData:handlerAuthFlow.profileData];
-      [self setCurrentUserWithKVO:user];
+
+      if (_currentOptions.addScopesFlow) {
+        [self->_currentUser updateAuthState:authState
+                                profileData:handlerAuthFlow.profileData];
+      } else {
+        GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                           profileData:handlerAuthFlow.profileData];
+        [self setCurrentUserWithKVO:user];
+      }
     }
   }];
 }
@@ -643,7 +651,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       return;
     }
     OIDIDToken *idToken =
-        [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
+        [[OIDIDToken alloc] initWithIDTokenString: authState.lastTokenResponse.idToken];
     // If the profile data are present in the ID token, use them.
     if (idToken) {
       handlerAuthFlow.profileData = [self profileDataWithIDToken:idToken];

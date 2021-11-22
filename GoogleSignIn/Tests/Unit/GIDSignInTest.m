@@ -134,6 +134,9 @@ static NSString *const kFakeURL = @"http://foo.com";
 
 static NSString *const kEMMSupport = @"1";
 
+static NSString *const kGrantedScope = @"grantedScope";
+static NSString *const kNewScope = @"newScope";
+
 /// Unique pointer value for KVO tests.
 static void *kTestObserverContext = &kTestObserverContext;
 
@@ -363,6 +366,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_authState verify];
   [_tokenResponse verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
+
+  [idTokenDecoded stopMocking];
 }
 
 - (void)testRestoredPreviousSignInNoRefresh_hasNoPreviousUser {
@@ -451,6 +456,67 @@ static void *kTestObserverContext = &kTestObserverContext;
                restoredSignIn:YES
                oldAccessToken:YES
                   modalCancel:NO];
+}
+
+- (void)testAddScopes {
+  // Restore the previous sign-in account. This is the preparation for adding scopes.
+  [self OAuthLoginWithOptions:nil
+                    authError:nil
+                   tokenError:nil
+      emmPasscodeInfoRequired:NO
+                keychainError:NO
+               restoredSignIn:YES
+               oldAccessToken:NO
+                  modalCancel:NO];
+
+  XCTAssertNotNil(_signIn.currentUser);
+
+
+  GIDSignInInternalOptions *options = [GIDSignInInternalOptions defaultOptionsWithConfiguration:nil
+                                                                      presentingViewController:nil
+                                                                                     loginHint:nil
+                                                                                 addScopesFlow:YES
+                                                                                      callback:nil];
+
+  id profile = OCMStrictClassMock([GIDProfileData class]);
+  OCMStub([profile email]).andReturn(kUserEmail);
+
+  OCMStub([_user authentication]).andReturn(_authentication);
+  OCMStub([_authentication clientID]).andReturn(kClientId);
+  OCMStub([_user serverClientID]).andReturn(nil);
+  OCMStub([_user hostedDomain]).andReturn(nil);
+
+  OCMStub([_user openIDRealm]).andReturn(kOpenIDRealm);
+  OCMStub([_user profile]).andReturn(profile);
+  OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
+
+  [self OAuthLoginWithOptions:options
+                    authError:nil
+                   tokenError:nil
+      emmPasscodeInfoRequired:NO
+                keychainError:NO
+               restoredSignIn:NO
+               oldAccessToken:NO
+                  modalCancel:NO];
+
+  NSArray<NSString *> *grantedScopes;
+  NSString *grantedScopeString = _savedAuthorizationRequest.scope;
+
+  if (grantedScopeString) {
+    grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
+        [NSCharacterSet whitespaceCharacterSet]];
+    // Tokenize with space as a delimiter.
+    NSMutableArray<NSString *> *parsedScopes =
+        [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
+    // Remove empty strings.
+    [parsedScopes removeObject:@""];
+    grantedScopes = [parsedScopes copy];
+  }
+  
+  NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
+  XCTAssertEqualObjects(grantedScopes, expectedScopes);
+
+  [profile stopMocking];
 }
 
 - (void)testOpenIDRealm {
@@ -1013,10 +1079,7 @@ static void *kTestObserverContext = &kTestObserverContext;
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    [_signIn signInWithConfiguration:_configuration
-            presentingViewController:_presentingViewController
-                                hint:_hint
-                            callback:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
       [expectation fulfill];
       if (!user) {
         XCTAssertNotNil(error, @"should have an error if user is nil");
@@ -1024,7 +1087,17 @@ static void *kTestObserverContext = &kTestObserverContext;
       XCTAssertFalse(self->_callbackCalled, @"callback already called");
       self->_callbackCalled = YES;
       self->_authError = error;
-    }];
+    };
+    if (options.addScopesFlow) {
+      [_signIn addScopes:@[kNewScope]
+        presentingViewController:_presentingViewController
+                        callback:callback];
+    } else {
+      [_signIn signInWithConfiguration:_configuration
+              presentingViewController:_presentingViewController
+                                  hint:_hint
+                              callback:callback];
+    }
 
     [_authorization verify];
     [_authState verify];
@@ -1088,15 +1161,20 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
 
   // SaveAuthCallback
-  [[[_user stub] andReturn:_user] alloc];
   __block OIDAuthState *authState;
   __block GIDProfileData *profileData;
 
   if (keychainError) {
     _saveAuthorizationReturnValue = NO;
   } else {
-    (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
-                                                  profileData:SAVE_TO_ARG_BLOCK(profileData)];
+    if (options.addScopesFlow) {
+      [[_user expect] updateAuthState:SAVE_TO_ARG_BLOCK(authState)
+                          profileData:SAVE_TO_ARG_BLOCK(profileData)];
+    } else {
+      [[[_user stub] andReturn:_user] alloc];
+      (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
+                                                    profileData:SAVE_TO_ARG_BLOCK(profileData)];
+    }
   }
 
   if (restoredSignIn && !oldAccessToken) {
@@ -1129,8 +1207,12 @@ static void *kTestObserverContext = &kTestObserverContext;
   _keychainRemoved = NO;
   _keychainSaved = NO;
   _authError = nil;
-  [[[_user expect] andReturn:_authentication] authentication];
-  [[[_user expect] andReturn:_authentication] authentication];
+
+  if (!options.addScopesFlow) {
+    [[[_user expect] andReturn:_authentication] authentication];
+    [[[_user expect] andReturn:_authentication] authentication];
+  }
+
   __block GIDAuthenticationAction action;
   [[_authentication expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(action)];
 
