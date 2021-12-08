@@ -435,7 +435,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
-  NSString *emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+  NSString *emmSupport;
+#if TARGET_OS_MACCATALYST
+  emmSupport = nil;
+#else
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#endif
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
   additionalParameters[kIncludeGrantedScopesParameter] = @"true";
