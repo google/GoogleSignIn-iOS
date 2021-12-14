@@ -104,7 +104,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow using the provided configuration and a login hint.
 ///
@@ -124,7 +125,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive consent flow to add scopes to the current user's grants.
 ///
@@ -139,7 +141,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     called asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                    callback:(nullable GIDSignInCallback)callback;
+                    callback:(nullable GIDSignInCallback)callback
+    NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions.");
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;
