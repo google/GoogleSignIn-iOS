@@ -22,10 +22,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// The error domain for `NSError`s returned by the Google Identity SDK.
+/// The error domain for `NSError`s returned by the Google Sign-In SDK.
 extern NSErrorDomain const kGIDSignInErrorDomain;
 
-/// A list of potential error codes returned from the Google Identity SDK.
+/// A list of potential error codes returned from the Google Sign-In SDK.
 typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   /// Indicates an unknown error has occurred.
   kGIDSignInErrorCodeUnknown = -1,
@@ -142,7 +142,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                     callback:(nullable GIDSignInCallback)callback
-    NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions.");
+    NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions."); 
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;
