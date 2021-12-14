@@ -2,7 +2,7 @@
 - New Swift sample app demonstrating SwiftUI.
   ([#63](https://github.com/google/GoogleSignIn-iOS/pull/63))
 - Support for Mac Catalyst.
-- Support for `restorePreviousSignIn` in App Extensions.
+- Support for `restorePreviousSignIn` in app extensions.
 - Improvements to the `addScopes` implementation.
   ([#68](https://github.com/google/GoogleSignIn-iOS/pull/68),
   [#70](https://github.com/google/GoogleSignIn-iOS/pull/70))
