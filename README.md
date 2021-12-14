@@ -59,5 +59,5 @@ keychain group to both the host app and app extension targets.
 ## Mac Catalyst
 
 Google Sign-In fully supports apps built for [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for
-your Mac Catalyst app to access the keychain on macOS you will need to add the Keychain Sharing capability.  No
+your Mac Catalyst app to access the keychain on macOS you will need to enable the Keychain Sharing capability.  No
 keychain groups need to be added.
