@@ -41,15 +41,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   OIDAuthState *_authState;
 }
 
-- (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(nullable GIDProfileData *)profileData {
-  self = [super init];
-  if (self) {
-    [self updateAuthState:authState profileData:profileData];
-  }
-  return self;
-}
-
 - (nullable NSString *)userID {
   NSString *idToken = [self idToken];
   if (idToken) {
@@ -106,12 +97,23 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 #pragma mark - Private Methods
 
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(nullable GIDProfileData *)profileData {
+  self = [super init];
+  if (self) {
+    [self updateAuthState:authState profileData:profileData];
+  }
+  return self;
+}
+
 - (void)updateAuthState:(OIDAuthState *)authState
             profileData:(nullable GIDProfileData *)profileData {
   _authState = authState;
   _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
   _profile = profileData;
 }
+
+#pragma mark - Helpers
 
 - (NSString *)idToken {
   return _authState ? _authState.lastTokenResponse.idToken : nil;
@@ -127,7 +129,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   self = [super init];
   if (self) {
     _profile = [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
-    if ([decoder containsValueForKey:kAuthState]) { // New encoding
+    if ([decoder containsValueForKey:kAuthState]) { // Current encoding
       _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
     } else { // Old encoding
       GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
