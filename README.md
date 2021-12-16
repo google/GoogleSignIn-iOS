@@ -48,3 +48,9 @@ If you would like to see a Swift example, take a look at
 [getting started guides](https://developers.google.com/identity/sign-in/ios/start-integrating).
 * Take a look at the
 [API reference](https://developers.google.com/identity/sign-in/ios/api/).
+
+## Mac Catalyst
+
+Google Sign-In supports apps built for [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for
+your Mac Catalyst app to access the keychain on macOS you will need to enable the Keychain Sharing capability.  No
+keychain groups need to be added.
