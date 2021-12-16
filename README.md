@@ -49,15 +49,8 @@ If you would like to see a Swift example, take a look at
 * Take a look at the
 [API reference](https://developers.google.com/identity/sign-in/ios/api/).
 
-## App Extensions
-
-Restoring a previous sign-in is supported in [app extensions](https://developer.apple.com/app-extensions/).  The initial
-sign-in flow will need to have been performed in the host app.  In order to allow your app extension to successfully call
-`restorePreviousSignInWithCallback:`, you will need to enable the Keychain Sharing capability and add a shared
-keychain group to both the host app and app extension targets.
-
 ## Mac Catalyst
 
-Google Sign-In fully supports apps built for [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for
+Google Sign-In supports apps built for [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for
 your Mac Catalyst app to access the keychain on macOS you will need to enable the Keychain Sharing capability.  No
 keychain groups need to be added.
