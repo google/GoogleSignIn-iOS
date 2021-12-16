@@ -41,15 +41,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   OIDAuthState *_authState;
 }
 
-- (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(nullable GIDProfileData *)profileData {
-  self = [super init];
-  if (self) {
-    [self updateAuthState:authState profileData:profileData];
-  }
-  return self;
-}
-
 - (nullable NSString *)userID {
   NSString *idToken = [self idToken];
   if (idToken) {
@@ -106,12 +97,23 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 #pragma mark - Private Methods
 
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(nullable GIDProfileData *)profileData {
+  self = [super init];
+  if (self) {
+    [self updateAuthState:authState profileData:profileData];
+  }
+  return self;
+}
+
 - (void)updateAuthState:(OIDAuthState *)authState
             profileData:(nullable GIDProfileData *)profileData {
   _authState = authState;
   _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
   _profile = profileData;
 }
+
+#pragma mark - Helpers
 
 - (NSString *)idToken {
   return _authState ? _authState.lastTokenResponse.idToken : nil;
@@ -126,16 +128,20 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];
   if (self) {
-    _authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
-                                            forKey:kAuthenticationKey];
     _profile = [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
-    _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
+    if ([decoder containsValueForKey:kAuthState]) { // Current encoding
+      _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
+    } else { // Old encoding
+      GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
+                                                                forKey:kAuthenticationKey];
+      _authState = authentication.authState;
+    }
+    _authentication = [[GIDAuthentication alloc] initWithAuthState:_authState];
   }
   return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-  [encoder encodeObject:_authentication forKey:kAuthenticationKey];
   [encoder encodeObject:_profile forKey:kProfileDataKey];
   [encoder encodeObject:_authState forKey:kAuthState];
 }
