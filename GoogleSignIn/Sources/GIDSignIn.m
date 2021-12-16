@@ -639,7 +639,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         return;
       }
 
-      if (_currentOptions.addScopesFlow) {
+      if (self->_currentOptions.addScopesFlow) {
         [self->_currentUser updateAuthState:authState
                                 profileData:handlerAuthFlow.profileData];
       } else {
