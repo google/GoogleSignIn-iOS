@@ -18,17 +18,17 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#import "GoogleSignIn/Sources/GIDSignInStrings.h"
+#import "third_party/objective_c/GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "third_party/objective_c/GoogleSignIn/Sources/GIDSignInStrings.h"
 
 #ifdef SWIFT_PACKAGE
 @import GoogleUtilities_MethodSwizzler;
 @import GoogleUtilities_SwizzlerTestHelpers;
 @import OCMock;
 #else
-#import <GoogleUtilities/GULSwizzler.h>
-#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
-#import <OCMock/OCMock.h>
+#import "third_party/firebase/ios/Releases/GoogleUtilities/MethodSwizzler/Public/GoogleUtilities/GULSwizzler.h"
+#import "third_party/firebase/ios/Releases/GoogleUtilities/SwizzlerTestHelpers/Public/GoogleUtilities/GULSwizzler+Unswizzle.h"
+#import "third_party/objective_c/ocmock/v3/Source/OCMock/OCMock.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -69,6 +69,11 @@ NS_ASSUME_NONNULL_BEGIN
   _isIOS10 = [UIDevice currentDevice].systemVersion.integerValue == 10;
   _keyWindowSet = NO;
   _presentedViewController = nil;
+  UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return fakeKeyWindow; }];
   [GULSwizzler swizzleClass:[UIWindow class]
                    selector:@selector(makeKeyAndVisible)
             isClassSelector:NO
@@ -84,6 +89,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)tearDown {
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
   [GULSwizzler unswizzleClass:[UIWindow class]
                      selector:@selector(makeKeyAndVisible)
               isClassSelector:NO];
@@ -105,7 +113,11 @@ NS_ASSUME_NONNULL_BEGIN
                    selector:@selector(sharedApplication)
             isClassSelector:YES
                   withBlock:^() { return mockApplication; }];
-  [[mockApplication expect] openURL:[NSURL URLWithString:urlString]];
+  if (@available(iOS 10, *)) {
+    [[mockApplication expect] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
+  } else {
+    [[mockApplication expect] openURL:[NSURL URLWithString:urlString]];
+  }
   action();
   [mockApplication verify];
   [GULSwizzler unswizzleClass:[UIApplication class]
