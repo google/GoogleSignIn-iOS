@@ -15,11 +15,11 @@
 
 #if TARGET_OS_IOS
 
-#import "third_party/objective_c/GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 
 #import <UIKit/UIKit.h>
 
-#import "third_party/objective_c/GoogleSignIn/Sources/GIDSignInStrings.h"
+#import "GoogleSignIn/Sources/GIDSignInStrings.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
