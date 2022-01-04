@@ -18,17 +18,17 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "third_party/objective_c/GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#import "third_party/objective_c/GoogleSignIn/Sources/GIDSignInStrings.h"
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDSignInStrings.h"
 
 #ifdef SWIFT_PACKAGE
 @import GoogleUtilities_MethodSwizzler;
 @import GoogleUtilities_SwizzlerTestHelpers;
 @import OCMock;
 #else
-#import "third_party/firebase/ios/Releases/GoogleUtilities/MethodSwizzler/Public/GoogleUtilities/GULSwizzler.h"
-#import "third_party/firebase/ios/Releases/GoogleUtilities/SwizzlerTestHelpers/Public/GoogleUtilities/GULSwizzler+Unswizzle.h"
-#import "third_party/objective_c/ocmock/v3/Source/OCMock/OCMock.h"
+#import <GoogleUtilities/GULSwizzler.h>
+#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
+#import <OCMock/OCMock.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
