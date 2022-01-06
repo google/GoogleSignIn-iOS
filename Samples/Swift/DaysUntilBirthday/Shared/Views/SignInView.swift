@@ -15,14 +15,26 @@
  */
 
 import SwiftUI
+import GoogleSignInSwift
 
 struct SignInView: View {
-  @EnvironmentObject var viewModel: AuthenticationViewModel
+  @EnvironmentObject var authViewModel: AuthenticationViewModel
 
   var body: some View {
-      VStack {
-        GoogleSignInButtonWrapper(handler: viewModel.signIn)
+    VStack {
+      HStack {
+        let buttonViewModel = GoogleSignInButtonViewModel(
+          scheme: .light,
+          style: .standard
+        )
+        GoogleSignInButton(
+          viewModel: buttonViewModel,
+          action: authViewModel.signIn
+        )
           .accessibility(hint: Text("Sign in with Google button."))
+          .padding()
+      }
+      Spacer()
     }
   }
 }

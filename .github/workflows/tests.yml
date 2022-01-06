@@ -15,11 +15,15 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        flags: [
-          '',
-          '--use-libraries',
-          '--use-static-frameworks'
+        podspec: [GoogleSignIn.podspec, GoogleSignInSwift.podspec]
+        flag: [
+          "", 
+          "--use-libraries", 
+          "--use-static-frameworks"
         ]
+        include:
+          - podspec: GoogleSignInSwift.podspec
+            includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
     steps:
     - uses: actions/checkout@v2
     - name: Update Bundler
@@ -27,7 +31,9 @@ jobs:
     - name: Install Ruby gems with Bundler
       run: bundle install
     - name: Lint podspec using local source
-      run: pod lib lint --verbose ${{ matrix.flags }}
+      run: |
+        pod lib lint ${{ matrix.podspec }} --verbose \
+           ${{ matrix.includePodspecFlag }}  ${{ matrix.flag }}
 
   spm-build-test:
     runs-on: macOS-latest
@@ -44,14 +50,14 @@ jobs:
     - name: Build unit test target
       run: |
         xcodebuild \
-          -scheme GoogleSignIn \
+          -scheme GoogleSignIn-Package \
           -sdk ${{ matrix.sdk }} \
           -destination ${{ matrix.destination }} \
           build-for-testing
     - name: Run unit test target
       run: |
         xcodebuild \
-          -scheme GoogleSignIn \
+          -scheme GoogleSignIn-Package \
           -sdk ${{ matrix.sdk }} \
           -destination ${{ matrix.destination }} \
           test-without-building
