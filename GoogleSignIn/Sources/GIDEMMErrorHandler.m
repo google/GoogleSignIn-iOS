@@ -90,10 +90,23 @@ typedef enum {
   }
   // All UI must happen in the main thread.
   dispatch_async(dispatch_get_main_queue(), ^() {
-    UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
-    CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
-        keyWindow.bounds : [UIScreen mainScreen].bounds;
-    UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+    UIWindow *keyWindow = nil;
+    UIWindow *alertWindow = nil;
+    // Compatible with different iOS versions.
+    if (@available(iOS 13.0, *)) {
+      for (UIWindow *window in [UIApplication sharedApplication].windows) {
+          if (window.isKeyWindow) {
+              keyWindow = window;
+              break;
+          }
+      }
+      alertWindow = [[UIWindow alloc] initWithWindowScene:keyWindow.windowScene];
+    } else {
+        keyWindow = [[UIApplication sharedApplication] keyWindow];
+        CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
+            keyWindow.bounds : [UIScreen mainScreen].bounds;
+        alertWindow  = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+    }
     alertWindow.backgroundColor = [UIColor clearColor];
     alertWindow.rootViewController = [[UIViewController alloc] init];
     alertWindow.rootViewController.view.backgroundColor = [UIColor clearColor];
