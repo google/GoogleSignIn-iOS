@@ -92,13 +92,18 @@ typedef enum {
   dispatch_async(dispatch_get_main_queue(), ^() {
     UIWindow *keyWindow = nil;
     UIWindow *alertWindow = nil;
-    // Compatible with different iOS versions/lifecycles.
+    // Compatible with different iOS lifecycles for UIWindow initialization.
     if (@available(iOS 13.0, *)) {
       for (UIWindow *window in [UIApplication sharedApplication].windows) {
           if (window.isKeyWindow) {
               keyWindow = window;
               break;
           }
+      }
+      if (!keyWindow || !(keyWindow.windowScene)) {
+          // The keyWindow and windowScene shouldn't be nil under iOS 13 and higher.
+          completion();
+          return;
       }
       alertWindow = [[UIWindow alloc] initWithWindowScene:keyWindow.windowScene];
     } else {
