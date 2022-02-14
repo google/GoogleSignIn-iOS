@@ -479,6 +479,45 @@ NS_ASSUME_NONNULL_BEGIN
   [self testScreenlockRequiredCancel];
 }
 
+// Verifies that the `keyWindow` internal method works on all OS versions as expected.
+- (void)testKeyWindow {
+  // The original method has been swizzled in `setUp` so get its original implementation to test.
+  typedef id (*KeyWindowSignature)(id, SEL);
+  KeyWindowSignature keyWindowFunction = (KeyWindowSignature)
+      [GULSwizzler originalImplementationForClass:[GIDEMMErrorHandler class]
+                       selector:@selector(keyWindow)
+                isClassSelector:NO];
+  UIWindow *mockKeyWindow = OCMClassMock([UIWindow class]);
+  OCMStub(mockKeyWindow.isKeyWindow).andReturn(YES);
+  UIApplication *mockApplication = OCMClassMock([UIApplication class]);
+  [GULSwizzler swizzleClass:[UIApplication class]
+                   selector:@selector(sharedApplication)
+            isClassSelector:YES
+                  withBlock:^{ return mockApplication; }];
+  if (@available(iOS 15, *)) {
+    UIWindowScene *mockWindowScene = OCMClassMock([UIWindowScene class]);
+    OCMStub(mockApplication.connectedScenes).andReturn(@[mockWindowScene]);
+    OCMStub(mockWindowScene.activationState).andReturn(UISceneActivationStateForegroundActive);
+    OCMStub(mockWindowScene.keyWindow).andReturn(mockKeyWindow);
+  } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+    if (@available(iOS 13, *)) {
+      OCMStub(mockApplication.windows).andReturn(@[mockKeyWindow]);
+    } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+      OCMStub(mockApplication.keyWindow).andReturn(mockKeyWindow);
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+    }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  }
+  UIWindow *keyWindow =
+      keyWindowFunction([GIDEMMErrorHandler sharedInstance], @selector(keyWindow));
+  XCTAssertEqual(keyWindow, mockKeyWindow);
+  [GULSwizzler unswizzleClass:[UIApplication class]
+                     selector:@selector(sharedApplication)
+              isClassSelector:YES];
+}
+
 #endif
 
 @end
