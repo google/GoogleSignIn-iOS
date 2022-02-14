@@ -99,9 +99,17 @@ typedef enum {
       completion();
       return;
     }
-    CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
+    UIWindow *alertWindow;
+    if (@available(iOS 13, *)) {
+      if (keyWindow.windowScene) {
+        alertWindow = [[UIWindow alloc] initWithWindowScene:keyWindow.windowScene];
+      }
+    }
+    if (!alertWindow) {
+      CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
         keyWindow.bounds : [UIScreen mainScreen].bounds;
-    UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+      alertWindow = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+    }
     alertWindow.backgroundColor = [UIColor clearColor];
     alertWindow.rootViewController = [[UIViewController alloc] init];
     alertWindow.rootViewController.view.backgroundColor = [UIColor clearColor];
