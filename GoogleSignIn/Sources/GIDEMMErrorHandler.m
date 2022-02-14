@@ -147,7 +147,7 @@ typedef enum {
 }
 
 // This method is exposed to the unit test.
-- (UIWindow *)keyWindow {
+- (nullable UIWindow *)keyWindow {
   if (@available(iOS 15, *)) {
     for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
       if ([scene isKindOfClass:[UIWindowScene class]] &&
