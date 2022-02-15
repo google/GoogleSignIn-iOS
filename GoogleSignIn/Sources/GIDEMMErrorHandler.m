@@ -95,22 +95,22 @@ typedef enum {
     // Compatible with different iOS lifecycles for UIWindow initialization.
     if (@available(iOS 13.0, *)) {
       for (UIWindow *window in [UIApplication sharedApplication].windows) {
-          if (window.isKeyWindow) {
-              keyWindow = window;
-              break;
-          }
+        if (window.isKeyWindow) {
+          keyWindow = window;
+          break;
+        }
       }
       if (!keyWindow || !(keyWindow.windowScene)) {
-          // The keyWindow and windowScene shouldn't be nil under iOS 13 and higher.
-          completion();
-          return;
+        // The keyWindow and windowScene shouldn't be nil under iOS 13 and higher.
+        completion();
+        return;
       }
       alertWindow = [[UIWindow alloc] initWithWindowScene:keyWindow.windowScene];
     } else {
-        keyWindow = [[UIApplication sharedApplication] keyWindow];
-        CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
-            keyWindow.bounds : [UIScreen mainScreen].bounds;
-        alertWindow  = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+      keyWindow = [[UIApplication sharedApplication] keyWindow];
+      CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
+        keyWindow.bounds : [UIScreen mainScreen].bounds;
+      alertWindow  = [[UIWindow alloc] initWithFrame:keyWindowBounds];
     }
     alertWindow.backgroundColor = [UIColor clearColor];
     alertWindow.rootViewController = [[UIViewController alloc] init];
