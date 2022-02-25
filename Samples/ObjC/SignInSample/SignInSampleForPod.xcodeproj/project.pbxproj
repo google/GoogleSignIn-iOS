@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CC887BA946C6A9FDA3DE81B5 /* Pods_SampleForPod.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550F5407FA6F32CFDE2C3C75 /* Pods_SampleForPod.framework */; };
+		6DD2E09C9D650286D9998F62 /* libPods-SampleForPod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEEB93C46D6DF956C41E1FC9 /* libPods-SampleForPod.a */; };
 		D926A5701BC3236100ADECE6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D926A5381BC3236100ADECE6 /* AppDelegate.m */; };
 		D926A5711BC3236100ADECE6 /* AuthInspectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D926A53A1BC3236100ADECE6 /* AuthInspectorViewController.m */; };
 		D926A5721BC3236100ADECE6 /* DataPickerState.m in Sources */ = {isa = PBXBuildFile; fileRef = D926A53C1BC3236100ADECE6 /* DataPickerState.m */; };
@@ -24,7 +24,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		550F5407FA6F32CFDE2C3C75 /* Pods_SampleForPod.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SampleForPod.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D926A51D1BC31FE000ADECE6 /* SignInSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignInSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D926A5371BC3236100ADECE6 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Source/AppDelegate.h; sourceTree = SOURCE_ROOT; };
 		D926A5381BC3236100ADECE6 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Source/AppDelegate.m; sourceTree = SOURCE_ROOT; };
@@ -81,7 +80,9 @@
 		D926A56E1BC3236100ADECE6 /* SignInViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SignInViewController.m; path = Source/SignInViewController.m; sourceTree = SOURCE_ROOT; };
 		D926A56F1BC3236100ADECE6 /* SignInViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SignInViewController.xib; path = Source/SignInViewController.xib; sourceTree = SOURCE_ROOT; };
 		DAD21F7A41C90200270A7376 /* Pods-SampleForPod.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SampleForPod.release.xcconfig"; path = "Target Support Files/Pods-SampleForPod/Pods-SampleForPod.release.xcconfig"; sourceTree = "<group>"; };
+		EEEB93C46D6DF956C41E1FC9 /* libPods-SampleForPod.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SampleForPod.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE1798D23522F57E24875676 /* Pods-SampleForPod.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SampleForPod.debug.xcconfig"; path = "Target Support Files/Pods-SampleForPod/Pods-SampleForPod.debug.xcconfig"; sourceTree = "<group>"; };
+		FE38B85A279A2A890095108A /* AppAuth-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "AppAuth-iOS"; path = "../../../../Alex-4-Git/AppAuth-iOS"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,7 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC887BA946C6A9FDA3DE81B5 /* Pods_SampleForPod.framework in Frameworks */,
+				6DD2E09C9D650286D9998F62 /* libPods-SampleForPod.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,7 +109,8 @@
 		BB0E907DD016FB9CB6DC01B5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				550F5407FA6F32CFDE2C3C75 /* Pods_SampleForPod.framework */,
+				FE38B85A279A2A890095108A /* AppAuth-iOS */,
+				EEEB93C46D6DF956C41E1FC9 /* libPods-SampleForPod.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -176,7 +178,7 @@
 				D926A5191BC31FE000ADECE6 /* Sources */,
 				D926A51A1BC31FE000ADECE6 /* Frameworks */,
 				D926A51B1BC31FE000ADECE6 /* Resources */,
-				819CCDEFD018D376E185A11E /* [CP] Embed Pods Frameworks */,
+				446BC6E2F4E0E1F146BEFDCD /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -272,6 +274,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		446BC6E2F4E0E1F146BEFDCD /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SampleForPod/Pods-SampleForPod-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleSignIn/GoogleSignIn.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleSignIn.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SampleForPod/Pods-SampleForPod-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		4E03DCAF883884540B8AF6E6 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -292,30 +312,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		819CCDEFD018D376E185A11E /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-SampleForPod/Pods-SampleForPod-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/AppAuth/AppAuth.framework",
-				"${BUILT_PRODUCTS_DIR}/GTMAppAuth/GTMAppAuth.framework",
-				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
-				"${BUILT_PRODUCTS_DIR}/GoogleSignIn/GoogleSignIn.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AppAuth.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMAppAuth.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleSignIn.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SampleForPod/Pods-SampleForPod-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

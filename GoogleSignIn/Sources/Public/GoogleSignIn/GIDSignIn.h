@@ -15,7 +15,14 @@
  */
 
 #import <Foundation/Foundation.h>
+
+#if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
+typedef UIViewController GIDViewController;
+#elif __has_include(<AppKit/AppKit.h>)
+#import <AppKit/AppKit.h>
+typedef NSViewController GIDViewController;
+#endif
 
 @class GIDConfiguration;
 @class GIDGoogleUser;
@@ -103,7 +110,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
+       presentingViewController:(GIDViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
@@ -123,7 +130,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
+       presentingViewController:(GIDViewController *)presentingViewController
                            hint:(nullable NSString *)hint
                        callback:(nullable GIDSignInCallback)callback
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
@@ -140,7 +147,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
-    presentingViewController:(UIViewController *)presentingViewController
+    presentingViewController:(GIDViewController *)presentingViewController
                     callback:(nullable GIDSignInCallback)callback
     NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions."); 
 

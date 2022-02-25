@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 
 #import <UIKit/UIKit.h>
@@ -283,3 +283,4 @@ typedef enum {
 @end
 
 NS_ASSUME_NONNULL_END
+#endif

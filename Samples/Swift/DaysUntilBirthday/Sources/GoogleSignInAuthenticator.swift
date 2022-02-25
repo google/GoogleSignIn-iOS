@@ -20,7 +20,8 @@ import GoogleSignIn
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
   // TODO: Replace this with your own ID.
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
+ // private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
+  private let clientID = "1019271468193-agbre5rfma5i22814soo4g3c4kf689m7.apps.googleusercontent.com"
 
   private lazy var configuration: GIDConfiguration = {
     return GIDConfiguration(clientID: clientID)
@@ -37,10 +38,17 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// Signs in the user based upon the selected account.'
   /// - note: Successful calls to this will set the `authViewModel`'s `state` property.
   func signIn() {
+    #if os(iOS)
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       print("There is no root view controller!")
       return
     }
+    #else // os(macOS)
+    guard let rootViewController = NSApplication.shared.windows.first?.contentViewController else {
+      print("There is no root view controller!")
+      return
+    }
+    #endif
     GIDSignIn.sharedInstance.signIn(with: configuration,
                                     presenting: rootViewController) { user, error in
       guard let user = user else {
@@ -57,6 +65,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
     authViewModel.state = .signedOut
   }
 
+  #if os(iOS)
   /// Adds the birthday read scope for the current user.
   /// - parameter completion: An escaping closure that is called upon successful completion of the
   /// `addScopes(_:presenting:)` request.
@@ -79,6 +88,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
       completion()
     }
   }
+  #endif
 
   /// Disconnects the previously granted scope and signs the user out.
   func disconnect() {

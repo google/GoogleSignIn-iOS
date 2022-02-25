@@ -83,6 +83,8 @@
 		D99924CA1A92B3C7008CC226 /* SignInSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignInSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D99925141A92B5A8008CC226 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D9D3B1D91B72A28500D2EAA2 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
+		FE38B85B279F4CBA0095108A /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
+		FE38B85C279F4CD70095108A /* AppAuth-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "AppAuth-iOS"; path = "../../../../AppAuth-iOS"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +153,8 @@
 		D999250F1A92B555008CC226 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FE38B85C279F4CD70095108A /* AppAuth-iOS */,
+				FE38B85B279F4CBA0095108A /* GoogleSignIn-iOS */,
 				C15484C022FCB34100C76691 /* AuthenticationServices.framework */,
 				D936C1C821225D1000E8DAC9 /* LocalAuthentication.framework */,
 				D9D3B1D91B72A28500D2EAA2 /* SafariServices.framework */,

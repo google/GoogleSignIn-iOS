@@ -13,8 +13,15 @@
 // limitations under the License.
 
 #import <SafariServices/SafariServices.h>
-#import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+
+#if __has_include(<UIKit/UIKit.h>)
+#import <UIKit/UIKit.h>
+typedef UIViewController GIDViewController;
+#elif __has_include(<AppKit/AppKit.h>)
+#import <AppKit/AppKit.h>
+typedef NSViewController GIDViewController;
+#endif
 
 // Test module imports
 @import GoogleSignIn;
@@ -45,11 +52,17 @@
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
-#import <AppAuth/OIDAuthorizationService+IOS.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #import <OCMock/OCMock.h>
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#import <AppAuth/OIDAuthorizationService+IOS.h>
+#else
+#import <AppAuth/OIDAuthorizationService+Mac.h>
+#endif
+
 #endif
 
 // Create a BLOCK to store the actual address for arg in param.
@@ -141,7 +154,7 @@ static NSString *const kNewScope = @"newScope";
 static void *kTestObserverContext = &kTestObserverContext;
 
 // This category is used to allow the test to swizzle a private method.
-@interface UIViewController (Testing)
+@interface GIDViewController (Testing)
 
 // This private method provides access to the window. It's declared here to avoid a warning about
 // an unrecognized selector in the test.
@@ -178,7 +191,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Mock |GTMAppAuthFetcherAuthorization|.
   id _authorization;
 
-  // Mock |UIViewController|.
+  // Mock |GIDViewController|.
   id _presentingViewController;
 
   // Mock for |GIDGoogleUser|.
@@ -224,7 +237,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   OIDAuthorizationRequest *_savedAuthorizationRequest;
 
   // The saved presentingViewController from the authorization request.
-  UIViewController *_savedPresentingViewController;
+  GIDViewController *_savedPresentingViewController;
 
   // The saved authorization callback.
   OIDAuthorizationCallback _savedAuthorizationCallback;
@@ -259,7 +272,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   _changedKeyPaths = [[NSMutableSet alloc] init];
 
   // Mocks
-  _presentingViewController = OCMStrictClassMock([UIViewController class]);
+  _presentingViewController = OCMStrictClassMock([GIDViewController class]);
   _authState = OCMStrictClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);

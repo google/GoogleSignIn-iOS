@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -61,3 +62,5 @@ typedef NS_ENUM(NSInteger, GIDSignInButtonColorScheme) {
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif

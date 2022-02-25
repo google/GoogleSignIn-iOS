@@ -27,7 +27,9 @@
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#endif
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
@@ -50,10 +52,16 @@
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
-#import <AppAuth/OIDAuthorizationService+IOS.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
+
+#if TARGET_OS_OSX
+#import <AppAuth/OIDAuthorizationService+Mac.h>
+#elif TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#import <AppAuth/OIDAuthorizationService+IOS.h>
+#endif
+
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -205,7 +213,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
+       presentingViewController:(GIDViewController *)presentingViewController
                            hint:(nullable NSString *)hint
                        callback:(nullable GIDSignInCallback)callback {
   GIDSignInInternalOptions *options =
@@ -218,7 +226,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
+       presentingViewController:(GIDViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback {
   [self signInWithConfiguration:configuration
        presentingViewController:presentingViewController
@@ -227,7 +235,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
-    presentingViewController:(UIViewController *)presentingViewController
+    presentingViewController:(GIDViewController *)presentingViewController
                     callback:(nullable GIDSignInCallback)callback {
   // A currentUser must be available in order to complete this flow.
   if (!self.currentUser) {
@@ -436,9 +444,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
   NSString *emmSupport;
-#if TARGET_OS_MACCATALYST
+#if TARGET_OS_MACCATALYST || TARGET_OS_OSX
   emmSupport = nil;
-#else
+#else // TARGET_OS_IOS
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
 #endif
 
@@ -453,11 +461,35 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (options.configuration.hostedDomain) {
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
+#else // TARGET_OS_OSX
+  [additionalParameters addEntriesFromDictionary:options.extraParams];
+#endif
 
+#if TARGET_OS_OSX
+  OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                clientSecret:@""
+                                                      scopes:options.scopes
+                                                 redirectURL:redirectURL
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
+
+  _currentAuthorizationFlow = [OIDAuthorizationService
+      presentAuthorizationRequest:request
+                 presentingWindow:options.presentingViewController.view.window
+                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                    NSError *_Nullable error) {
+    [self processAuthorizationResponse:authorizationResponse
+                                 error:error
+                            emmSupport:emmSupport];
+  }];
+#elif TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -465,65 +497,77 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
+
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
          presentingViewController:options.presentingViewController
-                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                    NSError *_Nullable error) {
-    if (self->_restarting) {
-      // The auth flow is restarting, so the work here would be performed in the next round.
-      self->_restarting = NO;
-      return;
-    }
+                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                   NSError *_Nullable error) {
+    [self processAuthorizationResponse:authorizationResponse
+                                 error:error
+                            emmSupport:emmSupport];
+  }];
+#endif
+}
 
-    GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
-    authFlow.emmSupport = emmSupport;
+- (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
+                               error:(NSError *)error
+                          emmSupport:(NSString *)emmSupport{
+  if (self->_restarting) {
+    // The auth flow is restarting, so the work here would be performed in the next round.
+    self->_restarting = NO;
+    return;
+  }
 
-    if (authorizationResponse) {
-      if (authorizationResponse.authorizationCode.length) {
-        authFlow.authState = [[OIDAuthState alloc]
-            initWithAuthorizationResponse:authorizationResponse];
-        // perform auth code exchange
-        [self maybeFetchToken:authFlow fallback:nil];
-      } else {
-        // There was a failure, convert to appropriate error code.
-        NSString *errorString;
-        GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
-        NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
+  authFlow.emmSupport = emmSupport;
 
-        if (authFlow.emmSupport) {
-          [authFlow wait];
-          BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
-              handleErrorFromResponse:params
-                           completion:^{
-                             [authFlow next];
-                           }];
-          if (isEMMError) {
-            errorCode = kGIDSignInErrorCodeEMM;
-          }
-        }
-        errorString = (NSString *)params[kOAuth2ErrorKeyName];
-        if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-          errorCode = kGIDSignInErrorCodeCanceled;
-        }
-
-        authFlow.error = [self errorWithString:errorString code:errorCode];
-      }
+  if (authorizationResponse) {
+    if (authorizationResponse.authorizationCode.length) {
+      authFlow.authState = [[OIDAuthState alloc]
+          initWithAuthorizationResponse:authorizationResponse];
+      // perform auth code exchange
+      [self maybeFetchToken:authFlow fallback:nil];
     } else {
-      NSString *errorString = [error localizedDescription];
+      // There was a failure, convert to appropriate error code.
+      NSString *errorString;
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
-      if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
-        // The user has canceled the flow at the iOS modal dialog.
-        errorString = kUserCanceledError;
+      NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+      if (authFlow.emmSupport) {
+        [authFlow wait];
+        BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
+            handleErrorFromResponse:params
+                         completion:^{
+                           [authFlow next];
+                         }];
+        if (isEMMError) {
+          errorCode = kGIDSignInErrorCodeEMM;
+        }
+      }
+#endif
+      errorString = (NSString *)params[kOAuth2ErrorKeyName];
+      if ([errorString isEqualToString:kOAuth2AccessDenied]) {
         errorCode = kGIDSignInErrorCodeCanceled;
       }
+
       authFlow.error = [self errorWithString:errorString code:errorCode];
     }
+  } else {
+    NSString *errorString = [error localizedDescription];
+    GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
+    if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
+      // The user has canceled the flow at the iOS modal dialog.
+      errorString = kUserCanceledError;
+      errorCode = kGIDSignInErrorCodeCanceled;
+    }
+    authFlow.error = [self errorWithString:errorString code:errorCode];
+  }
 
-    [self addDecodeIdTokenCallback:authFlow];
-    [self addSaveAuthCallback:authFlow];
-    [self addCompletionCallback:authFlow];
-  }];
+  [self addDecodeIdTokenCallback:authFlow];
+  [self addSaveAuthCallback:authFlow];
+  [self addCompletionCallback:authFlow];
 }
 
 // Perform authentication with the provided options.
@@ -584,10 +628,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   NSDictionary<NSString *, NSObject *> *params =
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:@{}
                                        emmSupport:authFlow.emmSupport
                            isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+#endif
   OIDTokenRequest *tokenRequest;
   if (!authState.lastTokenResponse.accessToken &&
       authState.lastAuthorizationResponse.authorizationCode) {
@@ -614,7 +660,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         return;
       }
     }
-
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {
       [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *error) {
         authFlow.error = error;
@@ -623,6 +669,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     } else {
       [authFlow next];
     }
+#else // TARGET_OS_OSX
+    [authFlow next];
+#endif
   }];
 }
 

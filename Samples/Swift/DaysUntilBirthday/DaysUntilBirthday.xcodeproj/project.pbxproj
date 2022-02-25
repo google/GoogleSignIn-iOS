@@ -23,6 +23,19 @@
 		736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
 		739FCC46270E467600C92042 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
 		739FCC48270E659A00C92042 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		FEDFDDE027A9E7B500A1BA3D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FEDFDDDF27A9E7B500A1BA3D /* Assets.xcassets */; };
+		FEDFDDE327A9E7B500A1BA3D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FEDFDDE227A9E7B500A1BA3D /* Preview Assets.xcassets */; };
+		FEDFDE2C27ACAC2500A1BA3D /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
+		FEDFDE2D27ACAC2C00A1BA3D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
+		FEDFE02027ACB04900A1BA3D /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = FEDFE01F27ACB04900A1BA3D /* GoogleSignIn */; };
+		FEDFE02127AD970A00A1BA3D /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
+		FEDFE02227ADA88E00A1BA3D /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
+		FEDFE02327ADA8B400A1BA3D /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
+		FEDFE02427ADA8BE00A1BA3D /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		FEDFE02527ADA8DA00A1BA3D /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
+		FEDFE02627ADA8E400A1BA3D /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
+		FEDFE02727ADA90600A1BA3D /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */; };
+		FEDFE02827ADA90B00A1BA3D /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +56,15 @@
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
+		FE1F34D927C7F91F0043A4D0 /* GTMAppAuth */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GTMAppAuth; path = "../../../../../Alex-4-Git/GTMAppAuth"; sourceTree = "<group>"; };
+		FE38B85D27A05CC80095108A /* DaysUntilBirthday.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthday.entitlements; sourceTree = "<group>"; };
+		FEDFDDD927A9E7B200A1BA3D /* macOSDaysUntilBirthday.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macOSDaysUntilBirthday.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEDFDDDF27A9E7B500A1BA3D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FEDFDDE227A9E7B500A1BA3D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		FEDFDDE427A9E7B500A1BA3D /* macOSDaysUntilBirthday.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOSDaysUntilBirthday.entitlements; sourceTree = "<group>"; };
+		FEDFDDEA27AC575800A1BA3D /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../../..; sourceTree = "<group>"; };
+		FEDFDDEB27AC576200A1BA3D /* AppAuth-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "AppAuth-iOS"; path = "../../../../../Alex-4-Git/AppAuth-iOS"; sourceTree = "<group>"; };
+		FEDFE02C27AED6C600A1BA3D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,14 +76,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FEDFDDD627A9E7B200A1BA3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEDFE02027ACB04900A1BA3D /* GoogleSignIn in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
+				FE38B85D27A05CC80095108A /* DaysUntilBirthday.entitlements */,
 				7345AD012703D9470020AFB1 /* Sources */,
+				FEDFDDDA27A9E7B200A1BA3D /* macOSDaysUntilBirthday */,
 				7345AD002703D9470020AFB1 /* Products */,
+				FEDFE01E27ACB04900A1BA3D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */,
+				FEDFDDD927A9E7B200A1BA3D /* macOSDaysUntilBirthday.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -89,6 +123,9 @@
 				7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */,
 				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
 				7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */,
+				FE1F34D927C7F91F0043A4D0 /* GTMAppAuth */,
+				FEDFDDEA27AC575800A1BA3D /* GoogleSignIn-iOS */,
+				FEDFDDEB27AC576200A1BA3D /* AppAuth-iOS */,
 				7345AD062703D9480020AFB1 /* Assets.xcassets */,
 				7345AD0B2703D9480020AFB1 /* Info.plist */,
 				7345AD082703D9480020AFB1 /* Preview Content */,
@@ -102,6 +139,32 @@
 				7345AD092703D9480020AFB1 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		FEDFDDDA27A9E7B200A1BA3D /* macOSDaysUntilBirthday */ = {
+			isa = PBXGroup;
+			children = (
+				FEDFE02C27AED6C600A1BA3D /* Info.plist */,
+				FEDFDDDF27A9E7B500A1BA3D /* Assets.xcassets */,
+				FEDFDDE427A9E7B500A1BA3D /* macOSDaysUntilBirthday.entitlements */,
+				FEDFDDE127A9E7B500A1BA3D /* Preview Content */,
+			);
+			path = macOSDaysUntilBirthday;
+			sourceTree = "<group>";
+		};
+		FEDFDDE127A9E7B500A1BA3D /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				FEDFDDE227A9E7B500A1BA3D /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		FEDFE01E27ACB04900A1BA3D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -127,17 +190,40 @@
 			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FEDFDDD827A9E7B200A1BA3D /* macOSDaysUntilBirthday */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEDFDDE527A9E7B500A1BA3D /* Build configuration list for PBXNativeTarget "macOSDaysUntilBirthday" */;
+			buildPhases = (
+				FEDFDDD527A9E7B200A1BA3D /* Sources */,
+				FEDFDDD627A9E7B200A1BA3D /* Frameworks */,
+				FEDFDDD727A9E7B200A1BA3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = macOSDaysUntilBirthday;
+			packageProductDependencies = (
+				FEDFE01F27ACB04900A1BA3D /* GoogleSignIn */,
+			);
+			productName = macOSDaysUntilBirthday;
+			productReference = FEDFDDD927A9E7B200A1BA3D /* macOSDaysUntilBirthday.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		7345ACF72703D9470020AFB1 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1250;
+				LastSwiftUpdateCheck = 1310;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					7345ACFE2703D9470020AFB1 = {
 						CreatedOnToolsVersion = 12.5.1;
+					};
+					FEDFDDD827A9E7B200A1BA3D = {
+						CreatedOnToolsVersion = 13.1;
 					};
 				};
 			};
@@ -158,6 +244,7 @@
 			projectRoot = "";
 			targets = (
 				7345ACFE2703D9470020AFB1 /* DaysUntilBirthday */,
+				FEDFDDD827A9E7B200A1BA3D /* macOSDaysUntilBirthday */,
 			);
 		};
 /* End PBXProject section */
@@ -169,6 +256,15 @@
 			files = (
 				7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */,
 				7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEDFDDD727A9E7B200A1BA3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEDFDDE327A9E7B500A1BA3D /* Preview Assets.xcassets in Resources */,
+				FEDFDDE027A9E7B500A1BA3D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,6 +288,23 @@
 				7345AD052703D9470020AFB1 /* ContentView.swift in Sources */,
 				7345AD1D2703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift in Sources */,
 				7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEDFDDD527A9E7B200A1BA3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEDFE02127AD970A00A1BA3D /* AuthenticationViewModel.swift in Sources */,
+				FEDFE02627ADA8E400A1BA3D /* GoogleSignInAuthenticator.swift in Sources */,
+				FEDFE02227ADA88E00A1BA3D /* BirthdayLoader.swift in Sources */,
+				FEDFDE2C27ACAC2500A1BA3D /* DaysUntilBirthday.swift in Sources */,
+				FEDFE02327ADA8B400A1BA3D /* BirthdayViewModel.swift in Sources */,
+				FEDFE02427ADA8BE00A1BA3D /* Birthday.swift in Sources */,
+				FEDFDE2D27ACAC2C00A1BA3D /* ContentView.swift in Sources */,
+				FEDFE02727ADA90600A1BA3D /* GoogleSignInButtonWrapper.swift in Sources */,
+				FEDFE02827ADA90B00A1BA3D /* SignInView.swift in Sources */,
+				FEDFE02527ADA8DA00A1BA3D /* BirthdayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,17 +436,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = DaysUntilBirthday.entitlements;
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_ASSET_PATHS = "\"Sources/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Sources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -344,19 +461,87 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = DaysUntilBirthday.entitlements;
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_ASSET_PATHS = "\"Sources/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Sources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FEDFDDE627A9E7B500A1BA3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = macOSDaysUntilBirthday/macOSDaysUntilBirthday.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"macOSDaysUntilBirthday/Preview Content\"";
+				DEVELOPMENT_TEAM = EQHXZ8M8AV;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = macOSDaysUntilBirthday/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Google.macOSDaysUntilBirthday;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "Google Development macOS";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FEDFDDE727A9E7B500A1BA3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = macOSDaysUntilBirthday/macOSDaysUntilBirthday.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"macOSDaysUntilBirthday/Preview Content\"";
+				DEVELOPMENT_TEAM = EQHXZ8M8AV;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = macOSDaysUntilBirthday/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Google.macOSDaysUntilBirthday;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "Google Development macOS";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -381,6 +566,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		FEDFDDE527A9E7B500A1BA3D /* Build configuration list for PBXNativeTarget "macOSDaysUntilBirthday" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEDFDDE627A9E7B500A1BA3D /* Debug */,
+				FEDFDDE727A9E7B500A1BA3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -398,6 +592,10 @@
 		7345AD262703DA3E0020AFB1 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 7345AD252703DA3E0020AFB1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		FEDFE01F27ACB04900A1BA3D /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
 			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+#if __has_include(<UIKit/UIKit.h>)
+#import <UIKit/UIKit.h>
+typedef UIViewController GIDViewController;
+#elif __has_include(<AppKit/AppKit.h>)
+#import <AppKit/AppKit.h>
+typedef NSViewController GIDViewController;
+#endif
+
 #import <Foundation/Foundation.h>
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
@@ -41,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, nullable) GIDConfiguration *configuration;
 
 /// The the view controller to use during the flow.
-@property(nonatomic, readonly, weak, nullable) UIViewController *presentingViewController;
+@property(nonatomic, readonly, weak, nullable) GIDViewController *presentingViewController;
 
 /// The callback block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCallback callback;
@@ -55,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates the default options.
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:
-                           (nullable UIViewController *)presentingViewController
+                           (nullable GIDViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback;

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInButton.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
@@ -639,3 +639,4 @@ static UIColor *colorForStyleState(GIDSignInButtonColorScheme style,
 @end
 
 NS_ASSUME_NONNULL_END
+#endif

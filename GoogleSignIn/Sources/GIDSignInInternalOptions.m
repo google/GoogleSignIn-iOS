@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:
-                           (nullable UIViewController *)presentingViewController
+                           (nullable GIDViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback {
