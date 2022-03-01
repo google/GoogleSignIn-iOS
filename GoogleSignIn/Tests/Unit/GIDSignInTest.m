@@ -11,9 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <TargetConditionals.h>
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#import <UIKit/UIKit.h>
+#else // TARGET_OS_OSX
+#import <AppKit/AppKit.h>
+#endif
 
 #import <SafariServices/SafariServices.h>
-#import <UIKit/UIKit.h>
+
 #import <XCTest/XCTest.h>
 
 // Test module imports
@@ -23,7 +30,11 @@
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#endif
+
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
@@ -45,7 +56,13 @@
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
+#else // TARGET_OS_OSX
+#import <AppAuth/OIDAuthorizationService+Mac.h>
+#endif
+
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
@@ -73,7 +90,6 @@ static NSString * const kLanguage = @"FakeLanguage";
 static NSString * const kScope = @"FakeScope";
 static NSString * const kScope2 = @"FakeScope2";
 static NSString * const kAuthCode = @"FakeAuthCode";
-static NSString * const kPassword = @"FakePassword";
 static NSString * const kFakeKeychainName = @"FakeKeychainName";
 static NSString * const kUserEmail = @"FakeUserEmail";
 static NSString * const kVerifier = @"FakeVerifier";
@@ -140,6 +156,7 @@ static NSString *const kNewScope = @"newScope";
 /// Unique pointer value for KVO tests.
 static void *kTestObserverContext = &kTestObserverContext;
 
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 // This category is used to allow the test to swizzle a private method.
 @interface UIViewController (Testing)
 
@@ -148,6 +165,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (UIWindow *)_window;
 
 @end
+#endif
 
 // This class extension exposes GIDSignIn methods to our tests.
 @interface GIDSignIn ()
@@ -178,8 +196,13 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Mock |GTMAppAuthFetcherAuthorization|.
   id _authorization;
 
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
   id _presentingViewController;
+#else // TARGET_OS_OSX
+  // Mock |NSWindow|.
+  id _presentingWindow;
+#endif
 
   // Mock for |GIDGoogleUser|.
   id _user;
@@ -223,8 +246,13 @@ static void *kTestObserverContext = &kTestObserverContext;
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
 
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // The saved presentingViewController from the authorization request.
   UIViewController *_savedPresentingViewController;
+#else // TARGET_OS_OSX
+  // The saved presentingWindow from the authorization request.
+  NSWindow *_savedPresentingWindow;
+#endif
 
   // The saved authorization callback.
   OIDAuthorizationCallback _savedAuthorizationCallback;
@@ -249,7 +277,9 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 - (void)setUp {
   [super setUp];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _isEligibleForEMM = [UIDevice currentDevice].systemVersion.integerValue >= 9;
+#endif
   _saveAuthorizationReturnValue = YES;
 
   // States
@@ -259,7 +289,11 @@ static void *kTestObserverContext = &kTestObserverContext;
   _changedKeyPaths = [[NSMutableSet alloc] init];
 
   // Mocks
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _presentingViewController = OCMStrictClassMock([UIViewController class]);
+#else // TARGET_OS_OSX
+  _presentingWindow = OCMStrictClassMock([NSWindow class]);
+#endif
   _authState = OCMStrictClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
@@ -283,7 +317,11 @@ static void *kTestObserverContext = &kTestObserverContext;
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([_oidAuthorizationService
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
-         presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+           presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
+#else // TARGET_OS_OSX
+           presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
+#endif
                          callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
@@ -325,10 +363,16 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMVerifyAll(_tokenResponse);
   OCMVerifyAll(_tokenRequest);
   OCMVerifyAll(_authorization);
-  OCMVerifyAll(_presentingViewController);
   OCMVerifyAll(_user);
   OCMVerifyAll(_authentication);
   OCMVerifyAll(_oidAuthorizationService);
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  OCMVerifyAll(_presentingViewController);
+#else // TARGET_OS_OSX
+  OCMVerifyAll(_presentingWindow);
+#endif
+
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
@@ -473,10 +517,14 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 
   GIDSignInInternalOptions *options = [GIDSignInInternalOptions defaultOptionsWithConfiguration:nil
-                                                                      presentingViewController:nil
-                                                                                     loginHint:nil
-                                                                                 addScopesFlow:YES
-                                                                                      callback:nil];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                                                       presentingViewController:nil
+#else // TARGET_OS_OSX
+                                                                               presentingWindow:nil
+#endif
+                                                                                      loginHint:nil
+                                                                                  addScopesFlow:YES
+                                                                                       callback:nil];
 
   id profile = OCMStrictClassMock([GIDProfileData class]);
   OCMStub([profile email]).andReturn(kUserEmail);
@@ -783,9 +831,19 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testPresentingViewControllerException {
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _presentingViewController = nil;
+#else // TARGET_OS_OSX
+  _presentingWindow = nil;
+#endif
+
+
   XCTAssertThrows([_signIn signInWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                           presentingViewController:_presentingViewController
+#else // TARGET_OS_OSX
+                                  presentingWindow:_presentingWindow
+#endif
                                               hint:_hint
                                           callback:_callback]);
 }
@@ -798,7 +856,11 @@ static void *kTestObserverContext = &kTestObserverContext;
   BOOL threw = NO;
   @try {
     [_signIn signInWithConfiguration:configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
             presentingViewController:_presentingViewController
+#else // TARGET_OS_OSX
+                    presentingWindow:_presentingWindow
+#endif
                             callback:nil];
   } @catch (NSException *exception) {
     threw = YES;
@@ -814,7 +876,11 @@ static void *kTestObserverContext = &kTestObserverContext;
   BOOL threw = NO;
   @try {
     [_signIn signInWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
             presentingViewController:_presentingViewController
+#else // TARGET_OS_OSX
+                    presentingWindow:_presentingWindow
+#endif
                                 hint:_hint
                             callback:_callback];
   } @catch (NSException *exception) {
@@ -836,6 +902,8 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 #pragma mark - EMM tests
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void)testEmmSupportRequestParameters {
   [self OAuthLoginWithOptions:nil
@@ -976,6 +1044,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
 }
 
+#endif
+
 #pragma mark - Helpers
 
 // Whether or not a fetcher has been started.
@@ -1090,11 +1160,19 @@ static void *kTestObserverContext = &kTestObserverContext;
     };
     if (options.addScopesFlow) {
       [_signIn addScopes:@[kNewScope]
-        presentingViewController:_presentingViewController
-                        callback:callback];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+presentingViewController:_presentingViewController
+#else // TARGET_OS_OSX
+        presentingWindow:_presentingWindow
+#endif
+                callback:callback];
     } else {
       [_signIn signInWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
               presentingViewController:_presentingViewController
+#else // TARGET_OS_OSX
+                      presentingWindow:_presentingWindow
+#endif
                                   hint:_hint
                               callback:callback];
     }
@@ -1106,7 +1184,11 @@ static void *kTestObserverContext = &kTestObserverContext;
     NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
     XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
     XCTAssertNotNil(_savedAuthorizationCallback);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
+#else // TARGET_OS_OSX
+    XCTAssertEqual(_savedPresentingWindow, _presentingWindow);
+#endif
 
     // maybeFetchToken
     if (!(authError || modalCancel)) {

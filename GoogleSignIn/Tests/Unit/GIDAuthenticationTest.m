@@ -152,19 +152,23 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   _observedAuths = [[NSMutableArray alloc] init];
   _changesObserved = 0;
   _fakeSystemName = kNewIOSName;
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [GULSwizzler swizzleClass:[UIDevice class]
                    selector:@selector(systemName)
             isClassSelector:NO
                   withBlock:^(id sender) { return self->_fakeSystemName; }];
+#endif
 }
 
 - (void)tearDown {
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [GULSwizzler unswizzleClass:[UIDevice class]
                      selector:@selector(systemName)
               isClassSelector:NO];
+#endif
   for (GIDAuthentication *auth in _observedAuths) {
     for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
       [auth removeObserver:self forKeyPath:kObservedProperties[i]];
@@ -301,7 +305,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #pragma mark - EMM Support
-
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 - (void)testEMMSupport {
   _additionalTokenRequestParameters = @{
     @"emm_support" : @"xyz",
@@ -463,6 +467,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);
 }
+#endif
 
 #pragma mark - NSKeyValueObserving
 
