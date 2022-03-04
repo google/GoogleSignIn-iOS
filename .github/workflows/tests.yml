@@ -20,6 +20,11 @@ jobs:
           '--use-libraries',
           '--use-static-frameworks'
         ]
+        include:
+          - sdk: 'macosx'
+            destination: 'platform=OS X,arch=x86_64'
+          - sdk: 'iphonesimulator'
+            destination: 'platform=iOS Simulator,name=iPhone 11'
     steps:
     - uses: actions/checkout@v2
     - name: Update Bundler
@@ -37,13 +42,13 @@ jobs:
       run: |
         xcodebuild \
           -scheme GoogleSignIn \
-          -sdk 'iphonesimulator' \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
           build-for-testing
     - name: Run unit test target
       run: |
         xcodebuild \
           -scheme GoogleSignIn \
-          -sdk 'iphonesimulator' \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
           test-without-building
