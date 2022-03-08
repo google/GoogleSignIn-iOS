@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                       callback:(GIDSignInCallback)callback {
+                                       callback:(nullable GIDSignInCallback)callback {
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
                                                      presentingViewController:presentingViewController
                                                                     loginHint:loginHint
