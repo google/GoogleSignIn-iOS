@@ -1,3 +1,19 @@
+# 6.1.0 (2021-12-16)
+- New Swift sample app demonstrating SwiftUI.
+  ([#63](https://github.com/google/GoogleSignIn-iOS/pull/63))
+- Support for Mac Catalyst.
+- Improvements to the `addScopes` implementation.
+  ([#68](https://github.com/google/GoogleSignIn-iOS/pull/68),
+  [#70](https://github.com/google/GoogleSignIn-iOS/pull/70))
+
+# 6.0.2 (2021-8-20)
+- Ensure that module imports can be used when built as a library.
+  ([#53](https://github.com/google/GoogleSignIn-iOS/pull/53))
+
+# 6.0.1 (2021-7-21)
+- Fixes nested callbacks not being called for signIn and addScopes methods.
+  ([#29](https://github.com/google/GoogleSignIn-iOS/pull/29))
+
 # 6.0.0 (2021-7-13)
 - Google Sign-In for iOS is now open source.
 - Swift Package Manager support.

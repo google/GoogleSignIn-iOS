@@ -4,18 +4,6 @@
 /* Long form sign-in button text */
 "Sign in with Google" = "Google के साथ साइन इन करें";
 
-/* The title of the promotional prompt to install the Google app. */
-"PromoTitle" = "Google के साथ साइन इन करें";
-
-/* The body message of the promotional prompt to install the Google app. */
-"PromoMessage" = "मुफ़्त Google ऐप्लिकेशन पाएं और अपने Google खाते से ऐप्लिकेशन में साइन इन करें. पासवर्ड याद रखने की ज़रूरत नहीं.";
-
-/* The cancel button on the promotional prompt to install the Google app. */
-"PromoActionCancel" = "अभी नहीं";
-
-/* The install button on the promotional prompt to install the Google app. */
-"PromoActionInstall" = "पाएं";
-
 /* The text for the button for user to acknowledge and dismiss a dialog. */
 "OK" = "ठीक";
 

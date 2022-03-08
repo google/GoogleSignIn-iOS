@@ -1,0 +1,6 @@
+platform :ios, '9.0'
+
+target 'DaysUntilBirthdayForPod' do
+  pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
+  project 'DaysUntilBirthdayForPod.xcodeproj'
+end

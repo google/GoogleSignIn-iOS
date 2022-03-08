@@ -79,7 +79,6 @@
 		C1E6927926431E13004CE2BC /* refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = refresh.png; sourceTree = "<group>"; };
 		C1E6927A26431E13004CE2BC /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Dummy.strings; sourceTree = "<group>"; };
 		C1E6927B26431E13004CE2BC /* ca */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ca; path = ca.lproj/Dummy.strings; sourceTree = "<group>"; };
-		C1E6928826436CFB004CE2BC /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ..; sourceTree = "<group>"; };
 		D936C1C821225D1000E8DAC9 /* LocalAuthentication.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LocalAuthentication.framework; path = System/Library/Frameworks/LocalAuthentication.framework; sourceTree = SDKROOT; };
 		D99924CA1A92B3C7008CC226 /* SignInSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignInSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D99925141A92B5A8008CC226 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -133,7 +132,6 @@
 		D99924C11A92B3C7008CC226 = {
 			isa = PBXGroup;
 			children = (
-				C1E6928826436CFB004CE2BC /* GoogleSignIn-iOS */,
 				C1E6923C2643162E004CE2BC /* SignInSample-Info.plist */,
 				C1E69224264315E7004CE2BC /* Source */,
 				C1E6925226431E12004CE2BC /* Resources */,
@@ -505,8 +503,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

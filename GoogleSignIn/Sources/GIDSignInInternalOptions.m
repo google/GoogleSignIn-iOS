@@ -21,14 +21,17 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDSignInInternalOptions
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:(nullable UIViewController *)presentingViewController
+                       presentingViewController:
+                           (nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                       callback:(GIDSignInCallback)callback {
+                                       callback:(nullable GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
     options->_continuation = NO;
+    options->_addScopesFlow = addScopesFlow;
     options->_configuration = configuration;
     options->_presentingViewController = presentingViewController;
     options->_loginHint = loginHint;
@@ -41,10 +44,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
                                        callback:(GIDSignInCallback)callback {
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
                                                      presentingViewController:presentingViewController
                                                                     loginHint:loginHint
+                                                                addScopesFlow:addScopesFlow
                                                                        scopes:@[]
                                                                      callback:callback];
   return options;
@@ -54,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
                                                    presentingViewController:nil
                                                                   loginHint:nil
+                                                               addScopesFlow:NO
                                                                    callback:callback];
   if (options) {
     options->_interactive = NO;
@@ -67,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
   if (options) {
     options->_interactive = _interactive;
     options->_continuation = continuation;
+    options->_addScopesFlow = _addScopesFlow;
     options->_configuration = _configuration;
     options->_presentingViewController = _presentingViewController;
     options->_loginHint = _loginHint;

@@ -27,6 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData;
 
+// Update the auth state and profile data.
+- (void)updateAuthState:(OIDAuthState *)authState
+            profileData:(nullable GIDProfileData *)profileData;
+
 @end
 
 NS_ASSUME_NONNULL_END

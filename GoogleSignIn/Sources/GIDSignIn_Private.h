@@ -30,8 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 // Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;
 
-// Returns the previous sign-in user in the keychain without refreshing the access token.
-- (nullable GIDGoogleUser *)restoredGoogleUserFromPreviousSignIn;
+// Restores a previously authenticated user from the keychain synchronously without refreshing
+// the access token or making a userinfo request. The currentUser.profile will be nil unless
+// the profile data can be extracted from the ID token.
+//
+// @return NO if there is no user restored from the keychain.
+- (BOOL)restorePreviousSignInNoRefresh;
 
 @end
 

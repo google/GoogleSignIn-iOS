@@ -39,9 +39,11 @@
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
                                                       loginHint:loginHint
+                                                   addScopesFlow:NO
                                                        callback:callback];
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);
+  XCTAssertFalse(options.addScopesFlow);
   XCTAssertNil(options.extraParams);
 
   OCMVerifyAll(configuration);

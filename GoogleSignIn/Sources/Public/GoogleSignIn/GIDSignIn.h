@@ -22,10 +22,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// The error domain for `NSError`s returned by the Google Identity SDK.
+/// The error domain for `NSError`s returned by the Google Sign-In SDK.
 extern NSErrorDomain const kGIDSignInErrorDomain;
 
-/// A list of potential error codes returned from the Google Identity SDK.
+/// A list of potential error codes returned from the Google Sign-In SDK.
 typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   /// Indicates an unknown error has occurred.
   kGIDSignInErrorCodeUnknown = -1,
@@ -98,12 +98,14 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param configuration The configuration properties to be used for this flow.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow using the provided configuration and a login hint.
 ///
@@ -114,7 +116,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param configuration The configuration properties to be used for this flow.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
@@ -122,7 +125,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow using the provided configuration and a login hint.
 ///
@@ -148,14 +152,19 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 
 /// Starts an interactive consent flow to add scopes to the current user's grants.
 ///
+/// The callback will be called at the end of this process.  If successful, a new `GIDGoogleUser`
+/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
+///
 /// @param scopes The scopes to ask the user to consent to.
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                    callback:(nullable GIDSignInCallback)callback;
+                    callback:(nullable GIDSignInCallback)callback
+    NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions."); 
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;

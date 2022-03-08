@@ -4,18 +4,6 @@
 /* Long form sign-in button text */
 "Sign in with Google" = "Přihlásit se účtem Google";
 
-/* The title of the promotional prompt to install the Google app. */
-"PromoTitle" = "Přihlašujte se účtem Google";
-
-/* The body message of the promotional prompt to install the Google app. */
-"PromoMessage" = "Nainstalujte si zdarma aplikaci Google a přihlašujte se do aplikací pomocí účtu Google. Nebudete si už muset pamatovat spoustu hesel.";
-
-/* The cancel button on the promotional prompt to install the Google app. */
-"PromoActionCancel" = "Zrušit";
-
-/* The install button on the promotional prompt to install the Google app. */
-"PromoActionInstall" = "Instalovat";
-
 /* The text for the button for user to acknowledge and dismiss a dialog. */
 "OK" = "OK";
 
