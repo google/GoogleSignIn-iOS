@@ -22,7 +22,10 @@ let googleSignInVersion = "6.1.0"
 let package = Package(
   name: "GoogleSignIn",
   defaultLocalization: "en",
-  platforms: [.iOS(.v9)],
+  platforms: [
+    .macOS(.v10_15),
+    .iOS(.v9)
+  ],
   products: [
     .library(
       name: "GoogleSignIn",
@@ -75,7 +78,7 @@ let package = Package(
         .linkedFramework("Foundation"),
         .linkedFramework("LocalAuthentication"),
         .linkedFramework("Security"),
-        .linkedFramework("UIKit"),
+        .linkedFramework("UIKit", .when(platforms: [.iOS])),
       ]
     ),
     .testTarget(
