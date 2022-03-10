@@ -27,7 +27,6 @@
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
@@ -37,7 +36,6 @@
 #import <AppAuth/OIDIDToken.h>
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
