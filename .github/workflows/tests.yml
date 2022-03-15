@@ -20,11 +20,6 @@ jobs:
           '--use-libraries',
           '--use-static-frameworks'
         ]
-        include:
-          - sdk: 'macosx'
-            destination: 'platform=OS X,arch=x86_64'
-          - sdk: 'iphonesimulator'
-            destination: 'platform=iOS Simulator,name=iPhone 11'
     steps:
     - uses: actions/checkout@v2
     - name: Update Bundler
@@ -36,6 +31,13 @@ jobs:
 
   spm-build-test:
     runs-on: macOS-latest
+    strategy:
+      matrix:
+        include:
+          - sdk: 'macosx'
+            destination: '"platform=OS X,arch=x86_64"'
+          - sdk: 'iphonesimulator'
+            destination: '"platform=iOS Simulator,name=iPhone 11"'
     steps:
     - uses: actions/checkout@v2
     - name: Build unit test target
