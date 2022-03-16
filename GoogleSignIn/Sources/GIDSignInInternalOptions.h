@@ -66,10 +66,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates the default options.
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:
-                           (nullable UIViewController *)presentingViewController
+                       presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                       callback:(nullable GIDSignInCallback)callback;
+
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                       presentingViewController:(nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
+                                         scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback;
 
 #else // TARGET_OS_OSX
@@ -78,14 +84,14 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback;
-#endif
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:(nullable UIViewController *)presentingViewController
+                               presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback;
+#endif
 
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;

@@ -331,6 +331,21 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                        callback:callback];
 }
 
+- (void)signInWithConfiguration:(GIDConfiguration *)configuration
+               presentingWindow:(NSWindow *)presentingWindow
+                           hint:(nullable NSString *)hint
+                         scopes:(nullable NSArray *)scopes
+                       callback:(nullable GIDSignInCallback)callback {
+  GIDSignInInternalOptions *options =
+    [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                             presentingWindow:presentingWindow
+                                                    loginHint:hint
+                                                addScopesFlow:NO
+                                                       scopes:scopes
+                                                     callback:callback];
+  [self signInWithOptions:options];
+}
+
 - (void)addScopes:(NSArray<NSString *> *)scopes
             presentingWindow:(NSWindow *)presentingWindow
                     callback:(nullable GIDSignInCallback)callback {

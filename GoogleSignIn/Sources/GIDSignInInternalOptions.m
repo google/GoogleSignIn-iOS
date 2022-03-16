@@ -27,8 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDSignInInternalOptions
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:
-                           (nullable UIViewController *)presentingViewController
+                       presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
@@ -38,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback {
 #endif
   
@@ -59,13 +59,25 @@ NS_ASSUME_NONNULL_BEGIN
   return options;
 }
 
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback {
+#else // TARGET_OS_OSX
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                               presentingWindow:(nullable NSWindow *)presentingWindow
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
+                                       callback:(nullable GIDSignInCallback)callback {
+#endif
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                      presentingViewController:presentingViewController
+#else // TARGET_OS_OSX
+                                                             presentingWindow:presentingWindow
+#endif
                                                                     loginHint:loginHint
                                                                 addScopesFlow:addScopesFlow
                                                                        scopes:@[]
