@@ -216,12 +216,27 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 - (void)testCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    GIDAuthentication *auth = [self auth];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth requiringSecureCoding:YES error:nil];
+    GIDAuthentication *newAuth = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDAuthentication class]
+                                                                   fromData:data
+                                                                      error:nil];
+    XCTAssertEqualObjects(auth, newAuth);
+    XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
+  }
+}
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+// Unavailable in iOS 13 and above
+- (void)testLegacyCoding {
   GIDAuthentication *auth = [self auth];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth];
   GIDAuthentication *newAuth = [NSKeyedUnarchiver unarchiveObjectWithData:data];
   XCTAssertEqualObjects(auth, newAuth);
   XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
 }
+#endif
 
 - (void)testFetcherAuthorizer {
   // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works

@@ -662,7 +662,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
           errorCode = kGIDSignInErrorCodeEMM;
         }
       }
-#endif // TARGET_OS_OSX
+#endif
       errorString = (NSString *)params[kOAuth2ErrorKeyName];
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
         errorCode = kGIDSignInErrorCodeCanceled;
@@ -741,10 +741,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (_currentOptions.configuration.openIDRealm) {
     additionalParameters[kOpenIDRealmParameter] = _currentOptions.configuration.openIDRealm;
   }
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   NSDictionary<NSString *, NSObject *> *params =
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:@{}
                                        emmSupport:authFlow.emmSupport

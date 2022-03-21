@@ -226,8 +226,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// `restorePreviousSignInWithCallback:` method to restore a previous sign-in.
 ///
 /// @param configuration The configuration properties to be used for this flow.
-/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10.
+/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param scopes a list of initial scopes

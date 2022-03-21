@@ -1141,7 +1141,9 @@ static void *kTestObserverContext = &kTestObserverContext;
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     if (oldAccessToken) {
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+#endif
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[[_authState expect] andReturn:tokenRequest]
@@ -1193,7 +1195,9 @@ presentingViewController:_presentingViewController
     // maybeFetchToken
     if (!(authError || modalCancel)) {
       [[[_authState expect] andReturn:nil] lastTokenResponse];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+#endif
       [[[_authState expect] andReturn:nil] lastTokenResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
