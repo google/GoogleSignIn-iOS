@@ -70,7 +70,7 @@
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Unavailable in iOS 13 and above
+// Deprecated in iOS 13 and above
 - (void)testLegacyCoding {
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
                                                      profileData:[GIDProfileData testInstance]];

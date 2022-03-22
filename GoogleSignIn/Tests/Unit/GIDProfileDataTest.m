@@ -130,7 +130,7 @@ static NSString *const kFIFEAvatarURL2WithDimension =
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Unavailable in iOS 13 and above
+// Deprecated in iOS 13 and above
 - (void)testLegacyCoding {
   GIDProfileData *profileData = [self profileData];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:profileData];

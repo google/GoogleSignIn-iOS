@@ -94,7 +94,7 @@
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Unavailable in iOS 13 and above
+// Deprecated in iOS 13 and above
 - (void)testLegacyCoding {
   GIDConfiguration *configuration = [GIDConfiguration testInstance];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:configuration];

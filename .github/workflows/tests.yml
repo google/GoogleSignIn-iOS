@@ -33,6 +33,7 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
+        sdk: ['macosx', 'iphonesimulator']
         include:
           - sdk: 'macosx'
             destination: '"platform=OS X,arch=x86_64"'

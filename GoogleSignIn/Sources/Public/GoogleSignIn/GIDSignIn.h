@@ -15,14 +15,13 @@
  */
 
 #import <Foundation/Foundation.h>
-#include <TargetConditionals.h>
+#import <TargetConditionals.h>
 
 #if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
 #elif __has_include(<AppKit/AppKit.h>)
 #import <AppKit/AppKit.h>
 #endif
-
 
 @class GIDConfiguration;
 @class GIDGoogleUser;
@@ -107,7 +106,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)disconnectWithCallback:(nullable GIDDisconnectCallback)callback;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-/// Starts an interactive sign-in flow using the provided configuration.
+/// Starts an interactive sign-in flow on iOS using the provided configuration.
 ///
 /// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -125,7 +124,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                        callback:(nullable GIDSignInCallback)callback
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
-/// Starts an interactive sign-in flow using the provided configuration and a login hint.
+/// Starts an interactive sign-in flow  on iOS using the provided configuration and a login hint.
 ///
 /// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -146,7 +145,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                        callback:(nullable GIDSignInCallback)callback
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
-/// Starts an interactive sign-in flow using the provided configuration and a login hint.
+/// Starts an interactive sign-in flow on iOS using the provided configuration and a login hint.
 ///
 /// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -168,7 +167,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                          scopes:(nullable NSArray *)scopes
                        callback:(nullable GIDSignInCallback)callback;
 
-/// Starts an interactive consent flow to add scopes to the current user's grants.
+/// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
 ///
 /// The callback will be called at the end of this process.  If successful, a new `GIDGoogleUser`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
@@ -184,8 +183,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                     callback:(nullable GIDSignInCallback)callback
     NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions."); 
 
-#else // TARGET_OS_OSX
-/// Starts an interactive sign-in flow using the provided configuration.
+#elif TARGET_OS_OSX
+/// Starts an interactive sign-in flow on macOS using the provided configuration.
 ///
 /// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -200,7 +199,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                presentingWindow:(NSWindow *)presentingWindow
                        callback:(nullable GIDSignInCallback)callback;
 
-/// Starts an interactive sign-in flow using the provided configuration and a login hint.
+/// Starts an interactive sign-in flow on macOS using the provided configuration and a login hint.
 ///
 /// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -218,7 +217,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                            hint:(nullable NSString *)hint
                        callback:(nullable GIDSignInCallback)callback;
 
-/// Starts an interactive sign-in flow using the provided configuration and a login hint.
+/// Starts an interactive sign-in flow on macOS using the provided configuration and a login hint.
 ///
 /// The callback will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -239,7 +238,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                          scopes:(nullable NSArray *)scopes
                        callback:(nullable GIDSignInCallback)callback;
 
-/// Starts an interactive consent flow to add scopes to the current user's grants.
+/// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
 ///
 /// The callback will be called at the end of this process.  If successful, a new `GIDGoogleUser`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.

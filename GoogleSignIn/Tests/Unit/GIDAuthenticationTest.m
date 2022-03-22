@@ -228,7 +228,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Unavailable in iOS 13 and above
+// Deprecated in iOS 13 and above
 - (void)testLegacyCoding {
   GIDAuthentication *auth = [self auth];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth];

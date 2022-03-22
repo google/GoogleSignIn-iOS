@@ -18,7 +18,7 @@
 
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
 #endif

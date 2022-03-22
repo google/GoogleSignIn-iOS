@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <TargetConditionals.h>
+#import <TargetConditionals.h>
 
 #import "GIDAuthentication.h"
 #import "GIDConfiguration.h"
