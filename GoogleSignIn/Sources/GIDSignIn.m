@@ -574,12 +574,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
-#else // TARGET_OS_OSX
+#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif
 
@@ -648,7 +648,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
       if (authFlow.emmSupport) {
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
@@ -739,7 +739,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (_currentOptions.configuration.openIDRealm) {
     additionalParameters[kOpenIDRealmParameter] = _currentOptions.configuration.openIDRealm;
   }
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
   NSDictionary<NSString *, NSObject *> *params =
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
@@ -775,7 +775,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       }
     }
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
     if (authFlow.emmSupport) {
       [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *error) {
         authFlow.error = error;
@@ -784,7 +784,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     } else {
       [authFlow next];
     }
-#else // TARGET_OS_OSX
+#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
     [authFlow next];
 #endif
   }];
