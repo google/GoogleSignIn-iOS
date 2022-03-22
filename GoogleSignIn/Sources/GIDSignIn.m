@@ -305,9 +305,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:options];
 }
 
-#endif
-
-#if TARGET_OS_OSX
+#elif TARGET_OS_OSX
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
