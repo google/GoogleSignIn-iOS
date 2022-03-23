@@ -627,9 +627,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error
                           emmSupport:(NSString *)emmSupport{
-  if (self->_restarting) {
+  if (_restarting) {
     // The auth flow is restarting, so the work here would be performed in the next round.
-    self->_restarting = NO;
+    _restarting = NO;
     return;
   }
 
@@ -702,7 +702,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
     if (options.callback) {
-      self->_currentOptions = nil;
+      _currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
         options.callback(nil, error);
       });
@@ -1040,7 +1040,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 // Set currentUser making appropriate KVO calls.
 - (void)setCurrentUserWithKVO:(GIDGoogleUser *_Nullable)user {
   [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-  self->_currentUser = user;
+  _currentUser = user;
   [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
 }
 
