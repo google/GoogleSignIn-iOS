@@ -103,6 +103,8 @@ static NSString *const kFIFEAvatarURL2WithDimension =
                                                                           error:nil];
     XCTAssertEqualObjects(profileData, newProfileData);
     XCTAssertTrue(GIDProfileData.supportsSecureCoding);
+  } else {
+    XCTSkip(@"Required API is not available for this test.");
   }
 }
 
@@ -126,11 +128,13 @@ static NSString *const kFIFEAvatarURL2WithDimension =
     XCTAssertTrue(profileData.hasImage);
     XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                           kFIFEImageURLWithDimension);
+  } else {
+    XCTSkip(@"Required API is not available for this test.");
   }
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Deprecated in iOS 13 and above
+// Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDProfileData *profileData = [self profileData];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:profileData];

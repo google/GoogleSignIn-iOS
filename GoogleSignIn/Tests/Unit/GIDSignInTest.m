@@ -15,7 +15,7 @@
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import <UIKit/UIKit.h>
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
 #import <AppKit/AppKit.h>
 #endif
 
@@ -31,7 +31,7 @@
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif
 
@@ -59,7 +59,7 @@
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
 #import <AppAuth/OIDAuthorizationService+Mac.h>
 #endif
 
@@ -199,7 +199,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
   id _presentingViewController;
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   // Mock |NSWindow|.
   id _presentingWindow;
 #endif
@@ -249,7 +249,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // The saved presentingViewController from the authorization request.
   UIViewController *_savedPresentingViewController;
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   // The saved presentingWindow from the authorization request.
   NSWindow *_savedPresentingWindow;
 #endif
@@ -277,7 +277,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 - (void)setUp {
   [super setUp];
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
   _isEligibleForEMM = [UIDevice currentDevice].systemVersion.integerValue >= 9;
 #endif
   _saveAuthorizationReturnValue = YES;
@@ -291,7 +291,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Mocks
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _presentingViewController = OCMStrictClassMock([UIViewController class]);
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   _presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif
   _authState = OCMStrictClassMock([OIDAuthState class]);
@@ -319,7 +319,7 @@ static void *kTestObserverContext = &kTestObserverContext;
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
            presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
            presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
 #endif
                          callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
@@ -369,7 +369,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OCMVerifyAll(_presentingViewController);
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   OCMVerifyAll(_presentingWindow);
 #endif
 
@@ -519,7 +519,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   GIDSignInInternalOptions *options = [GIDSignInInternalOptions defaultOptionsWithConfiguration:nil
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                                        presentingViewController:nil
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                                                                                presentingWindow:nil
 #endif
                                                                                       loginHint:nil
@@ -833,7 +833,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (void)testPresentingViewControllerException {
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _presentingViewController = nil;
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   _presentingWindow = nil;
 #endif
 
@@ -841,7 +841,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertThrows([_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                           presentingViewController:_presentingViewController
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                                   presentingWindow:_presentingWindow
 #endif
                                               hint:_hint
@@ -858,7 +858,7 @@ static void *kTestObserverContext = &kTestObserverContext;
     [_signIn signInWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
             presentingViewController:_presentingViewController
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                     presentingWindow:_presentingWindow
 #endif
                             callback:nil];
@@ -878,7 +878,7 @@ static void *kTestObserverContext = &kTestObserverContext;
     [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
             presentingViewController:_presentingViewController
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                     presentingWindow:_presentingWindow
 #endif
                                 hint:_hint
@@ -903,7 +903,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 #pragma mark - EMM tests
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 
 - (void)testEmmSupportRequestParameters {
   [self OAuthLoginWithOptions:nil
@@ -1141,7 +1141,8 @@ static void *kTestObserverContext = &kTestObserverContext;
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     if (oldAccessToken) {
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
+      // Corresponds to EMM support 
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
 #endif
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
@@ -1163,8 +1164,8 @@ static void *kTestObserverContext = &kTestObserverContext;
     if (options.addScopesFlow) {
       [_signIn addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-presentingViewController:_presentingViewController
-#else // TARGET_OS_OSX
+        presentingViewController:_presentingViewController
+#elif TARGET_OS_OSX
         presentingWindow:_presentingWindow
 #endif
                 callback:callback];
@@ -1172,7 +1173,7 @@ presentingViewController:_presentingViewController
       [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
               presentingViewController:_presentingViewController
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                       presentingWindow:_presentingWindow
 #endif
                                   hint:_hint
@@ -1188,14 +1189,15 @@ presentingViewController:_presentingViewController
     XCTAssertNotNil(_savedAuthorizationCallback);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
     XCTAssertEqual(_savedPresentingWindow, _presentingWindow);
 #endif
 
     // maybeFetchToken
     if (!(authError || modalCancel)) {
       [[[_authState expect] andReturn:nil] lastTokenResponse];
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
+      // Corresponds to EMM support
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
 #endif
       [[[_authState expect] andReturn:nil] lastTokenResponse];

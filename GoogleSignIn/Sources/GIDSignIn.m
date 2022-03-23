@@ -56,10 +56,10 @@
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
-#if TARGET_OS_OSX
-#import <AppAuth/OIDAuthorizationService+Mac.h>
-#elif TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
+#elif TARGET_OS_OSX
+#import <AppAuth/OIDAuthorizationService+Mac.h>
 #endif
 
 #endif
@@ -558,7 +558,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   NSString *emmSupport;
 #if TARGET_OS_MACCATALYST || TARGET_OS_OSX
   emmSupport = nil;
-#else // TARGET_OS_IOS
+#elif TARGET_OS_IOS
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
 #endif
 
@@ -579,11 +579,29 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
-#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif
 
-#if TARGET_OS_OSX
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:options.scopes
+                                                 redirectURL:redirectURL
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
+
+  _currentAuthorizationFlow = [OIDAuthorizationService
+      presentAuthorizationRequest:request
+         presentingViewController:options.presentingViewController
+                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                   NSError *_Nullable error) {
+    [self processAuthorizationResponse:authorizationResponse
+                                 error:error
+                            emmSupport:emmSupport];
+  }];
+#elif TARGET_OS_OSX
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -598,24 +616,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                  presentingWindow:options.presentingWindow
                          callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                     NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport];
-  }];
-#elif TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
-
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-         presentingViewController:options.presentingViewController
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                   NSError *_Nullable error) {
     [self processAuthorizationResponse:authorizationResponse
                                  error:error
                             emmSupport:emmSupport];
@@ -784,7 +784,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     } else {
       [authFlow next];
     }
-#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
     [authFlow next];
 #endif
   }];
@@ -916,7 +916,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (!_currentOptions.presentingViewController) {
     return NO;
   }
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   if (!_currentOptions.presentingWindow) {
     return NO;
   }
@@ -983,7 +983,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)assertValidPresentingViewController {
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   if (!_currentOptions.presentingViewController) {
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   if (!_currentOptions.presentingWindow) {
 #endif
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)

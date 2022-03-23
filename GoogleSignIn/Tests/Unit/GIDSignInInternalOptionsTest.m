@@ -33,7 +33,7 @@
   id configuration = OCMStrictClassMock([GIDConfiguration class]);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   id presentingViewController = OCMStrictClassMock([UIViewController class]);
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   id presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif
   NSString *loginHint = @"login_hint";
@@ -43,7 +43,7 @@
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        presentingViewController:presentingViewController
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                                                presentingWindow:presentingWindow
 #endif
                                                       loginHint:loginHint
@@ -57,7 +57,7 @@
   OCMVerifyAll(configuration);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OCMVerifyAll(presentingViewController);
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
   OCMVerifyAll(presentingWindow);
 #endif
 }

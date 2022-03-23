@@ -224,11 +224,13 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
                                                                       error:nil];
     XCTAssertEqualObjects(auth, newAuth);
     XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
+  } else {
+    XCTSkip(@"Required API is not available for this test.");
   }
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Deprecated in iOS 13 and above
+// Deprecated in iOS 13 and moacOS 10.14
 - (void)testLegacyCoding {
   GIDAuthentication *auth = [self auth];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth];
@@ -320,7 +322,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #pragma mark - EMM Support
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 - (void)testEMMSupport {
   _additionalTokenRequestParameters = @{
     @"emm_support" : @"xyz",

@@ -32,14 +32,14 @@ NS_ASSUME_NONNULL_BEGIN
 // A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 // A string indicating support for Enterprise Mobility Management.
 @property(nonatomic, readonly) NSString *emmSupport;
 #endif
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 // Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
 + (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
                                 emmSupport:(nullable NSString *)emmSupport

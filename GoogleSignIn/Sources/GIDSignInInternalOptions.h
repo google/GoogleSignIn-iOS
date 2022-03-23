@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 /// The view controller to use during the flow.
 @property(nonatomic, readonly, weak, nullable) UIViewController *presentingViewController;
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
 /// The window to use during the flow.
 @property(nonatomic, readonly, weak, nullable) NSWindow *presentingWindow;
 #endif
@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback;
 
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint

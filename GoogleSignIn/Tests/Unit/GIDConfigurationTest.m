@@ -90,11 +90,13 @@
                                                                               error:nil];
     XCTAssertEqualObjects(configuration, newConfiguration);
     XCTAssertTrue(GIDConfiguration.supportsSecureCoding);
+  }  else {
+    XCTSkip(@"Required API is not available for this test.");
   }
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Deprecated in iOS 13 and above
+// Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDConfiguration *configuration = [GIDConfiguration testInstance];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:configuration];

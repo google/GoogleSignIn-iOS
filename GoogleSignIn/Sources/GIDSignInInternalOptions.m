@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback {
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_configuration = configuration;
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_presentingViewController = presentingViewController;
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
     options->_presentingWindow = presentingWindow;
 #endif
     options->_loginHint = loginHint;
@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                      presentingViewController:presentingViewController
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                                                              presentingWindow:presentingWindow
 #endif
                                                                     loginHint:loginHint
@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                    presentingViewController:nil
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
                                                            presentingWindow:nil
 #endif
                                                                   loginHint:nil
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_configuration = _configuration;
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_presentingViewController = _presentingViewController;
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
     options->_presentingWindow = _presentingWindow;
 #endif
     options->_loginHint = _loginHint;
