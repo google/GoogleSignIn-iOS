@@ -13,7 +13,9 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     :tag => s.version.to_s
   }
   ios_deployment_target = '9.0'
+  osx_deployment_target = '10.15'
   s.ios.deployment_target = ios_deployment_target
+  s.osx.deployment_target = osx_deployment_target
   s.prefix_header_file = false
   s.source_files = [
     'GoogleSignIn/Sources/**/*.[mh]',
@@ -29,6 +31,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     'Security'
   ]
   s.ios.framework = 'UIKit'
+  s.osx.framework = 'AppKit'
   s.dependency 'AppAuth', '~> 1.4'
   s.dependency 'GTMAppAuth', '~> 1.0'
   s.dependency 'GTMSessionFetcher/Core', '~> 1.1'
@@ -41,7 +44,10 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     'DEFINES_MODULE' => 'YES'
   }
   s.test_spec 'unit' do |unit_tests|
-    unit_tests.platforms = {:ios => ios_deployment_target}
+    unit_tests.platforms = {
+      :ios => ios_deployment_target,
+      :osx => osx_deployment_target
+    }
     unit_tests.source_files = [
       'GoogleSignIn/Tests/Unit/**/*.[mh]',
     ]

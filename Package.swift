@@ -78,6 +78,7 @@ let package = Package(
         .linkedFramework("Foundation"),
         .linkedFramework("LocalAuthentication"),
         .linkedFramework("Security"),
+        .linkedFramework("AppKit", .when(platforms: [.macOS])),
         .linkedFramework("UIKit", .when(platforms: [.iOS])),
       ]
     ),

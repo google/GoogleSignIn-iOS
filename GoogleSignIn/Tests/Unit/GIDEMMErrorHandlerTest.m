@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
@@ -469,3 +472,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif

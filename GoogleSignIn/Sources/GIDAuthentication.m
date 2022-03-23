@@ -17,8 +17,12 @@
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+
+#if TARGET_OS_IOS
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
+#endif
+
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #ifdef SWIFT_PACKAGE
@@ -52,6 +56,8 @@ static NSString *const kOldIOSSystemName = @"iPhone OS";
 
 // New UIDevice system name for iOS.
 static NSString *const kNewIOSSystemName = @"iOS";
+
+#if TARGET_OS_IOS
 
 // The specialized GTMAppAuthFetcherAuthorization delegate that handles potential EMM error
 // responses.
@@ -143,6 +149,8 @@ static NSString *const kNewIOSSystemName = @"iOS";
 
 @end
 
+#endif
+
 @implementation GIDAuthentication {
   // A queue for pending authentication handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
@@ -189,17 +197,24 @@ static NSString *const kNewIOSSystemName = @"iOS";
 
 #pragma mark - Private property accessors
 
+#if TARGET_OS_IOS
 - (NSString *)emmSupport {
   return
       _authState.lastAuthorizationResponse.request.additionalParameters[kEMMSupportParameterName];
 }
+#endif
 
 #pragma mark - Public methods
 
 - (id<GTMFetcherAuthorizationProtocol>)fetcherAuthorizer {
+#if TARGET_OS_IOS
   GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
       [[GTMAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
       [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
+  GTMAppAuthFetcherAuthorization *authorization =
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#endif
   authorization.tokenRefreshDelegate = self;
   return authorization;
 }
@@ -221,10 +236,16 @@ static NSString *const kNewIOSSystemName = @"iOS";
     }
   }
   // This is the first handler in the queue, a fetch is needed.
+#if TARGET_OS_IOS
   OIDTokenRequest *tokenRefreshRequest =
-      [_authState tokenRefreshRequestWithAdditionalParameters:
-          [GIDAuthentication updatedEMMParametersWithParameters:
-              _authState.lastTokenResponse.request.additionalParameters]];
+    [_authState tokenRefreshRequestWithAdditionalParameters:
+        [GIDAuthentication updatedEMMParametersWithParameters:
+            _authState.lastTokenResponse.request.additionalParameters]];
+#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
+  OIDTokenRequest *tokenRefreshRequest =
+    [_authState tokenRefreshRequestWithAdditionalParameters:
+        _authState.lastTokenResponse.request.additionalParameters];
+#endif
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
                  originalAuthorizationResponse:_authState.lastAuthorizationResponse
                                       callback:^(OIDTokenResponse *_Nullable tokenResponse,
@@ -244,6 +265,7 @@ static NSString *const kNewIOSSystemName = @"iOS";
         [self->_authState updateWithAuthorizationError:error];
       }
     }
+#if TARGET_OS_IOS
     [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
       NSArray *authenticationHandlerQueue;
@@ -257,11 +279,23 @@ static NSString *const kNewIOSSystemName = @"iOS";
         });
       }
     }];
+#else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
+    NSArray *authenticationHandlerQueue;
+    @synchronized(self->_authenticationHandlerQueue) {
+      authenticationHandlerQueue = [self->_authenticationHandlerQueue copy];
+      [self->_authenticationHandlerQueue removeAllObjects];
+    }
+    for (GIDAuthenticationAction action in authenticationHandlerQueue) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        action(error ? nil : self, error);
+      });
+    }
+#endif
   }];
 }
 
 #pragma mark - Private methods
-
+#if TARGET_OS_IOS
 + (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
                                 emmSupport:(nullable NSString *)emmSupport
                     isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
@@ -309,13 +343,18 @@ static NSString *const kNewIOSSystemName = @"iOS";
     completion(error);
   }
 }
+#endif
 
 #pragma mark - GTMAppAuthFetcherAuthorizationTokenRefreshDelegate
 
 - (nullable NSDictionary *)additionalRefreshParameters:
     (GTMAppAuthFetcherAuthorization *)authorization {
+#if TARGET_OS_IOS
   return [GIDAuthentication updatedEMMParametersWithParameters:
       authorization.authState.lastTokenResponse.request.additionalParameters];
+#else // TARGET_OS_MACCATALYST or TARGET_OS_OSX
+  return authorization.authState.lastTokenResponse.request.additionalParameters;
+#endif
 }
 
 #pragma mark - NSSecureCoding

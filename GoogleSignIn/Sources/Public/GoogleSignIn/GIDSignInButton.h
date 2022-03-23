@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 #import <UIKit/UIKit.h>
 
@@ -61,3 +64,5 @@ typedef NS_ENUM(NSInteger, GIDSignInButtonColorScheme) {
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif

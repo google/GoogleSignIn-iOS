@@ -31,13 +31,21 @@
 
 - (void)testDefaultOptions {
   id configuration = OCMStrictClassMock([GIDConfiguration class]);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   id presentingViewController = OCMStrictClassMock([UIViewController class]);
+#elif TARGET_OS_OSX
+  id presentingWindow = OCMStrictClassMock([NSWindow class]);
+#endif
   NSString *loginHint = @"login_hint";
   GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
   
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        presentingViewController:presentingViewController
+#elif TARGET_OS_OSX
+                                               presentingWindow:presentingWindow
+#endif
                                                       loginHint:loginHint
                                                    addScopesFlow:NO
                                                        callback:callback];
@@ -47,7 +55,11 @@
   XCTAssertNil(options.extraParams);
 
   OCMVerifyAll(configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OCMVerifyAll(presentingViewController);
+#elif TARGET_OS_OSX
+  OCMVerifyAll(presentingWindow);
+#endif
 }
 
 - (void)testSilentOptions {

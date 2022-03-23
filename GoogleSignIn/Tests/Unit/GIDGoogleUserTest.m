@@ -55,6 +55,25 @@
 }
 
 - (void)testCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
+                                                       profileData:[GIDProfileData testInstance]];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user
+                                         requiringSecureCoding:YES
+                                                         error:nil];
+    GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDGoogleUser class]
+                                                               fromData:data
+                                                                  error:nil];
+    XCTAssertEqualObjects(user, newUser);
+    XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
+  }  else {
+    XCTSkip(@"Required API is not available for this test.");
+  }
+}
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+// Deprecated in iOS 13 and macOS 10.14
+- (void)testLegacyCoding {
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
                                                      profileData:[GIDProfileData testInstance]];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user];
@@ -62,5 +81,6 @@
   XCTAssertEqualObjects(user, newUser);
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
+#endif
 
 @end

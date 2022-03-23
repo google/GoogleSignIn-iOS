@@ -15,7 +15,10 @@
 #import "GoogleSignIn/Sources/NSBundle+GID3PAdditions.h"
 
 #import <CoreText/CoreText.h>
+
+#if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
+#endif
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
@@ -47,10 +50,12 @@ NSString *const GoogleSignInBundleName = @"GoogleSignIn";
     NSArray* allFontNames = @[ @"Roboto-Bold" ];
     NSBundle* bundle = [self gid_frameworkBundle];
     for (NSString *fontName in allFontNames) {
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       // Check to see if the font is already here, and skip registration if so.
       if ([UIFont fontWithName:fontName size:[UIFont systemFontSize]]) {  // size doesn't matter
         continue;
       }
+#endif
 
       // Load the font data file from the bundle.
       NSString *path = [bundle pathForResource:fontName ofType:@"ttf"];

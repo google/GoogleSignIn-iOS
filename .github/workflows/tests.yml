@@ -31,19 +31,27 @@ jobs:
 
   spm-build-test:
     runs-on: macOS-latest
+    strategy:
+      matrix:
+        sdk: ['macosx', 'iphonesimulator']
+        include:
+          - sdk: 'macosx'
+            destination: '"platform=OS X,arch=x86_64"'
+          - sdk: 'iphonesimulator'
+            destination: '"platform=iOS Simulator,name=iPhone 11"'
     steps:
     - uses: actions/checkout@v2
     - name: Build unit test target
       run: |
         xcodebuild \
           -scheme GoogleSignIn \
-          -sdk 'iphonesimulator' \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
           build-for-testing
     - name: Run unit test target
       run: |
         xcodebuild \
           -scheme GoogleSignIn \
-          -sdk 'iphonesimulator' \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
           test-without-building

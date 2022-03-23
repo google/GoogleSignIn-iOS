@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#import <TargetConditionals.h>
 
 #import "GIDAuthentication.h"
 #import "GIDConfiguration.h"
 #import "GIDGoogleUser.h"
 #import "GIDProfileData.h"
 #import "GIDSignIn.h"
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GIDSignInButton.h"
+#endif

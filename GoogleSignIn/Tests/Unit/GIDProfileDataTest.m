@@ -36,7 +36,7 @@ static NSString *const kFIFEAvatarURL2 =
 static NSString *const kFIFEAvatarURL2WithDimension =
     @"https://lh3.googleusercontent.com/a/default-user=s100";
 
-@interface GIDProfileDataOld : NSObject <NSCoding>
+@interface GIDProfileDataOld : NSObject <NSCoding, NSSecureCoding>
 @end
 
 @implementation GIDProfileDataOld {
@@ -70,6 +70,10 @@ static NSString *const kFIFEAvatarURL2WithDimension =
   [encoder encodeObject:_imageURL forKey:@"picture"];
 }
 
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
 @end
 
 @interface GIDProfileDataTest : XCTestCase
@@ -89,6 +93,49 @@ static NSString *const kFIFEAvatarURL2WithDimension =
 }
 
 - (void)testCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    GIDProfileData *profileData = [self profileData];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:profileData
+                                         requiringSecureCoding:YES
+                                                         error:nil];
+    GIDProfileData *newProfileData = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDProfileData class]
+                                                                       fromData:data
+                                                                          error:nil];
+    XCTAssertEqualObjects(profileData, newProfileData);
+    XCTAssertTrue(GIDProfileData.supportsSecureCoding);
+  } else {
+    XCTSkip(@"Required API is not available for this test.");
+  }
+}
+
+- (void)testOldArchiveFormat {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    GIDProfileDataOld *oldProfile = [[GIDProfileDataOld alloc] initWithEmail:kEmail
+                                                                        name:kName
+                                                                    imageURL:kFIFEImageURL];
+    [NSKeyedArchiver setClassName:@"GIDProfileData" forClass:[GIDProfileDataOld class]];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:oldProfile
+                                         requiringSecureCoding:YES
+                                                         error:nil];
+
+    GIDProfileData *profileData = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDProfileData class]
+                                                                    fromData:data
+                                                                       error:nil];
+    XCTAssertEqualObjects(profileData.email, kEmail);
+    XCTAssertEqualObjects(profileData.name, kName);
+    XCTAssertNil(profileData.givenName);
+    XCTAssertNil(profileData.familyName);
+    XCTAssertTrue(profileData.hasImage);
+    XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
+                          kFIFEImageURLWithDimension);
+  } else {
+    XCTSkip(@"Required API is not available for this test.");
+  }
+}
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+// Deprecated in iOS 13 and macOS 10.14
+- (void)testLegacyCoding {
   GIDProfileData *profileData = [self profileData];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:profileData];
   GIDProfileData *newProfileData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
@@ -96,7 +143,7 @@ static NSString *const kFIFEAvatarURL2WithDimension =
   XCTAssertTrue(GIDProfileData.supportsSecureCoding);
 }
 
-- (void)testOldArchiveFormat {
+- (void)testOldArchiveFormatLegacy {
   GIDProfileDataOld *oldProfile = [[GIDProfileDataOld alloc] initWithEmail:kEmail
                                                                       name:kName
                                                                   imageURL:kFIFEImageURL];
@@ -111,6 +158,7 @@ static NSString *const kFIFEAvatarURL2WithDimension =
   XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                         kFIFEImageURLWithDimension);
 }
+#endif
 
 - (void)testImageURLWithDimension {
   GIDProfileData *profileData;

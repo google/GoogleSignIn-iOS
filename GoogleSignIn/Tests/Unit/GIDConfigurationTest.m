@@ -80,11 +80,30 @@
 }
 
 - (void)testCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    GIDConfiguration *configuration = [GIDConfiguration testInstance];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:configuration
+                                         requiringSecureCoding:YES
+                                                         error:nil];
+    GIDConfiguration *newConfiguration = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDConfiguration class]
+                                                                           fromData:data
+                                                                              error:nil];
+    XCTAssertEqualObjects(configuration, newConfiguration);
+    XCTAssertTrue(GIDConfiguration.supportsSecureCoding);
+  }  else {
+    XCTSkip(@"Required API is not available for this test.");
+  }
+}
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+// Deprecated in iOS 13 and macOS 10.14
+- (void)testLegacyCoding {
   GIDConfiguration *configuration = [GIDConfiguration testInstance];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:configuration];
   GIDConfiguration *newConfiguration = [NSKeyedUnarchiver unarchiveObjectWithData:data];
   XCTAssertEqualObjects(configuration, newConfiguration);
   XCTAssertTrue(GIDConfiguration.supportsSecureCoding);
 }
+#endif
 
 @end

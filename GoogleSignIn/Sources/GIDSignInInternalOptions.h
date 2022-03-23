@@ -16,6 +16,12 @@
 
 #import <Foundation/Foundation.h>
 
+#if __has_include(<UIKit/UIKit.h>)
+#import <UIKit/UIKit.h>
+#elif __has_include(<AppKit/AppKit.h>)
+#import <AppKit/AppKit.h>
+#endif
+
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 @class GIDConfiguration;
@@ -40,8 +46,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// The configuration to use during the flow.
 @property(nonatomic, readonly, nullable) GIDConfiguration *configuration;
 
-/// The the view controller to use during the flow.
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+/// The view controller to use during the flow.
 @property(nonatomic, readonly, weak, nullable) UIViewController *presentingViewController;
+#elif TARGET_OS_OSX
+/// The window to use during the flow.
+@property(nonatomic, readonly, weak, nullable) NSWindow *presentingWindow;
+#endif
 
 /// The callback block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCallback callback;
@@ -53,9 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
 /// Creates the default options.
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:
-                           (nullable UIViewController *)presentingViewController
+                       presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback;
@@ -66,6 +77,21 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback;
+
+#elif TARGET_OS_OSX
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                               presentingWindow:(nullable NSWindow *)presentingWindow
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
+                                       callback:(nullable GIDSignInCallback)callback;
+
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                               presentingWindow:(nullable NSWindow *)presentingWindow
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
+                                         scopes:(nullable NSArray *)scopes
+                                       callback:(nullable GIDSignInCallback)callback;
+#endif
 
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;

@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <UIKit/UIKit.h>
@@ -174,3 +178,5 @@
 }
 
 @end
+
+#endif

@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS
 
 #import <Foundation/Foundation.h>
 
@@ -48,3 +51,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
+#endif

@@ -152,19 +152,23 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   _observedAuths = [[NSMutableArray alloc] init];
   _changesObserved = 0;
   _fakeSystemName = kNewIOSName;
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [GULSwizzler swizzleClass:[UIDevice class]
                    selector:@selector(systemName)
             isClassSelector:NO
                   withBlock:^(id sender) { return self->_fakeSystemName; }];
+#endif
 }
 
 - (void)tearDown {
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   [GULSwizzler unswizzleClass:[UIDevice class]
                      selector:@selector(systemName)
               isClassSelector:NO];
+#endif
   for (GIDAuthentication *auth in _observedAuths) {
     for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
       [auth removeObserver:self forKeyPath:kObservedProperties[i]];
@@ -212,12 +216,29 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 - (void)testCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    GIDAuthentication *auth = [self auth];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth requiringSecureCoding:YES error:nil];
+    GIDAuthentication *newAuth = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDAuthentication class]
+                                                                   fromData:data
+                                                                      error:nil];
+    XCTAssertEqualObjects(auth, newAuth);
+    XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
+  } else {
+    XCTSkip(@"Required API is not available for this test.");
+  }
+}
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+// Deprecated in iOS 13 and moacOS 10.14
+- (void)testLegacyCoding {
   GIDAuthentication *auth = [self auth];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth];
   GIDAuthentication *newAuth = [NSKeyedUnarchiver unarchiveObjectWithData:data];
   XCTAssertEqualObjects(auth, newAuth);
   XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
 }
+#endif
 
 - (void)testFetcherAuthorizer {
   // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works
@@ -301,7 +322,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #pragma mark - EMM Support
-
+#if TARGET_OS_IOS
 - (void)testEMMSupport {
   _additionalTokenRequestParameters = @{
     @"emm_support" : @"xyz",
@@ -463,6 +484,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);
 }
+#endif
 
 #pragma mark - NSKeyValueObserving
 
