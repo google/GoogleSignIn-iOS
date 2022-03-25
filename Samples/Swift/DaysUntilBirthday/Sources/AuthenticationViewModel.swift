@@ -36,10 +36,6 @@ final class AuthenticationViewModel: ObservableObject {
     }
   }
 
-  var hasBirthdayReadScope: Bool {
-    return authorizedScopes.contains(BirthdayLoader.birthdayReadScope)
-  }
-
   /// Creates an instance of this view model.
   init() {
     if let user = GIDSignIn.sharedInstance.currentUser {
@@ -59,16 +55,26 @@ final class AuthenticationViewModel: ObservableObject {
     authenticator.signOut()
   }
 
+  /// Disconnects the previously granted scope and logs the user out.
+  func disconnect() {
+    authenticator.disconnect()
+  }
+
+  #if os(iOS)
+  var hasBirthdayReadScope: Bool {
+    return authorizedScopes.contains(BirthdayLoader.birthdayReadScope)
+  }
+  #endif
+
+  #if os(iOS)
   /// Adds the requested birthday read scope.
   /// - parameter completion: An escaping closure that is called upon successful completion.
   func addBirthdayReadScope(completion: @escaping () -> Void) {
     authenticator.addBirthdayReadScope(completion: completion)
   }
+  #endif
 
-  /// Disconnects the previously granted scope and logs the user out.
-  func disconnect() {
-    authenticator.disconnect()
-  }
+
 }
 
 extension AuthenticationViewModel {

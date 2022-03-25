@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#if os(iOS)
+typealias GIDViewRepresentable = UIViewRepresentable
+#else // os(macOS)
+typealias GIDViewRepresentable = NSViewRepresentable
+#endif
 
 import SwiftUI
 import GoogleSignIn
 
 /// A wrapper for `GIDSignInButton` so that it can be used in SwiftUI.
-struct GoogleSignInButtonWrapper: UIViewRepresentable {
+struct GoogleSignInButtonWrapper: GIDViewRepresentable {
   let handler: () -> Void
 
   init(handler: @escaping () -> Void) {
@@ -29,6 +34,7 @@ struct GoogleSignInButtonWrapper: UIViewRepresentable {
     return Coordinator()
   }
 
+  #if os(iOS)
   func makeUIView(context: Context) -> GIDSignInButton {
     let signInButton = GIDSignInButton()
     signInButton.addTarget(context.coordinator,
@@ -38,8 +44,22 @@ struct GoogleSignInButtonWrapper: UIViewRepresentable {
   }
 
   func updateUIView(_ uiView: UIViewType, context: Context) {
-    context.coordinator.handler = handler 
+    context.coordinator.handler = handler
   }
+
+  #elseif os(macOS)
+  func makeNSView(context: Context) -> NSButton {
+    let signInButton = NSButton(title: "Sign in",
+                                target: context.coordinator,
+                                action: #selector(Coordinator.callHandler))
+
+    return signInButton
+  }
+
+  func updateNSView(_ nsView: NSButton, context: Context) {
+    context.coordinator.handler = handler
+  }
+  #endif
 }
 
 extension GoogleSignInButtonWrapper {
