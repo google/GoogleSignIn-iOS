@@ -35,6 +35,10 @@
 		FE71739C27F248E100910319 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
 		FE71739D27F248E600910319 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
 		FE71739E27F2525900910319 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
+		FE71739F27F3AA9E00910319 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
+		FE7173A027F3AAA400910319 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		FE7173A127F3AB0900910319 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
+		FE7173A227F3AB5000910319 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -287,12 +291,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE71739B27F246A500910319 /* UserProfileView.swift in Sources */,
+				FE71739F27F3AA9E00910319 /* BirthdayLoader.swift in Sources */,
 				FE71739C27F248E100910319 /* UserProfileImageLoader.swift in Sources */,
+				FE7173A027F3AAA400910319 /* Birthday.swift in Sources */,
 				FE71739827EE2DE000910319 /* DaysUntilBirthday.swift in Sources */,
 				FE71739627ED196D00910319 /* GoogleSignInButtonWrapper.swift in Sources */,
 				FE71739227ED135C00910319 /* AuthenticationViewModel.swift in Sources */,
+				FE7173A227F3AB5000910319 /* BirthdayView.swift in Sources */,
 				FE71739427ED15F700910319 /* ContentView.swift in Sources */,
 				FE71739327ED138B00910319 /* GoogleSignInAuthenticator.swift in Sources */,
+				FE7173A127F3AB0900910319 /* BirthdayViewModel.swift in Sources */,
 				FE71739D27F248E600910319 /* UserProfileImageView.swift in Sources */,
 				FE71739527ED17C200910319 /* SignInView.swift in Sources */,
 			);

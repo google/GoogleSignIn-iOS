@@ -91,13 +91,13 @@ final class GoogleSignInAuthenticator: ObservableObject {
   }
 
   // Confines birthday calucation to iOS for now.
-  #if os(iOS)
   /// Adds the birthday read scope for the current user.
   /// - parameter completion: An escaping closure that is called upon successful completion of the
   /// `addScopes(_:presenting:)` request.
   /// - note: Successful requests will update the `authViewModel.state` with a new current user that
   /// has the granted scope.
   func addBirthdayReadScope(completion: @escaping () -> Void) {
+    #if os(iOS)
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       fatalError("No root view controller!")
     }
@@ -113,7 +113,25 @@ final class GoogleSignInAuthenticator: ObservableObject {
       self.authViewModel.state = .signedIn(currentUser)
       completion()
     }
+
+    #elseif os(macOS)
+    guard let presentingWindow = NSApplication.shared.windows.first else {
+      fatalError("No presenting window!")
+    }
+
+    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
+                                       presenting: presentingWindow) { user, error in
+      if let error = error {
+        print("Found error while adding birthday read scope: \(error).")
+        return
+      }
+
+      guard let currentUser = user else { return }
+      self.authViewModel.state = .signedIn(currentUser)
+      completion()
+    }
+
+    #endif
   }
-  #endif
 
 }

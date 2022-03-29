@@ -19,9 +19,7 @@ import GoogleSignIn
 
 struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
-  #if os(iOS)
   @StateObject var birthdayViewModel = BirthdayViewModel()
-  #endif
   private var user: GIDGoogleUser? {
     return GIDSignIn.sharedInstance.currentUser
   }
@@ -42,7 +40,6 @@ struct UserProfileView: View {
             }
             Spacer()
           }
-          #if os(iOS)
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
                          destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
             guard self.birthdayViewModel.birthday != nil else {
@@ -58,7 +55,6 @@ struct UserProfileView: View {
           })
             .accessibilityLabel(Text("View days until birthday."))
           Spacer()
-          #endif
         }
         .toolbar {
           #if os(iOS)
