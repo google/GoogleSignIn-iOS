@@ -25,6 +25,7 @@ struct UserProfileImageView: View {
   }
 
   var body: some View {
+    #if os(iOS)
     Image(uiImage: userProfileImageLoader.image)
       .resizable()
       .aspectRatio(contentMode: .fill)
@@ -32,5 +33,14 @@ struct UserProfileImageView: View {
       .scaledToFit()
       .clipShape(Circle())
       .accessibilityLabel(Text("User profile image."))
+    #elseif os(macOS)
+    Image(nsImage: userProfileImageLoader.image)
+      .resizable()
+      .aspectRatio(contentMode: .fill)
+      .frame(width: 45, height: 45, alignment: .center)
+      .scaledToFit()
+      .clipShape(Circle())
+      .accessibilityLabel(Text("User profile image."))
+   #endif
   }
 }

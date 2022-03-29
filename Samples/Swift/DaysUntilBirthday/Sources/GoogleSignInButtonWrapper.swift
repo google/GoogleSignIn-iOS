@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if os(iOS)
-typealias GIDViewRepresentable = UIViewRepresentable
-#else // os(macOS)
-typealias GIDViewRepresentable = NSViewRepresentable
-#endif
-
 import SwiftUI
 import GoogleSignIn
 
+#if os(iOS)
 /// A wrapper for `GIDSignInButton` so that it can be used in SwiftUI.
-struct GoogleSignInButtonWrapper: GIDViewRepresentable {
+struct GoogleSignInButtonWrapper: UIViewRepresentable {
   let handler: () -> Void
 
   init(handler: @escaping () -> Void) {
@@ -34,7 +29,6 @@ struct GoogleSignInButtonWrapper: GIDViewRepresentable {
     return Coordinator()
   }
 
-  #if os(iOS)
   func makeUIView(context: Context) -> GIDSignInButton {
     let signInButton = GIDSignInButton()
     signInButton.addTarget(context.coordinator,
@@ -46,20 +40,6 @@ struct GoogleSignInButtonWrapper: GIDViewRepresentable {
   func updateUIView(_ uiView: UIViewType, context: Context) {
     context.coordinator.handler = handler
   }
-
-  #elseif os(macOS)
-  func makeNSView(context: Context) -> NSButton {
-    let signInButton = NSButton(title: "Sign in",
-                                target: context.coordinator,
-                                action: #selector(Coordinator.callHandler))
-
-    return signInButton
-  }
-
-  func updateNSView(_ nsView: NSButton, context: Context) {
-    context.coordinator.handler = handler
-  }
-  #endif
 }
 
 extension GoogleSignInButtonWrapper {
@@ -71,3 +51,23 @@ extension GoogleSignInButtonWrapper {
     }
   }
 }
+
+#elseif os(macOS)
+struct GoogleSignInButtonMac: View {
+  @EnvironmentObject var viewModel: AuthenticationViewModel
+
+  var body: some View {
+    Button(action: {
+      viewModel.signIn()
+    }) {
+      Text("SIGN IN")
+          .frame(width: 100 , height: 50, alignment: .center)
+    }
+     .background(Color.blue)
+     .foregroundColor(Color.white)
+     .cornerRadius(5)
+     .accessibilityLabel(Text("Sign in button"))
+  }
+}
+
+#endif

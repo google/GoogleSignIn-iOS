@@ -19,7 +19,9 @@ import GoogleSignIn
 
 struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
+  #if os(iOS)
   @StateObject var birthdayViewModel = BirthdayViewModel()
+  #endif
   private var user: GIDGoogleUser? {
     return GIDSignIn.sharedInstance.currentUser
   }
@@ -40,6 +42,7 @@ struct UserProfileView: View {
             }
             Spacer()
           }
+          #if os(iOS)
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
                          destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
             guard self.birthdayViewModel.birthday != nil else {
@@ -55,14 +58,24 @@ struct UserProfileView: View {
           })
             .accessibilityLabel(Text("View days until birthday."))
           Spacer()
+          #endif
         }
         .toolbar {
+          #if os(iOS)
           ToolbarItemGroup(placement: .navigationBarTrailing) {
             Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
               .accessibilityLabel(Text("Disconnect scope button."))
             Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
               .accessibilityLabel(Text("Sign out button"))
           }
+          #elseif os(macOS)
+          ToolbarItemGroup(placement: .primaryAction) {
+            Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
+              .accessibilityLabel(Text("Disconnect scope button."))
+            Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
+              .accessibilityLabel(Text("Sign out button"))
+          }
+          #endif
         }
       } else {
         Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))

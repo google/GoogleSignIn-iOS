@@ -24,23 +24,13 @@ struct ContentView: View {
     return Group {
       NavigationView {
         switch authViewModel.state {
-        case .signedIn(let currentUser):
-          #if os(iOS)
+        case .signedIn:
           UserProfileView()
             .navigationTitle(
               NSLocalizedString(
                 "User Profile",
                 comment: "User profile navigation title"
               ))
-          #elseif os(macOS)
-          Text("Welcome \(currentUser)")
-            .padding()
-            .background(
-              Color.blue
-                .cornerRadius(10)
-                .shadow(radius: 10)
-            )
-          #endif
         case .signedOut:
           SignInView()
             .navigationTitle(
@@ -52,9 +42,13 @@ struct ContentView: View {
       }
       #if os(iOS)
       .navigationViewStyle(StackNavigationViewStyle())
-      #else // os(macOS)
-      .navigationViewStyle(DefaultNavigationViewStyle())
       #endif
     }
   }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+      ContentView()
+    }
 }
