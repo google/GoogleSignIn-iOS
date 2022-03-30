@@ -25,7 +25,7 @@ struct SignInView: View {
         GoogleSignInButtonWrapper(handler: viewModel.signIn)
           .accessibility(hint: Text("Sign in with Google button."))
         #elseif os(macOS)
-        GoogleSignInButtonMac()
+        GoogleSignInButtonOnMac()
         #endif
     }
   }

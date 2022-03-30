@@ -25,12 +25,21 @@ struct ContentView: View {
       NavigationView {
         switch authViewModel.state {
         case .signedIn:
+          #if os(iOS)
           UserProfileView()
             .navigationTitle(
               NSLocalizedString(
                 "User Profile",
                 comment: "User profile navigation title"
               ))
+          #elseif os(macOS)
+          UserProfileViewOnMac()
+            .navigationTitle(
+              NSLocalizedString(
+                "User Profile",
+                comment: "User profile navigation title"
+              ))
+          #endif
         case .signedOut:
           SignInView()
             .navigationTitle(
@@ -45,10 +54,4 @@ struct ContentView: View {
       #endif
     }
   }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-      ContentView()
-    }
 }

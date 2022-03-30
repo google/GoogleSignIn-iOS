@@ -16,7 +16,6 @@
 import SwiftUI
 import GoogleSignIn
 
-#if os(iOS)
 /// A wrapper for `GIDSignInButton` so that it can be used in SwiftUI.
 struct GoogleSignInButtonWrapper: UIViewRepresentable {
   let handler: () -> Void
@@ -51,23 +50,3 @@ extension GoogleSignInButtonWrapper {
     }
   }
 }
-
-#elseif os(macOS)
-struct GoogleSignInButtonMac: View {
-  @EnvironmentObject var viewModel: AuthenticationViewModel
-
-  var body: some View {
-    Button(action: {
-      viewModel.signIn()
-    }) {
-      Text("SIGN IN")
-          .frame(width: 100 , height: 50, alignment: .center)
-    }
-     .background(Color.blue)
-     .foregroundColor(Color.white)
-     .cornerRadius(5)
-     .accessibilityLabel(Text("Sign in button"))
-  }
-}
-
-#endif

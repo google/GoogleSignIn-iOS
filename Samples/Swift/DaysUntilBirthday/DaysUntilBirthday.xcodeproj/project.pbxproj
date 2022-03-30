@@ -29,9 +29,7 @@
 		FE71739327ED138B00910319 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
 		FE71739427ED15F700910319 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		FE71739527ED17C200910319 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
-		FE71739627ED196D00910319 /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */; };
 		FE71739827EE2DE000910319 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
-		FE71739B27F246A500910319 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */; };
 		FE71739C27F248E100910319 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
 		FE71739D27F248E600910319 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
 		FE71739E27F2525900910319 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
@@ -39,6 +37,8 @@
 		FE7173A027F3AAA400910319 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
 		FE7173A127F3AB0900910319 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
 		FE7173A227F3AB5000910319 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
+		FE7173A427F5106900910319 /* GoogleSignInButtonOnMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A327F5106900910319 /* GoogleSignInButtonOnMac.swift */; };
+		FE7173A627F5110F00910319 /* UserProfileViewOnMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileViewOnMac.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +64,8 @@
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
 		FE71739727ED1BAC00910319 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FE7173A327F5106900910319 /* GoogleSignInButtonOnMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonOnMac.swift; sourceTree = "<group>"; };
+		FE7173A527F5110F00910319 /* UserProfileViewOnMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileViewOnMac.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,10 +119,12 @@
 				739FCC47270E659A00C92042 /* Birthday.swift */,
 				739FCC45270E467600C92042 /* BirthdayView.swift */,
 				7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */,
+				FE7173A327F5106900910319 /* GoogleSignInButtonOnMac.swift */,
 				7345AD112703D9C30020AFB1 /* SignInView.swift */,
 				7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */,
 				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
 				7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */,
+				FE7173A527F5110F00910319 /* UserProfileViewOnMac.swift */,
 				FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */,
 				7345AD062703D9480020AFB1 /* Assets.xcassets */,
 				7345AD0B2703D9480020AFB1 /* Info.plist */,
@@ -290,18 +294,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE71739B27F246A500910319 /* UserProfileView.swift in Sources */,
 				FE71739F27F3AA9E00910319 /* BirthdayLoader.swift in Sources */,
 				FE71739C27F248E100910319 /* UserProfileImageLoader.swift in Sources */,
 				FE7173A027F3AAA400910319 /* Birthday.swift in Sources */,
 				FE71739827EE2DE000910319 /* DaysUntilBirthday.swift in Sources */,
-				FE71739627ED196D00910319 /* GoogleSignInButtonWrapper.swift in Sources */,
 				FE71739227ED135C00910319 /* AuthenticationViewModel.swift in Sources */,
+				FE7173A427F5106900910319 /* GoogleSignInButtonOnMac.swift in Sources */,
 				FE7173A227F3AB5000910319 /* BirthdayView.swift in Sources */,
 				FE71739427ED15F700910319 /* ContentView.swift in Sources */,
 				FE71739327ED138B00910319 /* GoogleSignInAuthenticator.swift in Sources */,
 				FE7173A127F3AB0900910319 /* BirthdayViewModel.swift in Sources */,
 				FE71739D27F248E600910319 /* UserProfileImageView.swift in Sources */,
+				FE7173A627F5110F00910319 /* UserProfileViewOnMac.swift in Sources */,
 				FE71739527ED17C200910319 /* SignInView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
