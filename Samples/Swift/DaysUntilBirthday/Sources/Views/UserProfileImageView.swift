@@ -41,6 +41,6 @@ struct UserProfileImageView: View {
       .scaledToFit()
       .clipShape(Circle())
       .accessibilityLabel(Text("User profile image."))
-   #endif
+    #endif
   }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 import GoogleSignIn
 
-struct UserProfileViewOnMac: View {
+struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
   @StateObject var birthdayViewModel = BirthdayViewModel()
   private var user: GIDGoogleUser? {

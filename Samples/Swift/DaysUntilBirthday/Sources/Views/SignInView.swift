@@ -21,12 +21,8 @@ struct SignInView: View {
 
   var body: some View {
       VStack {
-        #if os(iOS)
         GoogleSignInButtonWrapper(handler: viewModel.signIn)
           .accessibility(hint: Text("Sign in with Google button."))
-        #elseif os(macOS)
-        GoogleSignInButtonOnMac()
-        #endif
     }
   }
 }
