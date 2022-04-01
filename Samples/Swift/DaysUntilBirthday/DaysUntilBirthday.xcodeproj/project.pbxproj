@@ -42,7 +42,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DaysUntilBirthday.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7345ACFF2703D9470020AFB1 /* DaysUntilBirthday(iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday(iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7345AD062703D9480020AFB1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,8 +59,8 @@
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
-		FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../../..; sourceTree = "<group>"; };
-		FE71738027ECFAF400910319 /* DaysUntilBirthdayOnMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DaysUntilBirthdayOnMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
+		FE71738027ECFAF400910319 /* DaysUntilBirthday(macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday(macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
 		FE71739727ED1BAC00910319 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -91,7 +91,8 @@
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
-				7345AD012703D9470020AFB1 /* Sources */,
+				FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */,
+				7345AD012703D9470020AFB1 /* Shared */,
 				FE7173A927F656AF00910319 /* iOS */,
 				FE71738127ECFAF400910319 /* macOS */,
 				7345AD002703D9470020AFB1 /* Products */,
@@ -102,13 +103,13 @@
 		7345AD002703D9470020AFB1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */,
-				FE71738027ECFAF400910319 /* DaysUntilBirthdayOnMac.app */,
+				7345ACFF2703D9470020AFB1 /* DaysUntilBirthday(iOS).app */,
+				FE71738027ECFAF400910319 /* DaysUntilBirthday(macOS).app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		7345AD012703D9470020AFB1 /* Sources */ = {
+		7345AD012703D9470020AFB1 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
 				7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */,
@@ -116,10 +117,9 @@
 				FE7173AE27F6632E00910319 /* ViewModels */,
 				FE7173AD27F65B8500910319 /* Models */,
 				FE7173AA27F6578E00910319 /* Views */,
-				FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */,
 				7345AD062703D9480020AFB1 /* Assets.xcassets */,
 			);
-			path = Sources;
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		7345AD082703D9480020AFB1 /* Preview Content */ = {
@@ -225,9 +225,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7345ACFE2703D9470020AFB1 /* DaysUntilBirthday */ = {
+		7345ACFE2703D9470020AFB1 /* DaysUntilBirthday(iOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday" */;
+			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday(iOS)" */;
 			buildPhases = (
 				7345ACFB2703D9470020AFB1 /* Sources */,
 				7345ACFC2703D9470020AFB1 /* Frameworks */,
@@ -237,17 +237,17 @@
 			);
 			dependencies = (
 			);
-			name = DaysUntilBirthday;
+			name = "DaysUntilBirthday(iOS)";
 			packageProductDependencies = (
 				7345AD262703DA3E0020AFB1 /* GoogleSignIn */,
 			);
 			productName = "GSI-Swift-Sample";
-			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday.app */;
+			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday(iOS).app */;
 			productType = "com.apple.product-type.application";
 		};
-		FE71737F27ECFAF400910319 /* DaysUntilBirthdayOnMac */ = {
+		FE71737F27ECFAF400910319 /* DaysUntilBirthday(macOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayOnMac" */;
+			buildConfigurationList = FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday(macOS)" */;
 			buildPhases = (
 				FE71737C27ECFAF400910319 /* Sources */,
 				FE71737D27ECFAF400910319 /* Frameworks */,
@@ -257,12 +257,12 @@
 			);
 			dependencies = (
 			);
-			name = DaysUntilBirthdayOnMac;
+			name = "DaysUntilBirthday(macOS)";
 			packageProductDependencies = (
 				FE71739027ECFB3300910319 /* GoogleSignIn */,
 			);
 			productName = DaysUntilBirthdayOnMac;
-			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthdayOnMac.app */;
+			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthday(macOS).app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -298,8 +298,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7345ACFE2703D9470020AFB1 /* DaysUntilBirthday */,
-				FE71737F27ECFAF400910319 /* DaysUntilBirthdayOnMac */,
+				7345ACFE2703D9470020AFB1 /* DaysUntilBirthday(iOS) */,
+				FE71737F27ECFAF400910319 /* DaysUntilBirthday(macOS) */,
 			);
 		};
 /* End PBXProject section */
@@ -601,7 +601,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday" */ = {
+		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday(iOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7345AD0F2703D9480020AFB1 /* Debug */,
@@ -610,7 +610,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayOnMac" */ = {
+		FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday(macOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FE71738D27ECFAF600910319 /* Debug */,

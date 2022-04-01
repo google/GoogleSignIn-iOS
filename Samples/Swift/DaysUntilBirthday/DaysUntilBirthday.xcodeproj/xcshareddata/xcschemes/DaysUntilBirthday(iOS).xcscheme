@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "7345ACFE2703D9470020AFB1"
-               BuildableName = "DaysUntilBirthday.app"
-               BlueprintName = "DaysUntilBirthday"
+               BuildableName = "DaysUntilBirthday(iOS).app"
+               BlueprintName = "DaysUntilBirthday(iOS)"
                ReferencedContainer = "container:DaysUntilBirthday.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "7345ACFE2703D9470020AFB1"
-            BuildableName = "DaysUntilBirthday.app"
-            BlueprintName = "DaysUntilBirthday"
+            BuildableName = "DaysUntilBirthday(iOS).app"
+            BlueprintName = "DaysUntilBirthday(iOS)"
             ReferencedContainer = "container:DaysUntilBirthday.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "7345ACFE2703D9470020AFB1"
-            BuildableName = "DaysUntilBirthday.app"
-            BlueprintName = "DaysUntilBirthday"
+            BuildableName = "DaysUntilBirthday(iOS).app"
+            BlueprintName = "DaysUntilBirthday(iOS)"
             ReferencedContainer = "container:DaysUntilBirthday.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
