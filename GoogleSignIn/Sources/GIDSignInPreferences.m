@@ -23,6 +23,18 @@ static NSString *const kUserInfoServer = @"www.googleapis.com";
 // The name of the query parameter used for logging the SDK version.
 NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 
+// The name of the query parameter used for logging the Apple execution environment.
+NSString *const kEnvironmentLoggingParameter = @"gidenv";
+
+// Apple execution environments
+static NSString *const kAppleEnvironmentUnknown = @"unknown";
+static NSString *const kAppleEnvironmentIOS = @"ios";
+static NSString *const kAppleEnvironmentIOSSimulator = @"ios-simulator";
+static NSString *const kAppleEnvironmentIOSOnMac = @"ios-on-mac";
+static NSString *const kAppleEnvironmentMacCatalyst = @"mac-catalyst";
+static NSString *const kAppleEnvironmentMacOS = @"macos";
+
+
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
 #endif
@@ -37,6 +49,36 @@ NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 // logging key.
 NSString* GIDVersion(void) {
   return [NSString stringWithFormat:@"gid-%@", @STR(GID_SDK_VERSION)];
+}
+
+// Get the current Apple execution environment.
+NSString* GIDEnvironment(void) {
+  NSString *appleEnvironment = kAppleEnvironmentUnknown;
+
+#if TARGET_OS_MACCATALYST
+  appleEnvironment = kAppleEnvironmentMacCatalyst;
+#elif TARGET_OS_IOS
+#if TARGET_OS_SIMULATOR
+  appleEnvironment = kAppleEnvironmentIOSSimulator;
+#else // TARGET_OS_SIMULATOR
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14.0, *)) {
+    if ([NSProcessInfo.processInfo respondsToSelector:@selector(isiOSAppOnMac)]) {
+      appleEnvironment = NSProcessInfo.processInfo.iOSAppOnMac ? kAppleEnvironmentIOSOnMac :
+          kAppleEnvironmentIOS;
+    } else {
+      appleEnvironment = kAppleEnvironmentIOS;
+    }
+  }
+#else // defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  appleEnvironment = kAppleEnvironmentIOS;
+#endif // defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+#endif // TARGET_OS_SIMULATOR
+#elif TARGET_OS_OSX
+  appleEnvironment = kAppleEnvironmentMacOS;
+#endif // TARGET_OS_MACCATALYST
+
+  return appleEnvironment;
 }
 
 @implementation GIDSignInPreferences

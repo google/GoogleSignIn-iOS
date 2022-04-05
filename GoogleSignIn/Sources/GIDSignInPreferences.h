@@ -19,8 +19,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const kSDKVersionLoggingParameter;
+extern NSString *const kEnvironmentLoggingParameter;
 
 NSString* GIDVersion(void);
+
+NSString* GIDEnvironment(void);
 
 @interface GIDSignInPreferences : NSObject
 

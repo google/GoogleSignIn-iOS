@@ -438,10 +438,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
       [GIDSignInPreferences googleAuthorizationServer], token];
   // Append logging parameter
-  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@",
+  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@&%@=%@",
                      revokeURLString,
                      kSDKVersionLoggingParameter,
-                     GIDVersion()];
+                     GIDVersion(),
+                     kEnvironmentLoggingParameter,
+                     GIDEnvironment()];
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
   [self startFetchURL:revokeURL
               fromAuthState:authState
@@ -582,6 +584,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OIDAuthorizationRequest *request =
@@ -748,6 +751,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                        emmSupport:authFlow.emmSupport
                            isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
   OIDTokenRequest *tokenRequest;
   if (!authState.lastTokenResponse.accessToken &&
       authState.lastAuthorizationResponse.authorizationCode) {
