@@ -29,10 +29,10 @@ NSString *const kEnvironmentLoggingParameter = @"gidenv";
 // Supported Apple execution environments
 static NSString *const kAppleEnvironmentUnknown = @"unknown";
 static NSString *const kAppleEnvironmentIOS = @"ios";
-static NSString *const kAppleEnvironmentIOSSimulator = @"ios-simulator";
-static NSString *const kAppleEnvironmentIOSOnMac = @"ios-on-mac";
-static NSString *const kAppleEnvironmentMacCatalyst = @"mac-catalyst";
+static NSString *const kAppleEnvironmentIOSSimulator = @"ios-sim";
 static NSString *const kAppleEnvironmentMacOS = @"macos";
+static NSString *const kAppleEnvironmentMacOSIOSOnMac = @"macos-ios";
+static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
@@ -55,7 +55,7 @@ NSString* GIDEnvironment(void) {
   NSString *appleEnvironment = kAppleEnvironmentUnknown;
 
 #if TARGET_OS_MACCATALYST
-  appleEnvironment = kAppleEnvironmentMacCatalyst;
+  appleEnvironment = kAppleEnvironmentMacOSMacCatalyst;
 #elif TARGET_OS_IOS
 #if TARGET_OS_SIMULATOR
   appleEnvironment = kAppleEnvironmentIOSSimulator;
@@ -63,7 +63,7 @@ NSString* GIDEnvironment(void) {
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
   if (@available(iOS 14.0, *)) {
     if ([NSProcessInfo.processInfo respondsToSelector:@selector(isiOSAppOnMac)]) {
-      appleEnvironment = NSProcessInfo.processInfo.iOSAppOnMac ? kAppleEnvironmentIOSOnMac :
+      appleEnvironment = NSProcessInfo.processInfo.iOSAppOnMac ? kAppleEnvironmentMacOSIOSOnMac :
           kAppleEnvironmentIOS;
     } else {
       appleEnvironment = kAppleEnvironmentIOS;
