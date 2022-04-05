@@ -26,14 +26,13 @@ NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 // The name of the query parameter used for logging the Apple execution environment.
 NSString *const kEnvironmentLoggingParameter = @"gidenv";
 
-// Apple execution environments
+// Supported Apple execution environments
 static NSString *const kAppleEnvironmentUnknown = @"unknown";
 static NSString *const kAppleEnvironmentIOS = @"ios";
 static NSString *const kAppleEnvironmentIOSSimulator = @"ios-simulator";
 static NSString *const kAppleEnvironmentIOSOnMac = @"ios-on-mac";
 static NSString *const kAppleEnvironmentMacCatalyst = @"mac-catalyst";
 static NSString *const kAppleEnvironmentMacOS = @"macos";
-
 
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
