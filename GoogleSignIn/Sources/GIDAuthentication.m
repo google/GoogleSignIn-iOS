@@ -245,6 +245,7 @@ static NSString *const kNewIOSSystemName = @"iOS";
   [additionalParameters addEntriesFromDictionary:
       _authState.lastTokenResponse.request.additionalParameters];
 #endif
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
   OIDTokenRequest *tokenRefreshRequest =
@@ -317,7 +318,6 @@ static NSString *const kNewIOSSystemName = @"iOS";
   if (isPasscodeInfoRequired) {
     allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
   }
-  allParameters[kSDKVersionLoggingParameter] = GIDVersion();
   return allParameters;
 }
 

@@ -584,6 +584,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -751,6 +752,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                        emmSupport:authFlow.emmSupport
                            isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
   OIDTokenRequest *tokenRequest;
