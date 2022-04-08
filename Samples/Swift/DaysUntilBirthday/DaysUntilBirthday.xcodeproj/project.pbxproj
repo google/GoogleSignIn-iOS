@@ -59,11 +59,11 @@
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
+		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
 		FE71738027ECFAF400910319 /* DaysUntilBirthday(macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday(macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
-		FE71739727ED1BAC00910319 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		FE7173A327F5106900910319 /* GoogleSignInButtonWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonWrapper.swift; sourceTree = "<group>"; };
 		FE7173A527F5110F00910319 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -133,7 +133,9 @@
 		FE71738127ECFAF400910319 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				FE71739727ED1BAC00910319 /* Info.plist */,
+				FE7173A327F5106900910319 /* GoogleSignInButtonWrapper.swift */,
+				FE7173A527F5110F00910319 /* UserProfileView.swift */,
+				FE2F2ABC2800D9C1005EA17F /* Info.plist */,
 				FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */,
 				FE71738827ECFAF600910319 /* Preview Content */,
 			);
@@ -158,6 +160,8 @@
 		FE7173A927F656AF00910319 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */,
+				7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */,
 				7345AD0B2703D9480020AFB1 /* Info.plist */,
 				7345AD082703D9480020AFB1 /* Preview Content */,
 			);
@@ -171,28 +175,8 @@
 				739FCC45270E467600C92042 /* BirthdayView.swift */,
 				7345AD112703D9C30020AFB1 /* SignInView.swift */,
 				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
-				FE7173AC27F657BF00910319 /* macOS */,
-				FE7173AB27F657B700910319 /* iOS */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		FE7173AB27F657B700910319 /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-				7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */,
-				7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */,
-			);
-			path = iOS;
-			sourceTree = "<group>";
-		};
-		FE7173AC27F657BF00910319 /* macOS */ = {
-			isa = PBXGroup;
-			children = (
-				FE7173A327F5106900910319 /* GoogleSignInButtonWrapper.swift */,
-				FE7173A527F5110F00910319 /* UserProfileView.swift */,
-			);
-			path = macOS;
 			sourceTree = "<group>";
 		};
 		FE7173AD27F65B8500910319 /* Models */ = {
