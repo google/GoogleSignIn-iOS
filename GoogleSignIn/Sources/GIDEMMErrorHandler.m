@@ -93,10 +93,23 @@ typedef enum {
   }
   // All UI must happen in the main thread.
   dispatch_async(dispatch_get_main_queue(), ^() {
-    UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
-    CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
+    UIWindow *keyWindow = [self keyWindow];
+    if (!keyWindow) {
+      // Shouldn't happen, just in case.
+      completion();
+      return;
+    }
+    UIWindow *alertWindow;
+    if (@available(iOS 13, *)) {
+      if (keyWindow.windowScene) {
+        alertWindow = [[UIWindow alloc] initWithWindowScene:keyWindow.windowScene];
+      }
+    }
+    if (!alertWindow) {
+      CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
         keyWindow.bounds : [UIScreen mainScreen].bounds;
-    UIWindow *alertWindow = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+      alertWindow = [[UIWindow alloc] initWithFrame:keyWindowBounds];
+    }
     alertWindow.backgroundColor = [UIColor clearColor];
     alertWindow.rootViewController = [[UIViewController alloc] init];
     alertWindow.rootViewController.view.backgroundColor = [UIColor clearColor];
@@ -131,6 +144,33 @@ typedef enum {
     }
   });
   return YES;
+}
+
+// This method is exposed to the unit test.
+- (nullable UIWindow *)keyWindow {
+  if (@available(iOS 15, *)) {
+    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+      if ([scene isKindOfClass:[UIWindowScene class]] &&
+          scene.activationState == UISceneActivationStateForegroundActive) {
+        return ((UIWindowScene *)scene).keyWindow;
+      }
+    }
+  } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+    if (@available(iOS 13, *)) {
+      for (UIWindow *window in UIApplication.sharedApplication.windows) {
+        if (window.isKeyWindow) {
+          return window;
+        }
+      }
+    } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+      return UIApplication.sharedApplication.keyWindow;
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+    }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  }
+  return nil;
 }
 
 #pragma mark - Alerts
@@ -176,8 +216,7 @@ typedef enum {
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *action) {
       completion();
-      [[UIApplication sharedApplication]
-          openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+      [self openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
     }]];
   } else {
     [alert addAction:[UIAlertAction actionWithTitle:[self okayString]
@@ -207,7 +246,7 @@ typedef enum {
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *action) {
       completion();
-      [[UIApplication sharedApplication] openURL:url];
+      [self openURL:url];
     }]];
   } else {
     // If the URL is not provided, simple let user acknowledge the issue. This is not supposed to
@@ -222,6 +261,16 @@ typedef enum {
     }]];
   }
   return alert;
+}
+
+- (void)openURL:(NSURL *)url {
+  if (@available(iOS 10, *)) {
+    [UIApplication.sharedApplication openURL:url options:@{} completionHandler:nil];
+  } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+    [UIApplication.sharedApplication openURL:url];
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+  }
 }
 
 #pragma mark - Localization
