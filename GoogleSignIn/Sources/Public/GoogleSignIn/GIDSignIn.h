@@ -157,14 +157,14 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     iOS 9 and 10.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
-/// @param scopes a list of initial scopes
+/// @param additionalScopes An array of scopes to request in addition to the basic profile scopes.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                         scopes:(nullable NSArray *)scopes
+               additionalScopes:(nullable NSArray *)additionalScopes
                        callback:(nullable GIDSignInCallback)callback;
 
 /// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
@@ -228,14 +228,14 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
-/// @param scopes a list of initial scopes
+/// @param additionalScopes An array of scopes to request in addition to the basic profile scopes.
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
-                         scopes:(nullable NSArray *)scopes
+               additionalScopes:(nullable NSArray *)additionalScopes
                        callback:(nullable GIDSignInCallback)callback;
 
 /// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
