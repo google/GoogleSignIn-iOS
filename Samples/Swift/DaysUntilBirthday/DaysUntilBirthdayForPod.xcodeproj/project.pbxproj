@@ -75,8 +75,6 @@
 		FE2ED0A728010508006007BA /* SignInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		FE2ED0A828010508006007BA /* UserProfileImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageView.swift; sourceTree = "<group>"; };
 		FE2ED0A928010508006007BA /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		FE2ED0BE280105C1006007BA /* DaysUntilBirthdayForPod--macOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "DaysUntilBirthdayForPod--macOS--Info.plist"; sourceTree = "<group>"; };
-		FE2ED0BF28010661006007BA /* DaysUntilBirthdayForPod--iOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "DaysUntilBirthdayForPod--iOS--Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,8 +120,6 @@
 		FE2ED04C2800FE0D006007BA = {
 			isa = PBXGroup;
 			children = (
-				FE2ED0BF28010661006007BA /* DaysUntilBirthdayForPod--iOS--Info.plist */,
-				FE2ED0BE280105C1006007BA /* DaysUntilBirthdayForPod--macOS--Info.plist */,
 				FE2ED09728010096006007BA /* Podfile */,
 				FE2ED0512800FE0D006007BA /* Shared */,
 				FE2ED08E28010002006007BA /* iOS */,
@@ -568,7 +564,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "DaysUntilBirthdayForPod--iOS--Info.plist";
+				INFOPLIST_FILE = iOS/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -601,7 +597,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "DaysUntilBirthdayForPod--iOS--Info.plist";
+				INFOPLIST_FILE = iOS/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -636,7 +632,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "DaysUntilBirthdayForPod--macOS--Info.plist";
+				INFOPLIST_FILE = macOS/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -666,7 +662,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "DaysUntilBirthdayForPod--macOS--Info.plist";
+				INFOPLIST_FILE = macOS/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
