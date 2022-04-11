@@ -40,7 +40,9 @@ struct ContentView: View {
               ))
         }
       }
+      #if os(iOS)
       .navigationViewStyle(StackNavigationViewStyle())
+      #endif
     }
   }
 }
