@@ -27,7 +27,6 @@
 @import GoogleSignIn;
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
-#import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
@@ -503,6 +502,22 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testOAuthLogin_AdditionalScopes {
+  NSString *expectedScopeString;
+  
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:YES
+                   additionalScopes:nil];
+
+  expectedScopeString = [@[ @"email", @"profile" ] componentsJoinedByString:@" "];
+  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -514,8 +529,22 @@ static void *kTestObserverContext = &kTestObserverContext;
                 useAdditionalScopes:YES
                    additionalScopes:@[ kScope ]];
 
-  NSString *scopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
-  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, scopeString);
+  expectedScopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
+  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:YES
+                   additionalScopes:@[ kScope, kScope2 ]];
+
+  expectedScopeString = [@[ kScope, kScope2, @"email", @"profile" ] componentsJoinedByString:@" "];
+  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
 }
 
 - (void)testAddScopes {
