@@ -230,14 +230,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                         scopes:(nullable NSArray *)scopes
+               additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                        callback:(nullable GIDSignInCallback)callback {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                      presentingViewController:presentingViewController
                                                     loginHint:hint
                                                 addScopesFlow:NO
-                                                       scopes:scopes
+                                                       scopes:additionalScopes
                                                      callback:callback];
   [self signInWithOptions:options];
 }
@@ -332,14 +332,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
-                         scopes:(nullable NSArray *)scopes
+               additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                        callback:(nullable GIDSignInCallback)callback {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                              presentingWindow:presentingWindow
                                                     loginHint:hint
                                                 addScopesFlow:NO
-                                                       scopes:scopes
+                                                       scopes:additionalScopes
                                                      callback:callback];
   [self signInWithOptions:options];
 }

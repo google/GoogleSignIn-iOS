@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+#if os(iOS)
+typealias GIDImage = UIImage
+#elseif os(macOS)
+typealias GIDImage = NSImage
+#endif
+
 import Combine
 import SwiftUI
 import GoogleSignIn
@@ -24,7 +30,7 @@ final class UserProfileImageLoader: ObservableObject {
   private let imageLoaderQueue = DispatchQueue(label: "com.google.days-until-birthday")
   /// A `UIImage` property containing the current user's profile image.
   /// - note: This will default to a placeholder, and updates will be published to subscribers.
-  @Published var image = UIImage(named: "PlaceholderAvatar")!
+  @Published var image = GIDImage(named: "PlaceholderAvatar")!
 
   /// Creates an instance of this loader with provided user profile.
   /// - note: The instance will asynchronously fetch the image data upon creation.
@@ -35,10 +41,14 @@ final class UserProfileImageLoader: ObservableObject {
     }
 
     imageLoaderQueue.async {
+      #if os(iOS)
       let dimension = 45 * UIScreen.main.scale
+      #elseif os(macOS)
+      let dimension = 120
+      #endif
       guard let url = userProfile.imageURL(withDimension: UInt(dimension)),
             let data = try? Data(contentsOf: url),
-            let image = UIImage(data: data) else {
+            let image = GIDImage(data: data) else {
         return
       }
       DispatchQueue.main.async {

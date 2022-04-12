@@ -27,18 +27,17 @@ struct UserProfileView: View {
   var body: some View {
     return Group {
       if let userProfile = user?.profile {
-        VStack {
+        VStack(spacing: 10) {
           HStack(alignment: .top) {
             UserProfileImageView(userProfile: userProfile)
               .padding(.leading)
             VStack(alignment: .leading) {
               Text(userProfile.name)
+                .font(.headline)
                 .accessibilityLabel(Text("User name."))
               Text(userProfile.email)
                 .accessibilityLabel(Text("User email."))
-                .foregroundColor(.gray)
             }
-            Spacer()
           }
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
                          destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
@@ -53,7 +52,6 @@ struct UserProfileView: View {
               return
             }
           })
-            .accessibilityLabel(Text("View days until birthday."))
           Spacer()
         }
         .toolbar {
