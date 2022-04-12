@@ -470,61 +470,50 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testOAuthLogin {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 }
 
 - (void)testOAuthLogin_RestoredSignIn {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:YES
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:YES
+                     oldAccessToken:NO
+                        modalCancel:NO];
 }
 
 - (void)testOAuthLogin_RestoredSignInOldAccessToken {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:YES
-               oldAccessToken:YES
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:YES
+                     oldAccessToken:YES
+                        modalCancel:NO];
 }
 
 - (void)testAddScopes {
   // Restore the previous sign-in account. This is the preparation for adding scopes.
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:YES
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:YES
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   XCTAssertNotNil(_signIn.currentUser);
-
-
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions defaultOptionsWithConfiguration:nil
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                                                       presentingViewController:nil
-#elif TARGET_OS_OSX
-                                                                               presentingWindow:nil
-#endif
-                                                                                      loginHint:nil
-                                                                                  addScopesFlow:YES
-                                                                                       callback:nil];
 
   id profile = OCMStrictClassMock([GIDProfileData class]);
   OCMStub([profile email]).andReturn(kUserEmail);
@@ -538,14 +527,14 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
 
-  [self OAuthLoginWithOptions:options
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:YES
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   NSArray<NSString *> *grantedScopes;
   NSString *grantedScopeString = _savedAuthorizationRequest.scope;
@@ -573,14 +562,14 @@ static void *kTestObserverContext = &kTestObserverContext;
                                                  hostedDomain:nil
                                                   openIDRealm:kOpenIDRealm];
 
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   NSDictionary<NSString *, NSString *> *params = _savedTokenRequest.additionalParameters;
   XCTAssertEqual(params[kOpenIDRealmKey], kOpenIDRealm, @"OpenID Realm should match.");
@@ -589,14 +578,14 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (void)testOAuthLogin_LoginHint {
   _hint = kUserEmail;
 
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
   XCTAssertEqualObjects(params[@"login_hint"], kUserEmail, @"login hint should match");
@@ -608,56 +597,56 @@ static void *kTestObserverContext = &kTestObserverContext;
                                                  hostedDomain:kHostedDomain
                                                   openIDRealm:nil];
 
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
   XCTAssertEqualObjects(params[@"hd"], kHostedDomain, @"hosted domain should match");
 }
 
 - (void)testOAuthLogin_ConsentCanceled {
-  [self OAuthLoginWithOptions:nil
-                    authError:@"access_denied"
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:@"access_denied"
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
 }
 
 - (void)testOAuthLogin_ModalCanceled {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:YES];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:YES];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
 }
 
 - (void)testOAuthLogin_KeychainError {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:YES
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:YES
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainSaved, @"should save to keychain");
   XCTAssertTrue(_callbackCalled, @"should call delegate");
@@ -667,14 +656,14 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 - (void)testSignOut {
   // Sign in a user so that we can then sign them out.
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:YES
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:YES
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   XCTAssertNotNil(_signIn.currentUser);
 
@@ -906,14 +895,14 @@ static void *kTestObserverContext = &kTestObserverContext;
 #if TARGET_OS_IOS
 
 - (void)testEmmSupportRequestParameters {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   NSString *systemName = [UIDevice currentDevice].systemName;
   if ([systemName isEqualToString:@"iPhone OS"]) {
@@ -951,14 +940,14 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testEmmPasscodeInfo {
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:nil
-      emmPasscodeInfoRequired:YES
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:YES
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
   NSDictionary<NSString *, NSString *> *tokenParams = _savedTokenRequest.additionalParameters;
   if (_isEligibleForEMM) {
     XCTAssertNotNil(tokenParams[@"emm_passcode_info"],
@@ -982,14 +971,14 @@ static void *kTestObserverContext = &kTestObserverContext;
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
 
 
-  [self OAuthLoginWithOptions:nil
-                    authError:callbackParams[@"error"]
-                   tokenError:nil
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   [mockEMMErrorHandler verify];
   [mockEMMErrorHandler stopMocking];
@@ -1019,14 +1008,14 @@ static void *kTestObserverContext = &kTestObserverContext;
                                           completion:SAVE_TO_ARG_BLOCK(completion)];
 
 
-  [self OAuthLoginWithOptions:nil
-                    authError:nil
-                   tokenError:emmError
-      emmPasscodeInfoRequired:NO
-                keychainError:NO
-               restoredSignIn:NO
-               oldAccessToken:NO
-                  modalCancel:NO];
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:emmError
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
 
   NSError *handledError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                               code:kGIDSignInErrorCodeEMM
@@ -1097,14 +1086,14 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 // The authorization flow with parameters to control which branches to take.
-- (void)OAuthLoginWithOptions:(GIDSignInInternalOptions *)options
-                    authError:(NSString *)authError
-                   tokenError:(NSError *)tokenError
-      emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
-                keychainError:(BOOL)keychainError
-               restoredSignIn:(BOOL)restoredSignIn
-               oldAccessToken:(BOOL)oldAccessToken
-                  modalCancel:(BOOL)modalCancel {
+- (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
+                          authError:(NSString *)authError
+                         tokenError:(NSError *)tokenError
+            emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
+                      keychainError:(BOOL)keychainError
+                     restoredSignIn:(BOOL)restoredSignIn
+                     oldAccessToken:(BOOL)oldAccessToken
+                        modalCancel:(BOOL)modalCancel {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
@@ -1161,7 +1150,7 @@ static void *kTestObserverContext = &kTestObserverContext;
       self->_callbackCalled = YES;
       self->_authError = error;
     };
-    if (options.addScopesFlow) {
+    if (addScopesFlow) {
       [_signIn addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
         presentingViewController:_presentingViewController
@@ -1257,7 +1246,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   if (keychainError) {
     _saveAuthorizationReturnValue = NO;
   } else {
-    if (options.addScopesFlow) {
+    if (addScopesFlow) {
       [[_user expect] updateAuthState:SAVE_TO_ARG_BLOCK(authState)
                           profileData:SAVE_TO_ARG_BLOCK(profileData)];
     } else {
@@ -1298,7 +1287,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   _keychainSaved = NO;
   _authError = nil;
 
-  if (!options.addScopesFlow) {
+  if (!addScopesFlow) {
     [[[_user expect] andReturn:_authentication] authentication];
     [[[_user expect] andReturn:_authentication] authentication];
   }
