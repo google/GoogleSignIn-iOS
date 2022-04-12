@@ -502,6 +502,22 @@ static void *kTestObserverContext = &kTestObserverContext;
                         modalCancel:NO];
 }
 
+- (void)testOAuthLogin_AdditionalScopes {
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:YES
+                   additionalScopes:@[ kScope ]];
+
+  NSString *scopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
+  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, scopeString);
+}
+
 - (void)testAddScopes {
   // Restore the previous sign-in account. This is the preparation for adding scopes.
   [self OAuthLoginWithAddScopesFlow:NO
@@ -1085,7 +1101,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 
-// The authorization flow with parameters to control which branches to take.
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
                           authError:(NSString *)authError
                          tokenError:(NSError *)tokenError
@@ -1094,6 +1109,29 @@ static void *kTestObserverContext = &kTestObserverContext;
                      restoredSignIn:(BOOL)restoredSignIn
                      oldAccessToken:(BOOL)oldAccessToken
                         modalCancel:(BOOL)modalCancel {
+  [self OAuthLoginWithAddScopesFlow:addScopesFlow
+                          authError:authError
+                         tokenError:tokenError
+            emmPasscodeInfoRequired:emmPasscodeInfoRequired
+                      keychainError:keychainError
+                     restoredSignIn:restoredSignIn
+                     oldAccessToken:oldAccessToken
+                        modalCancel:modalCancel
+                useAdditionalScopes:NO
+                   additionalScopes:nil];
+}
+
+// The authorization flow with parameters to control which branches to take.
+- (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
+                          authError:(NSString *)authError
+                         tokenError:(NSError *)tokenError
+            emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
+                      keychainError:(BOOL)keychainError
+                     restoredSignIn:(BOOL)restoredSignIn
+                     oldAccessToken:(BOOL)oldAccessToken
+                        modalCancel:(BOOL)modalCancel
+                useAdditionalScopes:(BOOL)useAdditionalScopes
+                   additionalScopes:(NSArray *)additionalScopes {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
@@ -1159,14 +1197,26 @@ static void *kTestObserverContext = &kTestObserverContext;
 #endif
                 callback:callback];
     } else {
-      [_signIn signInWithConfiguration:_configuration
+      if (useAdditionalScopes) {
+        [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-              presentingViewController:_presentingViewController
+                presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                      presentingWindow:_presentingWindow
+                        presentingWindow:_presentingWindow
 #endif
-                                  hint:_hint
-                              callback:callback];
+                                    hint:_hint
+                        additionalScopes:additionalScopes
+                                callback:callback];
+      } else {
+        [_signIn signInWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                presentingViewController:_presentingViewController
+#elif TARGET_OS_OSX
+                        presentingWindow:_presentingWindow
+#endif
+                                    hint:_hint
+                                callback:callback];
+      }
     }
 
     [_authorization verify];
