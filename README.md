@@ -54,3 +54,7 @@ If you would like to see a Swift example, take a look at
 Google Sign-In supports apps built for [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for
 your Mac Catalyst app to access the keychain on macOS you will need to enable the Keychain Sharing capability.  No
 keychain groups need to be added.
+
+## macOS
+
+Google Sign-In allows your users to sign-in to your native macOS app using their Google account and default browser.  When building for macOS, the `signInWithConfiguration:` and `addScopes:` methods take a `presentingWindow:` parameter in place of `presentingViewController:`.
