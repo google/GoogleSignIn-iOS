@@ -336,6 +336,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"device_os" : [NSString stringWithFormat:@"%@ %@",
         _fakeSystemName, [UIDevice currentDevice].systemVersion],
     kSDKVersionLoggingParameter : GIDVersion(),
+    kEnvironmentLoggingParameter : GIDEnvironment(),
   };
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);
@@ -355,6 +356,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"device_os" : [NSString stringWithFormat:@"%@ %@",
         kNewIOSName, [UIDevice currentDevice].systemVersion],
     kSDKVersionLoggingParameter : GIDVersion(),
+    kEnvironmentLoggingParameter : GIDEnvironment(),
   };
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);
@@ -376,6 +378,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
         _fakeSystemName, [UIDevice currentDevice].systemVersion],
     @"emm_passcode_info" : [GIDMDMPasscodeState passcodeState].info,
     kSDKVersionLoggingParameter : GIDVersion(),
+    kEnvironmentLoggingParameter : GIDEnvironment(),
   };
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);
@@ -480,6 +483,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
         [UIDevice currentDevice].systemName, [UIDevice currentDevice].systemVersion],
     @"emm_passcode_info" : [GIDMDMPasscodeState passcodeState].info,
     kSDKVersionLoggingParameter : GIDVersion(),
+    kEnvironmentLoggingParameter : GIDEnvironment(),
   };
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);

@@ -236,16 +236,20 @@ static NSString *const kNewIOSSystemName = @"iOS";
     }
   }
   // This is the first handler in the queue, a fetch is needed.
+  NSMutableDictionary *additionalParameters = [@{} mutableCopy];
 #if TARGET_OS_IOS
-  OIDTokenRequest *tokenRefreshRequest =
-    [_authState tokenRefreshRequestWithAdditionalParameters:
-        [GIDAuthentication updatedEMMParametersWithParameters:
-            _authState.lastTokenResponse.request.additionalParameters]];
+  [additionalParameters addEntriesFromDictionary:
+      [GIDAuthentication updatedEMMParametersWithParameters:
+          _authState.lastTokenResponse.request.additionalParameters]];
 #else // TARGET_OS_OSX or TARGET_OS_MACCATALYST
-  OIDTokenRequest *tokenRefreshRequest =
-    [_authState tokenRefreshRequestWithAdditionalParameters:
-        _authState.lastTokenResponse.request.additionalParameters];
+  [additionalParameters addEntriesFromDictionary:
+      _authState.lastTokenResponse.request.additionalParameters];
 #endif
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  OIDTokenRequest *tokenRefreshRequest =
+      [_authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
                  originalAuthorizationResponse:_authState.lastAuthorizationResponse
                                       callback:^(OIDTokenResponse *_Nullable tokenResponse,
@@ -314,7 +318,6 @@ static NSString *const kNewIOSSystemName = @"iOS";
   if (isPasscodeInfoRequired) {
     allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
   }
-  allParameters[kSDKVersionLoggingParameter] = GIDVersion();
   return allParameters;
 }
 

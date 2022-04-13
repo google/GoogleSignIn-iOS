@@ -28,6 +28,7 @@
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
 #if TARGET_OS_IOS
@@ -1122,6 +1123,10 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
   XCTAssertEqualObjects([params valueForKey:@"token"], token,
                         @"token parameter should match");
+  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+                        @"SDK version logging parameter should match");
+  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+                        @"Environment logging parameter should match");
   // Emulate result back from server.
   [self didFetch:nil error:nil];
   if (hasCallback) {
@@ -1254,6 +1259,8 @@ static void *kTestObserverContext = &kTestObserverContext;
     XCTAssertNotNil(_savedAuthorizationRequest);
     NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
     XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
+    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], GIDVersion());
+    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], GIDEnvironment());
     XCTAssertNotNil(_savedAuthorizationCallback);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
