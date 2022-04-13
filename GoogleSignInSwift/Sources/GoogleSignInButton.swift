@@ -28,10 +28,12 @@ public struct GoogleSignInButton: View {
 
   /// Creates an instance of the Google Sign-In button for use in SwiftUI
   /// - parameter viewModel: An instance of `GoogleSignInButtonViewModel`
-  /// containing information on the button's scheme, style, and state.
+  /// containing information on the button's scheme, style, and state. Defaults to
+  /// `GoogleSignInButtonViewModel` with its standard defaults.
   /// - parameter action: A closure to use as the button's action upon press.
+  /// - seealso: Refer to `GoogleSignInButtonViewModel.swift` for its defaults.
   public init(
-    viewModel: GoogleSignInButtonViewModel,
+    viewModel: GoogleSignInButtonViewModel = GoogleSignInButtonViewModel(),
     action: @escaping () -> Void
   ) {
     self.viewModel = viewModel

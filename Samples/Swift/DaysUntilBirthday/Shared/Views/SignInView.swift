@@ -23,14 +23,7 @@ struct SignInView: View {
   var body: some View {
     VStack {
       HStack {
-        let buttonViewModel = GoogleSignInButtonViewModel(
-          scheme: .light,
-          style: .standard
-        )
-        GoogleSignInButton(
-          viewModel: buttonViewModel,
-          action: authViewModel.signIn
-        )
+        GoogleSignInButton(action: authViewModel.signIn)
           .accessibility(hint: Text("Sign in with Google button."))
           .padding()
       }
