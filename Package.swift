@@ -29,7 +29,15 @@ let package = Package(
   products: [
     .library(
       name: "GoogleSignIn",
-      targets: ["GoogleSignIn"]
+      targets: [
+        "GoogleSignIn",
+      ]
+    ),
+    .library(
+      name: "GoogleSignInSwift",
+      targets: [
+        "GoogleSignInSwift",
+      ]
     ),
   ],
   dependencies: [
@@ -81,6 +89,13 @@ let package = Package(
         .linkedFramework("AppKit", .when(platforms: [.macOS])),
         .linkedFramework("UIKit", .when(platforms: [.iOS])),
       ]
+    ),
+    .target(
+      name: "GoogleSignInSwift",
+      dependencies: [
+        "GoogleSignIn",
+      ],
+      path: "GoogleSignInSwift/Sources"
     ),
     .testTarget(
       name: "GoogleSignIn-UnitTests",

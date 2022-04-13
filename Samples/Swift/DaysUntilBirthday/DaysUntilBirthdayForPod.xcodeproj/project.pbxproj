@@ -3,322 +3,320 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A0027D4EA9FC9C3320D2CB6C /* libPods-DaysUntilBirthdayForPod (iOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = 61F4ED33051343907BD064C7 /* libPods-DaysUntilBirthdayForPod (iOS).a */; };
-		FC5D406670D7A548AFC4E510 /* libPods-DaysUntilBirthdayForPod (macOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E7FF39A72A801922A879753 /* libPods-DaysUntilBirthdayForPod (macOS).a */; };
-		FE2ED0762800FF54006007BA /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0702800FF54006007BA /* DaysUntilBirthday.swift */; };
-		FE2ED0772800FF54006007BA /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0702800FF54006007BA /* DaysUntilBirthday.swift */; };
-		FE2ED0782800FF54006007BA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED0712800FF54006007BA /* Assets.xcassets */; };
-		FE2ED0792800FF54006007BA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED0712800FF54006007BA /* Assets.xcassets */; };
-		FE2ED0872800FF74006007BA /* Preview Content in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED0822800FF74006007BA /* Preview Content */; };
-		FE2ED0882800FF74006007BA /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED0832800FF74006007BA /* Info.plist */; };
-		FE2ED0892800FF74006007BA /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0842800FF74006007BA /* UserProfileView.swift */; };
-		FE2ED08A2800FF74006007BA /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0852800FF74006007BA /* GoogleSignInButtonWrapper.swift */; };
-		FE2ED09428010015006007BA /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED09028010015006007BA /* GoogleSignInButtonWrapper.swift */; };
-		FE2ED09528010015006007BA /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED09128010015006007BA /* UserProfileView.swift */; };
-		FE2ED09628010015006007BA /* Preview Content in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED09228010015006007BA /* Preview Content */; };
-		FE2ED09828010096006007BA /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED09728010096006007BA /* Podfile */; };
-		FE2ED09928010096006007BA /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = FE2ED09728010096006007BA /* Podfile */; };
-		FE2ED0AA28010508006007BA /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED09D28010507006007BA /* BirthdayViewModel.swift */; };
-		FE2ED0AB28010508006007BA /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED09D28010507006007BA /* BirthdayViewModel.swift */; };
-		FE2ED0AC28010508006007BA /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED09E28010507006007BA /* AuthenticationViewModel.swift */; };
-		FE2ED0AD28010508006007BA /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED09E28010507006007BA /* AuthenticationViewModel.swift */; };
-		FE2ED0AE28010508006007BA /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A028010507006007BA /* Birthday.swift */; };
-		FE2ED0AF28010508006007BA /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A028010507006007BA /* Birthday.swift */; };
-		FE2ED0B028010508006007BA /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A228010507006007BA /* UserProfileImageLoader.swift */; };
-		FE2ED0B128010508006007BA /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A228010507006007BA /* UserProfileImageLoader.swift */; };
-		FE2ED0B228010508006007BA /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A328010507006007BA /* GoogleSignInAuthenticator.swift */; };
-		FE2ED0B328010508006007BA /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A328010507006007BA /* GoogleSignInAuthenticator.swift */; };
-		FE2ED0B428010508006007BA /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A428010507006007BA /* BirthdayLoader.swift */; };
-		FE2ED0B528010508006007BA /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A428010507006007BA /* BirthdayLoader.swift */; };
-		FE2ED0B628010508006007BA /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A628010508006007BA /* BirthdayView.swift */; };
-		FE2ED0B728010508006007BA /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A628010508006007BA /* BirthdayView.swift */; };
-		FE2ED0B828010508006007BA /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A728010508006007BA /* SignInView.swift */; };
-		FE2ED0B928010508006007BA /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A728010508006007BA /* SignInView.swift */; };
-		FE2ED0BA28010508006007BA /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A828010508006007BA /* UserProfileImageView.swift */; };
-		FE2ED0BB28010508006007BA /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A828010508006007BA /* UserProfileImageView.swift */; };
-		FE2ED0BC28010508006007BA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A928010508006007BA /* ContentView.swift */; };
-		FE2ED0BD28010508006007BA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ED0A928010508006007BA /* ContentView.swift */; };
+		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
+		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
+		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
+		7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD092703D9480020AFB1 /* Preview Assets.xcassets */; };
+		7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
+		7345AD1E2703D9C30020AFB1 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
+		7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
+		7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
+		7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
+		7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */; };
+		736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
+		736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
+		739FCC46270E467600C92042 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
+		739FCC48270E659A00C92042 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		73DB41892805FBA90028B8D3 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
+		73DB418A2805FBC00028B8D3 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
+		73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
+		73DB418C2805FBC80028B8D3 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
+		73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
+		73DB418E2805FBD40028B8D3 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
+		73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
+		73DB41902805FBF90028B8D3 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
+		73DB41912805FBFD0028B8D3 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
+		73DB41922805FC010028B8D3 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
+		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
+		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
+		B78F2ACC272DB0B739278C99 /* libPods-DaysUntilBirthdayForPod(macOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = FCA8D6DF3A60C3036567A4D4 /* libPods-DaysUntilBirthdayForPod(macOS).a */; };
+		F7C9BA02AE8475788182654C /* libPods-DaysUntilBirthdayForPod(iOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A8D6148C8033E96F4B51A51 /* libPods-DaysUntilBirthdayForPod(iOS).a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0B08EF288921DB186EA58624 /* Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig"; sourceTree = "<group>"; };
-		11B3DE96F8E9E52403BA1C30 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; sourceTree = "<group>"; };
-		54C0CE39088F529ED3F7DB46 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig"; sourceTree = "<group>"; };
-		61F4ED33051343907BD064C7 /* libPods-DaysUntilBirthdayForPod (iOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod (iOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6E7FF39A72A801922A879753 /* libPods-DaysUntilBirthdayForPod (macOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod (macOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		752CE6A223C1E34534585077 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig"; sourceTree = "<group>"; };
-		FE2ED0592800FE0F006007BA /* DaysUntilBirthdayForPod.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DaysUntilBirthdayForPod.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE2ED05F2800FE0F006007BA /* DaysUntilBirthdayForPod.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DaysUntilBirthdayForPod.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE2ED0702800FF54006007BA /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
-		FE2ED0712800FF54006007BA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		FE2ED0822800FF74006007BA /* Preview Content */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Preview Content"; sourceTree = "<group>"; };
-		FE2ED0832800FF74006007BA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FE2ED0842800FF74006007BA /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
-		FE2ED0852800FF74006007BA /* GoogleSignInButtonWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonWrapper.swift; sourceTree = "<group>"; };
-		FE2ED0862800FF74006007BA /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
-		FE2ED08F28010015006007BA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = iOS/Info.plist; sourceTree = "<group>"; };
-		FE2ED09028010015006007BA /* GoogleSignInButtonWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GoogleSignInButtonWrapper.swift; path = iOS/GoogleSignInButtonWrapper.swift; sourceTree = "<group>"; };
-		FE2ED09128010015006007BA /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UserProfileView.swift; path = iOS/UserProfileView.swift; sourceTree = "<group>"; };
-		FE2ED09228010015006007BA /* Preview Content */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Preview Content"; path = "iOS/Preview Content"; sourceTree = "<group>"; };
-		FE2ED09728010096006007BA /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		FE2ED09D28010507006007BA /* BirthdayViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
-		FE2ED09E28010507006007BA /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
-		FE2ED0A028010507006007BA /* Birthday.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
-		FE2ED0A228010507006007BA /* UserProfileImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageLoader.swift; sourceTree = "<group>"; };
-		FE2ED0A328010507006007BA /* GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
-		FE2ED0A428010507006007BA /* BirthdayLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
-		FE2ED0A628010508006007BA /* BirthdayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
-		FE2ED0A728010508006007BA /* SignInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
-		FE2ED0A828010508006007BA /* UserProfileImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageView.swift; sourceTree = "<group>"; };
-		FE2ED0A928010508006007BA /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		0E95D3C3CE4B0FA47CC9B1B6 /* Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig"; sourceTree = "<group>"; };
+		1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig"; sourceTree = "<group>"; };
+		29BEB027A694593FA0450863 /* Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig"; sourceTree = "<group>"; };
+		2A8D6148C8033E96F4B51A51 /* libPods-DaysUntilBirthdayForPod(iOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod(iOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod(iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
+		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7345AD062703D9480020AFB1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7345AD092703D9480020AFB1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		7345AD0B2703D9480020AFB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7345AD112703D9C30020AFB1 /* SignInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageView.swift; sourceTree = "<group>"; };
+		7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
+		7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
+		7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageLoader.swift; sourceTree = "<group>"; };
+		7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
+		736F49B9270E05E200580053 /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
+		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
+		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
+		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
+		B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; sourceTree = "<group>"; };
+		FCA8D6DF3A60C3036567A4D4 /* libPods-DaysUntilBirthdayForPod(macOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod(macOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod(macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod(macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
+		FE7173A527F5110F00910319 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		FE2ED0562800FE0F006007BA /* Frameworks */ = {
+		7345ACFC2703D9470020AFB1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A0027D4EA9FC9C3320D2CB6C /* libPods-DaysUntilBirthdayForPod (iOS).a in Frameworks */,
+				F7C9BA02AE8475788182654C /* libPods-DaysUntilBirthdayForPod(iOS).a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FE2ED05C2800FE0F006007BA /* Frameworks */ = {
+		FE71737D27ECFAF400910319 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC5D406670D7A548AFC4E510 /* libPods-DaysUntilBirthdayForPod (macOS).a in Frameworks */,
+				B78F2ACC272DB0B739278C99 /* libPods-DaysUntilBirthdayForPod(macOS).a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2D587383CDC18F70FA2636BF /* Frameworks */ = {
+		1595AE063BAE425413C82340 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				61F4ED33051343907BD064C7 /* libPods-DaysUntilBirthdayForPod (iOS).a */,
-				6E7FF39A72A801922A879753 /* libPods-DaysUntilBirthdayForPod (macOS).a */,
+				29BEB027A694593FA0450863 /* Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig */,
+				0E95D3C3CE4B0FA47CC9B1B6 /* Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig */,
+				B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */,
+				1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */,
 			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		606AFE1D7495419E24EF0F63 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				0B08EF288921DB186EA58624 /* Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig */,
-				11B3DE96F8E9E52403BA1C30 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */,
-				752CE6A223C1E34534585077 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */,
-				54C0CE39088F529ED3F7DB46 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */,
-			);
+			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		FE2ED04C2800FE0D006007BA = {
+		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
-				FE2ED09728010096006007BA /* Podfile */,
-				FE2ED0512800FE0D006007BA /* Shared */,
-				FE2ED08E28010002006007BA /* iOS */,
-				FE2ED0602800FE0F006007BA /* macOS */,
-				FE2ED05A2800FE0F006007BA /* Products */,
-				606AFE1D7495419E24EF0F63 /* Pods */,
-				2D587383CDC18F70FA2636BF /* Frameworks */,
+				7345AD012703D9470020AFB1 /* Shared */,
+				FE7173A927F656AF00910319 /* iOS */,
+				FE71738127ECFAF400910319 /* macOS */,
+				7345AD002703D9470020AFB1 /* Products */,
+				FE71738F27ECFB3300910319 /* Frameworks */,
+				1595AE063BAE425413C82340 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
-		FE2ED0512800FE0D006007BA /* Shared */ = {
+		7345AD002703D9470020AFB1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED09F28010507006007BA /* Models */,
-				FE2ED0A128010507006007BA /* Services */,
-				FE2ED09C28010507006007BA /* ViewModels */,
-				FE2ED0A528010508006007BA /* Views */,
-				FE2ED0712800FF54006007BA /* Assets.xcassets */,
-				FE2ED0702800FF54006007BA /* DaysUntilBirthday.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		FE2ED05A2800FE0F006007BA /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				FE2ED0592800FE0F006007BA /* DaysUntilBirthdayForPod.app */,
-				FE2ED05F2800FE0F006007BA /* DaysUntilBirthdayForPod.app */,
+				7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS).app */,
+				FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod(macOS).app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		FE2ED0602800FE0F006007BA /* macOS */ = {
+		7345AD012703D9470020AFB1 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED0862800FF74006007BA /* DaysUntilBirthdayOnMac.entitlements */,
-				FE2ED0852800FF74006007BA /* GoogleSignInButtonWrapper.swift */,
-				FE2ED0832800FF74006007BA /* Info.plist */,
-				FE2ED0822800FF74006007BA /* Preview Content */,
-				FE2ED0842800FF74006007BA /* UserProfileView.swift */,
+				7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */,
+				FE7173AF27F6633900910319 /* Services */,
+				FE7173AE27F6632E00910319 /* ViewModels */,
+				FE7173AD27F65B8500910319 /* Models */,
+				FE7173AA27F6578E00910319 /* Views */,
+				7345AD062703D9480020AFB1 /* Assets.xcassets */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		7345AD082703D9480020AFB1 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				7345AD092703D9480020AFB1 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		FE71738127ECFAF400910319 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				FE7173A527F5110F00910319 /* UserProfileView.swift */,
+				FE2F2ABC2800D9C1005EA17F /* Info.plist */,
+				FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */,
+				FE71738827ECFAF600910319 /* Preview Content */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
 		};
-		FE2ED08E28010002006007BA /* iOS */ = {
+		FE71738827ECFAF600910319 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED09028010015006007BA /* GoogleSignInButtonWrapper.swift */,
-				FE2ED08F28010015006007BA /* Info.plist */,
-				FE2ED09228010015006007BA /* Preview Content */,
-				FE2ED09128010015006007BA /* UserProfileView.swift */,
+				FE71738927ECFAF600910319 /* Preview Assets.xcassets */,
 			);
-			name = iOS;
+			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		FE2ED09C28010507006007BA /* ViewModels */ = {
+		FE71738F27ECFB3300910319 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED09D28010507006007BA /* BirthdayViewModel.swift */,
-				FE2ED09E28010507006007BA /* AuthenticationViewModel.swift */,
+				2A8D6148C8033E96F4B51A51 /* libPods-DaysUntilBirthdayForPod(iOS).a */,
+				FCA8D6DF3A60C3036567A4D4 /* libPods-DaysUntilBirthdayForPod(macOS).a */,
 			);
-			path = ViewModels;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		FE2ED09F28010507006007BA /* Models */ = {
+		FE7173A927F656AF00910319 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED0A028010507006007BA /* Birthday.swift */,
+				7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */,
+				7345AD0B2703D9480020AFB1 /* Info.plist */,
+				7345AD082703D9480020AFB1 /* Preview Content */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		FE7173AA27F6578E00910319 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7345AD042703D9470020AFB1 /* ContentView.swift */,
+				739FCC45270E467600C92042 /* BirthdayView.swift */,
+				7345AD112703D9C30020AFB1 /* SignInView.swift */,
+				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		FE7173AD27F65B8500910319 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				739FCC47270E659A00C92042 /* Birthday.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
-		FE2ED0A128010507006007BA /* Services */ = {
+		FE7173AE27F6632E00910319 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED0A228010507006007BA /* UserProfileImageLoader.swift */,
-				FE2ED0A328010507006007BA /* GoogleSignInAuthenticator.swift */,
-				FE2ED0A428010507006007BA /* BirthdayLoader.swift */,
+				7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */,
+				736F49BB270E102C00580053 /* BirthdayViewModel.swift */,
 			);
-			path = Services;
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
-		FE2ED0A528010508006007BA /* Views */ = {
+		FE7173AF27F6633900910319 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				FE2ED0A628010508006007BA /* BirthdayView.swift */,
-				FE2ED0A728010508006007BA /* SignInView.swift */,
-				FE2ED0A828010508006007BA /* UserProfileImageView.swift */,
-				FE2ED0A928010508006007BA /* ContentView.swift */,
+				7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */,
+				736F49B9270E05E200580053 /* BirthdayLoader.swift */,
+				7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */,
 			);
-			path = Views;
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		FE2ED0582800FE0F006007BA /* DaysUntilBirthdayForPod (iOS) */ = {
+		7345ACFE2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE2ED06A2800FE0F006007BA /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (iOS)" */;
+			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(iOS)" */;
 			buildPhases = (
-				E5281C4FB6891AEEF4D98F34 /* [CP] Check Pods Manifest.lock */,
-				FE2ED0552800FE0F006007BA /* Sources */,
-				FE2ED0562800FE0F006007BA /* Frameworks */,
-				FE2ED0572800FE0F006007BA /* Resources */,
-				3C2AF50DEF579CD4D20D7FB4 /* [CP] Copy Pods Resources */,
+				2103D758B586F141DA8039D6 /* [CP] Check Pods Manifest.lock */,
+				7345ACFB2703D9470020AFB1 /* Sources */,
+				7345ACFC2703D9470020AFB1 /* Frameworks */,
+				7345ACFD2703D9470020AFB1 /* Resources */,
+				6D82046AD9FB6398BEEE6E1E /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = "DaysUntilBirthdayForPod (iOS)";
-			productName = "DaysUntilBirthdayForPod (iOS)";
-			productReference = FE2ED0592800FE0F006007BA /* DaysUntilBirthdayForPod.app */;
+			name = "DaysUntilBirthdayForPod(iOS)";
+			productName = "GSI-Swift-Sample";
+			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS).app */;
 			productType = "com.apple.product-type.application";
 		};
-		FE2ED05E2800FE0F006007BA /* DaysUntilBirthdayForPod (macOS) */ = {
+		FE71737F27ECFAF400910319 /* DaysUntilBirthdayForPod(macOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE2ED06D2800FE0F006007BA /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (macOS)" */;
+			buildConfigurationList = FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(macOS)" */;
 			buildPhases = (
-				09125C10B78DB2C9C3CDD745 /* [CP] Check Pods Manifest.lock */,
-				FE2ED05B2800FE0F006007BA /* Sources */,
-				FE2ED05C2800FE0F006007BA /* Frameworks */,
-				FE2ED05D2800FE0F006007BA /* Resources */,
-				695CEEB6F1EA80C63A6FBE3D /* [CP] Copy Pods Resources */,
+				CCB20D28DCF2C72343E30583 /* [CP] Check Pods Manifest.lock */,
+				FE71737C27ECFAF400910319 /* Sources */,
+				FE71737D27ECFAF400910319 /* Frameworks */,
+				FE71737E27ECFAF400910319 /* Resources */,
+				33C73C0F02D22A5D08069738 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = "DaysUntilBirthdayForPod (macOS)";
-			productName = "DaysUntilBirthdayForPod (macOS)";
-			productReference = FE2ED05F2800FE0F006007BA /* DaysUntilBirthdayForPod.app */;
+			name = "DaysUntilBirthdayForPod(macOS)";
+			productName = DaysUntilBirthdayOnMac;
+			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod(macOS).app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		FE2ED04D2800FE0D006007BA /* Project object */ = {
+		7345ACF72703D9470020AFB1 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1310;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1250;
 				TargetAttributes = {
-					FE2ED0582800FE0F006007BA = {
-						CreatedOnToolsVersion = 13.1;
-						LastSwiftMigration = 1310;
+					7345ACFE2703D9470020AFB1 = {
+						CreatedOnToolsVersion = 12.5.1;
 					};
-					FE2ED05E2800FE0F006007BA = {
+					FE71737F27ECFAF400910319 = {
 						CreatedOnToolsVersion = 13.1;
-						LastSwiftMigration = 1310;
 					};
 				};
 			};
-			buildConfigurationList = FE2ED0502800FE0D006007BA /* Build configuration list for PBXProject "DaysUntilBirthdayForPod" */;
-			compatibilityVersion = "Xcode 13.0";
+			buildConfigurationList = 7345ACFA2703D9470020AFB1 /* Build configuration list for PBXProject "DaysUntilBirthdayForPod" */;
+			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = FE2ED04C2800FE0D006007BA;
-			productRefGroup = FE2ED05A2800FE0F006007BA /* Products */;
+			mainGroup = 7345ACF62703D9470020AFB1;
+			productRefGroup = 7345AD002703D9470020AFB1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FE2ED0582800FE0F006007BA /* DaysUntilBirthdayForPod (iOS) */,
-				FE2ED05E2800FE0F006007BA /* DaysUntilBirthdayForPod (macOS) */,
+				7345ACFE2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS) */,
+				FE71737F27ECFAF400910319 /* DaysUntilBirthdayForPod(macOS) */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		FE2ED0572800FE0F006007BA /* Resources */ = {
+		7345ACFD2703D9470020AFB1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE2ED09828010096006007BA /* Podfile in Resources */,
-				FE2ED09628010015006007BA /* Preview Content in Resources */,
-				FE2ED0782800FF54006007BA /* Assets.xcassets in Resources */,
+				7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */,
+				7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FE2ED05D2800FE0F006007BA /* Resources */ = {
+		FE71737E27ECFAF400910319 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE2ED0872800FF74006007BA /* Preview Content in Resources */,
-				FE2ED09928010096006007BA /* Podfile in Resources */,
-				FE2ED0792800FF54006007BA /* Assets.xcassets in Resources */,
-				FE2ED0882800FF74006007BA /* Info.plist in Resources */,
+				73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		09125C10B78DB2C9C3CDD745 /* [CP] Check Pods Manifest.lock */ = {
+		2103D758B586F141DA8039D6 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -333,48 +331,48 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod (macOS)-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod(iOS)-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		3C2AF50DEF579CD4D20D7FB4 /* [CP] Copy Pods Resources */ = {
+		33C73C0F02D22A5D08069738 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS)-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS)-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		695CEEB6F1EA80C63A6FBE3D /* [CP] Copy Pods Resources */ = {
+		6D82046AD9FB6398BEEE6E1E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS)-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS)-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E5281C4FB6891AEEF4D98F34 /* [CP] Check Pods Manifest.lock */ = {
+		CCB20D28DCF2C72343E30583 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -389,7 +387,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod (iOS)-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod(macOS)-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -399,56 +397,56 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		FE2ED0552800FE0F006007BA /* Sources */ = {
+		7345ACFB2703D9470020AFB1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE2ED0B428010508006007BA /* BirthdayLoader.swift in Sources */,
-				FE2ED09428010015006007BA /* GoogleSignInButtonWrapper.swift in Sources */,
-				FE2ED0AC28010508006007BA /* AuthenticationViewModel.swift in Sources */,
-				FE2ED0B228010508006007BA /* GoogleSignInAuthenticator.swift in Sources */,
-				FE2ED0AE28010508006007BA /* Birthday.swift in Sources */,
-				FE2ED0B628010508006007BA /* BirthdayView.swift in Sources */,
-				FE2ED0AA28010508006007BA /* BirthdayViewModel.swift in Sources */,
-				FE2ED0BA28010508006007BA /* UserProfileImageView.swift in Sources */,
-				FE2ED09528010015006007BA /* UserProfileView.swift in Sources */,
-				FE2ED0B028010508006007BA /* UserProfileImageLoader.swift in Sources */,
-				FE2ED0BC28010508006007BA /* ContentView.swift in Sources */,
-				FE2ED0B828010508006007BA /* SignInView.swift in Sources */,
-				FE2ED0762800FF54006007BA /* DaysUntilBirthday.swift in Sources */,
+				739FCC48270E659A00C92042 /* Birthday.swift in Sources */,
+				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
+				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
+				7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */,
+				7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */,
+				7345AD1E2703D9C30020AFB1 /* UserProfileImageView.swift in Sources */,
+				736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */,
+				736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */,
+				7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */,
+				7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */,
+				7345AD052703D9470020AFB1 /* ContentView.swift in Sources */,
+				7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FE2ED05B2800FE0F006007BA /* Sources */ = {
+		FE71737C27ECFAF400910319 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE2ED0B528010508006007BA /* BirthdayLoader.swift in Sources */,
-				FE2ED08A2800FF74006007BA /* GoogleSignInButtonWrapper.swift in Sources */,
-				FE2ED0AD28010508006007BA /* AuthenticationViewModel.swift in Sources */,
-				FE2ED0B328010508006007BA /* GoogleSignInAuthenticator.swift in Sources */,
-				FE2ED0AF28010508006007BA /* Birthday.swift in Sources */,
-				FE2ED0B728010508006007BA /* BirthdayView.swift in Sources */,
-				FE2ED0AB28010508006007BA /* BirthdayViewModel.swift in Sources */,
-				FE2ED0BB28010508006007BA /* UserProfileImageView.swift in Sources */,
-				FE2ED0772800FF54006007BA /* DaysUntilBirthday.swift in Sources */,
-				FE2ED0B128010508006007BA /* UserProfileImageLoader.swift in Sources */,
-				FE2ED0BD28010508006007BA /* ContentView.swift in Sources */,
-				FE2ED0B928010508006007BA /* SignInView.swift in Sources */,
-				FE2ED0892800FF74006007BA /* UserProfileView.swift in Sources */,
+				73DB41912805FBFD0028B8D3 /* SignInView.swift in Sources */,
+				73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */,
+				73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */,
+				73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */,
+				73DB418C2805FBC80028B8D3 /* UserProfileImageLoader.swift in Sources */,
+				73DB418E2805FBD40028B8D3 /* BirthdayViewModel.swift in Sources */,
+				73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */,
+				73DB418A2805FBC00028B8D3 /* GoogleSignInAuthenticator.swift in Sources */,
+				73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */,
+				73DB41892805FBA90028B8D3 /* DaysUntilBirthday.swift in Sources */,
+				73DB41902805FBF90028B8D3 /* BirthdayView.swift in Sources */,
+				73DB41922805FC010028B8D3 /* UserProfileImageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		FE2ED0682800FE0F006007BA /* Debug */ = {
+		7345AD0C2703D9480020AFB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -493,21 +491,25 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		FE2ED0692800FE0F006007BA /* Release */ = {
+		7345AD0D2703D9480020AFB1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -546,90 +548,72 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-			};
-			name = Release;
-		};
-		FE2ED06B2800FE0F006007BA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0B08EF288921DB186EA58624 /* Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = iOS/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
-				PRODUCT_NAME = DaysUntilBirthdayForPod;
-				SDKROOT = iphoneos;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		FE2ED06C2800FE0F006007BA /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 11B3DE96F8E9E52403BA1C30 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = iOS/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
-				PRODUCT_NAME = DaysUntilBirthdayForPod;
-				SDKROOT = iphoneos;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		FE2ED06E2800FE0F006007BA /* Debug */ = {
+		7345AD0F2703D9480020AFB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 752CE6A223C1E34534585077 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */;
+			baseConfigurationReference = 29BEB027A694593FA0450863 /* Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"iOS/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7345AD102703D9480020AFB1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0E95D3C3CE4B0FA47CC9B1B6 /* Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"iOS/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FE71738D27ECFAF600910319 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = macOS/DaysUntilBirthdayOnMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"macOS/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = macOS/Info.plist;
@@ -641,25 +625,25 @@
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Google.DaysUntilBirthdayOnMac;
-				PRODUCT_NAME = DaysUntilBirthdayForPod;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		FE2ED06F2800FE0F006007BA /* Release */ = {
+		FE71738E27ECFAF600910319 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 54C0CE39088F529ED3F7DB46 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */;
+			baseConfigurationReference = 1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = macOS/DaysUntilBirthdayOnMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"macOS/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = macOS/Info.plist;
@@ -671,7 +655,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Google.DaysUntilBirthdayOnMac;
-				PRODUCT_NAME = DaysUntilBirthdayForPod;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -681,34 +665,34 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FE2ED0502800FE0D006007BA /* Build configuration list for PBXProject "DaysUntilBirthdayForPod" */ = {
+		7345ACFA2703D9470020AFB1 /* Build configuration list for PBXProject "DaysUntilBirthdayForPod" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FE2ED0682800FE0F006007BA /* Debug */,
-				FE2ED0692800FE0F006007BA /* Release */,
+				7345AD0C2703D9480020AFB1 /* Debug */,
+				7345AD0D2703D9480020AFB1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE2ED06A2800FE0F006007BA /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (iOS)" */ = {
+		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(iOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FE2ED06B2800FE0F006007BA /* Debug */,
-				FE2ED06C2800FE0F006007BA /* Release */,
+				7345AD0F2703D9480020AFB1 /* Debug */,
+				7345AD102703D9480020AFB1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE2ED06D2800FE0F006007BA /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (macOS)" */ = {
+		FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(macOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FE2ED06E2800FE0F006007BA /* Debug */,
-				FE2ED06F2800FE0F006007BA /* Release */,
+				FE71738D27ECFAF600910319 /* Debug */,
+				FE71738E27ECFAF600910319 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = FE2ED04D2800FE0D006007BA /* Project object */;
+	rootObject = 7345ACF72703D9470020AFB1 /* Project object */;
 }

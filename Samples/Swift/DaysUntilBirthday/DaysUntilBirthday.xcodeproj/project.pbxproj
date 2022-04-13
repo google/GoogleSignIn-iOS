@@ -12,33 +12,32 @@
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
 		7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD092703D9480020AFB1 /* Preview Assets.xcassets */; };
 		7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
-		7345AD1D2703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */; };
 		7345AD1E2703D9C30020AFB1 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
 		7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
 		7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
 		7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
 		7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */; };
-		7345AD272703DA3E0020AFB1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7345AD262703DA3E0020AFB1 /* GoogleSignIn */; };
 		736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
 		736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
 		739FCC46270E467600C92042 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
 		739FCC48270E659A00C92042 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
-		FE71738A27ECFAF600910319 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE71738927ECFAF600910319 /* Preview Assets.xcassets */; };
-		FE71739127ECFB3300910319 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = FE71739027ECFB3300910319 /* GoogleSignIn */; };
-		FE71739227ED135C00910319 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
-		FE71739327ED138B00910319 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
-		FE71739427ED15F700910319 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
-		FE71739527ED17C200910319 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
-		FE71739827EE2DE000910319 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
-		FE71739C27F248E100910319 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
-		FE71739D27F248E600910319 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
-		FE71739E27F2525900910319 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
-		FE71739F27F3AA9E00910319 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
-		FE7173A027F3AAA400910319 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
-		FE7173A127F3AB0900910319 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
-		FE7173A227F3AB5000910319 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
-		FE7173A427F5106900910319 /* GoogleSignInButtonWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A327F5106900910319 /* GoogleSignInButtonWrapper.swift */; };
-		FE7173A627F5110F00910319 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
+		73DB41802805FA0D0028B8D3 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73DB417F2805FA0D0028B8D3 /* GoogleSignIn */; };
+		73DB41822805FA120028B8D3 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 73DB41812805FA120028B8D3 /* GoogleSignInSwift */; };
+		73DB41842805FA190028B8D3 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73DB41832805FA190028B8D3 /* GoogleSignIn */; };
+		73DB41882805FAA70028B8D3 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 73DB41872805FAA70028B8D3 /* GoogleSignInSwift */; };
+		73DB41892805FBA90028B8D3 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
+		73DB418A2805FBC00028B8D3 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
+		73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
+		73DB418C2805FBC80028B8D3 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
+		73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */; };
+		73DB418E2805FBD40028B8D3 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
+		73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
+		73DB41902805FBF90028B8D3 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
+		73DB41912805FBFD0028B8D3 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD112703D9C30020AFB1 /* SignInView.swift */; };
+		73DB41922805FC010028B8D3 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
+		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
+		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,7 +48,6 @@
 		7345AD092703D9480020AFB1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		7345AD0B2703D9480020AFB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7345AD112703D9C30020AFB1 /* SignInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
-		7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonWrapper.swift; sourceTree = "<group>"; };
 		7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageView.swift; sourceTree = "<group>"; };
 		7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 		7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
@@ -59,12 +57,11 @@
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
+		73DB417E2805F9850028B8D3 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
 		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
 		FE71738027ECFAF400910319 /* DaysUntilBirthday(macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday(macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
-		FE7173A327F5106900910319 /* GoogleSignInButtonWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonWrapper.swift; sourceTree = "<group>"; };
 		FE7173A527F5110F00910319 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -73,7 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7345AD272703DA3E0020AFB1 /* GoogleSignIn in Frameworks */,
+				73DB41802805FA0D0028B8D3 /* GoogleSignIn in Frameworks */,
+				73DB41822805FA120028B8D3 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,7 +79,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE71739127ECFB3300910319 /* GoogleSignIn in Frameworks */,
+				73DB41842805FA190028B8D3 /* GoogleSignIn in Frameworks */,
+				73DB41882805FAA70028B8D3 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,7 +90,7 @@
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
-				FE71737B27ECFA5600910319 /* GoogleSignIn-iOS */,
+				73DB417E2805F9850028B8D3 /* GoogleSignIn-iOS */,
 				7345AD012703D9470020AFB1 /* Shared */,
 				FE7173A927F656AF00910319 /* iOS */,
 				FE71738127ECFAF400910319 /* macOS */,
@@ -133,7 +132,6 @@
 		FE71738127ECFAF400910319 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				FE7173A327F5106900910319 /* GoogleSignInButtonWrapper.swift */,
 				FE7173A527F5110F00910319 /* UserProfileView.swift */,
 				FE2F2ABC2800D9C1005EA17F /* Info.plist */,
 				FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */,
@@ -160,7 +158,6 @@
 		FE7173A927F656AF00910319 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				7345AD132703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift */,
 				7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */,
 				7345AD0B2703D9480020AFB1 /* Info.plist */,
 				7345AD082703D9480020AFB1 /* Preview Content */,
@@ -223,7 +220,8 @@
 			);
 			name = "DaysUntilBirthday(iOS)";
 			packageProductDependencies = (
-				7345AD262703DA3E0020AFB1 /* GoogleSignIn */,
+				73DB417F2805FA0D0028B8D3 /* GoogleSignIn */,
+				73DB41812805FA120028B8D3 /* GoogleSignInSwift */,
 			);
 			productName = "GSI-Swift-Sample";
 			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday(iOS).app */;
@@ -243,7 +241,8 @@
 			);
 			name = "DaysUntilBirthday(macOS)";
 			packageProductDependencies = (
-				FE71739027ECFB3300910319 /* GoogleSignIn */,
+				73DB41832805FA190028B8D3 /* GoogleSignIn */,
+				73DB41872805FAA70028B8D3 /* GoogleSignInSwift */,
 			);
 			productName = DaysUntilBirthdayOnMac;
 			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthday(macOS).app */;
@@ -276,7 +275,6 @@
 			);
 			mainGroup = 7345ACF62703D9470020AFB1;
 			packageReferences = (
-				7345AD252703DA3E0020AFB1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = 7345AD002703D9470020AFB1 /* Products */;
 			projectDirPath = "";
@@ -302,8 +300,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE71738A27ECFAF600910319 /* Preview Assets.xcassets in Resources */,
-				FE71739E27F2525900910319 /* Assets.xcassets in Resources */,
+				73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,7 +322,6 @@
 				7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */,
 				7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */,
 				7345AD052703D9470020AFB1 /* ContentView.swift in Sources */,
-				7345AD1D2703D9C30020AFB1 /* GoogleSignInButtonWrapper.swift in Sources */,
 				7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -334,19 +330,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE71739F27F3AA9E00910319 /* BirthdayLoader.swift in Sources */,
-				FE71739C27F248E100910319 /* UserProfileImageLoader.swift in Sources */,
-				FE7173A027F3AAA400910319 /* Birthday.swift in Sources */,
-				FE71739827EE2DE000910319 /* DaysUntilBirthday.swift in Sources */,
-				FE71739227ED135C00910319 /* AuthenticationViewModel.swift in Sources */,
-				FE7173A427F5106900910319 /* GoogleSignInButtonWrapper.swift in Sources */,
-				FE7173A227F3AB5000910319 /* BirthdayView.swift in Sources */,
-				FE71739427ED15F700910319 /* ContentView.swift in Sources */,
-				FE71739327ED138B00910319 /* GoogleSignInAuthenticator.swift in Sources */,
-				FE7173A127F3AB0900910319 /* BirthdayViewModel.swift in Sources */,
-				FE71739D27F248E600910319 /* UserProfileImageView.swift in Sources */,
-				FE7173A627F5110F00910319 /* UserProfileView.swift in Sources */,
-				FE71739527ED17C200910319 /* SignInView.swift in Sources */,
+				73DB41912805FBFD0028B8D3 /* SignInView.swift in Sources */,
+				73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */,
+				73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */,
+				73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */,
+				73DB418C2805FBC80028B8D3 /* UserProfileImageLoader.swift in Sources */,
+				73DB418E2805FBD40028B8D3 /* BirthdayViewModel.swift in Sources */,
+				73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */,
+				73DB418A2805FBC00028B8D3 /* GoogleSignInAuthenticator.swift in Sources */,
+				73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */,
+				73DB41892805FBA90028B8D3 /* DaysUntilBirthday.swift in Sources */,
+				73DB41902805FBF90028B8D3 /* BirthdayView.swift in Sources */,
+				73DB41922805FC010028B8D3 /* UserProfileImageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,26 +600,22 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		7345AD252703DA3E0020AFB1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.0.2;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		7345AD262703DA3E0020AFB1 /* GoogleSignIn */ = {
+		73DB417F2805FA0D0028B8D3 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7345AD252703DA3E0020AFB1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
 		};
-		FE71739027ECFB3300910319 /* GoogleSignIn */ = {
+		73DB41812805FA120028B8D3 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleSignInSwift;
+		};
+		73DB41832805FA190028B8D3 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GoogleSignIn;
+		};
+		73DB41872805FAA70028B8D3 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
