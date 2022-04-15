@@ -50,10 +50,6 @@ let googleImageName = "google"
 /// The layout styles supported by the sign-in button.
 ///
 /// The minimum size of the button depends on the language used for text.
-/// The following dimensions (in points) fit for all languages:
-/// - standard: 230 x 48
-/// - wide:     312 x 48
-/// - icon:     48 x 48 (no text, fixed size)
 @available(iOS 13.0, macOS 10.15, *)
 public enum GoogleSignInButtonStyle {
   case standard
@@ -205,9 +201,13 @@ fileprivate struct Width {
 extension GoogleSignInButtonStyle {
   fileprivate var width: Width {
     switch self {
-    case .icon: return Width(min: iconWidth, max: iconWidth)
-    case .standard: return Width(min: 90, max: .infinity)
-    case .wide: return Width(min: 170, max: .infinity)
+    case .icon:
+      return Width(min: iconWidth, max: iconWidth)
+    case .standard, .wide:
+      return Width(
+        min: iconWidth + minWidthForButtonText + iconPadding + textPadding,
+        max: .infinity
+      )
     }
   }
 
@@ -221,6 +221,30 @@ extension GoogleSignInButtonStyle {
     case .standard: return buttonStrings.localizedStandardButtonText
     case .icon: return ""
     }
+  }
+
+  var minWidthForButtonText: CGFloat {
+    let bt = buttonText as NSString
+#if os(iOS) || targetEnvironment(macCatalyst)
+    let font = UIFont(name: fontNameRobotoBold, size: fontSize)
+    let rect = bt.boundingRect(
+      with: CGSize(width: .max, height: .max),
+      options: [],
+      attributes: [.font: font as Any],
+      context: nil
+    )
+#elseif os(macOS)
+    let font = NSFont(name: fontNameRobotoBold, size: fontSize)
+    let rect = bt.boundingRect(
+      with: CGSize(width: .max, height: .max),
+      options: [],
+      attributes: [.font: font as Any]
+    )
+#else
+    fatalError("Unrecognized platform to calculate minimum width")
+#endif
+
+    return rect.width
   }
 }
 

@@ -65,7 +65,13 @@ public struct GoogleSignInButton: View {
           }
             .padding(.leading, 1)
           Text(viewModel.style.buttonText)
+            .fixedSize()
             .padding(.trailing, textPadding)
+            .frame(
+              width: viewModel.style.minWidthForButtonText,
+              height: buttonHeight,
+              alignment: .leading
+            )
           Spacer()
         }
       }
