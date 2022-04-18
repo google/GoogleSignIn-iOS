@@ -114,5 +114,10 @@ let package = Package(
         .define("GID_SDK_VERSION", to: googleSignInVersion),
       ]
     ),
+    .testTarget(
+      name: "GoogleSignInSwift-UnitTests",
+      dependencies: ["GoogleSignInSwift"],
+      path: "GoogleSignInSwift/Tests/Unit"
+    )
   ]
 )
