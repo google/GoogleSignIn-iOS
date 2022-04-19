@@ -24,8 +24,8 @@ struct SignInView: View {
     VStack {
       HStack {
         let buttonViewModel = GoogleSignInButtonViewModel(
-          scheme: .dark,
-          style: .wide
+          scheme: .light,
+          style: .standard
         )
         GoogleSignInButton(
           viewModel: buttonViewModel,
