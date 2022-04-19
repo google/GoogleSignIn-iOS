@@ -65,3 +65,34 @@ jobs:
           -sdk ${{ matrix.sdk }} \
           -destination ${{ matrix.destination }} \
           test-without-building
+
+  swift-button-functional-test:
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        sdk: ['macosx', 'iphonesimulator']
+        include:
+          - sdk: 'macosx'
+            destination: '"platform=OS X,arch=x86_64"'
+          - sdk: 'iphonesimulator'
+            destination: '"platform=iOS Simulator,name=iPhone 11"'
+    defaults:
+      run:
+        working-directory: GoogleSignInSwift/Tests/Functional/TestApp/GoogleSignInSwiftButtonExample
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build test target for Google Sign-in button for Swift
+      run: |
+        xcodebuild \
+          build-for-testing \
+          -scheme GoogleSignInSwiftButtonExample \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 11'
+    - name: Run test target for Google Sign-in button for Swift
+      run: |
+        xcodebuild \
+          test-without-building \
+          -scheme GoogleSignInSwiftButtonExample \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 11'
