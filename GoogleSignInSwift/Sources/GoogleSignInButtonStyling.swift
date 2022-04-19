@@ -22,10 +22,10 @@ import SwiftUI
 let googleCornerRadius: CGFloat = 2
 
 /// The standard height of the sign in button.
-let buttonHeight: CGFloat = 48
+let buttonHeight: CGFloat = 40
 
 /// The width of the icon part of the button in points.
-let iconWidth: CGFloat = 48
+let iconWidth: CGFloat = 40
 
 /// The padding to be applied to the Google icon image.
 let iconPadding: CGFloat = 2
