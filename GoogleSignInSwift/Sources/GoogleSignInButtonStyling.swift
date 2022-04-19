@@ -205,7 +205,7 @@ extension GoogleSignInButtonStyle {
       return Width(min: iconWidth, max: iconWidth)
     case .standard, .wide:
       return Width(
-        min: iconWidth + minWidthForButtonText + iconPadding + textPadding,
+        min: iconWidth + widthForButtonText + iconPadding + textPadding,
         max: .infinity
       )
     }
@@ -223,26 +223,24 @@ extension GoogleSignInButtonStyle {
     }
   }
 
-  var minWidthForButtonText: CGFloat {
+  var widthForButtonText: CGFloat {
     let bt = buttonText as NSString
+    let size = CGSize(width: .max, height: .max)
+    let anyFont: Any
 #if os(iOS) || targetEnvironment(macCatalyst)
-    let font = UIFont(name: fontNameRobotoBold, size: fontSize)
-    let rect = bt.boundingRect(
-      with: CGSize(width: .max, height: .max),
-      options: [],
-      attributes: [.font: font as Any],
-      context: nil
-    )
+    anyFont = UIFont(name: fontNameRobotoBold, size: fontSize) as Any
 #elseif os(macOS)
-    let font = NSFont(name: fontNameRobotoBold, size: fontSize)
-    let rect = bt.boundingRect(
-      with: CGSize(width: .max, height: .max),
-      options: [],
-      attributes: [.font: font as Any]
-    )
+    anyFont = NSFont(name: fontNameRobotoBold, size: fontSize) as Any
 #else
     fatalError("Unrecognized platform to calculate minimum width")
 #endif
+
+    let rect = bt.boundingRect(
+      with: size,
+      options: [],
+      attributes: [.font: anyFont as Any],
+      context: nil
+    )
 
     return rect.width
   }

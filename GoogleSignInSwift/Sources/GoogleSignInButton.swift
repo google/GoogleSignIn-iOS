@@ -63,12 +63,12 @@ public struct GoogleSignInButton: View {
               )
             Image.signInButtonImage
           }
-            .padding(.leading, 1)
+          .padding(.leading, 1)
           Text(viewModel.style.buttonText)
             .fixedSize()
             .padding(.trailing, textPadding)
             .frame(
-              width: viewModel.style.minWidthForButtonText,
+              width: viewModel.style.widthForButtonText,
               height: buttonHeight,
               alignment: .leading
             )
