@@ -238,7 +238,7 @@ extension GoogleSignInButtonStyle {
     let rect = bt.boundingRect(
       with: size,
       options: [],
-      attributes: [.font: anyFont as Any],
+      attributes: [.font: anyFont],
       context: nil
     )
 
