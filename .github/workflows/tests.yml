@@ -78,7 +78,7 @@ jobs:
       run: |
         xcodebuild \
           -project DaysUntilBirthday.xcodeproj \
-          test-without-building \
+          build-for-testing \
           -scheme DaysUntilBirthday\(iOS\) \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11'
