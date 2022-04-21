@@ -21,7 +21,9 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
     "“DaysUntilBirthday(iOS)” Wants to Use “google.com” to Sign In"
   private let timeout: TimeInterval = 1
   private let sampleApp = XCUIApplication()
-  private let springboardApp = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+  private let springboardApp = XCUIApplication(
+    bundleIdentifier: "com.apple.springboard"
+  )
 
   func testSwiftUIButtonTapStartsFlow() {
     sampleApp.launch()
