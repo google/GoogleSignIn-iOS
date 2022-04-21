@@ -17,6 +17,7 @@
 		7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
 		7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */; };
 		7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */; };
+		73508EC82811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS_.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73508EC72811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS_.swift */; };
 		736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
 		736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
 		739FCC46270E467600C92042 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
@@ -41,6 +42,16 @@
 		C1B5D389282AFD3A0068D12B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C1B5D388282AFD3A0068D12B /* README.md */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		73508ECB2811BD9C00ED7FB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7345ACF72703D9470020AFB1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7345ACFE2703D9470020AFB1;
+			remoteInfo = "DaysUntilBirthday(iOS)";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		7345ACFF2703D9470020AFB1 /* DaysUntilBirthday (iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday (iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
@@ -54,6 +65,8 @@
 		7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInAuthenticator.swift; sourceTree = "<group>"; };
 		7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileImageLoader.swift; sourceTree = "<group>"; };
 		7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
+		73508EC52811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS).xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DaysUntilBirthdayUITests(iOS).xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		73508EC72811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthdayUITests_iOS_.swift; sourceTree = "<group>"; };
 		736F49B9270E05E200580053 /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
@@ -77,6 +90,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		73508EC22811BD9C00ED7FB7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FE71737D27ECFAF400910319 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -97,6 +117,7 @@
 				7345AD012703D9470020AFB1 /* Shared */,
 				FE7173A927F656AF00910319 /* iOS */,
 				FE71738127ECFAF400910319 /* macOS */,
+				73508EC62811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS) */,
 				7345AD002703D9470020AFB1 /* Products */,
 				FE71738F27ECFB3300910319 /* Frameworks */,
 			);
@@ -107,6 +128,7 @@
 			children = (
 				7345ACFF2703D9470020AFB1 /* DaysUntilBirthday (iOS).app */,
 				FE71738027ECFAF400910319 /* DaysUntilBirthday (macOS).app */,
+				73508EC52811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS).xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -138,6 +160,12 @@
 				C14E3C0C280788C600CF05A9 /* GoogleSignIn-iOS */,
 			);
 			name = Packages;
+		73508EC62811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS) */ = {
+			isa = PBXGroup;
+			children = (
+				73508EC72811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS_.swift */,
+			);
+			path = "DaysUntilBirthdayUITests(iOS)";
 			sourceTree = "<group>";
 		};
 		FE71738127ECFAF400910319 /* macOS */ = {
@@ -238,7 +266,25 @@
 			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday (iOS).app */;
 			productType = "com.apple.product-type.application";
 		};
-		FE71737F27ECFAF400910319 /* DaysUntilBirthday (macOS) */ = {
+		73508EC42811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 73508ECF2811BD9C00ED7FB7 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayUITests(iOS)" */;
+			buildPhases = (
+				73508EC12811BD9C00ED7FB7 /* Sources */,
+				73508EC22811BD9C00ED7FB7 /* Frameworks */,
+				73508EC32811BD9C00ED7FB7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				73508ECC2811BD9C00ED7FB7 /* PBXTargetDependency */,
+			);
+			name = "DaysUntilBirthdayUITests(iOS)";
+			productName = "DaysUntilBirthdayUITests(iOS)";
+			productReference = 73508EC52811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS).xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		FE71737F27ECFAF400910319 /* DaysUntilBirthday(macOS) */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday (macOS)" */;
 			buildPhases = (
@@ -265,11 +311,15 @@
 		7345ACF72703D9470020AFB1 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1310;
+				LastSwiftUpdateCheck = 1300;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					7345ACFE2703D9470020AFB1 = {
 						CreatedOnToolsVersion = 12.5.1;
+					};
+					73508EC42811BD9C00ED7FB7 = {
+						CreatedOnToolsVersion = 13.0;
+						TestTargetID = 7345ACFE2703D9470020AFB1;
 					};
 					FE71737F27ECFAF400910319 = {
 						CreatedOnToolsVersion = 13.1;
@@ -294,6 +344,7 @@
 			targets = (
 				7345ACFE2703D9470020AFB1 /* DaysUntilBirthday (iOS) */,
 				FE71737F27ECFAF400910319 /* DaysUntilBirthday (macOS) */,
+				73508EC42811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS) */,
 			);
 		};
 /* End PBXProject section */
@@ -306,6 +357,13 @@
 				C1B5D389282AFD3A0068D12B /* README.md in Resources */,
 				7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */,
 				7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73508EC32811BD9C00ED7FB7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,6 +397,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		73508EC12811BD9C00ED7FB7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73508EC82811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS_.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FE71737C27ECFAF400910319 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -359,6 +425,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		73508ECC2811BD9C00ED7FB7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7345ACFE2703D9470020AFB1 /* DaysUntilBirthday(iOS) */;
+			targetProxy = 73508ECB2811BD9C00ED7FB7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		7345AD0C2703D9480020AFB1 /* Debug */ = {
@@ -523,6 +597,52 @@
 			};
 			name = Release;
 		};
+		73508ECD2811BD9C00ED7FB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.google.DaysUntilBirthdayUITests-iOS-";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "DaysUntilBirthday(iOS)";
+			};
+			name = Debug;
+		};
+		73508ECE2811BD9C00ED7FB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.google.DaysUntilBirthdayUITests-iOS-";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "DaysUntilBirthday(iOS)";
+			};
+			name = Release;
+		};
 		FE71738D27ECFAF600910319 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -602,7 +722,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday (macOS)" */ = {
+		73508ECF2811BD9C00ED7FB7 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayUITests(iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				73508ECD2811BD9C00ED7FB7 /* Debug */,
+				73508ECE2811BD9C00ED7FB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+    FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthday (macOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FE71738D27ECFAF600910319 /* Debug */,
