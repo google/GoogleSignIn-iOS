@@ -68,14 +68,6 @@ jobs:
 
   swift-button-functional-test:
     runs-on: macOS-latest
-    strategy:
-      matrix:
-        sdk: ['macosx', 'iphonesimulator']
-        include:
-          - sdk: 'macosx'
-            destination: '"platform=OS X,arch=x86_64"'
-          - sdk: 'iphonesimulator'
-            destination: '"platform=iOS Simulator,name=iPhone 11"'
     defaults:
       run:
         working-directory: Samples/Swift/DaysUntilBirthday
@@ -85,14 +77,16 @@ jobs:
     - name: Build test target for Google Sign-in button for Swift
       run: |
         xcodebuild \
-          build-for-testing \
-          -scheme GoogleSignInSwiftButtonExample \
+          -project DaysUntilBirthday.xcodeproj \
+          test-without-building \
+          -scheme DaysUntilBirthday\(iOS\) \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11'
     - name: Run test target for Google Sign-in button for Swift
       run: |
         xcodebuild \
+          -project DaysUntilBirthday.xcodeproj \
           test-without-building \
-          -scheme DaysUntilBirthday(iOS) \
+          -scheme DaysUntilBirthday\(iOS\) \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11'
