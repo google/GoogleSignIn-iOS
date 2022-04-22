@@ -74,6 +74,13 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Create xcconfig file
+      shell: bash
+      env:
+        EMAIL_SECRET : secret_fake_email@gmail.com
+        PASSWORD_SECRET : foobar
+      run: |
+        echo EMAIL_SECRET = $EMAIL_SECRET$'\n'PASSWORD_SECRET = $PASSWORD_SECRET >> DaysUntilBirthdayUITests(iOS)/Credentials.xcconfig
     - name: Build test target for Google Sign-in button for Swift
       run: |
         xcodebuild \
