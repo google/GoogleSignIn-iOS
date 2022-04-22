@@ -77,8 +77,8 @@ jobs:
     - name: Create xcconfig file
       shell: bash
       env:
-        EMAIL_SECRET : secret_fake_email@gmail.com
-        PASSWORD_SECRET : foobar
+        EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
+        PASSWORD_SECRET : ${{ secrets.PASSWORD_SECRET }}
       run: |
         echo EMAIL_SECRET = $EMAIL_SECRET$'\n'PASSWORD_SECRET = $PASSWORD_SECRET >> DaysUntilBirthdayUITests\(iOS\)/Credentials.xcconfig
     - name: Build test target for Google Sign-in button for Swift
