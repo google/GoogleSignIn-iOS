@@ -37,4 +37,9 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
       return XCTFail("Failed to display prompt")
     }
   }
+
+  func testReadingSecretsFromConfig() {
+    XCTAssertEqual(Credential.email.rawValue, "secret_fake_email@gmail.com")
+    XCTAssertEqual(Credential.password.rawValue, "foobar")
+  }
 }

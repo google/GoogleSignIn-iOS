@@ -10,6 +10,7 @@
 *.xcworkspace/
 project.xcworkspace/
 xcuserdata/
+Samples/Swift/DaysUntilBirthday/Credentials.xcconfig
 
 # CocoaPods
 Pods/
