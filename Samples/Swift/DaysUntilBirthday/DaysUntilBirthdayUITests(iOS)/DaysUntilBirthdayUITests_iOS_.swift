@@ -39,6 +39,7 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
   }
 
   func testReadingSecretsFromConfig() {
+    XCTAssertNotNil(Credential.bundle)
     XCTAssertEqual(Credential.email.rawValue, "secret_fake_email@gmail.com")
     XCTAssertEqual(Credential.password.rawValue, "foobar")
   }

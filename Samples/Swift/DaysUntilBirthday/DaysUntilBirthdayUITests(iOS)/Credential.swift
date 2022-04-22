@@ -17,9 +17,7 @@
 import Foundation
 
 enum Credential: String {
-  private var bundle: Bundle? {
-    return Bundle(identifier: "com.google.DaysUntilBirthdayUITests-iOS-")
-  }
+  static let bundle: Bundle? = Bundle(identifier: "com.google.DaysUntilBirthdayUITests-iOS-")
   private var emailKey: String { return "EMAIL_SECRET" }
   private var passwordKey: String { return "PASSWORD_SECRET" }
 
@@ -29,12 +27,16 @@ enum Credential: String {
   var rawValue: String {
     switch self {
     case .email:
-      guard let email = bundle?.object(forInfoDictionaryKey: emailKey) as? String else {
+      guard let email = Credential
+              .bundle?
+              .object(forInfoDictionaryKey: emailKey) as? String else {
         fatalError("Failed to retrieve secret email from UI testing bundle")
       }
       return email
     case .password:
-      guard let password = bundle?.object(forInfoDictionaryKey: passwordKey) as? String else {
+      guard let password = Credential
+              .bundle?
+              .object(forInfoDictionaryKey: passwordKey) as? String else {
         fatalError("Failed to retrieve secret password from UI testing bundle")
       }
       return password
