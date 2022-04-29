@@ -118,10 +118,4 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
       return XCTFail("Failed to return to view showing days until birthday")
     }
   }
-
-  func testReadingSecretsFromConfig() {
-    XCTAssertNotNil(Credential.bundle)
-    XCTAssertEqual(Credential.email.rawValue, "secret_fake_email@gmail.com")
-    XCTAssertEqual(Credential.password.rawValue, "foobar")
-  }
 }
