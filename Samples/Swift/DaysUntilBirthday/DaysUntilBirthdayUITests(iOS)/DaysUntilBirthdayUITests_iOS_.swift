@@ -90,6 +90,7 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
     }
     sampleApp.buttons["View Days Until Birthday"].tap()
 
+    // This won't succeed if the app has already granted access; disconnect is needed here in this case
     guard springboardApp
             .staticTexts[signInStaticText]
             .waitForExistence(timeout: timeout) else {
@@ -117,5 +118,15 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
             .waitForExistence(timeout: timeout) else {
       return XCTFail("Failed to return to view showing days until birthday")
     }
+
+    sampleApp.buttons["Back"].tap()
+
+    guard sampleApp.buttons["Disconnect"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to navigate back to User Profile screen")
+    }
+
+    // Clean up this run so the next works as if it is the first time
+    sampleApp.buttons["Disconnect"].tap()
   }
 }
