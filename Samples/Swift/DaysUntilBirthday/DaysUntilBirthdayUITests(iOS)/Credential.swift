@@ -16,6 +16,8 @@
 
 import Foundation
 
+/// An enumeration helping to interact with the configuration file containing
+/// the email and password secrets used for testing the Google sign-in flow.
 enum Credential: String {
   static let bundle: Bundle? = Bundle(identifier: "com.google.DaysUntilBirthdayUITests-iOS-")
   private var emailKey: String { return "EMAIL_SECRET" }

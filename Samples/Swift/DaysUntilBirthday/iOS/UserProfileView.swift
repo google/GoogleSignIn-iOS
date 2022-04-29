@@ -55,7 +55,6 @@ struct UserProfileView: View {
         .toolbar {
           ToolbarItemGroup(placement: .navigationBarTrailing) {
             Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
-              .accessibilityLabel(Text("Disconnect scope button"))
             Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
           }
         }

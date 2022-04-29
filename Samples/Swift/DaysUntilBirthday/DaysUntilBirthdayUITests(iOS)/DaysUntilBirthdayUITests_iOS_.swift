@@ -20,40 +20,115 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
   private let signInStaticText =
     "“DaysUntilBirthday(iOS)” Wants to Use “google.com” to Sign In"
   private let timeout: TimeInterval = 5
+
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
     bundleIdentifier: "com.apple.springboard"
   )
 
-  func testSwiftUIButtonTapStartsFlowForFirstSignIn() {
+  func testSignInNavigateToDaysUntilBirthdayAndDisconnect() {
     sampleApp.launch()
+
+    XCTAssertTrue(signIn())
+    XCTAssertTrue(navigateToDaysUntilBirthday())
+    XCTAssertTrue(navigateBackToUserProfileView())
+
+    // Disconnect so the next test run works as if it is the first time
+    sampleApp.navigationBars.buttons["Disconnect"].tap()
+
+    guard sampleApp
+            .buttons["GoogleSignInButton"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Disconnecting should return user to sign in view")
+    }
+  }
+
+  func testSignInAndSignOut() {
+    sampleApp.launch()
+    XCTAssertTrue(signIn())
+
+    guard sampleApp
+            .navigationBars
+            .buttons["Sign Out"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find the 'Disconnect' button")
+    }
+    sampleApp.buttons["Sign Out"].tap()
+
+    guard sampleApp
+            .buttons["GoogleSignInButton"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Signing out should return user to sign in view")
+    }
+  }
+}
+
+extension DaysUntilBirthdayUITests_iOS_ {
+  /// Performs a sign in.
+  /// - returns: `true` if the sign in was succesfull.
+  func signIn() -> Bool {
     let signInButton = sampleApp.buttons["GoogleSignInButton"]
-    XCTAssertTrue(signInButton.exists)
+    guard signInButton.exists else {
+      XCTFail("Sign in button does not exist")
+      return false
+    }
     signInButton.tap()
 
     guard springboardApp
             .staticTexts[signInStaticText]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to display prompt")
+      XCTFail("Failed to display permission prompt")
+      return false
     }
 
     guard springboardApp
             .buttons["Continue"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find 'Continue' button")
+      XCTFail("Failed to find 'Continue' button")
+      return false
+    }
+    springboardApp.buttons["Continue"].tap()
+
+    if sampleApp
+        .staticTexts[Credential.email.rawValue]
+        .waitForExistence(timeout: timeout) {
+      // This email was previously used to sign in
+      XCTAssertTrue(useExistingSignIn())
+    } else {
+      // This is a first time sign in
+      XCTAssertTrue(signInForTheFirstTime())
     }
 
-    springboardApp.buttons["Continue"].tap()
+    guard sampleApp.wait(for: .runningForeground, timeout: timeout) else {
+      XCTFail("Failed to return sample app to foreground")
+      return false
+    }
+    guard sampleApp.staticTexts["User Profile"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to sign in and return to app's User Profile view.")
+      return false
+    }
+
+    return true
+  }
+
+  /// Signs in expecting the first time flow.
+  /// @discussion
+  /// This will assumme the full flow where a user must type in an email and
+  /// password to sign in with.
+  func signInForTheFirstTime() -> Bool {
     guard sampleApp.textFields["Email or phone"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find email textfield")
+      XCTFail("Failed to find email textfield")
+      return false
     }
     guard sampleApp
             .keyboards
             .element
             .buttons["return"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find 'Next' button")
+      XCTFail("Failed to find 'return' button")
+      return false
     }
 
     sampleApp.textFields["Email or phone"].typeText(Credential.email.rawValue)
@@ -61,14 +136,16 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
 
     guard sampleApp.secureTextFields["Enter your password"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find password textfield")
+      XCTFail("Failed to find password textfield")
+      return false
     }
     guard sampleApp
             .keyboards
             .element
             .buttons["go"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find 'Next' button")
+      XCTFail("Failed to find 'go' button")
+      return false
     }
 
     sampleApp
@@ -76,59 +153,92 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
       .typeText(Credential.password.rawValue)
     sampleApp.keyboards.element.buttons["go"].tap()
 
-    guard sampleApp.wait(for: .runningForeground, timeout: timeout) else {
-      return XCTFail("Failed to return sample app to foreground")
-    }
-    guard sampleApp.staticTexts["User Profile"]
-            .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to sign in and return to app's User Profile view.")
-    }
+    return true
+  }
 
+  /// Signs in expecting a prior sign in.
+  /// @discussion
+  /// This will assume that there is a `Credential.email` in a list to select
+  /// and sign in with.
+  func useExistingSignIn() -> Bool {
+    guard sampleApp.staticTexts[Credential.email.rawValue].exists else {
+      XCTFail("Email used for previous sign-in not in list")
+      return false
+    }
+    guard sampleApp.staticTexts[Credential.email.rawValue].isHittable else {
+      XCTFail("Email used for previous sign-in not tappable")
+      return false
+    }
+    sampleApp.staticTexts[Credential.email.rawValue].tap()
+
+    return true
+  }
+
+  /// Navigates to the days until birthday view from the user profile view.
+  /// - returns: `true` if the navigation was performed successfully.
+  /// - note: If `firstSignIn` is `true`, then we should expect a pop up asking
+  /// for permission.
+  func navigateToDaysUntilBirthday() -> Bool {
     guard sampleApp.buttons["View Days Until Birthday"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find button revealing days until birthday")
+      XCTFail("Failed to find button navigating to days until birthday view")
+      return false
     }
     sampleApp.buttons["View Days Until Birthday"].tap()
 
-    // This won't succeed if the app has already granted access; disconnect is needed here in this case
-    guard springboardApp
-            .staticTexts[signInStaticText]
-            .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to display prompt")
-    }
+    if springboardApp
+        .staticTexts[signInStaticText]
+        .waitForExistence(timeout: timeout) {
+      guard springboardApp
+              .buttons["Continue"]
+              .waitForExistence(timeout: timeout) else {
+        XCTFail("Failed to find 'Continue' button")
+        return false
+      }
+      springboardApp.buttons["Continue"].tap()
 
-    guard springboardApp
-            .buttons["Continue"]
-            .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find 'Continue' button")
+      guard sampleApp
+              .staticTexts["Days Until Birthday wants to access your Google Account"]
+              .waitForExistence(timeout: timeout) else {
+        XCTFail("Failed to find permission screen")
+        return false
+      }
+      guard sampleApp.buttons["Allow"].waitForExistence(timeout: timeout) else {
+        XCTFail("Failed to find 'Allow' button")
+        return false
+      }
+      sampleApp.buttons["Allow"].tap()
     }
-    springboardApp.buttons["Continue"].tap()
-
-    guard sampleApp
-            .staticTexts["Days Until Birthday wants to access your Google Account"]
-            .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find permission screen")
-    }
-    guard sampleApp.buttons["Allow"].waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find 'Allow' button")
-    }
-    sampleApp.buttons["Allow"].tap()
 
     guard sampleApp.staticTexts["Days Until Birthday"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to return to view showing days until birthday")
+      XCTFail("Failed to show days until birthday view")
+      return false
     }
 
+    return true
+  }
+
+  /// Navigates back to the User Profile view from the Days Until Birthday View.
+  /// - returns: `true` if the navigation was successfully performed.
+  func navigateBackToUserProfileView() -> Bool {
+    guard sampleApp
+            .navigationBars
+            .buttons["User Profile"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to show navigation button back to user profile view")
+      return false
+    }
     sampleApp.navigationBars.buttons["User Profile"].tap()
 
     guard sampleApp
             .navigationBars
-            .buttons["Disconnect scope button"]
+            .buttons["Disconnect"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to find the 'Disconnect' button")
+      XCTFail("Failed to find the 'Disconnect' button")
+      return false
     }
 
-    // Clean up this run so the next works as if it is the first time
-    sampleApp.navigationBars.buttons["Disconnect scope button"].tap()
+    return true
   }
 }
