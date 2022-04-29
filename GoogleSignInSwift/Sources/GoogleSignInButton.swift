@@ -22,7 +22,8 @@ import CoreGraphics
 /// A Google Sign In button to be used in SwiftUI.
 @available(iOS 13.0, macOS 10.15, *)
 public struct GoogleSignInButton: View {
-  @ObservedObject var viewModel: GoogleSignInButtonViewModel
+  /// An object containing the styling information needed to create the button.
+  @ObservedObject public var viewModel: GoogleSignInButtonViewModel
   private let action: () -> Void
   private let fontLoaded: Bool
 
