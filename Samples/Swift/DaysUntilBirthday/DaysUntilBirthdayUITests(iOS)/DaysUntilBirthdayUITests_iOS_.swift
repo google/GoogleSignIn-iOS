@@ -33,7 +33,6 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
     XCTAssertTrue(navigateToDaysUntilBirthday())
     XCTAssertTrue(navigateBackToUserProfileView())
 
-    // Disconnect so the next test run works as if it is the first time
     sampleApp.navigationBars.buttons["Disconnect"].tap()
 
     guard sampleApp
@@ -158,8 +157,8 @@ extension DaysUntilBirthdayUITests_iOS_ {
 
   /// Signs in expecting a prior sign in.
   /// @discussion
-  /// This will assume that there is a `Credential.email` in a list to select
-  /// and sign in with.
+  /// This will check that there is a `Credential.email` in a list to select and
+  /// sign in with.
   func useExistingSignIn() -> Bool {
     guard sampleApp.staticTexts[Credential.email.rawValue].exists else {
       XCTFail("Email used for previous sign-in not in list")
@@ -176,8 +175,8 @@ extension DaysUntilBirthdayUITests_iOS_ {
 
   /// Navigates to the days until birthday view from the user profile view.
   /// - returns: `true` if the navigation was performed successfully.
-  /// - note: If `firstSignIn` is `true`, then we should expect a pop up asking
-  /// for permission.
+  /// - note: This method will attempt to find a pop up asking for permission to
+  /// sign in with Google.
   func navigateToDaysUntilBirthday() -> Bool {
     guard sampleApp.buttons["View Days Until Birthday"]
             .waitForExistence(timeout: timeout) else {
