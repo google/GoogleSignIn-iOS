@@ -119,14 +119,16 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
       return XCTFail("Failed to return to view showing days until birthday")
     }
 
-    sampleApp.buttons["Back"].tap()
+    sampleApp.navigationBars.buttons["User Profile"].tap()
 
-    guard sampleApp.buttons["Disconnect"]
+    guard sampleApp
+            .navigationBars
+            .buttons["Disconnect scope button"]
             .waitForExistence(timeout: timeout) else {
-      return XCTFail("Failed to navigate back to User Profile screen")
+      return XCTFail("Failed to find the 'Disconnect' button")
     }
 
     // Clean up this run so the next works as if it is the first time
-    sampleApp.buttons["Disconnect"].tap()
+    sampleApp.navigationBars.buttons["Disconnect scope button"].tap()
   }
 }
