@@ -19,13 +19,13 @@ import XCTest
 class DaysUntilBirthdayUITests_iOS_: XCTestCase {
   private let signInStaticText =
     "“DaysUntilBirthday(iOS)” Wants to Use “google.com” to Sign In"
-  private let timeout: TimeInterval = 2
+  private let timeout: TimeInterval = 5
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
     bundleIdentifier: "com.apple.springboard"
   )
 
-  func testSwiftUIButtonTapStartsFlow() {
+  func testSwiftUIButtonTapStartsFlowForFirstSignIn() {
     sampleApp.launch()
     let signInButton = sampleApp.buttons["GoogleSignInButton"]
     XCTAssertTrue(signInButton.exists)
@@ -35,6 +35,87 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
             .staticTexts[signInStaticText]
             .waitForExistence(timeout: timeout) else {
       return XCTFail("Failed to display prompt")
+    }
+
+    guard springboardApp
+            .buttons["Continue"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find 'Continue' button")
+    }
+
+    springboardApp.buttons["Continue"].tap()
+    guard sampleApp.textFields["Email or phone"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find email textfield")
+    }
+    guard sampleApp
+            .keyboards
+            .element
+            .buttons["return"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find 'Next' button")
+    }
+
+    sampleApp.textFields["Email or phone"].typeText(Credential.email.rawValue)
+    sampleApp.keyboards.element.buttons["return"].tap()
+
+    guard sampleApp.secureTextFields["Enter your password"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find password textfield")
+    }
+    guard sampleApp
+            .keyboards
+            .element
+            .buttons["go"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find 'Next' button")
+    }
+
+    sampleApp
+      .secureTextFields["Enter your password"]
+      .typeText(Credential.password.rawValue)
+    sampleApp.keyboards.element.buttons["go"].tap()
+
+    guard sampleApp.wait(for: .runningForeground, timeout: timeout) else {
+      return XCTFail("Failed to return sample app to foreground")
+    }
+    guard sampleApp.staticTexts["User Profile"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to sign in and return to app's User Profile view.")
+    }
+
+    guard sampleApp.buttons["View Days Until Birthday"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find button revealing days until birthday")
+    }
+    sampleApp.buttons["View Days Until Birthday"].tap()
+
+    guard springboardApp
+            .staticTexts[signInStaticText]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to display prompt")
+    }
+
+    guard springboardApp
+            .buttons["Continue"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find 'Continue' button")
+    }
+    springboardApp.buttons["Continue"].tap()
+
+    guard sampleApp
+            .staticTexts["Days Until Birthday wants to access your Google Account"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find permission screen")
+    }
+    guard sampleApp.buttons["Allow"].waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to find 'Allow' button")
+    }
+    sampleApp.buttons["Allow"].tap()
+
+    guard sampleApp.staticTexts["Days Until Birthday"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Failed to return to view showing days until birthday")
     }
   }
 
