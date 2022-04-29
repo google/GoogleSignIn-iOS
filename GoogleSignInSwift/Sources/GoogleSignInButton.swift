@@ -41,6 +41,29 @@ public struct GoogleSignInButton: View {
     self.fontLoaded = Font.loadCGFont()
   }
 
+  /// A convenience initializer to create a Google Sign-In button in SwiftUI
+  /// with scheme, style, and state.
+  /// - parameter scheme: The `GoogleSignInButtonColorScheme` to use. Defaults
+  /// to `.light`.
+  /// - parameter style: The `GoogleSignInButtonStyle` to use. Defaults to
+  /// `.standard`.
+  /// - parameter state: The `GoogleSignInButtonState` to use. Defaults to
+  /// `.normal`.
+  /// - parameter action: A closure to use as the button's action upon press.
+  public init(
+    scheme: GoogleSignInButtonColorScheme = .light,
+    style: GoogleSignInButtonStyle = .standard,
+    state: GoogleSignInButtonState = .normal,
+    action: @escaping () -> Void
+  ) {
+    let vm = GoogleSignInButtonViewModel(
+      scheme: scheme,
+      style: style,
+      state: state
+    )
+    self.init(viewModel: vm, action: action)
+  }
+
   public var body: some View {
     Button(action: action) {
       switch viewModel.style {
