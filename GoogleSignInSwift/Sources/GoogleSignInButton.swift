@@ -29,8 +29,8 @@ public struct GoogleSignInButton: View {
 
   /// Creates an instance of the Google Sign-In button for use in SwiftUI
   /// - parameter viewModel: An instance of `GoogleSignInButtonViewModel`
-  /// containing information on the button's scheme, style, and state. Defaults to
-  /// `GoogleSignInButtonViewModel` with its standard defaults.
+  ///     containing information on the button's scheme, style, and state.
+  ///     Defaults to `GoogleSignInButtonViewModel` with its standard defaults.
   /// - parameter action: A closure to use as the button's action upon press.
   /// - seealso: Refer to `GoogleSignInButtonViewModel.swift` for its defaults.
   public init(
@@ -45,11 +45,11 @@ public struct GoogleSignInButton: View {
   /// A convenience initializer to create a Google Sign-In button in SwiftUI
   /// with scheme, style, and state.
   /// - parameter scheme: The `GoogleSignInButtonColorScheme` to use. Defaults
-  /// to `.light`.
+  ///     to `.light`.
   /// - parameter style: The `GoogleSignInButtonStyle` to use. Defaults to
-  /// `.standard`.
+  ///     `.standard`.
   /// - parameter state: The `GoogleSignInButtonState` to use. Defaults to
-  /// `.normal`.
+  ///     `.normal`.
   /// - parameter action: A closure to use as the button's action upon press.
   public init(
     scheme: GoogleSignInButtonColorScheme = .light,
