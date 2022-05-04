@@ -32,7 +32,7 @@ struct SignInView: View {
             HStack {
               Text("Button style:")
                 .padding(.leading)
-              Picker("Select button style", selection: $vm.style) {
+              Picker("", selection: $vm.style) {
                 ForEach(GoogleSignInButtonStyle.allCases) { style in
                   Text(style.rawValue.capitalized)
                     .tag(GoogleSignInButtonStyle(rawValue: style.rawValue)!)
@@ -43,7 +43,7 @@ struct SignInView: View {
             HStack {
               Text("Button color:")
                 .padding(.leading)
-              Picker("Select button color", selection: $vm.scheme) {
+              Picker("", selection: $vm.scheme) {
                 ForEach(GoogleSignInButtonColorScheme.allCases) { scheme in
                   Text(scheme.rawValue.capitalized)
                     .tag(GoogleSignInButtonColorScheme(rawValue: scheme.rawValue)!)
@@ -54,7 +54,7 @@ struct SignInView: View {
             HStack {
               Text("Button state:")
                 .padding(.leading)
-              Picker("Select button state", selection: $vm.state) {
+              Picker("", selection: $vm.state) {
                 ForEach(GoogleSignInButtonState.allCases) { state in
                   Text(state.rawValue.capitalized)
                     .tag(GoogleSignInButtonState(rawValue: state.rawValue)!)
@@ -63,7 +63,9 @@ struct SignInView: View {
               Spacer()
             }
           }
-          .pickerStyle(.automatic)
+          #if os(iOS)
+            .pickerStyle(.automatic)
+          #endif
         }
       }
       Spacer()
