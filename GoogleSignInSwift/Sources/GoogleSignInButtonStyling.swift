@@ -51,29 +51,35 @@ let googleImageName = "google"
 ///
 /// The minimum size of the button depends on the language used for text.
 @available(iOS 13.0, macOS 10.15, *)
-public enum GoogleSignInButtonStyle {
+public enum GoogleSignInButtonStyle: String, Identifiable, CaseIterable {
   case standard
   case wide
   case icon
+
+  public var id: String { rawValue }
 }
 
 // MARK: - Button Color Scheme
 
 /// The color schemes supported by the sign-in button.
 @available(iOS 13.0, macOS 10.15, *)
-public enum GoogleSignInButtonColorScheme {
+public enum GoogleSignInButtonColorScheme: String, Identifiable, CaseIterable {
   case dark
   case light
+
+  public var id: String { rawValue }
 }
 
 // MARK: - Button State
 
 /// The state of the sign-in button.
 @available(iOS 13.0, macOS 10.15, *)
-public enum GoogleSignInButtonState {
+public enum GoogleSignInButtonState: String, Identifiable, CaseIterable {
   case normal
   case disabled
   case pressed
+
+  public var id: String { rawValue }
 }
 
 // MARK: - Colors
