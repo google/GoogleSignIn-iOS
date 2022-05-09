@@ -1010,19 +1010,22 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)removeAllKeychainEntries {
-  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName];
+  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName
+                                               useDataProtectionKeychain:YES];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {
   GTMAppAuthFetcherAuthorization *authorization =
       [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   return [GTMAppAuthFetcherAuthorization saveAuthorization:authorization
-                                         toKeychainForName:kGTMAppAuthKeychainName];
+                                         toKeychainForName:kGTMAppAuthKeychainName
+                                 useDataProtectionKeychain:YES];
 }
 
 - (OIDAuthState *)loadAuthState {
   GTMAppAuthFetcherAuthorization *authorization =
-      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName];
+      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName
+                                             useDataProtectionKeychain:YES];
   return authorization.authState;
 }
 
