@@ -301,17 +301,18 @@ static void *kTestObserverContext = &kTestObserverContext;
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAppAuthFetcherAuthorization class]);
   OCMStub([_authorization authorizationFromKeychainForName:OCMOCK_ANY
-                                 useDataProtectionKeychain:OCMOCK_ANY]).andReturn(_authorization);
+                                 useDataProtectionKeychain:YES]).andReturn(_authorization);
   OCMStub([_authorization alloc]).andReturn(_authorization);
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
-  OCMStub([_authorization saveAuthorization:OCMOCK_ANY toKeychainForName:OCMOCK_ANY
-                  useDataProtectionKeychain:OCMOCK_ANY])
+  OCMStub([_authorization saveAuthorization:OCMOCK_ANY
+                          toKeychainForName:OCMOCK_ANY
+                  useDataProtectionKeychain:YES])
       .andDo(^(NSInvocation *invocation) {
         self->_keychainSaved = self->_saveAuthorizationReturnValue;
         [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
       });
   OCMStub([_authorization removeAuthorizationFromKeychainForName:OCMOCK_ANY
-                                       useDataProtectionKeychain:OCMOCK_ANY])
+                                       useDataProtectionKeychain:YES])
       .andDo(^(NSInvocation *invocation) {
         self->_keychainRemoved = YES;
       });
