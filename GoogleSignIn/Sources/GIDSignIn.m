@@ -28,7 +28,7 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif
@@ -496,7 +496,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    // Perform migration of auth state from old versions of the SDK if needed.
+    // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
     [GIDAuthStateMigration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
                                           callbackPath:kBrowserCallbackPath
                                           keychainName:kGTMAppAuthKeychainName
