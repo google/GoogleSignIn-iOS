@@ -90,7 +90,7 @@ static NSString * const kLanguage = @"FakeLanguage";
 static NSString * const kScope = @"FakeScope";
 static NSString * const kScope2 = @"FakeScope2";
 static NSString * const kAuthCode = @"FakeAuthCode";
-static NSString * const kFakeKeychainName = @"FakeKeychainName";
+static NSString * const kKeychainName = @"auth";
 static NSString * const kUserEmail = @"FakeUserEmail";
 static NSString * const kVerifier = @"FakeVerifier";
 static NSString * const kOpenIDRealm = @"FakeRealm";
@@ -300,15 +300,19 @@ static void *kTestObserverContext = &kTestObserverContext;
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAppAuthFetcherAuthorization class]);
-  OCMStub([_authorization authorizationFromKeychainForName:OCMOCK_ANY]).andReturn(_authorization);
+  OCMStub([_authorization authorizationFromKeychainForName:OCMOCK_ANY
+                                 useDataProtectionKeychain:YES]).andReturn(_authorization);
   OCMStub([_authorization alloc]).andReturn(_authorization);
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
-  OCMStub([_authorization saveAuthorization:OCMOCK_ANY toKeychainForName:OCMOCK_ANY])
+  OCMStub([_authorization saveAuthorization:OCMOCK_ANY
+                          toKeychainForName:OCMOCK_ANY
+                  useDataProtectionKeychain:YES])
       .andDo(^(NSInvocation *invocation) {
         self->_keychainSaved = self->_saveAuthorizationReturnValue;
         [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
       });
-  OCMStub([_authorization removeAuthorizationFromKeychainForName:OCMOCK_ANY])
+  OCMStub([_authorization removeAuthorizationFromKeychainForName:OCMOCK_ANY
+                                       useDataProtectionKeychain:YES])
       .andDo(^(NSInvocation *invocation) {
         self->_keychainRemoved = YES;
       });
@@ -718,6 +722,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertTrue(_keychainRemoved, @"should remove keychain");
   XCTAssertTrue([_changedKeyPaths containsObject:NSStringFromSelector(@selector(currentUser))],
                 @"should notify observers that signed in user changed");
+
+  OCMVerify([_authorization removeAuthorizationFromKeychainForName:kKeychainName
+                                         useDataProtectionKeychain:YES]);
 }
 
 - (void)testNotHandleWrongScheme {
@@ -1394,6 +1401,14 @@ static void *kTestObserverContext = &kTestObserverContext;
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain again");
+  
+  if (restoredSignIn) {
+    OCMVerify([_authorization authorizationFromKeychainForName:kKeychainName
+                                     useDataProtectionKeychain:YES]);
+    OCMVerify([_authorization saveAuthorization:OCMOCK_ANY
+                              toKeychainForName:kKeychainName
+                      useDataProtectionKeychain:YES]);
+  }
 }
 
 
