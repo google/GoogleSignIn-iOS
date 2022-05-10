@@ -26,7 +26,9 @@
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif
@@ -493,11 +495,13 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
 
-    // Perform migration of auth state from old versions of the SDK if needed.
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
     [GIDAuthStateMigration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
                                           callbackPath:kBrowserCallbackPath
                                           keychainName:kGTMAppAuthKeychainName
                                         isFreshInstall:isFreshInstall];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
 }
@@ -1010,19 +1014,22 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)removeAllKeychainEntries {
-  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName];
+  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName
+                                               useDataProtectionKeychain:YES];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {
   GTMAppAuthFetcherAuthorization *authorization =
       [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   return [GTMAppAuthFetcherAuthorization saveAuthorization:authorization
-                                         toKeychainForName:kGTMAppAuthKeychainName];
+                                         toKeychainForName:kGTMAppAuthKeychainName
+                                 useDataProtectionKeychain:YES];
 }
 
 - (OIDAuthState *)loadAuthState {
   GTMAppAuthFetcherAuthorization *authorization =
-      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName];
+      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName
+                                             useDataProtectionKeychain:YES];
   return authorization.authState;
 }
 
