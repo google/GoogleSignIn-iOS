@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -34,6 +34,10 @@
 		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
 		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
 		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
+		C1B5D37E282AE2B60068D12B /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D37D282AE2B60068D12B /* GoogleSignIn */; };
+		C1B5D380282AE2B60068D12B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D37F282AE2B60068D12B /* GoogleSignInSwift */; };
+		C1B5D382282AE3370068D12B /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D381282AE3370068D12B /* GoogleSignIn */; };
+		C1B5D384282AE3370068D12B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D383282AE3370068D12B /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1B5D37E282AE2B60068D12B /* GoogleSignIn in Frameworks */,
+				C1B5D380282AE2B60068D12B /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,6 +79,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1B5D382282AE3370068D12B /* GoogleSignIn in Frameworks */,
+				C1B5D384282AE3370068D12B /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,6 +228,8 @@
 			);
 			name = "DaysUntilBirthday (iOS)";
 			packageProductDependencies = (
+				C1B5D37D282AE2B60068D12B /* GoogleSignIn */,
+				C1B5D37F282AE2B60068D12B /* GoogleSignInSwift */,
 			);
 			productName = "GSI-Swift-Sample";
 			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthday (iOS).app */;
@@ -239,6 +249,8 @@
 			);
 			name = "DaysUntilBirthday (macOS)";
 			packageProductDependencies = (
+				C1B5D381282AE3370068D12B /* GoogleSignIn */,
+				C1B5D383282AE3370068D12B /* GoogleSignInSwift */,
 			);
 			productName = DaysUntilBirthdayOnMac;
 			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthday (macOS).app */;
@@ -271,6 +283,7 @@
 			);
 			mainGroup = 7345ACF62703D9470020AFB1;
 			packageReferences = (
+				C1B5D37C282AE2B60068D12B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = 7345AD002703D9470020AFB1 /* Products */;
 			projectDirPath = "";
@@ -595,6 +608,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C1B5D37C282AE2B60068D12B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C1B5D37D282AE2B60068D12B /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C1B5D37C282AE2B60068D12B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		C1B5D37F282AE2B60068D12B /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C1B5D37C282AE2B60068D12B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		C1B5D381282AE3370068D12B /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleSignIn;
+		};
+		C1B5D383282AE3370068D12B /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleSignInSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7345ACF72703D9470020AFB1 /* Project object */;
 }
