@@ -38,6 +38,7 @@
 		C1B5D380282AE2B60068D12B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D37F282AE2B60068D12B /* GoogleSignInSwift */; };
 		C1B5D382282AE3370068D12B /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D381282AE3370068D12B /* GoogleSignIn */; };
 		C1B5D384282AE3370068D12B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C1B5D383282AE3370068D12B /* GoogleSignInSwift */; };
+		C1B5D389282AFD3A0068D12B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C1B5D388282AFD3A0068D12B /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +59,7 @@
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
 		C14E3C0C280788C600CF05A9 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
+		C1B5D388282AFD3A0068D12B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE71738027ECFAF400910319 /* DaysUntilBirthday (macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday (macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
+				C1B5D388282AFD3A0068D12B /* README.md */,
 				C14E3C0B280788C600CF05A9 /* Packages */,
 				7345AD012703D9470020AFB1 /* Shared */,
 				FE7173A927F656AF00910319 /* iOS */,
@@ -300,6 +303,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1B5D389282AFD3A0068D12B /* README.md in Resources */,
 				7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */,
 				7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */,
 			);

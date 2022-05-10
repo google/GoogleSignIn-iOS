@@ -36,6 +36,7 @@
 		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
 		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
 		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
+		C1B5D38D282AFE870068D12B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C1B5D38C282AFE870068D12B /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		7542DB53C46DFA9B71387188 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; sourceTree = "<group>"; };
 		AE0FE424C7B3C57CF8808F8A /* libPods-DaysUntilBirthdayForPod (macOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod (macOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; sourceTree = "<group>"; };
+		C1B5D38C282AFE870068D12B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F163BB5E1E81280A79B4E535 /* libPods-DaysUntilBirthdayForPod (iOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod (iOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F84E43064819F374C9789E49 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig"; sourceTree = "<group>"; };
 		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
+				C1B5D38C282AFE870068D12B /* README.md */,
 				7345AD012703D9470020AFB1 /* Shared */,
 				FE7173A927F656AF00910319 /* iOS */,
 				FE71738127ECFAF400910319 /* macOS */,
@@ -307,6 +310,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1B5D38D282AFE870068D12B /* README.md in Resources */,
 				7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */,
 				7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */,
 			);
