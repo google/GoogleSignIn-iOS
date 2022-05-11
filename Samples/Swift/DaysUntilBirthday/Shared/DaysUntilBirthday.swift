@@ -37,6 +37,9 @@ struct DaysUntilBirthday: App {
             }
           }
         }
+        .onOpenURL { url in
+          GIDSignIn.sharedInstance.handle(url)
+        }
     }
   }
 }
