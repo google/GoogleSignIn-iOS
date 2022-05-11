@@ -64,7 +64,7 @@ struct SignInView: View {
             }
           }
           #if os(iOS)
-            .pickerStyle(.automatic)
+            .pickerStyle(.segmented)
           #endif
         }
       }
