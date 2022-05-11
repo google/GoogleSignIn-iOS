@@ -37,10 +37,10 @@
   expectedEnvironment = @"ios-sim";
 #else
   expectedEnvironment = @"ios";
-#endif
+#endif // TARGET_OS_SIMULATOR
 #elif TARGET_OS_OSX
   expectedEnvironment = @"macos";
-#endif
+#endif // TARGET_OS_MACCATALYST
   XCTAssertEqualObjects(environment, expectedEnvironment);
 }
 

@@ -14,7 +14,7 @@
 
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import <Foundation/Foundation.h>
 #import <LocalAuthentication/LocalAuthentication.h>
@@ -179,4 +179,4 @@
 
 @end
 
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

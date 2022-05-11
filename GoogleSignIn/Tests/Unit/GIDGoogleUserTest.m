@@ -81,6 +81,6 @@
   XCTAssertEqualObjects(user, newUser);
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 @end

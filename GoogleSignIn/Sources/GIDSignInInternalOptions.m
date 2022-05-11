@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback {
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_presentingViewController = presentingViewController;
 #elif TARGET_OS_OSX
     options->_presentingWindow = presentingWindow;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_loginHint = loginHint;
     options->_callback = callback;
     options->_scopes = [GIDScopes scopesWithBasicProfile:scopes];
@@ -65,19 +65,19 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback {
-#else // TARGET_OS_OSX
+#elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                        callback:(nullable GIDSignInCallback)callback {
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                      presentingViewController:presentingViewController
 #elif TARGET_OS_OSX
                                                              presentingWindow:presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                                     loginHint:loginHint
                                                                 addScopesFlow:addScopesFlow
                                                                        scopes:@[]
@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                    presentingViewController:nil
 #elif TARGET_OS_OSX
                                                            presentingWindow:nil
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                                   loginHint:nil
                                                                addScopesFlow:NO
                                                                    callback:callback];
@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_presentingViewController = _presentingViewController;
 #elif TARGET_OS_OSX
     options->_presentingWindow = _presentingWindow;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_loginHint = _loginHint;
     options->_callback = _callback;
     options->_scopes = _scopes;
