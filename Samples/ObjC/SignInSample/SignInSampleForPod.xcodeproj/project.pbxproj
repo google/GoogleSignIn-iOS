@@ -25,6 +25,7 @@
 
 /* Begin PBXFileReference section */
 		550F5407FA6F32CFDE2C3C75 /* Pods_SampleForPod.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SampleForPod.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1B5D38B282AFE460068D12B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D926A51D1BC31FE000ADECE6 /* SignInSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignInSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D926A5371BC3236100ADECE6 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Source/AppDelegate.h; sourceTree = SOURCE_ROOT; };
 		D926A5381BC3236100ADECE6 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Source/AppDelegate.m; sourceTree = SOURCE_ROOT; };
@@ -136,6 +137,7 @@
 		D926A5141BC31FE000ADECE6 = {
 			isa = PBXGroup;
 			children = (
+				C1B5D38B282AFE460068D12B /* README.md */,
 				D926A56B1BC3236100ADECE6 /* SignInSample-Info.plist */,
 				C1E6921F26431165004CE2BC /* Source */,
 				D926A5411BC3236100ADECE6 /* Resources */,

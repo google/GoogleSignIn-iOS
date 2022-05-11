@@ -25,6 +25,8 @@
 
 /* Begin PBXFileReference section */
 		C15484C022FCB34100C76691 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
+		C1B5D386282AFC6B0068D12B /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
+		C1B5D38A282AFE000068D12B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		C1E69225264315E7004CE2BC /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		C1E69226264315E7004CE2BC /* SignInViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SignInViewController.m; sourceTree = "<group>"; };
 		C1E69227264315E7004CE2BC /* DataPickerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataPickerViewController.h; sourceTree = "<group>"; };
@@ -97,6 +99,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C1B5D385282AFC6B0068D12B /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				C1B5D386282AFC6B0068D12B /* GoogleSignIn-iOS */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		C1E69224264315E7004CE2BC /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -132,6 +142,8 @@
 		D99924C11A92B3C7008CC226 = {
 			isa = PBXGroup;
 			children = (
+				C1B5D38A282AFE000068D12B /* README.md */,
+				C1B5D385282AFC6B0068D12B /* Packages */,
 				C1E6923C2643162E004CE2BC /* SignInSample-Info.plist */,
 				C1E69224264315E7004CE2BC /* Source */,
 				C1E6925226431E12004CE2BC /* Resources */,
@@ -503,8 +515,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.0.0;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

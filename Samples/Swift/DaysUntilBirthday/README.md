@@ -15,7 +15,7 @@ pod install
 open DaysUntilBirthdayForPod.xcworkspace
 ```
 
-3. Run the `DaysUntilBirthdayForPod` target.
+3. Run the `DaysUntilBirthdayForPod (iOS)` or `DaysUntilBirthdayForPod (macOS)`target.
 
 ## Swift Package Manager
 
@@ -25,4 +25,4 @@ open DaysUntilBirthdayForPod.xcworkspace
 open DaysUntilBirthday.xcodeproj
 ```
 
-2. Run the `DaysUntilBirthday` target.
+2. Run the `DaysUntilBirthday (iOS)` or `DaysUntilBirthday (macOS)` target.
