@@ -134,6 +134,7 @@ static NSString *const kFIFEAvatarURL2WithDimension =
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
 // Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDProfileData *profileData = [self profileData];
@@ -158,7 +159,8 @@ static NSString *const kFIFEAvatarURL2WithDimension =
   XCTAssertEqualObjects([profileData imageURLWithDimension:kDimension].absoluteString,
                         kFIFEImageURLWithDimension);
 }
-#endif
+
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void)testImageURLWithDimension {
   GIDProfileData *profileData;

@@ -35,7 +35,7 @@
   id presentingViewController = OCMStrictClassMock([UIViewController class]);
 #elif TARGET_OS_OSX
   id presentingWindow = OCMStrictClassMock([NSWindow class]);
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   NSString *loginHint = @"login_hint";
   GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
   
@@ -45,7 +45,7 @@
                                        presentingViewController:presentingViewController
 #elif TARGET_OS_OSX
                                                presentingWindow:presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                       loginHint:loginHint
                                                    addScopesFlow:NO
                                                        callback:callback];
@@ -59,7 +59,7 @@
   OCMVerifyAll(presentingViewController);
 #elif TARGET_OS_OSX
   OCMVerifyAll(presentingWindow);
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
 - (void)testSilentOptions {

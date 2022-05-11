@@ -152,23 +152,23 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   _observedAuths = [[NSMutableArray alloc] init];
   _changesObserved = 0;
   _fakeSystemName = kNewIOSName;
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [GULSwizzler swizzleClass:[UIDevice class]
                    selector:@selector(systemName)
             isClassSelector:NO
                   withBlock:^(id sender) { return self->_fakeSystemName; }];
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 - (void)tearDown {
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [GULSwizzler unswizzleClass:[UIDevice class]
                      selector:@selector(systemName)
               isClassSelector:NO];
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   for (GIDAuthentication *auth in _observedAuths) {
     for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
       [auth removeObserver:self forKeyPath:kObservedProperties[i]];
@@ -230,7 +230,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Deprecated in iOS 13 and moacOS 10.14
+// Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDAuthentication *auth = [self auth];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth];
@@ -238,7 +238,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTAssertEqualObjects(auth, newAuth);
   XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
 }
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void)testFetcherAuthorizer {
   // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works
@@ -322,7 +322,9 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #pragma mark - EMM Support
-#if TARGET_OS_IOS
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 - (void)testEMMSupport {
   _additionalTokenRequestParameters = @{
     @"emm_support" : @"xyz",
@@ -488,7 +490,8 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTAssertEqualObjects(auth.authState.lastTokenResponse.request.additionalParameters,
                         expectedParameters);
 }
-#endif
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - NSKeyValueObserving
 

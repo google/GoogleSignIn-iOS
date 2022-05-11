@@ -55,7 +55,7 @@ NSString *const GoogleSignInBundleName = @"GoogleSignIn";
       if ([UIFont fontWithName:fontName size:[UIFont systemFontSize]]) {  // size doesn't matter
         continue;
       }
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
       // Load the font data file from the bundle.
       NSString *path = [bundle pathForResource:fontName ofType:@"ttf"];
