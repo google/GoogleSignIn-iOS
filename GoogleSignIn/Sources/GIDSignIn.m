@@ -28,10 +28,8 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
@@ -400,7 +398,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:options];
 }
 
-#endif
+#endif // TARGET_OS_OSX
 
 - (void)signOut {
   // Clear the current user if there is one.
@@ -562,11 +560,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
   NSString *emmSupport;
-#if TARGET_OS_MACCATALYST || TARGET_OS_OSX
-  emmSupport = nil;
-#elif TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#endif
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
   additionalParameters[kIncludeGrantedScopesParameter] = @"true";
@@ -580,14 +578,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDAuthentication parametersWithParameters:options.extraParams
                                        emmSupport:emmSupport
                            isPasscodeInfoRequired:NO]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
@@ -628,7 +626,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                  error:error
                             emmSupport:emmSupport];
   }];
-#endif
+#endif // TARGET_OS_OSX
 
 }
 
@@ -656,7 +654,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (authFlow.emmSupport) {
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
@@ -668,7 +666,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
           errorCode = kGIDSignInErrorCodeEMM;
         }
       }
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       errorString = (NSString *)params[kOAuth2ErrorKeyName];
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
         errorCode = kGIDSignInErrorCodeCanceled;
@@ -747,7 +745,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (_currentOptions.configuration.openIDRealm) {
     additionalParameters[kOpenIDRealmParameter] = _currentOptions.configuration.openIDRealm;
   }
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   NSDictionary<NSString *, NSObject *> *params =
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
@@ -755,7 +753,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [GIDAuthentication parametersWithParameters:@{}
                                        emmSupport:authFlow.emmSupport
                            isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
@@ -786,7 +784,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       }
     }
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {
       [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *error) {
         authFlow.error = error;
@@ -797,7 +795,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     }
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
     [authFlow next];
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   }];
 }
 
@@ -931,7 +929,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (!_currentOptions.presentingWindow) {
     return NO;
   }
-#endif
+#endif // TARGET_OS_OSX
   if (!_currentAuthorizationFlow) {
     return NO;
   }
@@ -996,7 +994,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (!_currentOptions.presentingViewController) {
 #elif TARGET_OS_OSX
   if (!_currentOptions.presentingWindow) {
-#endif
+#endif // TARGET_OS_OSX
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];

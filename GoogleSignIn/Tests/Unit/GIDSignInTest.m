@@ -17,7 +17,7 @@
 #import <UIKit/UIKit.h>
 #elif TARGET_OS_OSX
 #import <AppKit/AppKit.h>
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 #import <SafariServices/SafariServices.h>
 
@@ -31,9 +31,9 @@
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
@@ -61,7 +61,7 @@
 #import <AppAuth/OIDAuthorizationService+IOS.h>
 #elif TARGET_OS_OSX
 #import <AppAuth/OIDAuthorizationService+Mac.h>
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
@@ -165,7 +165,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (UIWindow *)_window;
 
 @end
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 // This class extension exposes GIDSignIn methods to our tests.
 @interface GIDSignIn ()
@@ -202,7 +202,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #elif TARGET_OS_OSX
   // Mock |NSWindow|.
   id _presentingWindow;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
   // Mock for |GIDGoogleUser|.
   id _user;
@@ -252,7 +252,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #elif TARGET_OS_OSX
   // The saved presentingWindow from the authorization request.
   NSWindow *_savedPresentingWindow;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
   // The saved authorization callback.
   OIDAuthorizationCallback _savedAuthorizationCallback;
@@ -277,9 +277,9 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 - (void)setUp {
   [super setUp];
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   _isEligibleForEMM = [UIDevice currentDevice].systemVersion.integerValue >= 9;
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   _saveAuthorizationReturnValue = YES;
 
   // States
@@ -293,7 +293,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   _presentingViewController = OCMStrictClassMock([UIViewController class]);
 #elif TARGET_OS_OSX
   _presentingWindow = OCMStrictClassMock([NSWindow class]);
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _authState = OCMStrictClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
@@ -325,7 +325,7 @@ static void *kTestObserverContext = &kTestObserverContext;
            presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
 #elif TARGET_OS_OSX
            presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                          callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
@@ -375,7 +375,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMVerifyAll(_presentingViewController);
 #elif TARGET_OS_OSX
   OCMVerifyAll(_presentingWindow);
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 
   [_fakeMainBundle stopFaking];
@@ -877,7 +877,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   _presentingViewController = nil;
 #elif TARGET_OS_OSX
   _presentingWindow = nil;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 
   XCTAssertThrows([_signIn signInWithConfiguration:_configuration
@@ -885,7 +885,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                           presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
                                   presentingWindow:_presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                               hint:_hint
                                           callback:_callback]);
 }
@@ -902,7 +902,7 @@ static void *kTestObserverContext = &kTestObserverContext;
             presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
                     presentingWindow:_presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                             callback:nil];
   } @catch (NSException *exception) {
     threw = YES;
@@ -922,7 +922,7 @@ static void *kTestObserverContext = &kTestObserverContext;
             presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
                     presentingWindow:_presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                 hint:_hint
                             callback:_callback];
   } @catch (NSException *exception) {
@@ -945,7 +945,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 #pragma mark - EMM tests
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testEmmSupportRequestParameters {
   [self OAuthLoginWithAddScopesFlow:NO
@@ -1086,7 +1086,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
 }
 
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Helpers
 
@@ -1209,10 +1209,10 @@ static void *kTestObserverContext = &kTestObserverContext;
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     if (oldAccessToken) {
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       // Corresponds to EMM support 
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[[_authState expect] andReturn:tokenRequest]
@@ -1235,7 +1235,7 @@ static void *kTestObserverContext = &kTestObserverContext;
         presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
         presentingWindow:_presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                 callback:callback];
     } else {
       if (useAdditionalScopes) {
@@ -1244,7 +1244,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                 presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
                         presentingWindow:_presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                     hint:_hint
                         additionalScopes:additionalScopes
                                 callback:callback];
@@ -1254,7 +1254,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                 presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
                         presentingWindow:_presentingWindow
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                     hint:_hint
                                 callback:callback];
       }
@@ -1273,15 +1273,15 @@ static void *kTestObserverContext = &kTestObserverContext;
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
 #elif TARGET_OS_OSX
     XCTAssertEqual(_savedPresentingWindow, _presentingWindow);
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
     // maybeFetchToken
     if (!(authError || modalCancel)) {
       [[[_authState expect] andReturn:nil] lastTokenResponse];
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       // Corresponds to EMM support
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       [[[_authState expect] andReturn:nil] lastTokenResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];

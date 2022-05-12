@@ -13,7 +13,7 @@
 // limitations under the License.
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Sources/GIDMDMPasscodeCache.h"
 
@@ -298,4 +298,4 @@ static const int64_t kObtainKeychainInfoWaitTime = 3 * NSEC_PER_SEC;
 
 NS_ASSUME_NONNULL_END
 
-#endif
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

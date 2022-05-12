@@ -206,4 +206,4 @@ static NSString * const kAppBundleId = @"FakeBundleID";
 
 @end
 
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST

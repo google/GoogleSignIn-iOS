@@ -104,6 +104,6 @@
   XCTAssertEqualObjects(configuration, newConfiguration);
   XCTAssertTrue(GIDConfiguration.supportsSecureCoding);
 }
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 @end
