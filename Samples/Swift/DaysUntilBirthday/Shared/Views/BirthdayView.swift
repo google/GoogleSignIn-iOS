@@ -25,7 +25,6 @@ struct BirthdayView: View {
       VStack {
         Text(birthdayViewModel.daysUntilBirthday)
           .font(.system(size: 80))
-          .accessibilityLabel("Number of days until your birthday")
         Spacer()
       }
       .navigationTitle(NSLocalizedString("Days Until Birthday",

@@ -34,9 +34,7 @@ struct UserProfileView: View {
             VStack(alignment: .leading) {
               Text(userProfile.name)
                 .font(.headline)
-                .accessibilityLabel(Text("User name."))
               Text(userProfile.email)
-                .accessibilityLabel(Text("User email."))
             }
           }
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
@@ -57,14 +55,11 @@ struct UserProfileView: View {
         .toolbar {
           ToolbarItemGroup(placement: .navigationBarTrailing) {
             Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
-              .accessibilityLabel(Text("Disconnect scope button."))
             Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
-              .accessibilityLabel(Text("Sign out button"))
           }
         }
       } else {
         Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
-          .accessibilityLabel(Text("Failed to get user profile"))
       }
     }
   }

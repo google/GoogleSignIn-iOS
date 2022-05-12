@@ -18,22 +18,18 @@ struct UserProfileView: View {
             VStack(alignment: .leading) {
               Text(userProfile.name)
                 .font(.headline)
-                .accessibilityLabel(Text("User name."))
               Text(userProfile.email)
-                .accessibilityLabel(Text("User email."))
             }
           }
           Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
             .background(Color.blue)
             .foregroundColor(Color.white)
             .cornerRadius(5)
-            .accessibilityLabel(Text("Sign out button"))
 
           Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
             .background(Color.blue)
             .foregroundColor(Color.white)
             .cornerRadius(5)
-            .accessibilityLabel(Text("Disconnect scope button."))
           Spacer()
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
                          destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
@@ -51,12 +47,10 @@ struct UserProfileView: View {
             .background(Color.blue)
             .foregroundColor(Color.white)
             .cornerRadius(5)
-            .accessibilityLabel(Text("View days until birthday."))
           Spacer()
         }
       } else {
         Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
-          .accessibilityLabel(Text("Failed to get user profile"))
       }
     }
   }
