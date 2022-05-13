@@ -24,11 +24,11 @@ final class BirthdayViewModel: ObservableObject {
   @Published private(set) var birthday: Birthday?
   /// Computed property calculating the number of days until the current user's birthday.
   var daysUntilBirthday: String {
-    guard let bday = birthday?.date else { return "NA" }
+    guard let bday = birthday?.date else { return "No birthday" }
     let now = Date()
     let calendar = Calendar.autoupdatingCurrent
     let dayComps = calendar.dateComponents([.day], from: now, to: bday)
-    guard let days = dayComps.day else { return "NA" }
+    guard let days = dayComps.day else { return "No birthday" }
     return String(days)
   }
   private var cancellable: AnyCancellable?
@@ -42,6 +42,7 @@ final class BirthdayViewModel: ObservableObject {
         case .finished:
           break
         case .failure(let error):
+          self.birthday = Birthday.noBirthday
           print("Error retrieving birthday: \(error)")
         }
       } receiveValue: { birthday in
