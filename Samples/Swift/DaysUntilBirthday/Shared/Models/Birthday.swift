@@ -18,7 +18,7 @@ import Foundation
 
 /// A model type representing the current user's birthday.
 struct Birthday: Decodable {
-  let integerDate: Birthday.IntegerDate
+  fileprivate let integerDate: Birthday.IntegerDate
 
   /// The birthday as a `Date`.
   var date: Date? {
@@ -30,7 +30,7 @@ struct Birthday: Decodable {
                                year: currentYear.year,
                                month: integerDate.month,
                                day: integerDate.day)
-    guard let d = comps.date else { return nil }
+    guard let d = comps.date, comps.isValidDate else { return nil }
     if d < now {
       var nextYearComponent = DateComponents()
       nextYearComponent.year = 1
@@ -39,11 +39,19 @@ struct Birthday: Decodable {
     } else {
       return d
     }
-}
+  }
 
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.integerDate = try container.decode(IntegerDate.self, forKey: .integerDate)
+  }
+
+  init(integerDate: IntegerDate) {
+    self.integerDate = integerDate
+  }
+
+  static var noBirthday: Birthday? {
+    return Birthday(integerDate: IntegerDate(month: .min, day: .min))
   }
 }
 
@@ -64,7 +72,7 @@ extension Birthday {
 extension Birthday: CustomStringConvertible {
   /// Converts the instances `date` to a `String`.
   var description: String {
-    return date?.description ?? "NA"
+    return date?.description ?? "No birthday"
   }
 }
 
