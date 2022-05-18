@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/cocoapods/l/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
 [![tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/tests.yml/badge.svg?event=push)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/tests.yml)
 
-# Google Sign-In for iOS
+# Google Sign-In for iOS and macOS
 
 Get users into your apps quickly and securely, using a registration system they
 already use and trust—their Google account.
@@ -49,8 +49,17 @@ If you would like to see a Swift example, take a look at
 * Take a look at the
 [API reference](https://developers.google.com/identity/sign-in/ios/api/).
 
-## Mac Catalyst
+## Google Sign-In on macOS
 
-Google Sign-In supports apps built for [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for
-your Mac Catalyst app to access the keychain on macOS you will need to enable the Keychain Sharing capability.  No
-keychain groups need to be added.
+Google Sign-In allows your users to sign-in to your native macOS app using their Google account
+and default browser.  When building for macOS, the `signInWithConfiguration:` and `addScopes:`
+methods take a `presentingWindow:` parameter in place of `presentingViewController:`.  Note that
+in order for your macOS app to store credientials via the Keychain on macOS, you will need to
+[sign your app](https://developer.apple.com/support/code-signing/).
+
+### Mac Catalyst
+
+Google Sign-In also supports iOS apps that are built for macOS via
+[Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for your Mac Catalyst app
+to store credientials via the Keychain on macOS, you will need to
+[sign your app](https://developer.apple.com/support/code-signing/).
