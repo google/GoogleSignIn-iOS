@@ -1,4 +1,4 @@
-# 6.2.0 (2022-4-?)
+# 6.2.0 (2022-5-18)
 - Support for macOS. ([#104](https://github.com/google/GoogleSignIn-iOS/pull/104)]
 - Added a SwiftUI "Sign in with Google" button. ([#103](https://github.com/google/GoogleSignIn-iOS/pull/103))
 - Added the ability to request additional scopes at sign-in time. ([#30](https://github.com/google/GoogleSignIn-iOS/pull/30))
