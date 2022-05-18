@@ -22,10 +22,10 @@ import SwiftUI
 let googleCornerRadius: CGFloat = 2
 
 /// The standard height of the sign in button.
-let buttonHeight: CGFloat = 48
+let buttonHeight: CGFloat = 40
 
 /// The width of the icon part of the button in points.
-let iconWidth: CGFloat = 48
+let iconWidth: CGFloat = 40
 
 /// The padding to be applied to the Google icon image.
 let iconPadding: CGFloat = 2
@@ -50,34 +50,36 @@ let googleImageName = "google"
 /// The layout styles supported by the sign-in button.
 ///
 /// The minimum size of the button depends on the language used for text.
-/// The following dimensions (in points) fit for all languages:
-/// - standard: 230 x 48
-/// - wide:     312 x 48
-/// - icon:     48 x 48 (no text, fixed size)
 @available(iOS 13.0, macOS 10.15, *)
-public enum GoogleSignInButtonStyle {
+public enum GoogleSignInButtonStyle: String, Identifiable, CaseIterable {
   case standard
   case wide
   case icon
+
+  public var id: String { rawValue }
 }
 
 // MARK: - Button Color Scheme
 
 /// The color schemes supported by the sign-in button.
 @available(iOS 13.0, macOS 10.15, *)
-public enum GoogleSignInButtonColorScheme {
+public enum GoogleSignInButtonColorScheme: String, Identifiable, CaseIterable {
   case dark
   case light
+
+  public var id: String { rawValue }
 }
 
 // MARK: - Button State
 
 /// The state of the sign-in button.
 @available(iOS 13.0, macOS 10.15, *)
-public enum GoogleSignInButtonState {
+public enum GoogleSignInButtonState: String, Identifiable, CaseIterable {
   case normal
   case disabled
   case pressed
+
+  public var id: String { rawValue }
 }
 
 // MARK: - Colors
@@ -205,9 +207,13 @@ fileprivate struct Width {
 extension GoogleSignInButtonStyle {
   fileprivate var width: Width {
     switch self {
-    case .icon: return Width(min: iconWidth, max: iconWidth)
-    case .standard: return Width(min: 90, max: .infinity)
-    case .wide: return Width(min: 170, max: .infinity)
+    case .icon:
+      return Width(min: iconWidth, max: iconWidth)
+    case .standard, .wide:
+      return Width(
+        min: iconWidth + widthForButtonText + iconPadding + textPadding,
+        max: .infinity
+      )
     }
   }
 
@@ -221,6 +227,28 @@ extension GoogleSignInButtonStyle {
     case .standard: return buttonStrings.localizedStandardButtonText
     case .icon: return ""
     }
+  }
+
+  var widthForButtonText: CGFloat {
+    let bt = buttonText as NSString
+    let size = CGSize(width: .max, height: .max)
+    let anyFont: Any
+#if os(iOS) || targetEnvironment(macCatalyst)
+    anyFont = UIFont(name: fontNameRobotoBold, size: fontSize) as Any
+#elseif os(macOS)
+    anyFont = NSFont(name: fontNameRobotoBold, size: fontSize) as Any
+#else
+    fatalError("Unrecognized platform to calculate minimum width")
+#endif
+
+    let rect = bt.boundingRect(
+      with: size,
+      options: [],
+      attributes: [.font: anyFont],
+      context: nil
+    )
+
+    return rect.width
   }
 }
 

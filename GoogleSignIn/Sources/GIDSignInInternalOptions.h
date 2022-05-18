@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 #elif TARGET_OS_OSX
 /// The window to use during the flow.
 @property(nonatomic, readonly, weak, nullable) NSWindow *presentingWindow;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// The callback block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCallback callback;
@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable GIDSignInCallback)callback;
-#endif
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;

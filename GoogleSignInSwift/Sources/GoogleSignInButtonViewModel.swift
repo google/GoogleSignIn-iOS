@@ -31,14 +31,16 @@ public class GoogleSignInButtonViewModel: ObservableObject {
   }
 
   /// Creates instances of the SwiftUI sign-in button.
-  /// - parameter scheme: An instance of `GoogleSignInButtonColorScheme`.
-  /// - parameter style: An instance of `GoogleSignInButtonStyle`.
+  /// - parameter scheme: An instance of `GoogleSignInButtonColorScheme`. Defaults to
+  /// `.light`.
+  /// - parameter style: An instance of `GoogleSignInButtonStyle`. Defaults to
+  /// `.standard`.
   /// - parameter state: An instance of `GoogleSignInButtonState`. Defaults to
   /// `.normal`.
   @available(iOS 13.0, macOS 10.15, *)
   public init(
-    scheme: GoogleSignInButtonColorScheme,
-    style: GoogleSignInButtonStyle,
+    scheme: GoogleSignInButtonColorScheme = .light,
+    style: GoogleSignInButtonStyle = .standard,
     state: GoogleSignInButtonState = .normal) {
       self.scheme = scheme
       self.style = style

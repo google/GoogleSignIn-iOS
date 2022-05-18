@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5965643074F45661539BC2DF /* libPods-DaysUntilBirthdayForPod (iOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = F163BB5E1E81280A79B4E535 /* libPods-DaysUntilBirthdayForPod (iOS).a */; };
+		7023CA98EF5DD94278069A12 /* libPods-DaysUntilBirthdayForPod (macOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0FE424C7B3C57CF8808F8A /* libPods-DaysUntilBirthdayForPod (macOS).a */; };
 		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
@@ -34,16 +36,16 @@
 		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
 		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
 		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
-		B78F2ACC272DB0B739278C99 /* libPods-DaysUntilBirthdayForPod(macOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = FCA8D6DF3A60C3036567A4D4 /* libPods-DaysUntilBirthdayForPod(macOS).a */; };
-		F7C9BA02AE8475788182654C /* libPods-DaysUntilBirthdayForPod(iOS).a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A8D6148C8033E96F4B51A51 /* libPods-DaysUntilBirthdayForPod(iOS).a */; };
+		C1B5D38D282AFE870068D12B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C1B5D38C282AFE870068D12B /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0E95D3C3CE4B0FA47CC9B1B6 /* Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig"; sourceTree = "<group>"; };
+		18F5B51876E23EE864C3A489 /* Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig"; sourceTree = "<group>"; };
 		1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig"; sourceTree = "<group>"; };
 		29BEB027A694593FA0450863 /* Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig"; sourceTree = "<group>"; };
-		2A8D6148C8033E96F4B51A51 /* libPods-DaysUntilBirthdayForPod(iOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod(iOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod(iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CF615341A61D92D89389D44 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig"; sourceTree = "<group>"; };
+		7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod (iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7345AD062703D9480020AFB1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,10 +61,14 @@
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
+		7542DB53C46DFA9B71387188 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; sourceTree = "<group>"; };
+		AE0FE424C7B3C57CF8808F8A /* libPods-DaysUntilBirthdayForPod (macOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod (macOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; sourceTree = "<group>"; };
-		FCA8D6DF3A60C3036567A4D4 /* libPods-DaysUntilBirthdayForPod(macOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod(macOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1B5D38C282AFE870068D12B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		F163BB5E1E81280A79B4E535 /* libPods-DaysUntilBirthdayForPod (iOS).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DaysUntilBirthdayForPod (iOS).a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F84E43064819F374C9789E49 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig"; sourceTree = "<group>"; };
 		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod(macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod(macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod (macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod (macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE71738B27ECFAF600910319 /* DaysUntilBirthdayOnMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DaysUntilBirthdayOnMac.entitlements; sourceTree = "<group>"; };
 		FE7173A527F5110F00910319 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
@@ -73,7 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F7C9BA02AE8475788182654C /* libPods-DaysUntilBirthdayForPod(iOS).a in Frameworks */,
+				5965643074F45661539BC2DF /* libPods-DaysUntilBirthdayForPod (iOS).a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,7 +87,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B78F2ACC272DB0B739278C99 /* libPods-DaysUntilBirthdayForPod(macOS).a in Frameworks */,
+				7023CA98EF5DD94278069A12 /* libPods-DaysUntilBirthdayForPod (macOS).a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,14 +101,18 @@
 				0E95D3C3CE4B0FA47CC9B1B6 /* Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig */,
 				B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */,
 				1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */,
+				18F5B51876E23EE864C3A489 /* Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig */,
+				7542DB53C46DFA9B71387188 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */,
+				F84E43064819F374C9789E49 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */,
+				5CF615341A61D92D89389D44 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
 		7345ACF62703D9470020AFB1 = {
 			isa = PBXGroup;
 			children = (
+				C1B5D38C282AFE870068D12B /* README.md */,
 				7345AD012703D9470020AFB1 /* Shared */,
 				FE7173A927F656AF00910319 /* iOS */,
 				FE71738127ECFAF400910319 /* macOS */,
@@ -115,8 +125,8 @@
 		7345AD002703D9470020AFB1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS).app */,
-				FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod(macOS).app */,
+				7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS).app */,
+				FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod (macOS).app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -164,8 +174,8 @@
 		FE71738F27ECFB3300910319 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2A8D6148C8033E96F4B51A51 /* libPods-DaysUntilBirthdayForPod(iOS).a */,
-				FCA8D6DF3A60C3036567A4D4 /* libPods-DaysUntilBirthdayForPod(macOS).a */,
+				F163BB5E1E81280A79B4E535 /* libPods-DaysUntilBirthdayForPod (iOS).a */,
+				AE0FE424C7B3C57CF8808F8A /* libPods-DaysUntilBirthdayForPod (macOS).a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -221,9 +231,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7345ACFE2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS) */ = {
+		7345ACFE2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(iOS)" */;
+			buildConfigurationList = 7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (iOS)" */;
 			buildPhases = (
 				2103D758B586F141DA8039D6 /* [CP] Check Pods Manifest.lock */,
 				7345ACFB2703D9470020AFB1 /* Sources */,
@@ -235,14 +245,14 @@
 			);
 			dependencies = (
 			);
-			name = "DaysUntilBirthdayForPod(iOS)";
+			name = "DaysUntilBirthdayForPod (iOS)";
 			productName = "GSI-Swift-Sample";
-			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS).app */;
+			productReference = 7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS).app */;
 			productType = "com.apple.product-type.application";
 		};
-		FE71737F27ECFAF400910319 /* DaysUntilBirthdayForPod(macOS) */ = {
+		FE71737F27ECFAF400910319 /* DaysUntilBirthdayForPod (macOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(macOS)" */;
+			buildConfigurationList = FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (macOS)" */;
 			buildPhases = (
 				CCB20D28DCF2C72343E30583 /* [CP] Check Pods Manifest.lock */,
 				FE71737C27ECFAF400910319 /* Sources */,
@@ -254,9 +264,9 @@
 			);
 			dependencies = (
 			);
-			name = "DaysUntilBirthdayForPod(macOS)";
+			name = "DaysUntilBirthdayForPod (macOS)";
 			productName = DaysUntilBirthdayOnMac;
-			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod(macOS).app */;
+			productReference = FE71738027ECFAF400910319 /* DaysUntilBirthdayForPod (macOS).app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -289,8 +299,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7345ACFE2703D9470020AFB1 /* DaysUntilBirthdayForPod(iOS) */,
-				FE71737F27ECFAF400910319 /* DaysUntilBirthdayForPod(macOS) */,
+				7345ACFE2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS) */,
+				FE71737F27ECFAF400910319 /* DaysUntilBirthdayForPod (macOS) */,
 			);
 		};
 /* End PBXProject section */
@@ -300,6 +310,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1B5D38D282AFE870068D12B /* README.md in Resources */,
 				7345AD0A2703D9480020AFB1 /* Preview Assets.xcassets in Resources */,
 				7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */,
 			);
@@ -331,7 +342,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod(iOS)-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod (iOS)-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -344,15 +355,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS)-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS)-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		6D82046AD9FB6398BEEE6E1E /* [CP] Copy Pods Resources */ = {
@@ -361,15 +372,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS)-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS)-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CCB20D28DCF2C72343E30583 /* [CP] Check Pods Manifest.lock */ = {
@@ -387,7 +398,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod(macOS)-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-DaysUntilBirthdayForPod (macOS)-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -560,7 +571,7 @@
 		};
 		7345AD0F2703D9480020AFB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 29BEB027A694593FA0450863 /* Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig */;
+			baseConfigurationReference = 18F5B51876E23EE864C3A489 /* Pods-DaysUntilBirthdayForPod (iOS).debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -582,7 +593,7 @@
 		};
 		7345AD102703D9480020AFB1 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0E95D3C3CE4B0FA47CC9B1B6 /* Pods-DaysUntilBirthdayForPod(iOS).release.xcconfig */;
+			baseConfigurationReference = 7542DB53C46DFA9B71387188 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -604,7 +615,7 @@
 		};
 		FE71738D27ECFAF600910319 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */;
+			baseConfigurationReference = F84E43064819F374C9789E49 /* Pods-DaysUntilBirthdayForPod (macOS).debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -622,7 +633,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Google.DaysUntilBirthdayOnMac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -634,7 +645,7 @@
 		};
 		FE71738E27ECFAF600910319 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */;
+			baseConfigurationReference = 5CF615341A61D92D89389D44 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -652,7 +663,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Google.DaysUntilBirthdayOnMac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -674,7 +685,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(iOS)" */ = {
+		7345AD0E2703D9480020AFB1 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (iOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7345AD0F2703D9480020AFB1 /* Debug */,
@@ -683,7 +694,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod(macOS)" */ = {
+		FE71738C27ECFAF600910319 /* Build configuration list for PBXNativeTarget "DaysUntilBirthdayForPod (macOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FE71738D27ECFAF600910319 /* Debug */,
