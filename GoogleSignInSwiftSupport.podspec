@@ -15,6 +15,7 @@ Pod::Spec.new do |s|
   macos_deployment_target = '10.15' 
   s.ios.deployment_target = ios_deployment_target
   s.osx.deployment_target = macos_deployment_target
+  s.module_name = 'GoogleSignInSwift'
   s.prefix_header_file = false
   s.source_files = [
     'GoogleSignInSwift/Sources/*.swift',
