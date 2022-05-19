@@ -1,0 +1,95 @@
+name: GSI Chatroom PR Notification
+
+on:
+  pull_request:
+    types: [opened, reopened]
+  push:
+    branches:
+      - main
+    
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Pull Request Details
+      run: |
+        echo "Pull Request: ${{ github.event.pull_request.title }}"
+        echo "Author: ${{ github.event.pull_request.user.login }}"
+
+    - name: Google Chat Notification
+      run: |
+        curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+          "cards": [
+            {
+              "header": {
+                "title": "Pull request notification",
+                "subtitle": "Pull request: #${{ github.event.pull_request.number }}"
+              },
+              "sections": [
+                {
+                  "widgets": [
+                    {
+                      "keyValue": {
+                        "topLabel": "Repo",
+                        "content": "${{ github.event.pull_request.head.repo.full_name }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Title",
+                        "content": "${{ github.event.pull_request.title }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Creator",
+                        "content": "${{ github.event.pull_request.user.login }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "State",
+                        "content": "${{ github.event.pull_request.state }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Assignees",
+                        "content": "- ${{ join(github.event.pull_request.assignees.*.login, ', ') }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Reviewers",
+                        "content": "- ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Labels",
+                        "content": "- ${{ join(github.event.pull_request.labels.*.name, ', ') }}"
+                      }
+                    },
+                    {
+                      "buttons": [
+                        {
+                          "textButton": {
+                            "text": "Open Pull Request",
+                            "onClick": {
+                              "openLink": {
+                                "url": "${{ github.event.pull_request.html_url }}"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }'
