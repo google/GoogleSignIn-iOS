@@ -1,5 +1,5 @@
 # 6.2.1 (2022-5-19)
-- Change Swift support CocoaPod name.
+- Change the name of the Swift support CocoaPod. ([#137](https://github.com/google/GoogleSignIn-iOS/pull/137))
 
 # 6.2.0 (2022-5-18)
 - Support for macOS. ([#104](https://github.com/google/GoogleSignIn-iOS/pull/104)]
