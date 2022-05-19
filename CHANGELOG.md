@@ -1,5 +1,8 @@
+# 6.2.1 (2022-5-19)
+- Use `GoogleSignInSwiftSupport` as the name of the Swift support CocoaPod. ([#137](https://github.com/google/GoogleSignIn-iOS/pull/137))
+
 # 6.2.0 (2022-5-18)
-- Support for macOS. ([#104](https://github.com/google/GoogleSignIn-iOS/pull/104)]
+- Support for macOS. ([#104](https://github.com/google/GoogleSignIn-iOS/pull/104))
 - Added a SwiftUI "Sign in with Google" button. ([#103](https://github.com/google/GoogleSignIn-iOS/pull/103))
 - Added the ability to request additional scopes at sign-in time. ([#30](https://github.com/google/GoogleSignIn-iOS/pull/30))
 - Fixed several issues. ([#87](https://github.com/google/GoogleSignIn-iOS/pull/87), [#106](https://github.com/google/GoogleSignIn-iOS/issues/106))
