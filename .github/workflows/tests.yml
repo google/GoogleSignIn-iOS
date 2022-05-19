@@ -15,14 +15,14 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        podspec: [GoogleSignIn.podspec, GoogleSignInSwift.podspec]
+        podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
         flag: [
           "", 
           "--use-libraries", 
           "--use-static-frameworks"
         ]
         include:
-          - podspec: GoogleSignInSwift.podspec
+          - podspec: GoogleSignInSwiftSupport.podspec
             includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
     steps:
     - uses: actions/checkout@v2
