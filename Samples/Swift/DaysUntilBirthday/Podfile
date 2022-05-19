@@ -1,5 +1,5 @@
 pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
-pod 'GoogleSignInSwift', :path => '../../../', :testspecs => ['unit']
+pod 'GoogleSignInSwiftSupport', :path => '../../../', :testspecs => ['unit']
 project 'DaysUntilBirthdayForPod.xcodeproj'
 
 target 'DaysUntilBirthdayForPod (iOS)' do
