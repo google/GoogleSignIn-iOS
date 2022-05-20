@@ -2,7 +2,7 @@ name: GSI Chatroom PR Notification
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [assigned, opened, ready_for_review, reopened, review_requested]
   push:
     branches:
       - main
