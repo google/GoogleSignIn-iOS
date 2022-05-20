@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
-  s.name = 'GoogleSignInSwift'
-  s.version = '6.2.0'
+  s.name = 'GoogleSignInSwiftSupport'
+  s.version = '6.2.1'
   s.swift_version = '4.0'
   s.summary = 'Adds Swift-focused support for Google Sign-In.'
   s.description = 'Additional Swift support for the Google Sign-In SDK.'
@@ -15,6 +15,7 @@ Pod::Spec.new do |s|
   macos_deployment_target = '10.15' 
   s.ios.deployment_target = ios_deployment_target
   s.osx.deployment_target = macos_deployment_target
+  s.module_name = 'GoogleSignInSwift'
   s.prefix_header_file = false
   s.source_files = [
     'GoogleSignInSwift/Sources/*.swift',
