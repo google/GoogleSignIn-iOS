@@ -58,19 +58,19 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Assignees",
-                        "content": "- ${{ join(github.event.pull_request.*.assignees) }}"
+                        "content": !Join [",", ${{ github.event.pull_request.*.assignees }}]
                       }
                     },
                     {
                       "keyValue": {
                         "topLabel": "Reviewers",
-                        "content": "- ${{ join(github.event.pull_request.*.requested_reviewers) }}"
+                        "content": !Join [",", ${{ github.event.pull_request.*.requested_reviewers }}]
                       }
                     },
                     {
                       "keyValue": {
                         "topLabel": "Labels",
-                        "content": "- ${{ join(github.event.pull_request.*.labels) }}"
+                        "content": !Join [",", ${{ github.event.pull_request.*.labels }}]
                       }
                     },
                     {
