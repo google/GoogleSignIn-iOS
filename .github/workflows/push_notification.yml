@@ -1,0 +1,60 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Main Branch Push
+      run: |
+        echo "Pushing commit to main: ${{ github.event.push.head_commit.id }}"
+        echo "Pushed by: ${{ github.event.push.pusher.name }}"
+
+    - name: Push Notification to Google Chat
+      run: |
+        curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+          "cards": [
+            {
+              "header": {
+                "title": "Push to main branch",
+                "subtitle": "${{ github.event.push.head_commit.message }}"
+              },
+              "sections": [
+                {
+                  "widgets": [
+                    {
+                      "keyValue": {
+                        "topLabel": "Repo",
+                        "content": "${{ github.event.push.repository.name }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Committed by",
+                        "content": "Committed by: ${{ github.event.push.head_commit.committer.username }}"
+                      }
+                    },
+                    {
+                      "buttons": [
+                        {
+                          "textButton": {
+                            "text": "Ref comparison",
+                            "onClick": {
+                              "openLink": {
+                                "url": "${{ github.event.push.compare }}"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }'
