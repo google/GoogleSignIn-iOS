@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Main Branch Push
       run: |
-        echo "Workflow initiated by event with name: $ {{ github.event_name }}"
+        echo "Workflow initiated by event with name: ${{ github.event_name }}"
         echo "Pushing commit to main: ${{ github.event.head_commit.id }}"
         echo "Pushed by: ${{ github.event.pusher.name }}"
 
@@ -32,13 +32,13 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Repo",
-                        "content": "${{ github.event.repository }}"
+                        "content": "${{ github.event.repository.full_name }}"
                       }
                     },
                     {
                       "keyValue": {
                         "topLabel": "Committed by",
-                        "content": "Committed by: ${{ github.event.head_commit.committer.username }}"
+                        "content": "${{ github.event.head_commit.author.username }}"
                       }
                     },
                     {
