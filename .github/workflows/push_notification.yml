@@ -1,16 +1,19 @@
+name: GSI Push Main Notification
+
 on:
   push:
     branches:
       - main
 
 jobs:
-  notify:
+  notify-push-main:
     runs-on: ubuntu-latest
     steps:
     - name: Main Branch Push
       run: |
-        echo "Pushing commit to main: ${{ github.event.push.head_commit.id }}"
-        echo "Pushed by: ${{ github.event.push.pusher.name }}"
+        echo "Workflow initiated by event with name: ${{ github.event_name }}"
+        echo "Pushing commit to main: ${{ github.event.head_commit.id }}"
+        echo "Pushed by: ${{ github.event.pusher.name }}"
 
     - name: Push Notification to Google Chat
       run: |
@@ -21,7 +24,7 @@ jobs:
             {
               "header": {
                 "title": "Push to main branch",
-                "subtitle": "${{ github.event.push.head_commit.message }}"
+                "subtitle": "${{ github.event.head_commit.message }}"
               },
               "sections": [
                 {
@@ -29,13 +32,13 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Repo",
-                        "content": "${{ github.event.push.repository.name }}"
+                        "content": "${{ github.event.repository.full_name }}"
                       }
                     },
                     {
                       "keyValue": {
                         "topLabel": "Committed by",
-                        "content": "Committed by: ${{ github.event.push.head_commit.committer.username }}"
+                        "content": "${{ github.event.head_commit.author.username }}"
                       }
                     },
                     {
@@ -45,7 +48,7 @@ jobs:
                             "text": "Ref comparison",
                             "onClick": {
                               "openLink": {
-                                "url": "${{ github.event.push.compare }}"
+                                "url": "${{ github.event.compare }}"
                               }
                             }
                           }
@@ -58,3 +61,4 @@ jobs:
             }
           ]
         }'
+

@@ -5,7 +5,7 @@ on:
     types: [assigned, opened, ready_for_review, reopened, review_requested]
 
 jobs:
-  notify:
+  notify-pull-request:
     runs-on: ubuntu-latest
     steps:
     - name: Pull Request Details
