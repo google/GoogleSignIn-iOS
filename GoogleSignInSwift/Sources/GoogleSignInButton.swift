@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#if !arch(arm)
+
 import SwiftUI
 import CoreGraphics
 
@@ -191,3 +193,5 @@ private extension Font {
     return CTFontManagerRegisterGraphicsFont(newFont, nil)
   }
 }
+
+#endif // !arch(arm)

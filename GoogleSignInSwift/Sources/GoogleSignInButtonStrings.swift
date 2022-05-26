@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#if !arch(arm)
+
 import Foundation
 
 /// A type retrieving the localized strings for the sign-in button text.
@@ -56,3 +58,5 @@ struct GoogleSignInButtonString {
     return localizedString(key: wideButtonText, text: "No translation")
   }
 }
+
+#endif // !arch(arm)

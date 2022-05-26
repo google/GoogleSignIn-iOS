@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#if !arch(arm)
+
 import Combine
 
 /// A view model for the SwiftUI sign-in button publishing changes for the
@@ -47,3 +49,5 @@ public class GoogleSignInButtonViewModel: ObservableObject {
       self.state = state
   }
 }
+
+#endif // !arch(arm)
