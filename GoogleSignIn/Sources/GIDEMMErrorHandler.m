@@ -148,6 +148,7 @@ typedef enum {
 
 // This method is exposed to the unit test.
 - (nullable UIWindow *)keyWindow {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
   if (@available(iOS 15, *)) {
     for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
       if ([scene isKindOfClass:[UIWindowScene class]] &&
@@ -170,6 +171,19 @@ typedef enum {
     }
 #endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
   }
+#else // __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
+  if (@available(iOS 13, *)) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+      if (window.isKeyWindow) {
+        return window;
+      }
+    }
+  } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+    return UIApplication.sharedApplication.keyWindow;
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+  }
+#endif // __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
   return nil;
 }
 
