@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#if !arch(arm)
+
 import Foundation
 
 // MARK: - Bundle Extensions
@@ -62,3 +64,5 @@ extension Bundle {
     return bundle?.url(forResource: name, withExtension: ext)
   }
 }
+
+#endif // !arch(arm)
