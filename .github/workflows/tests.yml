@@ -12,9 +12,11 @@ on:
 jobs:
 
   pod-lib-lint:
-    runs-on: macOS-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [macos-latest, macos-10.15]
         podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
         flag: [
           "", 
@@ -36,9 +38,11 @@ jobs:
            ${{ matrix.includePodspecFlag }}  ${{ matrix.flag }}
 
   spm-build-test:
-    runs-on: macOS-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [macos-latest, macos-10.15]
         sdk: ['macosx', 'iphonesimulator']
         include:
           - sdk: 'macosx'
