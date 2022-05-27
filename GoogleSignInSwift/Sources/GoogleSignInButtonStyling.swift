@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#if !arch(arm)
+
 import SwiftUI
 
 // MARK: - Sizing Constants
@@ -280,3 +282,5 @@ struct SwiftUIButtonStyle: ButtonStyle {
       )
   }
 }
+
+#endif // !arch(arm)
