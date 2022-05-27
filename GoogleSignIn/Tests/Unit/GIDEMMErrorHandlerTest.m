@@ -494,12 +494,15 @@ NS_ASSUME_NONNULL_BEGIN
                    selector:@selector(sharedApplication)
             isClassSelector:YES
                   withBlock:^{ return mockApplication; }];
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
   if (@available(iOS 15, *)) {
     UIWindowScene *mockWindowScene = OCMClassMock([UIWindowScene class]);
     OCMStub(mockApplication.connectedScenes).andReturn(@[mockWindowScene]);
     OCMStub(mockWindowScene.activationState).andReturn(UISceneActivationStateForegroundActive);
     OCMStub(mockWindowScene.keyWindow).andReturn(mockKeyWindow);
-  } else {
+  } else
+#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
+  {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     if (@available(iOS 13, *)) {
       OCMStub(mockApplication.windows).andReturn(@[mockKeyWindow]);
