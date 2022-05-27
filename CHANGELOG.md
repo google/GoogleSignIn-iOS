@@ -1,3 +1,6 @@
+# 6.2.2 (2022-5-27)
+- Prevent build errors for GoogleSignInSwift when using Swift Package Manager. ([#157](https://github.com/google/GoogleSignIn-iOS/pull/157))
+
 # 6.2.1 (2022-5-19)
 - Use `GoogleSignInSwiftSupport` as the name of the Swift support CocoaPod. ([#137](https://github.com/google/GoogleSignIn-iOS/pull/137))
 
