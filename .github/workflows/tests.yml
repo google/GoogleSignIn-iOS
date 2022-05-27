@@ -46,6 +46,9 @@ jobs:
           - sdk: 'iphonesimulator'
             destination: '"platform=iOS Simulator,name=iPhone 11"'
     steps:
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '12.5.1'
     - uses: actions/checkout@v2
     - name: Build unit test target
       run: |
