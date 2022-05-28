@@ -162,7 +162,7 @@ typedef enum {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     if (@available(iOS 13, *)) {
       for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        if (window.isKeyWindow) {
+        if (window.keyWindow) {
           return window;
         }
       }

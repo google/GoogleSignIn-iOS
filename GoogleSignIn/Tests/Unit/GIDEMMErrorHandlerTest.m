@@ -488,7 +488,7 @@ NS_ASSUME_NONNULL_BEGIN
                        selector:@selector(keyWindow)
                 isClassSelector:NO];
   UIWindow *mockKeyWindow = OCMClassMock([UIWindow class]);
-  OCMStub(mockKeyWindow.isKeyWindow).andReturn(YES);
+  OCMStub(mockKeyWindow.keyWindow).andReturn(YES);
   UIApplication *mockApplication = OCMClassMock([UIApplication class]);
   [GULSwizzler swizzleClass:[UIApplication class]
                    selector:@selector(sharedApplication)
