@@ -152,9 +152,6 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertNil(_presentedViewController);
 }
 
-// TODO(petea): Figure out why we have a race condition for the first of these to run.
-#if !SWIFT_PACKAGE
-
 // Verifies that the handler handles general EMM error with user tapping 'OK'.
 - (void)testGeneralEMMErrorOK {
   __block BOOL completionCalled = NO;
@@ -520,8 +517,6 @@ NS_ASSUME_NONNULL_BEGIN
                      selector:@selector(sharedApplication)
               isClassSelector:YES];
 }
-
-#endif
 
 @end
 
