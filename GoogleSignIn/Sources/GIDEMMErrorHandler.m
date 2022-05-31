@@ -150,6 +150,7 @@ typedef enum {
 - (nullable UIWindow *)keyWindow {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
   if (@available(iOS 15, *)) {
+    printf("keywindow - 15\n");
     for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
       if ([scene isKindOfClass:[UIWindowScene class]] &&
           scene.activationState == UISceneActivationStateForegroundActive) {
@@ -161,13 +162,17 @@ typedef enum {
   {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     if (@available(iOS 13, *)) {
+      printf("keywindow - 13\n");
       for (UIWindow *window in UIApplication.sharedApplication.windows) {
+        printf("keywindow - checking window\n");
         if (window.keyWindow) {
+          printf("keywindow - window found\n");
           return window;
         }
       }
     } else {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+      printf("keywindow - fallback\n");
       return UIApplication.sharedApplication.keyWindow;
 #endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
     }

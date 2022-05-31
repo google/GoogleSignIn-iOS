@@ -493,6 +493,7 @@ NS_ASSUME_NONNULL_BEGIN
                   withBlock:^{ return mockApplication; }];
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
   if (@available(iOS 15, *)) {
+    printf("test - 15\n");
     UIWindowScene *mockWindowScene = OCMClassMock([UIWindowScene class]);
     OCMStub(mockApplication.connectedScenes).andReturn(@[mockWindowScene]);
     OCMStub(mockWindowScene.activationState).andReturn(UISceneActivationStateForegroundActive);
@@ -502,9 +503,11 @@ NS_ASSUME_NONNULL_BEGIN
   {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     if (@available(iOS 13, *)) {
+      printf("test - 13\n");
       OCMStub(mockApplication.windows).andReturn(@[mockKeyWindow]);
     } else {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+      printf("test - fallback\n");
       OCMStub(mockApplication.keyWindow).andReturn(mockKeyWindow);
 #endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
     }
