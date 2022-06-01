@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !arch(arm)
+#if !arch(arm) && !arch(i386)
 
 import Combine
 
@@ -50,4 +50,4 @@ public class GoogleSignInButtonViewModel: ObservableObject {
   }
 }
 
-#endif // !arch(arm)
+#endif // !arch(arm) && !arch(i386)

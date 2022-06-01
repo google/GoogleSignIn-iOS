@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !arch(arm)
+#if !arch(arm) && !arch(i386)
 
 import SwiftUI
 
@@ -283,4 +283,4 @@ struct SwiftUIButtonStyle: ButtonStyle {
   }
 }
 
-#endif // !arch(arm)
+#endif // !arch(arm) && !arch(i386)
