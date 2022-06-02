@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !arch(arm)
+#if !arch(arm) && !arch(i386)
 
 import SwiftUI
 import CoreGraphics
@@ -194,4 +194,4 @@ private extension Font {
   }
 }
 
-#endif // !arch(arm)
+#endif // !arch(arm) && !arch(i386)

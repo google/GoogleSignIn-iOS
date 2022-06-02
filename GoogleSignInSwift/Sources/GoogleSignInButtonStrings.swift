@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !arch(arm)
+#if !arch(arm) && !arch(i386)
 
 import Foundation
 
@@ -59,4 +59,4 @@ struct GoogleSignInButtonString {
   }
 }
 
-#endif // !arch(arm)
+#endif // !arch(arm) && !arch(i386)
