@@ -14,6 +14,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+#import <DeviceCheck/DeviceCheck.h>
+
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
@@ -245,10 +247,47 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback {
-  [self signInWithConfiguration:configuration
-       presentingViewController:presentingViewController
-                           hint:nil
-                       callback:callback];
+  // Generate device token by using DeviceCheck
+    if (@available(iOS 11.0, *)) {
+      DCDevice *device = DCDevice.currentDevice;
+      if (device.isSupported) {
+        NSDate *generateTokenStart = [NSDate date];
+        [device generateTokenWithCompletionHandler:^(NSData * _Nullable token, NSError * _Nullable error) {
+          if (token) {
+            NSDate *generateTokenFinish = [NSDate date];
+            NSTimeInterval executionTime = [generateTokenFinish timeIntervalSinceDate:generateTokenStart];
+            NSLog(@"executionTime = %f seconds", executionTime);
+            
+            NSString *tokenString = [token base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+            
+            NSLog(@"The number of bytes contained in the token(NSData type) = %lu", [token length]);
+            NSUInteger length = [tokenString length];
+            NSLog(@"The length of the token string = %lu", length);
+            
+            //Compress the data
+            if (@available(iOS 13.0, *)) {
+              NSError * _Nullable error;
+              NSData* _Nullable compressedToken = [token compressedDataUsingAlgorithm:NSDataCompressionAlgorithmLZMA error:&error];
+              if (compressedToken) {
+                NSLog(@"The number of bytes contained in the compressed token(NSData type) = %lu", [compressedToken length]);
+                NSUInteger length = [compressedToken length];
+                NSLog(@"The length of the compressed token string = %lu", length);
+              }
+            }
+            
+            [self signInWithConfiguration:configuration
+                 presentingViewController:presentingViewController
+                                     hint:nil
+                                 callback:callback];
+          }
+        }];
+      }
+    } else {
+      [self signInWithConfiguration:configuration
+           presentingViewController:presentingViewController
+                               hint:nil
+                           callback:callback];
+    }
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
