@@ -14,6 +14,9 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+#import <DeviceCheck/DeviceCheck.h>
+#include <CommonCrypto/CommonDigest.h>
+
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
@@ -245,10 +248,77 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback {
+  //Generate keyId and attestation object.
+  if (@available(iOS 14.0, *)) {
+    DCAppAttestService *attestService = DCAppAttestService.sharedService;
+    if (attestService.supported) {
+      // Start generating keyId.
+      NSDate *start = [NSDate date];
+      
+      [attestService generateKeyWithCompletionHandler:^(NSString * _Nullable keyId, NSError * _Nullable error) {
+        if (keyId) {
+          NSDate *keyIdFinish = [NSDate date];
+          NSTimeInterval executionTime = [keyIdFinish timeIntervalSinceDate:start];
+          NSLog(@"keyId generation time = %f seconds", executionTime);
+          NSLog(@"The length of the key Id string = %lu", [keyId length]);
+          
+          // Fake the server side challenge.
+          NSUUID *uuid = [NSUUID UUID];
+          NSString *randomID = [uuid UUIDString];
+          NSData* challenge = [randomID dataUsingEncoding:NSUTF8StringEncoding];
+          NSData* dataHash = [self doSha256:challenge];
+          
+          // Start generating attestation object.
+          NSDate *start = [NSDate date];
+          [attestService attestKey:keyId clientDataHash:dataHash completionHandler:^(NSData * _Nullable attestationObject, NSError * _Nullable error) {
+            if (attestationObject) {
+              NSDate *attestationFinish = [NSDate date];
+              NSTimeInterval executionTime = [attestationFinish timeIntervalSinceDate:start];
+              NSLog(@"The attestation object creation time = %f seconds", executionTime);
+              
+              NSString *attestationString = [attestationObject base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+              NSLog(@"The number of bytes contained in the attestation object(NSData type) = %lu", [attestationObject length]);
+              NSUInteger length = [attestationString length];
+              NSLog(@"The length of the attestation string = %lu", length);
+              
+              // Start generating assertion object.
+              NSDate *start = [NSDate date];
+              [attestService generateAssertion:keyId clientDataHash:dataHash completionHandler:^(NSData * _Nullable assertionObject, NSError * _Nullable error) {
+                if (assertionObject) {
+                  NSDate *assertionFinish = [NSDate date];
+                  NSTimeInterval executionTime = [assertionFinish timeIntervalSinceDate:start];
+                  NSLog(@"The assertion object creation time = %f seconds", executionTime);
+                  
+                  NSString *assertionString = [assertionObject base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+                  NSLog(@"The number of bytes contained in the assertion object(NSData type) = %lu", [assertionObject length]);
+                  NSUInteger length = [assertionString length];
+                  NSLog(@"The length of the assertion string = %lu", length);
+                  
+                  [self signInWithConfiguration:configuration
+                       presentingViewController:presentingViewController
+                                           hint:nil
+                                       callback:callback];
+                }
+              }];
+            }
+          }];
+        }
+      }];
+      return;
+    }
+  }
+  
   [self signInWithConfiguration:configuration
        presentingViewController:presentingViewController
                            hint:nil
                        callback:callback];
+}
+
+// Generate SHA256 hash
+- (NSData *)doSha256:(NSData *)dataIn {
+    NSMutableData *macOut = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(dataIn.bytes, dataIn.length, macOut.mutableBytes);
+    return macOut;
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
