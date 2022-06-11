@@ -18,7 +18,7 @@ import XCTest
 
 class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInStaticText =
-    "“DaysUntilBirthday(iOS)” Wants to Use “google.com” to Sign In"
+    "“DaysUntilBirthday (iOS)” Wants to Use “google.com” to Sign In"
   private let timeout: TimeInterval = 5
 
   private let sampleApp = XCUIApplication()
