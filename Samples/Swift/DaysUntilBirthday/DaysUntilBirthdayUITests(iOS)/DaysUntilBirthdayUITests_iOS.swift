@@ -16,7 +16,7 @@
 
 import XCTest
 
-class DaysUntilBirthdayUITests_iOS_: XCTestCase {
+class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInStaticText =
     "“DaysUntilBirthday(iOS)” Wants to Use “google.com” to Sign In"
   private let timeout: TimeInterval = 5
@@ -62,7 +62,7 @@ class DaysUntilBirthdayUITests_iOS_: XCTestCase {
   }
 }
 
-extension DaysUntilBirthdayUITests_iOS_ {
+extension DaysUntilBirthdayUITests_iOS {
   /// Performs a sign in.
   /// - returns: `true` if the sign in was succesfull.
   func signIn() -> Bool {
