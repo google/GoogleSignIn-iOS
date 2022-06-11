@@ -83,7 +83,6 @@ jobs:
         echo EMAIL_SECRET = $EMAIL_SECRET$'\n'PASSWORD_SECRET = $PASSWORD_SECRET >> DaysUntilBirthdayUITests\(iOS\)/Credentials.xcconfig
     - name: Build test target for Google Sign-in button for Swift
       run: |
-        echo xcodebuild -project Samples/Swift/DaysUntilBirthday/DaysUntilBirthday.xcodeproj -list
         xcodebuild \
           -project DaysUntilBirthday.xcodeproj \
           build-for-testing \
