@@ -38,8 +38,13 @@
       </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "FOO_BAR"
-            value = "$(FOO_BAR)"
+            key = "EMAIL_SECRET"
+            value = "$(EMAIL_SECRET)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "PASSWORD_SECRET"
+            value = "$(PASSWORD_SECRET)"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

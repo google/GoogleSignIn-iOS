@@ -19,7 +19,6 @@
 		7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */; };
 		73508EC82811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73508EC72811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS.swift */; };
 		73508ED528134C7300ED7FB7 /* Credential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73508ED428134C7300ED7FB7 /* Credential.swift */; };
-		73508ED9281353E800ED7FB7 /* Credentials.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 73508ED8281353E800ED7FB7 /* Credentials.xcconfig */; };
 		736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
 		736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
 		739FCC46270E467600C92042 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
@@ -68,9 +67,7 @@
 		7345AD1A2703D9C30020AFB1 /* UserProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		73508EC52811BD9C00ED7FB7 /* DaysUntilBirthdayUITests (iOS).xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DaysUntilBirthdayUITests (iOS).xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		73508EC72811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthdayUITests_iOS.swift; sourceTree = "<group>"; };
-		73508ED2281337AE00ED7FB7 /* DaysUntilBirthdayUITests-iOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "DaysUntilBirthdayUITests-iOS--Info.plist"; sourceTree = SOURCE_ROOT; };
 		73508ED428134C7300ED7FB7 /* Credential.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credential.swift; sourceTree = "<group>"; };
-		73508ED8281353E800ED7FB7 /* Credentials.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Credentials.xcconfig; sourceTree = "<group>"; };
 		736F49B9270E05E200580053 /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
@@ -159,10 +156,8 @@
 		73508EC62811BD9C00ED7FB7 /* DaysUntilBirthdayUITests(iOS) */ = {
 			isa = PBXGroup;
 			children = (
-				73508ED2281337AE00ED7FB7 /* DaysUntilBirthdayUITests-iOS--Info.plist */,
 				73508EC72811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS.swift */,
 				73508ED428134C7300ED7FB7 /* Credential.swift */,
-				73508ED8281353E800ED7FB7 /* Credentials.xcconfig */,
 			);
 			path = "DaysUntilBirthdayUITests(iOS)";
 			sourceTree = "<group>";
@@ -361,7 +356,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				73508ED9281353E800ED7FB7 /* Credentials.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -598,7 +592,6 @@
 		};
 		73508ECD2811BD9C00ED7FB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 73508ED8281353E800ED7FB7 /* Credentials.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_STYLE = Automatic;
@@ -608,7 +601,6 @@
 					"DEBUG=1",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "DaysUntilBirthdayUITests-iOS--Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -635,7 +627,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "DaysUntilBirthdayUITests-iOS--Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (

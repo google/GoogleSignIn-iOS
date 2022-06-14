@@ -16,10 +16,9 @@
 
 import Foundation
 
-/// An enumeration helping to interact with the configuration file containing
+/// An enumeration helping to interact with the environment variables containing
 /// the email and password secrets used for testing the Google sign-in flow.
 enum Credential: String {
-  static let bundle: Bundle? = Bundle(identifier: "com.google.DaysUntilBirthdayUITests-iOS-")
   private var emailKey: String { return "EMAIL_SECRET" }
   private var passwordKey: String { return "PASSWORD_SECRET" }
 
@@ -29,16 +28,12 @@ enum Credential: String {
   var rawValue: String {
     switch self {
     case .email:
-      guard let email = Credential
-              .bundle?
-              .object(forInfoDictionaryKey: emailKey) as? String else {
+      guard let email = ProcessInfo.processInfo.environment[emailKey] else {
         fatalError("Failed to retrieve secret email from UI testing bundle")
       }
       return email
     case .password:
-      guard let password = Credential
-              .bundle?
-              .object(forInfoDictionaryKey: passwordKey) as? String else {
+      guard let password = ProcessInfo.processInfo.environment[passwordKey] else {
         fatalError("Failed to retrieve secret password from UI testing bundle")
       }
       return password
