@@ -78,6 +78,7 @@ jobs:
       shell: bash
       env:
         EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
+        FOO_BAR : ${{ secrets.FOO_BAR }}
         PASSWORD_SECRET : ${{ secrets.PASSWORD_SECRET }}
       run: |
         echo EMAIL_SECRET = $EMAIL_SECRET$'\n'PASSWORD_SECRET = $PASSWORD_SECRET >> DaysUntilBirthdayUITests\(iOS\)/Credentials.xcconfig
@@ -97,4 +98,4 @@ jobs:
           -scheme DaysUntilBirthday\(iOS\) \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11'
-          FOO_BAR = ${{ secrets.FOO_BAR }}
+          FOO_BAR=$FOO_BAR
