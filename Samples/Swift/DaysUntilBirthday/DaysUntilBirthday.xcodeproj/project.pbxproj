@@ -603,11 +603,9 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				FOO_BAR = defaultValue;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
 					"$(inherited)",
-					"FOO_BAR=$(FOO_BAR)",
+					"DEBUG=1",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "DaysUntilBirthdayUITests-iOS--Info.plist";
@@ -635,7 +633,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				FOO_BAR = "";
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "DaysUntilBirthdayUITests-iOS--Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
