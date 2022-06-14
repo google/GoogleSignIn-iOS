@@ -60,6 +60,13 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
       return XCTFail("Signing out should return user to sign in view")
     }
   }
+
+  func testFooBarPassedIntoEnvironment() {
+    guard let fooBar = ProcessInfo.processInfo.environment["FOO_BAR"] else {
+      return XCTFail("No `FOO_BAR`.")
+    }
+    XCTAssertEqual(fooBar, "testValue")
+  }
 }
 
 extension DaysUntilBirthdayUITests_iOS {
