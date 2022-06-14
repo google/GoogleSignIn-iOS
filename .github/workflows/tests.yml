@@ -97,3 +97,4 @@ jobs:
           -scheme DaysUntilBirthday\(iOS\) \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11'
+          FOO_BAR = ${{ secrets.FOO_BAR }}
