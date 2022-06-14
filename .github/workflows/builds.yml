@@ -1,0 +1,28 @@
+name: Build GSI for Valid Architectures	
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # Cron uses UTC; run at nightly at midnight PST
+
+jobs:
+  cron:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-10.15]
+  
+    steps:
+    - uses: actions/checkout@v2
+    - name: Archive for iOS
+      run: |
+        xcodebuild \
+          archive \
+          -scheme GoogleSignIn-Package \
+          -destination "generic/platform=iOS"
+    - name: Archive for macOS
+      run: |
+        xcodebuild \
+          archive \
+          -scheme GoogleSignIn-Package \
+          -destination "platform=OS X"
