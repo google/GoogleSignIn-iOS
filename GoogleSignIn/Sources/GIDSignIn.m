@@ -14,6 +14,9 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+#import <DeviceCheck/DeviceCheck.h>
+#include <CommonCrypto/CommonDigest.h>
+
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
@@ -131,6 +134,8 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
 static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
+static NSString *const kDeviceTokenParameter = @"device_token";
+static NSString *const kAttestationObjectParameter = @"attestation_object";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -590,23 +595,112 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
+  
+  // Test query string length
+  
+  if (@available(iOS 11.0, *)) {
+        DCDevice *device = DCDevice.currentDevice;
+        if (device.isSupported) {
+          NSDate *generateTokenStart = [NSDate date];
+          [device generateTokenWithCompletionHandler:^(NSData * _Nullable token, NSError * _Nullable error) {
+            if (token) {
+              NSDate *generateTokenFinish = [NSDate date];
+              NSTimeInterval executionTime = [generateTokenFinish timeIntervalSinceDate:generateTokenStart];
+              NSLog(@"Generate device token executionTime = %f seconds", executionTime);
 
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-         presentingViewController:options.presentingViewController
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                   NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport];
-  }];
+              NSString *tokenString = [token base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+              NSLog(@"+++++++++ tokenString");
+              NSLog(@"%@", tokenString);
+              
+              // Add Device token to the query string.
+//              additionalParameters[kDeviceTokenParameter] = tokenString;
+
+              NSLog(@"The number of bytes contained in the token(NSData type) = %lu", [token length]);
+              NSUInteger length = [tokenString length];
+              NSLog(@"The length of the token string = %lu", length);
+
+              // App Attest
+              if (@available(iOS 14.0, *)) {
+                  DCAppAttestService *attestService = DCAppAttestService.sharedService;
+                  if (attestService.supported) {
+                    // Start generating keyId.
+                    NSDate *start = [NSDate date];
+
+                    [attestService generateKeyWithCompletionHandler:^(NSString * _Nullable keyId, NSError * _Nullable error) {
+                      if (keyId) {
+                        NSDate *keyIdFinish = [NSDate date];
+                        NSTimeInterval executionTime = [keyIdFinish timeIntervalSinceDate:start];
+                        NSLog(@"keyId generation time = %f seconds", executionTime);
+                        
+                        // Fake the server side challenge.
+                        NSUUID *uuid = [NSUUID UUID];
+                        NSString *randomID = [uuid UUIDString];
+                        NSData* challenge = [randomID dataUsingEncoding:NSUTF8StringEncoding];
+                        NSData* dataHash = [self doSha256:challenge];
+                        
+                        NSDate *start = [NSDate date];
+                        
+                        [attestService attestKey:keyId clientDataHash:dataHash completionHandler:^(NSData * _Nullable attestationObject, NSError * _Nullable error) {
+                          if (attestationObject) {
+                            NSDate *attestationFinish = [NSDate date];
+                            NSTimeInterval executionTime = [attestationFinish timeIntervalSinceDate:start];
+                            NSLog(@"The attestation object creation time = %f seconds", executionTime);
+
+                            NSString *attestationString = [attestationObject base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+                            NSLog(@"The number of bytes contained in the attestation object(NSData type) = %lu", [attestationObject length]);
+                            NSUInteger length = [attestationString length];
+                            NSLog(@"The length of the attestation string = %lu", length);
+                            
+                            // Add the attestation object to the query string.
+                            additionalParameters[kAttestationObjectParameter] = attestationString;
+                            NSLog(@"+++++ attestationString");
+                            NSLog(@"%@", attestationString);
+                            
+                            // Start generating assertion object.
+                            NSDate *start = [NSDate date];
+                            [attestService generateAssertion:keyId clientDataHash:dataHash completionHandler:^(NSData * _Nullable assertionObject, NSError * _Nullable error) {
+                              if (assertionObject) {
+                                NSDate *assertionFinish = [NSDate date];
+                                NSTimeInterval executionTime = [assertionFinish timeIntervalSinceDate:start];
+                                NSLog(@"The assertion object creation time = %f seconds", executionTime);
+
+                                NSString *assertionString = [assertionObject base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+                                NSLog(@"The number of bytes contained in the assertion object(NSData type) = %lu", [assertionObject length]);
+                                NSUInteger length = [assertionString length];
+                                NSLog(@"The length of the assertion string = %lu", length);
+                                
+     
+                                OIDAuthorizationRequest *request =
+                                    [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                                                  clientId:options.configuration.clientID
+                                                                                    scopes:options.scopes
+                                                                               redirectURL:redirectURL
+                                                                              responseType:OIDResponseTypeCode
+                                                                      additionalParameters:additionalParameters];
+
+                                _currentAuthorizationFlow = [OIDAuthorizationService
+                                    presentAuthorizationRequest:request
+                                       presentingViewController:options.presentingViewController
+                                                      callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                                                 NSError *_Nullable error) {
+                                  [self processAuthorizationResponse:authorizationResponse
+                                                               error:error
+                                                          emmSupport:emmSupport];
+                             
+                                 }];
+                             }
+                           }]; // end of attestService
+                          }
+                      }];
+                    } // end of keyId
+                  }];
+                }
+              } // end of App Attest
+            }
+          }];
+        }
+      }
+
 #elif TARGET_OS_OSX
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
@@ -629,6 +723,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 #endif // TARGET_OS_OSX
 
 }
+
+// Generate SHA256 hash
+- (NSData *)doSha256:(NSData *)dataIn {
+    NSMutableData *macOut = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(dataIn.bytes, dataIn.length, macOut.mutableBytes);
+    return macOut;
+}
+
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error
@@ -676,6 +778,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     }
   } else {
     NSString *errorString = [error localizedDescription];
+    NSLog(@"error: %@", errorString);
     GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
     if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
       // The user has canceled the flow at the iOS modal dialog.
