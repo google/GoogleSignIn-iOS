@@ -41,36 +41,41 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// Signs in the user based upon the selected account.'
   /// - note: Successful calls to this will set the `authViewModel`'s `state` property.
   func signIn() {
+    let challengeDelay = 0.200;
+    let assertionDelay = 0.160;
+    let totalDelay = challengeDelay + assertionDelay;
+    DispatchQueue.main.asyncAfter(deadline: .now() + totalDelay) {
 #if os(iOS)
-    guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
-      print("There is no root view controller!")
-      return
-    }
-
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: rootViewController) { user, error in
-      guard let user = user else {
-        print("Error! \(String(describing: error))")
+      guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
+        print("There is no root view controller!")
         return
       }
-      self.authViewModel.state = .signedIn(user)
-    }
+
+      GIDSignIn.sharedInstance.signIn(with: self.configuration,
+                                      presenting: rootViewController) { user, error in
+        guard let user = user else {
+          print("Error! \(String(describing: error))")
+          return
+        }
+        self.authViewModel.state = .signedIn(user)
+      }
 
 #elseif os(macOS)
-    guard let presentingWindow = NSApplication.shared.windows.first else {
-      print("There is no presenting window!")
-      return
-    }
-
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: presentingWindow) { user, error in
-      guard let user = user else {
-        print("Error! \(String(describing: error))")
+      guard let presentingWindow = NSApplication.shared.windows.first else {
+        print("There is no presenting window!")
         return
       }
-      self.authViewModel.state = .signedIn(user)
-    }
+
+      GIDSignIn.sharedInstance.signIn(with: self.configuration,
+                                      presenting: presentingWindow) { user, error in
+        guard let user = user else {
+          print("Error! \(String(describing: error))")
+          return
+        }
+        self.authViewModel.state = .signedIn(user)
+      }
 #endif
+    }
   }
 
   /// Signs out the current user.
