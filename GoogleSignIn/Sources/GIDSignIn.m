@@ -609,15 +609,15 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
               NSLog(@"Generate device token executionTime = %f seconds", executionTime);
 
               NSString *tokenString = [token base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-              NSLog(@"+++++++++ tokenString");
-              NSLog(@"%@", tokenString);
+//              NSLog(@"+++++++++ tokenString");
+//              NSLog(@"%@", tokenString);
               
               // Add Device token to the query string.
 //              additionalParameters[kDeviceTokenParameter] = tokenString;
 
-              NSLog(@"The number of bytes contained in the token(NSData type) = %lu", [token length]);
-              NSUInteger length = [tokenString length];
-              NSLog(@"The length of the token string = %lu", length);
+//              NSLog(@"The number of bytes contained in the token(NSData type) = %lu", [token length]);
+//              NSUInteger length = [tokenString length];
+//              NSLog(@"The length of the token string = %lu", length);
 
               // App Attest
               if (@available(iOS 14.0, *)) {
@@ -647,14 +647,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                             NSLog(@"The attestation object creation time = %f seconds", executionTime);
 
                             NSString *attestationString = [attestationObject base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-                            NSLog(@"The number of bytes contained in the attestation object(NSData type) = %lu", [attestationObject length]);
-                            NSUInteger length = [attestationString length];
-                            NSLog(@"The length of the attestation string = %lu", length);
+//                            NSLog(@"The number of bytes contained in the attestation object(NSData type) = %lu", [attestationObject length]);
+//                            NSUInteger length = [attestationString length];
+//                            NSLog(@"The length of the attestation string = %lu", length);
                             
                             // Add the attestation object to the query string.
                             additionalParameters[kAttestationObjectParameter] = attestationString;
-                            NSLog(@"+++++ attestationString");
-                            NSLog(@"%@", attestationString);
+//                            NSLog(@"+++++ attestationString");
+//                            NSLog(@"%@", attestationString);
                             
                             // Start generating assertion object.
                             NSDate *start = [NSDate date];
@@ -665,9 +665,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                 NSLog(@"The assertion object creation time = %f seconds", executionTime);
 
                                 NSString *assertionString = [assertionObject base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-                                NSLog(@"The number of bytes contained in the assertion object(NSData type) = %lu", [assertionObject length]);
-                                NSUInteger length = [assertionString length];
-                                NSLog(@"The length of the assertion string = %lu", length);
+//                                NSLog(@"The number of bytes contained in the assertion object(NSData type) = %lu", [assertionObject length]);
+//                                NSUInteger length = [assertionString length];
+//                                NSLog(@"The length of the assertion string = %lu", length);
                                 
      
                                 OIDAuthorizationRequest *request =
