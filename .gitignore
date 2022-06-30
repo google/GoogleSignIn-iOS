@@ -10,6 +10,7 @@
 *.xcworkspace/
 project.xcworkspace/
 xcuserdata/
+Credentials.xcconfig
 
 # CocoaPods
 Pods/

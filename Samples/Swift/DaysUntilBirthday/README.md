@@ -24,5 +24,17 @@ open DaysUntilBirthdayForPod.xcworkspace
 ```
 open DaysUntilBirthday.xcodeproj
 ```
-
 2. Run the `DaysUntilBirthday (iOS)` or `DaysUntilBirthday (macOS)` target.
+
+## Integration Tests
+
+We run integration tests on the `DaysUntilBirthday(iOS)` sample app.
+These tests attempt to login via Google Sign-in, and so they need an email and
+a password.
+The email and password that we use are defined as
+[secrets](https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context)
+on our GitHub repo, and we retrieve these from the workflow environment.
+
+Locally, both the email and password need to be passed to `xcodebuild` as
+arguments: `xcodebuild <other args> EMAIL_SECRET=... PASSWORD_SECRET=...`.
+Refer to the repo's Secrets for these values.
