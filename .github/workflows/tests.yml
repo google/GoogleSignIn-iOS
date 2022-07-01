@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-
+    
   pod-lib-lint:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -67,6 +67,7 @@ jobs:
           test-without-building
 
   swift-button-functional-test:
+    if: ${{ false }} # Disable integration tests while we figure out OTAs
     runs-on: macOS-latest
     defaults:
       run:
