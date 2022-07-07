@@ -25,6 +25,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 @class GIDConfiguration;
+@class GIDUserAuth;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -55,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// The callback block to be called at the completion of the flow.
-@property(nonatomic, readonly, nullable) GIDSignInCallback callback;
+@property(nonatomic, readonly, nullable) void (^callback)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
 
 /// The scopes to be used during the flow.
 @property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
@@ -69,32 +70,32 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                       callback:(nullable GIDSignInCallback)callback;
+                                       callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                       callback:(nullable GIDSignInCallback)callback;
+                                       callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
 
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                       callback:(nullable GIDSignInCallback)callback;
+                                       callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                       callback:(nullable GIDSignInCallback)callback;
+                                       callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// Creates the options to sign in silently.
-+ (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
++ (instancetype)silentOptionsWithCallback:(void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
 
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.

@@ -241,7 +241,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSString *_hint;
 
   // The callback to be used when testing |GIDSignIn|.
-  GIDSignInCallback _callback;
+  void (^_callback)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
 
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
@@ -346,10 +346,10 @@ static void *kTestObserverContext = &kTestObserverContext;
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
-  _callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  _callback = ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
     GIDSignInTest *strongSelf = weakSelf;
-    if (!user) {
-      XCTAssertNotNil(error, @"should have an error if user is nil");
+    if (!userAuth) {
+      XCTAssertNotNil(error, @"should have an error if the userAuth is nil");
     }
     XCTAssertFalse(strongSelf->_callbackCalled, @"callback already called");
     strongSelf->_callbackCalled = YES;
@@ -456,7 +456,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
 
-  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+  [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
                                                NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNotNil(error, @"error should not have been nil");
@@ -1073,6 +1073,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSError *handledError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                               code:kGIDSignInErrorCodeEMM
                                           userInfo:emmError.userInfo];
+  
   completion(handledError);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -1220,10 +1221,16 @@ static void *kTestObserverContext = &kTestObserverContext;
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    void (^callback)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error) =
+    ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
       [expectation fulfill];
-      if (!user) {
-        XCTAssertNotNil(error, @"should have an error if user is nil");
+      if (userAuth) {
+        BOOL hasError = authError || modalCancel || tokenError;
+        if (!hasError) {
+          XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
+        }
+      } else {
+        XCTAssertNotNil(error, @"should have an error if the userAuth is nil");
       }
       XCTAssertFalse(self->_callbackCalled, @"callback already called");
       self->_callbackCalled = YES;
@@ -1286,7 +1293,7 @@ static void *kTestObserverContext = &kTestObserverContext;
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
     }
-
+    
     // Simulate auth endpoint response
     if (modalCancel) {
       NSError *error = [NSError errorWithDomain:OIDGeneralErrorDomain
@@ -1305,7 +1312,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   if (restoredSignIn && oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
-    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+    [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
                                                  NSError * _Nullable error) {
       [expectation fulfill];
       XCTAssertNil(error, @"should have no error");
@@ -1319,6 +1326,9 @@ static void *kTestObserverContext = &kTestObserverContext;
     // OIDTokenCallback
     if (tokenError) {
       [[_authState expect] updateWithTokenResponse:nil error:tokenError];
+      
+      // CompletionCallback
+      [[[_authState expect] andReturn:nil] lastTokenResponse];
     } else {
       [[_authState expect] updateWithTokenResponse:[OCMArg any] error:nil];
     }
@@ -1348,10 +1358,13 @@ static void *kTestObserverContext = &kTestObserverContext;
                                                     profileData:SAVE_TO_ARG_BLOCK(profileData)];
     }
   }
+  
+  // CompletionCallback - mock server auth code parsing
+  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
 
   if (restoredSignIn && !oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
-    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+    [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
                                                  NSError * _Nullable error) {
       [expectation fulfill];
       XCTAssertNil(error, @"should have no error");
@@ -1361,11 +1374,13 @@ static void *kTestObserverContext = &kTestObserverContext;
     _savedTokenCallback(tokenResponse, nil);
   }
 
-  [_authState verify];
   if (keychainError) {
     return;
   }
   [self waitForExpectationsWithTimeout:1 handler:nil];
+  
+  [_authState verify];
+  
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
   XCTAssertNotNil(authState);
   // Check fat ID token decoding
@@ -1390,7 +1405,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
 
-  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+  [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
                                                NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error, @"should have no error");
