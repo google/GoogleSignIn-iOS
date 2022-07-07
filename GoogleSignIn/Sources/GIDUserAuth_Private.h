@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GIDUserAuth ()
 
 // Private initializer for |GIDUserAuth|.
+// @param user The current GIDGoogleUser.
+// @param severAuthCode The one-time authorization code for backend to exchange
+//     access and refresh tokens.
 - (instancetype)initWithGoogleUser:(GIDGoogleUser *)user
                     serverAuthCode:(nullable NSString *)serverAuthCode;
 

@@ -29,8 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// An OAuth2 authorization code for the home server.
 @property(nonatomic, readonly, nullable) NSString *serverAuthCode;
 
+/// Unsupported.
 + (instancetype)new NS_UNAVAILABLE;
 
+/// Unsupported.
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
