@@ -30,7 +30,7 @@
   // succeeds, we'll have a currentUser and the view will be able to draw its UI for the signed-in
   // state.  If the restore fails, currentUser will be nil and we'll draw the signed-out state
   // prompting the user to sign in.
-  [GIDSignIn.sharedInstance restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+  [GIDSignIn.sharedInstance restorePreviousSignInWithCallback:^(GIDUserAuth * _Nullable userAuth,
                                                                 NSError * _Nullable error) {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     SignInViewController *masterViewController =

@@ -26,9 +26,9 @@ struct DaysUntilBirthday: App {
       ContentView()
         .environmentObject(authViewModel)
         .onAppear {
-          GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
-            if let user = user {
-              self.authViewModel.state = .signedIn(user)
+          GIDSignIn.sharedInstance.restorePreviousSignIn { userAuth, error in
+            if let userAuth = userAuth {
+              self.authViewModel.state = .signedIn(userAuth.user)
             } else if let error = error {
               self.authViewModel.state = .signedOut
               print("There was an error restoring the previous sign-in: \(error)")
