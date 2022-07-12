@@ -22,8 +22,6 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
-
 @class GIDConfiguration;
 @class GIDUserAuth;
 

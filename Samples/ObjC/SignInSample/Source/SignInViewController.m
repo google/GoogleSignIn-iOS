@@ -259,7 +259,7 @@ static NSString * const kClientID =
 - (IBAction)signIn:(id)sender {
   [GIDSignIn.sharedInstance signInWithConfiguration:_configuration
                            presentingViewController:self
-                                           callback:^(GIDGoogleUser * _Nullable user,
+                                           callback:^(GIDUserAuth * _Nullable userAuth,
                                                       NSError * _Nullable error) {
     if (error) {
       self->_signInAuthStatus.text =
@@ -293,7 +293,7 @@ static NSString * const kClientID =
 - (IBAction)addScopes:(id)sender {
   [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
              presentingViewController:self
-                             callback:^(GIDGoogleUser * _Nullable user,
+                             callback:^(GIDUserAuth * _Nullable userAuth,
                                         NSError * _Nullable error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to add scopes: %@",
