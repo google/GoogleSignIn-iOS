@@ -1290,7 +1290,7 @@ static void *kTestObserverContext = &kTestObserverContext;
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
     }
-    
+
     // Simulate auth endpoint response
     if (modalCancel) {
       NSError *error = [NSError errorWithDomain:OIDGeneralErrorDomain
@@ -1323,9 +1323,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     // OIDTokenCallback
     if (tokenError) {
       [[_authState expect] updateWithTokenResponse:nil error:tokenError];
-      
-      // CompletionCallback
-      [[[_authState expect] andReturn:nil] lastTokenResponse];
     } else {
       [[_authState expect] updateWithTokenResponse:[OCMArg any] error:nil];
     }
