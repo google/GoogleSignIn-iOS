@@ -20,6 +20,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -188,8 +189,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return [authState isAuthorized];
 }
 
-- (void)restorePreviousSignInWithCallback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback {
-  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
+- (void)restorePreviousSignInWithCallback:(nullable void (^)(GIDGoogleUser *_Nullable user, NSError *_Nullable error))callback {
+  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:^(GIDUserAuth *userAuth, NSError *error){
+    if (userAuth) {
+      callback(userAuth.user, nil);
+    } else {
+      callback(nil, error);
+    }
+  }]];
 }
 
 - (BOOL)restorePreviousSignInNoRefresh {

@@ -90,7 +90,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
 ///     called asynchronously on the main queue.
-- (void)restorePreviousSignInWithCallback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
+- (void)restorePreviousSignInWithCallback:(nullable void (^)(GIDGoogleUser *_Nullable user, NSError *_Nullable error))callback;
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;

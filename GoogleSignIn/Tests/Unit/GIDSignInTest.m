@@ -456,7 +456,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
 
-  [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser *_Nullable user,
                                                NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNotNil(error, @"error should not have been nil");
@@ -1309,7 +1309,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   if (restoredSignIn && oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
-    [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
+    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser *_Nullable user,
                                                  NSError * _Nullable error) {
       [expectation fulfill];
       XCTAssertNil(error, @"should have no error");
@@ -1360,7 +1360,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   if (restoredSignIn && !oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
-    [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
+    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser *_Nullable user,
                                                  NSError * _Nullable error) {
       [expectation fulfill];
       XCTAssertNil(error, @"should have no error");
@@ -1401,7 +1401,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
 
-  [_signIn restorePreviousSignInWithCallback:^(GIDUserAuth *_Nullable userAuth,
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser *_Nullable user,
                                                NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error, @"should have no error");
