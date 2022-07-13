@@ -887,10 +887,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       void (^callback)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error) = self->_currentOptions.callback;
       self->_currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
-        OIDAuthState *authState = handlerAuthFlow.authState;
-        NSString * _Nullable serverAuthCode = [authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
-        GIDUserAuth *  userAuth = [[GIDUserAuth alloc]initWithGoogleUser:self->_currentUser serverAuthCode:serverAuthCode];
-        callback(userAuth, handlerAuthFlow.error);
+        if (handlerAuthFlow.error) {
+          callback(nil, handlerAuthFlow.error);
+        } else {
+          OIDAuthState *authState = handlerAuthFlow.authState;
+          NSString * _Nullable serverAuthCode = [authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
+          GIDUserAuth *  userAuth = [[GIDUserAuth alloc]initWithGoogleUser:self->_currentUser serverAuthCode:serverAuthCode];
+          callback(userAuth, nil);
+        }
       });
     }
   }];

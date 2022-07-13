@@ -173,8 +173,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
 ///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
 ///     iOS 13+.
-/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
-///     called asynchronously on the main queue.
+/// @param callback The  block that is called on completion.  This block will be called asynchronously on
+///     the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                     callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback
@@ -190,8 +190,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param configuration The configuration properties to be used for this flow.
 /// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
-/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
-///     called asynchronously on the main queue.
+/// @param callback The  block that is called on completion.  This block will be called asynchronously on
+///     the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                        callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;
@@ -207,8 +207,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
-/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
-///     called asynchronously on the main queue.
+/// @param callback The  block that is called on completion.  This block will be called asynchronously on
+///     the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
@@ -226,8 +226,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
-/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
-///     called asynchronously on the main queue.
+/// @param callback The  block that is called on completion.  This block will be called asynchronously on
+///     the main queue.
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
@@ -242,8 +242,8 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///
 /// @param scopes An array of scopes to ask the user to consent to.
 /// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
-/// @param callback The `GIDSignInCallback` block that is called on completion.  This block will be
-///     called asynchronously on the main queue.
+/// @param callback The  block that is called on completion.  This block will be called asynchronously on
+///     the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
        presentingWindow:(NSWindow *)presentingWindow
                callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error))callback;

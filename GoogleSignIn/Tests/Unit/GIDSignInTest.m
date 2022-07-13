@@ -1225,12 +1225,9 @@ static void *kTestObserverContext = &kTestObserverContext;
     ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
       [expectation fulfill];
       if (userAuth) {
-        BOOL hasError = authError || modalCancel || tokenError;
-        if (!hasError) {
           XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
-        }
       } else {
-        XCTAssertNotNil(error, @"should have an error if the userAuth is nil");
+        XCTAssertNotNil(error, @"Should have an error if the userAuth is nil");
       }
       XCTAssertFalse(self->_callbackCalled, @"callback already called");
       self->_callbackCalled = YES;
@@ -1293,7 +1290,7 @@ static void *kTestObserverContext = &kTestObserverContext;
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
     }
-    
+
     // Simulate auth endpoint response
     if (modalCancel) {
       NSError *error = [NSError errorWithDomain:OIDGeneralErrorDomain
@@ -1326,9 +1323,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     // OIDTokenCallback
     if (tokenError) {
       [[_authState expect] updateWithTokenResponse:nil error:tokenError];
-      
-      // CompletionCallback
-      [[[_authState expect] andReturn:nil] lastTokenResponse];
     } else {
       [[_authState expect] updateWithTokenResponse:[OCMArg any] error:nil];
     }
@@ -1360,7 +1354,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   }
   
   // CompletionCallback - mock server auth code parsing
-  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
+  if (!keychainError) {
+    [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
+  }
 
   if (restoredSignIn && !oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
