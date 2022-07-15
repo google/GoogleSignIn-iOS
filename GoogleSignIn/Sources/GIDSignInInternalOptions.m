@@ -41,9 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
                                          scopes:(nullable NSArray *)scopes
                                        callback:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                                                    NSError *_Nullable error))callback {
-
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
