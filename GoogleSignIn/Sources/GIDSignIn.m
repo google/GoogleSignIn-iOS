@@ -20,6 +20,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -34,6 +35,7 @@
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDUserAuth_Private.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -187,8 +189,16 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return [authState isAuthorized];
 }
 
-- (void)restorePreviousSignInWithCompletion:(nullable GIDSignInCompletion)completion {
-  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:completion]];
+- (void)restorePreviousSignInWithCompletion:(nullable void (^)(GIDGoogleUser *_Nullable user,
+                                                               NSError *_Nullable error))completion {
+  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:
+                           ^(GIDUserAuth *userAuth, NSError *error) {
+    if (userAuth) {
+      callback(userAuth.user, nil);
+    } else {
+      callback(nil, error);
+    }
+  }]];
 }
 
 - (BOOL)restorePreviousSignInNoRefresh {
@@ -217,7 +227,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                     completion:(nullable GIDSignInCompletion)completion {
+                     completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
@@ -231,7 +241,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
                additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                     completion:(nullable GIDSignInCompletion)completion {
+                     completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                      presentingViewController:presentingViewController
@@ -244,7 +254,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                     completion:(nullable GIDSignInCompletion)completion {
+                     completion:(nullable GIDUserAuthCompletion)completion {
   [self signInWithConfiguration:configuration
        presentingViewController:presentingViewController
                            hint:nil
@@ -253,7 +263,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                  completion:(nullable GIDSignInCompletion)completion {
+                  completion:(nullable GIDUserAuthCompletion)completion {
   // A currentUser must be available in order to complete this flow.
   if (!self.currentUser) {
     // No currentUser is set, notify callback of failure.
@@ -310,7 +320,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
-                     completion:(nullable GIDSignInCompletion)completion {
+                     completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                                presentingWindow:presentingWindow
@@ -322,7 +332,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
-                     completion:(nullable GIDSignInCompletion)completion {
+                     completion:(nullable GIDUserAuthCompletion)completion {
   [self signInWithConfiguration:configuration
                presentingWindow:presentingWindow
                            hint:nil
@@ -333,7 +343,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
                additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                     completion:(nullable GIDSignInCompletion)completion {
+                     completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                              presentingWindow:presentingWindow
@@ -346,7 +356,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
  presentingWindow:(NSWindow *)presentingWindow
-       completion:(nullable GIDSignInCompletion)completion {
+       completion:(nullable GIDUserAuthCompletion)completion {
   // A currentUser must be available in order to complete this flow.
   if (!self.currentUser) {
     // No currentUser is set, notify callback of failure.
@@ -541,7 +551,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         if (options.completion) {
           self->_currentOptions = nil;
           dispatch_async(dispatch_get_main_queue(), ^{
-            options.completion(self->_currentUser, nil);
+            GIDUserAuth *userAuth = [[GIDUserAuth alloc] initWithGoogleUser:self->_currentUser serverAuthCode:nil];
+            options.completion(userAuth, nil);
           });
         }
       }
@@ -601,7 +612,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
          presentingViewController:options.presentingViewController
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error) {
     [self processAuthorizationResponse:authorizationResponse
                                  error:error
@@ -882,10 +893,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     if (self->_currentOptions.completion) {
-      GIDSignInCompletion completion = self->_currentOptions.completion;
+      GIDUserAuthCompletion completion = self->_currentOptions.completion;
       self->_currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
-        completion(self->_currentUser, handlerAuthFlow.error);
+        if (handlerAuthFlow.error) {
+          completion(nil, handlerAuthFlow.error);
+        } else {
+          OIDAuthState *authState = handlerAuthFlow.authState;
+          NSString *_Nullable serverAuthCode = [authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
+          GIDUserAuth *userAuth = [[GIDUserAuth alloc] initWithGoogleUser:self->_currentUser serverAuthCode:serverAuthCode];
+          completion(userAuth, nil);
+        }
       });
     }
   }];
