@@ -191,12 +191,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)restorePreviousSignInWithCompletion:(nullable void (^)(GIDGoogleUser *_Nullable user,
                                                                NSError *_Nullable error))completion {
-  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:
+  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:
                            ^(GIDUserAuth *userAuth, NSError *error) {
     if (userAuth) {
-      callback(userAuth.user, nil);
+      completion(userAuth.user, nil);
     } else {
-      callback(nil, error);
+      completion(nil, error);
     }
   }]];
 }
