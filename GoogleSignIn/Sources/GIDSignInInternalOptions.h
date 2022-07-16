@@ -88,6 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
                                      completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                                                    NSError *_Nullable error))completion;
 
+
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
