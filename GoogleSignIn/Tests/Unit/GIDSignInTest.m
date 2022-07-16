@@ -241,7 +241,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSString *_hint;
 
   // The completion to be used when testing |GIDSignIn|.
-  GIDSignInCompletion _completion;
+  GIDUserAuthCompletion _completion;
 
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
@@ -346,10 +346,10 @@ static void *kTestObserverContext = &kTestObserverContext;
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
-  _completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  _completion = ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
     GIDSignInTest *strongSelf = weakSelf;
-    if (!user) {
-      XCTAssertNotNil(error, @"should have an error if user is nil");
+    if (!userAuth) {
+      XCTAssertNotNil(error, @"should have an error if the userAuth is nil");
     }
     XCTAssertFalse(strongSelf->_completionCalled, @"callback already called");
     strongSelf->_completionCalled = YES;
@@ -1073,6 +1073,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSError *handledError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                               code:kGIDSignInErrorCodeEMM
                                           userInfo:emmError.userInfo];
+  
   completion(handledError);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -1220,10 +1221,13 @@ static void *kTestObserverContext = &kTestObserverContext;
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    GIDUserAuthCompletion completion =
+        ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
       [expectation fulfill];
-      if (!user) {
-        XCTAssertNotNil(error, @"should have an error if user is nil");
+      if (userAuth) {
+          XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
+      } else {
+        XCTAssertNotNil(error, @"Should have an error if the userAuth is nil");
       }
       XCTAssertFalse(self->_completionCalled, @"callback already called");
       self->_completionCalled = YES;
@@ -1348,6 +1352,11 @@ static void *kTestObserverContext = &kTestObserverContext;
                                                     profileData:SAVE_TO_ARG_BLOCK(profileData)];
     }
   }
+  
+  // CompletionCallback - mock server auth code parsing
+  if (!keychainError) {
+    [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
+  }
 
   if (restoredSignIn && !oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
@@ -1361,11 +1370,13 @@ static void *kTestObserverContext = &kTestObserverContext;
     _savedTokenCallback(tokenResponse, nil);
   }
 
-  [_authState verify];
   if (keychainError) {
     return;
   }
   [self waitForExpectationsWithTimeout:1 handler:nil];
+  
+  [_authState verify];
+  
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
   XCTAssertNotNil(authState);
   // Check fat ID token decoding

@@ -31,14 +31,16 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                                   NSError *_Nullable error))completion {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                                   NSError *_Nullable error))completion {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
@@ -64,13 +66,15 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                                   NSError *_Nullable error))completion {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                                   NSError *_Nullable error))completion {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -85,7 +89,8 @@ NS_ASSUME_NONNULL_BEGIN
   return options;
 }
 
-+ (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion {
++ (instancetype)silentOptionsWithCompletion:(void (^)(GIDUserAuth *_Nullable userAuth,
+                                                      NSError *_Nullable error))completion {
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                    presentingViewController:nil

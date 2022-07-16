@@ -21,6 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 
+// Represents a completion block that takes a `GIDUserAuth` on success or an error if the operation
+// was unsuccessful.
+typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
+
 // Private |GIDSignIn| methods that are used internally in this SDK and other Google SDKs.
 @interface GIDSignIn ()
 
