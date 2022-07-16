@@ -1234,7 +1234,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
     GIDUserAuthCompletion completion =
         ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
-
       [expectation fulfill];
       if (userAuth) {
           XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
