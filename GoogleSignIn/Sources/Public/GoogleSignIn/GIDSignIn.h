@@ -201,7 +201,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
     __attribute__((swift_async_name("signIn(with:presenting:)")));
 
 /// Starts an interactive sign-in flow on macOS using the provided configuration and a login hint.
@@ -221,7 +221,7 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
                        callback:(nullable GIDSignInCallback)callback
-    __attribute__((swift_async_name("signIn(with:presenting:hint)")));
+    __attribute__((swift_async_name("signIn(with:presenting:hint:)")));
 
 /// Starts an interactive sign-in flow on macOS using the provided configuration and a login hint.
 ///
