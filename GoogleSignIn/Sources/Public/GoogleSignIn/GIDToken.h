@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
 
-#import "GIDAuthentication.h"
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDUserAuth.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+/// This class represents the basic information of a token.
+@interface GIDToken : NSObject <NSSecureCoding>
+
+/// The token string.
+@property(nonatomic, copy, readonly) NSString *tokenString;
+
+/// The estimated expiration date of the token.
+@property(nonatomic, readonly, nullable) NSDate *expirationDate;
+
+/// Unsupported.
++ (instancetype)new NS_UNAVAILABLE;
+
+/// Unsupported.
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
+NS_ASSUME_NONNULL_END
