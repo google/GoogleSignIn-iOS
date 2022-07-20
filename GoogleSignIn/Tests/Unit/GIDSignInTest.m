@@ -397,16 +397,21 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization expect] andReturn:_authState] authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
-  OCMStub([_tokenResponse scope]).andReturn(nil);
-  OCMStub([_tokenResponse additionalParameters]).andReturn(nil);
-  OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
-  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
-  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
 
   id idTokenDecoded = OCMClassMock([OIDIDToken class]);
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
+  
+  // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
+  OIDAuthorizationResponse *authResponse =
+      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
+                                                         errorString:nil];
+  
+  OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
+  OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
+  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
+  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
 
   [_signIn restorePreviousSignInNoRefresh];
 
@@ -569,11 +574,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([profile email]).andReturn(kUserEmail);
 
   OCMStub([_user authentication]).andReturn(_authentication);
-  OCMStub([_authentication clientID]).andReturn(kClientId);
-  OCMStub([_user serverClientID]).andReturn(nil);
-  OCMStub([_user hostedDomain]).andReturn(nil);
-
-  OCMStub([_user openIDRealm]).andReturn(kOpenIDRealm);
+  
+  // Mock for the method `addScopes`.
+  OCMStub([_user configuration]).andReturn(_configuration);
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
 
