@@ -122,6 +122,9 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                        callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("signIn(with:presenting:)")))
+#endif
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow  on iOS using the provided configuration and a login hint.
@@ -143,6 +146,9 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
                        callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("signIn(with:presenting:hint:)")))
+#endif
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided configuration and a login hint.
@@ -165,7 +171,11 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
                additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("signIn(with:presenting:hint:additionalScopes:)")))
+#endif
+;
 
 /// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
 ///
@@ -181,6 +191,9 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                     callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("addScopes(_:presenting:)")))
+#endif
     NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions."); 
 
 #elif TARGET_OS_OSX
@@ -197,7 +210,11 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     called asynchronously on the main queue.
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("signIn(with:presenting:)")))
+#endif
+;
 
 /// Starts an interactive sign-in flow on macOS using the provided configuration and a login hint.
 ///
@@ -215,7 +232,11 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("signIn(with:presenting:hint:)")))
+#endif
+;
 
 /// Starts an interactive sign-in flow on macOS using the provided configuration and a login hint.
 ///
@@ -236,7 +257,11 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
                additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                       callback:(nullable GIDSignInCallback)callback;
+                       callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("signIn(with:presenting:hint:additionalScopes:)")))
+#endif
+;
 
 /// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
 ///
@@ -249,7 +274,11 @@ typedef void (^GIDDisconnectCallback)(NSError *_Nullable error);
 ///     called asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
        presentingWindow:(NSWindow *)presentingWindow
-               callback:(nullable GIDSignInCallback)callback;
+               callback:(nullable GIDSignInCallback)callback
+#if __has_attribute(swift_async_name)
+    __attribute__((swift_async_name("addScopes(_:presenting:)")))
+#endif
+;
 
 #endif
 
