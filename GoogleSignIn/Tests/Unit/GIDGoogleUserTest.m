@@ -17,6 +17,7 @@
 #import <XCTest/XCTest.h>
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
@@ -49,8 +50,8 @@
   XCTAssertEqualObjects(user.authentication, authentication);
   XCTAssertEqualObjects(user.grantedScopes, @[ OIDAuthorizationRequestTestingScope2 ]);
   XCTAssertEqualObjects(user.userID, kUserID);
-  XCTAssertEqualObjects(user.hostedDomain, kHostedDomain);
-  XCTAssertEqualObjects(user.serverAuthCode, kServerAuthCode);
+  XCTAssertEqualObjects(user.configuration.hostedDomain, kHostedDomain);
+  XCTAssertEqualObjects(user.configuration.clientID, OIDAuthorizationRequestTestingClientID);
   XCTAssertEqualObjects(user.profile, [GIDProfileData testInstance]);
 }
 

@@ -19,6 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class GIDAuthentication;
+@class GIDConfiguration;
 @class GIDProfileData;
 
 /// This class represents a user account.
@@ -36,18 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// The API scopes granted to the app in an array of `NSString`.
 @property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
 
-/// For Google Apps hosted accounts, the domain of the user.
-@property(nonatomic, readonly, nullable) NSString *hostedDomain;
-
-/// The client ID of the home server.
-@property(nonatomic, readonly, nullable) NSString *serverClientID;
-
-/// An OAuth2 authorization code for the home server.
-@property(nonatomic, readonly, nullable) NSString *serverAuthCode;
-
-/// The OpenID2 realm of the home server.
-@property(nonatomic, readonly, nullable) NSString *openIDRealm;
-
+/// The configuration that was used to sign in this user.
+@property(nonatomic, readonly) GIDConfiguration *configuration;
 
 @end
 

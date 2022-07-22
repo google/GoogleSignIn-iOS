@@ -278,11 +278,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     return;
   }
 
-  GIDConfiguration *configuration =
-      [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
-                                  serverClientID:self.currentUser.serverClientID
-                                    hostedDomain:self.currentUser.hostedDomain
-                                     openIDRealm:self.currentUser.openIDRealm];
+  GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
@@ -371,11 +367,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     return;
   }
 
-  GIDConfiguration *configuration =
-      [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
-                                  serverClientID:self.currentUser.serverClientID
-                                    hostedDomain:self.currentUser.hostedDomain
-                                     openIDRealm:self.currentUser.openIDRealm];
+  GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                                presentingWindow:presentingWindow
