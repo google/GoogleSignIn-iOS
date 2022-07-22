@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The API scopes granted to the app in an array of `NSString`.
 @property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
 
-/// The client configuration.
+/// The configuration that was used to sign in this user.
 @property(nonatomic, readonly) GIDConfiguration *configuration;
 
 @end

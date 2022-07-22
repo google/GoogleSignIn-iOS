@@ -16,6 +16,7 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Tests/Unit/GIDAuthentication+Testing.h"
+#import "GoogleSignIn/Tests/Unit/GIDConfiguration+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 
 @implementation GIDGoogleUser (Testing)

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
+
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -73,6 +75,18 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   return grantedScopes;
 }
 
+- (GIDConfiguration *)configuration {
+  __block GIDConfiguration *configuration;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    configuration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
+                                                serverClientID:[self serverClientID]
+                                                  hostedDomain:[self hostedDomain]
+                                                   openIDRealm:[self openIDRealm]];
+  });
+  return configuration;
+}
+
 #pragma mark - Private Methods
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
@@ -89,10 +103,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   _authState = authState;
   _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
   _profile = profileData;
-  _configuration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
-                                               serverClientID:[self serverClientID]
-                                                 hostedDomain:[self hostedDomain]
-                                                  openIDRealm:[self openIDRealm]];
 }
 
 #pragma mark - Helpers
@@ -142,10 +152,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
       _authState = authentication.authState;
     }
     _authentication = [[GIDAuthentication alloc] initWithAuthState:_authState];
-    _configuration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
-                                                 serverClientID:[self serverClientID]
-                                                   hostedDomain:[self hostedDomain]
-                                                    openIDRealm:[self openIDRealm]];
   }
   return self;
 }

@@ -418,6 +418,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  [_tokenRequest verify];
+  [idTokenDecoded verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
 
   [idTokenDecoded stopMocking];
@@ -606,6 +608,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
 
+  [_user verify];
+  [profile verify];
   [profile stopMocking];
 }
 
