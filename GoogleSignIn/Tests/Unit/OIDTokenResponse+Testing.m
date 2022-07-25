@@ -112,7 +112,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   NSMutableDictionary<NSString *, NSString *> *payloadContents =
       [NSMutableDictionary dictionaryWithDictionary:@{
     @"sub" : sub,
-    @"hd" : kHostedDomain,
+    @"hd"  : kHostedDomain,
     @"iss" : kIssuer,
     @"aud" : kAudience,
     @"exp" : exp,
