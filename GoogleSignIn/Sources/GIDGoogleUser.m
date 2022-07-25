@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
+
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
@@ -39,6 +43,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
+  GIDConfiguration *_cachedConfiguration;
 }
 
 - (nullable NSString *)userID {
@@ -51,30 +56,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   }
 
   return nil;
-}
-
-- (nullable NSString *)hostedDomain {
-  NSString *idToken = [self idToken];
-  if (idToken) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
-    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
-      return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
-    }
-  }
-
-  return nil;
-}
-
-- (nullable NSString *)serverAuthCode {
-  return [_authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
-}
-
-- (nullable NSString *)serverClientID {
-  return [_authState.lastTokenResponse.request.additionalParameters[kAudienceParameter] copy];
-}
-
-- (nullable NSString *)openIDRealm {
-  return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
 }
 
 - (nullable NSArray<NSString *> *)grantedScopes {
@@ -93,6 +74,20 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
     grantedScopes = [parsedScopes copy];
   }
   return grantedScopes;
+}
+
+- (GIDConfiguration *)configuration {
+  @synchronized(self) {
+    // Caches the configuration since it would not change for one GIDGoogleUser instance.
+    if (!_cachedConfiguration) {
+      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
+                                                         serverClientID:[self serverClientID]
+                                                           hostedDomain:[self hostedDomain]
+                                                            openIDRealm:[self openIDRealm]];
+    };
+  }
+  
+  return _cachedConfiguration;
 }
 
 #pragma mark - Private Methods
@@ -115,8 +110,31 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 #pragma mark - Helpers
 
+- (NSString *)clientID {
+  return _authState.lastAuthorizationResponse.request.clientID;
+}
+
+- (nullable NSString *)hostedDomain {
+  NSString *idToken = [self idToken];
+  if (idToken) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
+    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
+      return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
+    }
+  }
+  return nil;
+}
+
 - (NSString *)idToken {
   return _authState ? _authState.lastTokenResponse.idToken : nil;
+}
+
+- (nullable NSString *)serverClientID {
+  return [_authState.lastTokenResponse.request.additionalParameters[kAudienceParameter] copy];
+}
+
+- (nullable NSString *)openIDRealm {
+  return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
 }
 
 #pragma mark - NSSecureCoding
