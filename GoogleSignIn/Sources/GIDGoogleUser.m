@@ -43,6 +43,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
+  GIDConfiguration *_cachedConfiguration;
 }
 
 - (nullable NSString *)userID {
@@ -76,15 +77,17 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (GIDConfiguration *)configuration {
-  __block GIDConfiguration *configuration;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    configuration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
-                                                serverClientID:[self serverClientID]
-                                                  hostedDomain:[self hostedDomain]
-                                                   openIDRealm:[self openIDRealm]];
-  });
-  return configuration;
+  @synchronized(self) {
+    // Caches the configuration since it would not change for one GIDGoogleUser instance.
+    if (!_cachedConfiguration) {
+      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
+                                                         serverClientID:[self serverClientID]
+                                                           hostedDomain:[self hostedDomain]
+                                                            openIDRealm:[self openIDRealm]];
+    };
+  }
+  
+  return _cachedConfiguration;
 }
 
 #pragma mark - Private Methods
