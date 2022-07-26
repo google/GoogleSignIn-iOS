@@ -219,7 +219,7 @@ static NSString *const kNewIOSSystemName = @"iOS";
   return authorization;
 }
 
-- (void)doWithFreshTokens:(GIDAuthenticationCompletion)completion {
+- (void)doWithFreshTokens:(GIDAuthenticationAction)completion {
   if (!([self.accessTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
       (self.idToken && [self.idTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
     dispatch_async(dispatch_get_main_queue(), ^{
