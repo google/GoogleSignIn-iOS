@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, macos-10.15]
+        os: [macos-11, macos-12]
         podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
         flag: [
           "", 
@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, macos-10.15]
+        os: [macos-11, macos-12]
         sdk: ['macosx', 'iphonesimulator']
         include:
           - sdk: 'macosx'
