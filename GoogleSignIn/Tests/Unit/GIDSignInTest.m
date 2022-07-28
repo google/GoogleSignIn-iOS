@@ -415,7 +415,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
-  
 
   [_signIn restorePreviousSignInNoRefresh];
 

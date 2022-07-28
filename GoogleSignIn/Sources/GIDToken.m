@@ -84,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
   if (!date1 && !date2) {
     return YES;
   }
+  
   return [date1 isEqualToDate:date2];
 }
 

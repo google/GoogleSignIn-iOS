@@ -173,14 +173,6 @@ NS_ASSUME_NONNULL_BEGIN
   return nil;
 }
 
-- (nullable NSString *)serverClientID {
-  return [_authState.lastTokenResponse.request.additionalParameters[kAudienceParameter] copy];
-}
-
-- (nullable NSString *)openIDRealm {
-  return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
-}
-
 #pragma mark - NSSecureCoding
 
 + (BOOL)supportsSecureCoding {
