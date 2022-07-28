@@ -25,7 +25,7 @@ static NSString *const kExpirationDateKey = @"expirationDate";
 @implementation GIDToken
 
 - (instancetype)initWithTokenString:(NSString *)tokenString
-                     expirationDate:(NSDate *)expirationDate {
+                     expirationDate:(nullable NSDate *)expirationDate {
   self = [super init];
   if (self) {
     _tokenString = tokenString;
@@ -53,6 +53,39 @@ static NSString *const kExpirationDateKey = @"expirationDate";
 - (void)encodeWithCoder:(NSCoder *)encoder {
   [encoder encodeObject:_tokenString forKey:kTokenStringKey];
   [encoder encodeObject:_expirationDate forKey:kExpirationDateKey];
+}
+
+#pragma mark - isEqual
+
+- (BOOL)isEqual:(id)object {
+  if (self == object) {
+    return YES;
+  }
+  if (![object isKindOfClass:[GIDToken class]]) {
+    return NO;
+  }
+  return [self isEqualToGIDToken:(GIDToken *)object];
+}
+
+- (BOOL)isEqualToGIDToken:(GIDToken *)other {
+  return [_tokenString isEqual:other.tokenString] &&
+      [self isTheSameDateWithDate1:_expirationDate date2:other.expirationDate];
+}
+
+- (BOOL)isTheSameDateWithDate1:(NSDate *)date1
+                         date2:(NSDate *)date2 {
+  // The date is nullable. Two `null` date is equal.
+  if (!date1 && !date2) {
+    return YES;
+  }
+  if (!date1 || !date2) {
+    return NO;
+  }
+  return [date1 isEqualToDate:date2];
+}
+
+- (NSUInteger)hash {
+  return [self.tokenString hash] ^ [self.expirationDate hash];
 }
 
 @end

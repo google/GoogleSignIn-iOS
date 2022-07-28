@@ -36,6 +36,16 @@ static NSString * const tokenString = @"tokenString";
   XCTAssertEqualObjects(token.tokenString, tokenString);
   XCTAssertEqualObjects(token.expirationDate, _date);
 }
+
+- (void)testIsEqual {
+  GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  XCTAssertEqualObjects(token, token2);
+  
+  GIDToken *refreshToken = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:nil];
+  GIDToken *refreshToken2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:nil];
+  XCTAssertEqualObjects(refreshToken, refreshToken2);
+}
   
 - (void)testCoding {
   if (@available(iOS 11, macOS 10.13, *)) {
@@ -44,8 +54,7 @@ static NSString * const tokenString = @"tokenString";
     GIDToken *newToken = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDToken class]
                                                                    fromData:data
                                                                       error:nil];
-    XCTAssertEqualObjects(token.tokenString, newToken.tokenString);
-    XCTAssertEqualObjects(token.expirationDate, newToken.expirationDate);
+    XCTAssertEqualObjects(token, newToken);
     
     XCTAssertTrue([GIDToken supportsSecureCoding]);
   } else {

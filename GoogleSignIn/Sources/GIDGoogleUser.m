@@ -20,6 +20,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDToken_Private.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -47,7 +48,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (nullable NSString *)userID {
-  NSString *idToken = [self idToken];
+  NSString *idToken = [self idTokenString];
   if (idToken) {
     OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
     if (idTokenDecoded && idTokenDecoded.subject) {
@@ -106,6 +107,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   _authState = authState;
   _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
   _profile = profileData;
+  [self updateTokens];
 }
 
 #pragma mark - Helpers
@@ -115,18 +117,14 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (nullable NSString *)hostedDomain {
-  NSString *idToken = [self idToken];
-  if (idToken) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
+  NSString *idTokenString = [self idTokenString];
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
     if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
       return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
     }
   }
   return nil;
-}
-
-- (NSString *)idToken {
-  return _authState ? _authState.lastTokenResponse.idToken : nil;
 }
 
 - (nullable NSString *)serverClientID {
@@ -135,6 +133,40 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 - (nullable NSString *)openIDRealm {
   return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
+}
+
+- (NSString *)idTokenString {
+  return _authState.lastTokenResponse.idToken;
+}
+
+- (nullable NSDate *)idTokenExpirationDate {
+  return [[[OIDIDToken alloc] initWithIDTokenString:self.idTokenString] expiresAt];
+}
+
+- (NSString *)accessTokenString {
+  return _authState.lastTokenResponse.accessToken;
+}
+
+- (NSDate *)accessTokenExpirationDate {
+  return _authState.lastTokenResponse.accessTokenExpirationDate;
+}
+
+- (NSString *)refreshTokenString {
+  return _authState.refreshToken;
+}
+
+- (void)updateTokens {
+  _accessToken = [[GIDToken alloc] initWithTokenString:[self accessTokenString]
+                                        expirationDate:[self accessTokenExpirationDate]];
+  _refreshToken = [[GIDToken alloc] initWithTokenString:[self refreshTokenString]
+                                         expirationDate:nil];
+  NSString *idTokenString = [self idTokenString];
+  if (idTokenString) {
+    _idToken = [[GIDToken alloc] initWithTokenString:[self idTokenString]
+                                      expirationDate:[self idTokenExpirationDate]];
+  } else {
+    _idToken = nil;
+  }
 }
 
 #pragma mark - NSSecureCoding
@@ -155,6 +187,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
       _authState = authentication.authState;
     }
     _authentication = [[GIDAuthentication alloc] initWithAuthState:_authState];
+    [self updateTokens];
   }
   return self;
 }
