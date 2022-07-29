@@ -16,6 +16,11 @@
 
 import Foundation
 import GoogleSignIn
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
@@ -38,40 +43,32 @@ final class GoogleSignInAuthenticator: ObservableObject {
     self.authViewModel = authViewModel
   }
 
-  /// Signs in the user based upon the selected account.'
-  /// - note: Successful calls to this will set the `authViewModel`'s `state` property.
-  func signIn() {
-#if os(iOS)
-    guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
-      print("There is no root view controller!")
-      return
-    }
 
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: rootViewController) { user, error in
-      guard let user = user else {
-        print("Error! \(String(describing: error))")
-        return
-      }
-      self.authViewModel.state = .signedIn(user)
-    }
-
-#elseif os(macOS)
-    guard let presentingWindow = NSApplication.shared.windows.first else {
-      print("There is no presenting window!")
-      return
-    }
-
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: presentingWindow) { user, error in
-      guard let user = user else {
-        print("Error! \(String(describing: error))")
-        return
-      }
-      self.authViewModel.state = .signedIn(user)
-    }
-#endif
+  #if os(iOS)
+  /// Signs in the user based upon the selected account.
+  /// - parameter rootViewController: The `UIViewController` to use during the sign in flow.
+  /// - returns: The signed in `GIDGoogleUser`.
+  /// - throws: Any error that may arise during the sign in process.
+  func signIn(with rootViewController: UIViewController) async throws -> GIDGoogleUser {
+    return try await GIDSignIn.sharedInstance.signIn(
+      with: configuration,
+      presenting: rootViewController
+    )
   }
+  #endif
+
+  #if os(macOS)
+  /// Signs in the user based upon the selected account.
+  /// - parameter window: The `NSWindow` to use during the sign in flow.
+  /// - returns: The signed in `GIDGoogleUser`.
+  /// - throws: Any error that may arise during the sign in process.
+  func signIn(with window: NSWindow) async throws -> GIDGoogleUser {
+    return try await GIDSignIn.sharedInstance.signIn(
+      with: configuration,
+      presenting: window
+    )
+  }
+  #endif
 
   /// Signs out the current user.
   func signOut() {
@@ -80,57 +77,41 @@ final class GoogleSignInAuthenticator: ObservableObject {
   }
 
   /// Disconnects the previously granted scope and signs the user out.
-  func disconnect() {
-    GIDSignIn.sharedInstance.disconnect { error in
-      if let error = error {
-        print("Encountered error disconnecting scope: \(error).")
-      }
-      self.signOut()
-    }
+  func disconnect() async throws {
+    try await GIDSignIn.sharedInstance.disconnect()
   }
 
-  // Confines birthday calucation to iOS for now.
+#if os(iOS)
   /// Adds the birthday read scope for the current user.
-  /// - parameter completion: An escaping closure that is called upon successful completion of the
-  /// `addScopes(_:presenting:)` request.
-  /// - note: Successful requests will update the `authViewModel.state` with a new current user that
-  /// has the granted scope.
-  func addBirthdayReadScope(completion: @escaping () -> Void) {
-    #if os(iOS)
-    guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
-      fatalError("No root view controller!")
-    }
-
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: rootViewController) { user, error in
-      if let error = error {
-        print("Found error while adding birthday read scope: \(error).")
-        return
-      }
-
-      guard let currentUser = user else { return }
-      self.authViewModel.state = .signedIn(currentUser)
-      completion()
-    }
-
-    #elseif os(macOS)
-    guard let presentingWindow = NSApplication.shared.windows.first else {
-      fatalError("No presenting window!")
-    }
-
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: presentingWindow) { user, error in
-      if let error = error {
-        print("Found error while adding birthday read scope: \(error).")
-        return
-      }
-
-      guard let currentUser = user else { return }
-      self.authViewModel.state = .signedIn(currentUser)
-      completion()
-    }
-
-    #endif
+  /// - parameter viewController: The `UIViewController` to use while authorizing the scope.
+  /// - returns: The `GIDGoogleUser` with the authorized scope.
+  /// - throws: Any error that may arise while authorizing the scope.
+  func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDGoogleUser {
+    return try await GIDSignIn.sharedInstance.addScopes(
+      [BirthdayLoader.birthdayReadScope],
+      presenting: viewController
+    )
   }
+#endif
 
+#if os(macOS)
+  /// Adds the birthday read scope for the current user.
+  /// - parameter window: The `NSWindow` to use while authorizing the scope.
+  /// - returns: The `GIDGoogleUser` with the authorized scope.
+  /// - throws: Any error that may arise while authorizing the scope.
+  func addBirthdayReadScope(window: NSWindow) async throws -> GIDGoogleUser {
+    return try await GIDSignIn.sharedInstance.addScopes(
+      [BirthdayLoader.birthdayReadScope],
+      presenting: window
+    )
+  }
+#endif
+}
+
+extension GoogleSignInAuthenticator {
+  enum Error: Swift.Error {
+    case failedToSignIn
+    case failedToAddBirthdayReadScope(Swift.Error)
+    case userUnexpectedlyNilWhileAddingBirthdayReadScope
+  }
 }
