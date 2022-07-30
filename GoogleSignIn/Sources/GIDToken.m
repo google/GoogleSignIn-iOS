@@ -69,11 +69,11 @@ static NSString *const kExpirationDateKey = @"expirationDate";
 
 - (BOOL)isEqualToGIDToken:(GIDToken *)other {
   return [_tokenString isEqual:other.tokenString] &&
-      [self isTheSameDateWithDate1:_expirationDate date2:other.expirationDate];
+      [self isTheSameDate:_expirationDate with:other.expirationDate];
 }
 
-- (BOOL)isTheSameDateWithDate1:(NSDate *)date1
-                         date2:(NSDate *)date2 {
+- (BOOL)isTheSameDate:(NSDate *)date1
+                 with:(NSDate *)date2 {
   // The date is nullable. Two `null` date is equal.
   if (!date1 && !date2) {
     return YES;
