@@ -64,10 +64,10 @@ static NSString *const kExpirationDateKey = @"expirationDate";
   if (![object isKindOfClass:[GIDToken class]]) {
     return NO;
   }
-  return [self isEqualToGIDToken:(GIDToken *)object];
+  return [self isEqualToToken:(GIDToken *)object];
 }
 
-- (BOOL)isEqualToGIDToken:(GIDToken *)other {
+- (BOOL)isEqualToToken:(GIDToken *)other {
   return [_tokenString isEqual:other.tokenString] &&
       [self isTheSameDate:_expirationDate with:other.expirationDate];
 }
@@ -82,7 +82,6 @@ static NSString *const kExpirationDateKey = @"expirationDate";
   // token equality check succeeds if token strings are equal and have no expiration.
     return YES;
   }
-  
 }
 
 - (NSUInteger)hash {
