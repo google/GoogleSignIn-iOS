@@ -48,7 +48,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (nullable NSString *)userID {
-  NSString *idToken = [self idTokenString];
+  NSString *idToken = [self lastTokenResponseToken];
   if (idToken) {
     OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
     if (idTokenDecoded && idTokenDecoded.subject) {
@@ -117,9 +117,9 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (nullable NSString *)hostedDomain {
-  NSString *idTokenString = [self idTokenString];
-  if (idTokenString) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
+  NSString *lastTokenResponseToken = [self lastTokenResponseToken];
+  if (lastTokenResponseToken) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:lastTokenResponseToken];
     if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
       return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
     }
@@ -135,15 +135,15 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
 }
 
-- (NSString *)idTokenString {
+- (NSString *)lastTokenResponseToken {
   return _authState.lastTokenResponse.idToken;
 }
 
 - (nullable NSDate *)idTokenExpirationDate {
-  return [[[OIDIDToken alloc] initWithIDTokenString:self.idTokenString] expiresAt];
+  return [[[OIDIDToken alloc] initWithIDTokenString:[self lastTokenResponseToken]] expiresAt];
 }
 
-- (NSString *)accessTokenString {
+- (NSString *)lastTokenResponseAccessToken {
   return _authState.lastTokenResponse.accessToken;
 }
 
@@ -151,18 +151,14 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   return _authState.lastTokenResponse.accessTokenExpirationDate;
 }
 
-- (NSString *)refreshTokenString {
-  return _authState.refreshToken;
-}
-
 - (void)updateTokens {
-  _accessToken = [[GIDToken alloc] initWithTokenString:[self accessTokenString]
+  _accessToken = [[GIDToken alloc] initWithTokenString:[self lastTokenResponseAccessToken]
                                         expirationDate:[self accessTokenExpirationDate]];
-  _refreshToken = [[GIDToken alloc] initWithTokenString:[self refreshTokenString]
+  _refreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
                                          expirationDate:nil];
-  NSString *idTokenString = [self idTokenString];
-  if (idTokenString) {
-    _idToken = [[GIDToken alloc] initWithTokenString:[self idTokenString]
+  NSString *lastTokenResponseToken = [self lastTokenResponseToken];
+  if (lastTokenResponseToken) {
+    _idToken = [[GIDToken alloc] initWithTokenString:lastTokenResponseToken
                                       expirationDate:[self idTokenExpirationDate]];
   } else {
     _idToken = nil;

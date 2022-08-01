@@ -18,6 +18,7 @@
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
 static NSString * const tokenString = @"tokenString";
+static NSString * const tokenString2 = @"tokenString2";
 
 @interface GIDTokenTest : XCTestCase {
   NSDate *_date;
@@ -26,7 +27,7 @@ static NSString * const tokenString = @"tokenString";
 
 @implementation GIDTokenTest
 
-- (void)setUP {
+- (void)setUp {
   [super setUp];
   _date = [[NSDate alloc]initWithTimeIntervalSince1970:1000];
 }
@@ -37,14 +38,35 @@ static NSString * const tokenString = @"tokenString";
   XCTAssertEqualObjects(token.expirationDate, _date);
 }
 
-- (void)testIsEqual {
+- (void)testTokensWithSameTokenStringAndExpirationDateAreEqual {
   GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
   GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
   XCTAssertEqualObjects(token, token2);
-  
+}
+
+- (void)testTokensWithDifferentTokenStringsAreNotEqual {
+  GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString2 expirationDate:_date];
+  XCTAssertNotEqualObjects(token, token2);
+}
+
+- (void)testTokensWithSameTokenStringAndNoExpirationDateAreEqual {
   GIDToken *refreshToken = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:nil];
   GIDToken *refreshToken2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:nil];
   XCTAssertEqualObjects(refreshToken, refreshToken2);
+}
+
+- (void)testTokensWithSameTokenStringAndDifferentExpirationDateAreNotEqual {
+  GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  NSDate *date2 = [[NSDate alloc]initWithTimeIntervalSince1970:2000];
+  GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:date2];
+  XCTAssertNotEqualObjects(token, token2);
+}
+
+- (void)testTokensWithSameTokenStringAndOneHasNoExpirationDateAreNotEqual {
+  GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:nil];
+  XCTAssertNotEqualObjects(token, token2);
 }
   
 - (void)testCoding {
@@ -52,8 +74,8 @@ static NSString * const tokenString = @"tokenString";
     GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:token requiringSecureCoding:YES error:nil];
     GIDToken *newToken = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDToken class]
-                                                                   fromData:data
-                                                                      error:nil];
+                                                           fromData:data
+                                                              error:nil];
     XCTAssertEqualObjects(token, newToken);
     
     XCTAssertTrue([GIDToken supportsSecureCoding]);

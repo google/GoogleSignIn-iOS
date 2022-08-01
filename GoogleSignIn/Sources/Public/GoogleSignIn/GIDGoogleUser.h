@@ -47,9 +47,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// The OAuth2 refresh token to exchange for new access tokens.
 @property(nonatomic, readonly) GIDToken *refreshToken;
 
-/// An OpenID Connect ID token that identifies the user. Send this token to your server to
-/// authenticate the user there. For more information on this topic, see
-/// https://developers.google.com/identity/sign-in/ios/backend-auth
+/// An OpenID Connect ID token that identifies the user.
+///
+/// Send this token to your server to authenticate the user there. For more information on this topic,
+/// see https://developers.google.com/identity/sign-in/ios/backend-auth.
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
 
 @end

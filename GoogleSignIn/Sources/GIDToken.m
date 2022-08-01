@@ -74,14 +74,15 @@ static NSString *const kExpirationDateKey = @"expirationDate";
 
 - (BOOL)isTheSameDate:(NSDate *)date1
                  with:(NSDate *)date2 {
-  // The date is nullable. Two `null` date is equal.
-  if (!date1 && !date2) {
+  
+  if (date1 || date2) {
+    return [date1 isEqualToDate:date2];
+  } else {
+  // The date is nullable in GIDToken. Two `nil` dates are considered equal so
+  // token equality check succeeds if token strings are equal and have no expiration.
     return YES;
   }
-  if (!date1 || !date2) {
-    return NO;
-  }
-  return [date1 isEqualToDate:date2];
+  
 }
 
 - (NSUInteger)hash {
