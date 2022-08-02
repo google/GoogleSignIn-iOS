@@ -19,7 +19,7 @@ import GoogleSignInSwift
 
 struct SignInView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
-  @ObservedObject var vm = GoogleSignInButtonViewModel()
+  @StateObject var vm = GoogleSignInButtonViewModel()
 
   var body: some View {
     VStack {

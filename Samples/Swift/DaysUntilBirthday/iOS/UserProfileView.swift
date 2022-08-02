@@ -37,38 +37,50 @@ struct UserProfileView: View {
               Text(userProfile.email)
             }
           }
-          NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
-                         destination: BirthdayView(birthdayViewModel: birthdayViewModel).onAppear {
-            guard self.birthdayViewModel.birthday != nil else {
-              if !self.authViewModel.hasBirthdayReadScope {
-                self.authViewModel.addBirthdayReadScope {
-                  self.birthdayViewModel.fetchBirthday()
+          NavigationLink(
+            NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
+            destination: BirthdayView(birthdayViewModel: birthdayViewModel)
+              .onAppear {
+                guard self.birthdayViewModel.birthday != nil else {
+                  if !self.authViewModel.hasBirthdayReadScope {
+                    guard let viewController = UIApplication.shared.windows.first?.rootViewController else {
+                      print("There was no root view controller")
+                      return
+                    }
+                    Task { @MainActor in
+                      do {
+                        let user = try await authViewModel.addBirthdayReadScope(
+                          viewController: viewController
+                        )
+                        self.authViewModel.state = .signedIn(user)
+                        self.birthdayViewModel.fetchBirthday()
+                      } catch {
+                        print("Failed to fetch birthday: \(error)")
+                      }
+                    }
+                  } else {
+                    self.birthdayViewModel.fetchBirthday()
+                  }
+                  return
                 }
-              } else {
-                self.birthdayViewModel.fetchBirthday()
-              }
-              return
-            }
-          })
+              })
           Spacer()
         }
         .toolbar {
           ToolbarItemGroup(placement: .navigationBarTrailing) {
-            Button(NSLocalizedString("Disconnect", comment: "Disconnect button"), action: disconnect)
-            Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
+            Button(
+              NSLocalizedString("Disconnect", comment: "Disconnect button"),
+              action: authViewModel.disconnect
+            )
+            Button(
+              NSLocalizedString("Sign Out", comment: "Sign out button"),
+              action: authViewModel.signOut
+            )
           }
         }
       } else {
         Text(NSLocalizedString("Failed to get user profile!", comment: "Empty user profile text"))
       }
     }
-  }
-
-  func disconnect() {
-    authViewModel.disconnect()
-  }
-
-  func signOut() {
-    authViewModel.signOut()
   }
 }

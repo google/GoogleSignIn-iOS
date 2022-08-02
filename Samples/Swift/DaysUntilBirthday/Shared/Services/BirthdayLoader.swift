@@ -17,8 +17,8 @@
 import Combine
 import GoogleSignIn
 
-/// An observable class to load the current user's birthday.
-final class BirthdayLoader: ObservableObject {
+/// A class to load the current user's birthday.
+final class BirthdayLoader {
   /// The scope required to read a user's birthday.
   static let birthdayReadScope = "https://www.googleapis.com/auth/user.birthday.read"
   private let baseUrlString = "https://people.googleapis.com/v1/people/me"
@@ -51,62 +51,49 @@ final class BirthdayLoader: ObservableObject {
     return URLSession(configuration: configuration)
   }()
 
-  private func sessionWithFreshToken(completion: @escaping (Result<URLSession, Error>) -> Void) {
-    let authentication = GIDSignIn.sharedInstance.currentUser?.authentication
-    authentication?.do { auth, error in
-      guard let token = auth?.accessToken else {
-        completion(.failure(.couldNotCreateURLSession(error)))
-        return
-      }
-      let configuration = URLSessionConfiguration.default
-      configuration.httpAdditionalHeaders = [
-        "Authorization": "Bearer \(token)"
-      ]
-      let session = URLSession(configuration: configuration)
-      completion(.success(session))
+  private func sessionWithFreshToken() async throws -> URLSession {
+    guard let authentication = GIDSignIn.sharedInstance.currentUser?.authentication else {
+      throw Error.noCurrentUserForSessionWithFreshToken
     }
+
+    let freshAuth = try await authentication.doWithFreshTokens()
+    let configuration = URLSessionConfiguration.default
+    configuration.httpAdditionalHeaders = [
+      "Authorization": "Bearer \(freshAuth.accessToken)"
+    ]
+    let session = URLSession(configuration: configuration)
+    return session
   }
 
-  /// Creates a `Publisher` to fetch a user's `Birthday`.
-  /// - parameter completion: A closure passing back the `AnyPublisher<Birthday, Error>`
-  /// upon success.
-  /// - note: The `AnyPublisher` passed back through the `completion` closure is created with a
-  /// fresh token. See `sessionWithFreshToken(completion:)` for more details.
-  func birthdayPublisher(completion: @escaping (AnyPublisher<Birthday, Error>) -> Void) {
-    sessionWithFreshToken { [weak self] result in
-      switch result {
-      case .success(let authSession):
-        guard let request = self?.request else {
-          return completion(Fail(error: .couldNotCreateURLRequest).eraseToAnyPublisher())
-        }
-        let bdayPublisher = authSession.dataTaskPublisher(for: request)
-          .tryMap { data, error -> Birthday in
-            let decoder = JSONDecoder()
-            let birthdayResponse = try decoder.decode(BirthdayResponse.self, from: data)
-            return birthdayResponse.firstBirthday
-          }
-          .mapError { error -> Error in
-            guard let loaderError = error as? Error else {
-              return Error.couldNotFetchBirthday(underlying: error)
-            }
-            return loaderError
-          }
-          .receive(on: DispatchQueue.main)
-          .eraseToAnyPublisher()
-        completion(bdayPublisher)
-      case .failure(let error):
-        completion(Fail(error: error).eraseToAnyPublisher())
-      }
+  /// Fetches a `Birthday`.
+  /// - returns An instance of `Birthday`.
+  /// - throws: An instance of `BirthdayLoader.Error` arising while fetching a birthday.
+  func loadBirthday() async throws -> Birthday {
+    let session = try await sessionWithFreshToken()
+    guard let request = request else {
+      throw Error.couldNotCreateURLRequest
     }
+    let birthdayData = try await withCheckedThrowingContinuation {
+        (continuation: CheckedContinuation<Data, Swift.Error>) -> Void in
+      let task = session.dataTask(with: request) { data, response, error in
+        guard let data = data else {
+          return continuation.resume(throwing: error ?? Error.noBirthdayData)
+        }
+        continuation.resume(returning: data)
+      }
+      task.resume()
+    }
+    let decoder = JSONDecoder()
+    let birthdayResponse = try decoder.decode(BirthdayResponse.self, from: birthdayData)
+    return birthdayResponse.firstBirthday
   }
 }
 
 extension BirthdayLoader {
-  /// An error representing what went wrong in fetching a user's number of day until their birthday.
+  /// An error for what went wrong in fetching a user's number of days until their birthday.
   enum Error: Swift.Error {
-    case couldNotCreateURLSession(Swift.Error?)
+    case noCurrentUserForSessionWithFreshToken
     case couldNotCreateURLRequest
-    case userHasNoBirthday
-    case couldNotFetchBirthday(underlying: Swift.Error)
+    case noBirthdayData
   }
 }
