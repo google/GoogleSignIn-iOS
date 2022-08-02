@@ -22,6 +22,8 @@
 static NSString *const kTokenStringKey = @"tokenString";
 static NSString *const kExpirationDateKey = @"expirationDate";
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation GIDToken
 
 - (instancetype)initWithTokenString:(NSString *)tokenString
@@ -89,3 +91,5 @@ static NSString *const kExpirationDateKey = @"expirationDate";
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
