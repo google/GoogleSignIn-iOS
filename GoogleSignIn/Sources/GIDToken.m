@@ -59,7 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - isEqual
 
-- (BOOL)isEqual:(id)object {
+- (BOOL)isEqual:(nullable id)object {
+  if (object == nil) {
+    return NO;
+  }
   if (self == object) {
     return YES;
   }
@@ -74,16 +77,14 @@ NS_ASSUME_NONNULL_BEGIN
       [self isTheSameDate:_expirationDate with:other.expirationDate];
 }
 
+// The date is nullable in GIDToken. Two `nil` dates are considered equal so
+// token equality check succeeds if token strings are equal and have no expiration.
 - (BOOL)isTheSameDate:(NSDate *)date1
                  with:(NSDate *)date2 {
-  
-  if (date1 || date2) {
-    return [date1 isEqualToDate:date2];
-  } else {
-  // The date is nullable in GIDToken. Two `nil` dates are considered equal so
-  // token equality check succeeds if token strings are equal and have no expiration.
+  if (!date1 && !date2) {
     return YES;
   }
+  return [date1 isEqualToDate:date2];
 }
 
 - (NSUInteger)hash {
