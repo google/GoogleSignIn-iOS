@@ -398,7 +398,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authorization expect] andReturn:_authState] authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
-  
+
   id idTokenDecoded = OCMClassMock([OIDIDToken class]);
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
@@ -415,7 +415,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
-  
   
 
   [_signIn restorePreviousSignInNoRefresh];
@@ -468,7 +467,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
 
-  [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
+  [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser *_Nullable user,
                                                  NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNotNil(error, @"error should not have been nil");
@@ -1235,6 +1234,7 @@ static void *kTestObserverContext = &kTestObserverContext;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
     GIDUserAuthCompletion completion =
         ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
+
       [expectation fulfill];
       if (userAuth) {
           XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
