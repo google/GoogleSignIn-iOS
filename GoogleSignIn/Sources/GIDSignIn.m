@@ -187,8 +187,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return [authState isAuthorized];
 }
 
-- (void)restorePreviousSignInWithCallback:(nullable GIDSignInCallback)callback {
-  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCallback:callback]];
+- (void)restorePreviousSignInWithCompletion:(nullable GIDSignInCompletion)completion {
+  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:completion]];
 }
 
 - (BOOL)restorePreviousSignInNoRefresh {
@@ -217,13 +217,13 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
-                       callback:(nullable GIDSignInCallback)callback {
+                     completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
                                                       loginHint:hint
-                                                   addScopesFlow:NO
-                                                       callback:callback];
+                                                  addScopesFlow:NO
+                                                     completion:completion];
   [self signInWithOptions:options];
 }
 
@@ -231,38 +231,38 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
        presentingViewController:(UIViewController *)presentingViewController
                            hint:(nullable NSString *)hint
                additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                       callback:(nullable GIDSignInCallback)callback {
+                     completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                      presentingViewController:presentingViewController
                                                     loginHint:hint
                                                 addScopesFlow:NO
                                                        scopes:additionalScopes
-                                                     callback:callback];
+                                                   completion:completion];
   [self signInWithOptions:options];
 }
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
        presentingViewController:(UIViewController *)presentingViewController
-                       callback:(nullable GIDSignInCallback)callback {
+                     completion:(nullable GIDSignInCompletion)completion {
   [self signInWithConfiguration:configuration
        presentingViewController:presentingViewController
                            hint:nil
-                       callback:callback];
+                     completion:completion];
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                    callback:(nullable GIDSignInCallback)callback {
+                  completion:(nullable GIDSignInCompletion)completion {
   // A currentUser must be available in order to complete this flow.
   if (!self.currentUser) {
     // No currentUser is set, notify callback of failure.
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeNoCurrentUser
                                      userInfo:nil];
-    if (callback) {
+    if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(nil, error);
+        completion(nil, error);
       });
     }
     return;
@@ -278,7 +278,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                        presentingViewController:presentingViewController
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
-                                                       callback:callback];
+                                                     completion:completion];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -290,9 +290,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeScopesAlreadyGranted
                                      userInfo:nil];
-    if (callback) {
+    if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(nil, error);
+        completion(nil, error);
       });
     }
     return;
@@ -310,52 +310,52 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
-                       callback:(nullable GIDSignInCallback)callback {
+                     completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                                presentingWindow:presentingWindow
                                                       loginHint:hint
-                                                   addScopesFlow:NO
-                                                       callback:callback];
+                                                  addScopesFlow:NO
+                                                     completion:completion];
   [self signInWithOptions:options];
 }
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
-                       callback:(nullable GIDSignInCallback)callback {
+                     completion:(nullable GIDSignInCompletion)completion {
   [self signInWithConfiguration:configuration
                presentingWindow:presentingWindow
                            hint:nil
-                       callback:callback];
+                     completion:completion];
 }
 
 - (void)signInWithConfiguration:(GIDConfiguration *)configuration
                presentingWindow:(NSWindow *)presentingWindow
                            hint:(nullable NSString *)hint
                additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                       callback:(nullable GIDSignInCallback)callback {
+                     completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                              presentingWindow:presentingWindow
                                                     loginHint:hint
                                                 addScopesFlow:NO
                                                        scopes:additionalScopes
-                                                     callback:callback];
+                                                   completion:completion];
   [self signInWithOptions:options];
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
-            presentingWindow:(NSWindow *)presentingWindow
-                    callback:(nullable GIDSignInCallback)callback {
+ presentingWindow:(NSWindow *)presentingWindow
+       completion:(nullable GIDSignInCompletion)completion {
   // A currentUser must be available in order to complete this flow.
   if (!self.currentUser) {
     // No currentUser is set, notify callback of failure.
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeNoCurrentUser
                                      userInfo:nil];
-    if (callback) {
+    if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(nil, error);
+        completion(nil, error);
       });
     }
     return;
@@ -371,7 +371,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                                presentingWindow:presentingWindow
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
-                                                       callback:callback];
+                                                     completion:completion];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -383,9 +383,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeScopesAlreadyGranted
                                      userInfo:nil];
-    if (callback) {
+    if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(nil, error);
+        completion(nil, error);
       });
     }
     return;
@@ -411,7 +411,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self removeAllKeychainEntries];
 }
 
-- (void)disconnectWithCallback:(nullable GIDDisconnectCallback)callback {
+- (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
   GIDGoogleUser *user = _currentUser;
   OIDAuthState *authState = user.authentication.authState;
   if (!authState) {
@@ -428,9 +428,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (!token) {
     [self signOut];
     // Nothing to do here, consider the operation successful.
-    if (callback) {
+    if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(nil);
+        completion(nil);
       });
     }
     return;
@@ -453,9 +453,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     if (!error) {
       [self signOut];
     }
-    if (callback) {
+    if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(error);
+        completion(error);
       });
     }
   }];
@@ -538,10 +538,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       if (error) {
         [self authenticateWithOptions:options];
       } else {
-        if (options.callback) {
+        if (options.completion) {
           self->_currentOptions = nil;
           dispatch_async(dispatch_get_main_queue(), ^{
-            options.callback(self->_currentUser, nil);
+            options.completion(self->_currentUser, nil);
           });
         }
       }
@@ -707,10 +707,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
-    if (options.callback) {
+    if (options.completion) {
       _currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
-        options.callback(nil, error);
+        options.completion(nil, error);
       });
     }
     return;
@@ -881,11 +881,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
-    if (self->_currentOptions.callback) {
-      GIDSignInCallback callback = self->_currentOptions.callback;
+    if (self->_currentOptions.completion) {
+      GIDSignInCompletion completion = self->_currentOptions.completion;
       self->_currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
-        callback(self->_currentUser, handlerAuthFlow.error);
+        completion(self->_currentUser, handlerAuthFlow.error);
       });
     }
   }];

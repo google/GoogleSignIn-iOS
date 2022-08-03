@@ -37,7 +37,7 @@
   id presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   NSString *loginHint = @"login_hint";
-  GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
+  GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
   
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
@@ -47,8 +47,8 @@
                                                presentingWindow:presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                       loginHint:loginHint
-                                                   addScopesFlow:NO
-                                                       callback:callback];
+                                                  addScopesFlow:NO
+                                                     completion:completion];
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);
   XCTAssertFalse(options.addScopesFlow);
@@ -63,12 +63,13 @@
 }
 
 - (void)testSilentOptions {
-  GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions silentOptionsWithCallback:callback];
+  GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
+  GIDSignInInternalOptions *options = [GIDSignInInternalOptions
+                                       silentOptionsWithCompletion:completion];
   XCTAssertFalse(options.interactive);
   XCTAssertFalse(options.continuation);
   XCTAssertNil(options.extraParams);
-  XCTAssertEqual(options.callback, callback);
+  XCTAssertEqual(options.completion, completion);
 }
 
 @end
