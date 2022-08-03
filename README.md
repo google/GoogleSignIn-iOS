@@ -63,3 +63,58 @@ Google Sign-In also supports iOS apps that are built for macOS via
 [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for your Mac Catalyst app
 to store credientials via the Keychain on macOS, you will need to
 [sign your app](https://developer.apple.com/support/code-signing/).
+
+## Using the Google Sign-In Button
+
+There are several ways to add a 'Sign in with Google' button to your app, which
+path you choose will depend on your UI framework and target platform.
+
+### SwiftUI (iOS and macOS)
+
+Creating a 'Sign in with Google' button in SwiftUI can be as simple as this:
+
+```
+GoogleSignInButton {
+  GIDSignIn.sharedInstance.signIn(
+    with: configuration, 
+    presenting: yourViewController) { user, error in
+      // check `error`; do something with `user`
+  }
+}
+```
+
+This example takes advantage of the initializer's [default argument for the
+view model](GoogleSignInSwift/Sources/GoogleSignInButton.swift#L39).
+The default arguments for the view model will use the light scheme, the
+standard button style, and the normal button state.
+You can supply an instance of [`GoogleSignInButtonViewModel`](GoogleSignInSwift/Sources/GoogleSignInButtonViewModel.swift)
+with different values for these properties to customize the button.
+[This convenience initializer](GoogleSignInSwift/Sources/GoogleSignInButton.swift#L56) 
+provides parameters that you can use to set these values as needed.
+
+### UIKit (iOS)
+
+If you are not using SwiftUI to build your user interfaces, you can either
+create `GIDSignInButton` programmatically, or in a Xib/Storyboard. 
+If you are writing programmatic UI code, it will look something like this:
+
+`let button = GIDSignInButton(frame: CGRect(<YOUR_RECT>))`
+
+### AppKit (macOS)
+
+Given that `GIDSignInButton` is implemented as a subclass of `UIControl`, it
+will not be available on macOS. 
+You can instead use the SwiftUI Google sign-in button.
+Doing so will require that you wrap the SwiftUI button in a hosting view so
+that it will be available for use in AppKit.
+
+```
+let signInButton = GoogleSignInButton {
+  GIDSignIn.sharedInstance.signIn(
+    with: configuration, 
+    presenting: yourViewController) { user, error in
+      // check `error`; do something with `user`
+  }
+}
+let hostedButton = NSHostingView(rootView: signInButton)
+```
