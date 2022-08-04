@@ -29,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Check if current token is equal to another one.
 ///
-/// @param other - Another token to compare.
-- (BOOL)isEqualToToken:(GIDToken *)other;
+/// @param otherToken - Another token to compare.
+- (BOOL)isEqualToToken:(GIDToken *)otherToken;
 
 /// Unsupported.
 + (instancetype)new NS_UNAVAILABLE;

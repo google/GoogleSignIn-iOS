@@ -44,6 +44,13 @@ static NSString * const tokenString2 = @"tokenString2";
   XCTAssertEqualObjects(token, token2);
 }
 
+- (void)testEqualTokensHaveTheSameHash {
+  GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
+  XCTAssertEqualObjects(token, token2);
+  XCTAssertEqual(token.hash, token2.hash);
+}
+
 - (void)testTokensWithDifferentTokenStringsAreNotEqual {
   GIDToken *token = [[GIDToken alloc]initWithTokenString:tokenString expirationDate:_date];
   GIDToken *token2 = [[GIDToken alloc]initWithTokenString:tokenString2 expirationDate:_date];

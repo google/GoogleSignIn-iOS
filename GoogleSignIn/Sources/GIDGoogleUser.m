@@ -48,9 +48,10 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (nullable NSString *)userID {
-  NSString *idToken = [self lastTokenResponseToken];
-  if (idToken) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
+  NSString *idTokenString = self.idToken.tokenString;
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded =
+        [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
     if (idTokenDecoded && idTokenDecoded.subject) {
       return [idTokenDecoded.subject copy];
     }
@@ -107,7 +108,17 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   _authState = authState;
   _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
   _profile = profileData;
-  [self updateTokens];
+  _accessToken = [[GIDToken alloc] initWithTokenString:[self lastTokenResponseAccessToken]
+                                        expirationDate:[self accessTokenExpirationDate]];
+  _refreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
+                                         expirationDate:nil];
+  NSString *lastTokenResponseToken = [self lastTokenResponseToken];
+  if (lastTokenResponseToken) {
+    _idToken = [[GIDToken alloc] initWithTokenString:lastTokenResponseToken
+                                      expirationDate:[self idTokenExpirationDate]];
+  } else {
+    _idToken = nil;
+  }
 }
 
 #pragma mark - Helpers
@@ -117,9 +128,9 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 }
 
 - (nullable NSString *)hostedDomain {
-  NSString *lastTokenResponseToken = [self lastTokenResponseToken];
-  if (lastTokenResponseToken) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:lastTokenResponseToken];
+  NSString *idTokenString = self.idToken.tokenString;
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
     if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
       return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
     }
@@ -151,20 +162,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   return _authState.lastTokenResponse.accessTokenExpirationDate;
 }
 
-- (void)updateTokens {
-  _accessToken = [[GIDToken alloc] initWithTokenString:[self lastTokenResponseAccessToken]
-                                        expirationDate:[self accessTokenExpirationDate]];
-  _refreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
-                                         expirationDate:nil];
-  NSString *lastTokenResponseToken = [self lastTokenResponseToken];
-  if (lastTokenResponseToken) {
-    _idToken = [[GIDToken alloc] initWithTokenString:lastTokenResponseToken
-                                      expirationDate:[self idTokenExpirationDate]];
-  } else {
-    _idToken = nil;
-  }
-}
-
 #pragma mark - NSSecureCoding
 
 + (BOOL)supportsSecureCoding {
@@ -174,16 +171,17 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];
   if (self) {
-    _profile = [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
+    GIDProfileData *profileData =
+        [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
+    OIDAuthState *authState;
     if ([decoder containsValueForKey:kAuthState]) { // Current encoding
-      _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
+      authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
     } else { // Old encoding
       GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
                                                                 forKey:kAuthenticationKey];
-      _authState = authentication.authState;
+      authState = authentication.authState;
     }
-    _authentication = [[GIDAuthentication alloc] initWithAuthState:_authState];
-    [self updateTokens];
+    [self updateAuthState:authState profileData:profileData];
   }
   return self;
 }

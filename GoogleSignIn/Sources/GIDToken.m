@@ -72,15 +72,15 @@ NS_ASSUME_NONNULL_BEGIN
   return [self isEqualToToken:(GIDToken *)object];
 }
 
-- (BOOL)isEqualToToken:(GIDToken *)other {
-  return [_tokenString isEqual:other.tokenString] &&
-      [self isTheSameDate:_expirationDate with:other.expirationDate];
+- (BOOL)isEqualToToken:(GIDToken *)otherToken {
+  return [_tokenString isEqual:otherToken.tokenString] &&
+      [self isTheSameDate:_expirationDate with:otherToken.expirationDate];
 }
 
 // The date is nullable in GIDToken. Two `nil` dates are considered equal so
 // token equality check succeeds if token strings are equal and have no expiration.
-- (BOOL)isTheSameDate:(NSDate *)date1
-                 with:(NSDate *)date2 {
+- (BOOL)isTheSameDate:(nullable NSDate *)date1
+                 with:(nullable NSDate *)date2 {
   if (!date1 && !date2) {
     return YES;
   }
