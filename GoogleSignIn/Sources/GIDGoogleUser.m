@@ -28,8 +28,6 @@
 #import <AppAuth/AppAuth.h>
 #endif
 
-NS_ASSUME_NONNULL_BEGIN
-
 // The ID Token claim key for the hosted domain value.
 static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
 
@@ -42,10 +40,16 @@ static NSString *const kAuthState = @"authState";
 static NSString *const kAudienceParameter = @"audience";
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
 }
+
+@synthesize accessToken = _accessToken;
+@synthesize refreshToken = _refreshToken;
+@synthesize idToken = _idToken;
 
 - (nullable NSString *)userID {
   NSString *idTokenString = self.idToken.tokenString;
@@ -92,6 +96,40 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   return _cachedConfiguration;
 }
 
+- (GIDToken *)accessToken {
+  @synchronized(self) {
+    if (!_accessToken) {
+      _accessToken = [[GIDToken alloc] initWithTokenString:[_authState.lastTokenResponse.accessToken copy]
+                                            expirationDate:_authState.lastTokenResponse.accessTokenExpirationDate];
+    }
+  }
+  return _accessToken;
+}
+
+- (GIDToken *)refreshToken {
+  @synchronized(self) {
+    if (!_refreshToken) {
+      _refreshToken = [[GIDToken alloc] initWithTokenString:[_authState.refreshToken copy]
+                                             expirationDate:nil];
+    }
+  }
+  return _refreshToken;
+}
+
+- (nullable GIDToken *)idToken {
+  @synchronized(self) {
+    NSString *idTokenString = [_authState.lastTokenResponse.idToken copy];
+    if (!_idToken && idTokenString) {
+      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
+                                        initWithIDTokenString:idTokenString] expiresAt];
+      _idToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                        expirationDate:idTokenExpirationDate];
+    }
+  }
+  return _idToken;
+}
+
+
 #pragma mark - Private Methods
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
@@ -105,18 +143,14 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 - (void)updateAuthState:(OIDAuthState *)authState
             profileData:(nullable GIDProfileData *)profileData {
-  _authState = authState;
-  _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
-  _profile = profileData;
-  _accessToken = [[GIDToken alloc] initWithTokenString:[self lastTokenResponseAccessToken]
-                                        expirationDate:[self accessTokenExpirationDate]];
-  _refreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
-                                         expirationDate:nil];
-  NSString *lastTokenResponseToken = [self lastTokenResponseToken];
-  if (lastTokenResponseToken) {
-    _idToken = [[GIDToken alloc] initWithTokenString:lastTokenResponseToken
-                                      expirationDate:[self idTokenExpirationDate]];
-  } else {
+  @synchronized(self) {
+    _authState = authState;
+    _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
+    _profile = profileData;
+    
+    // These three tokens will be generated in the getter and cached .
+    _accessToken = nil;
+    _refreshToken = nil;
     _idToken = nil;
   }
 }
@@ -124,7 +158,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 #pragma mark - Helpers
 
 - (NSString *)clientID {
-  return _authState.lastAuthorizationResponse.request.clientID;
+  return [_authState.lastAuthorizationResponse.request.clientID copy];
 }
 
 - (nullable NSString *)hostedDomain {
@@ -144,22 +178,6 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 - (nullable NSString *)openIDRealm {
   return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
-}
-
-- (NSString *)lastTokenResponseToken {
-  return _authState.lastTokenResponse.idToken;
-}
-
-- (nullable NSDate *)idTokenExpirationDate {
-  return [[[OIDIDToken alloc] initWithIDTokenString:[self lastTokenResponseToken]] expiresAt];
-}
-
-- (NSString *)lastTokenResponseAccessToken {
-  return _authState.lastTokenResponse.accessToken;
-}
-
-- (NSDate *)accessTokenExpirationDate {
-  return _authState.lastTokenResponse.accessTokenExpirationDate;
 }
 
 #pragma mark - NSSecureCoding

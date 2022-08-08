@@ -56,6 +56,9 @@
   XCTAssertEqualObjects(user.profile, [GIDProfileData testInstance]);
   XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
   XCTAssertEqualObjects(user.refreshToken.tokenString, kRefreshToken);
+  
+  NSDate *expectedExpirationDate = [NSDate dateWithTimeIntervalSince1970:kIDTokenExpires];
+  XCTAssertEqualObjects(user.idToken.expirationDate, expectedExpirationDate);
 }
 
 - (void)testCoding {
