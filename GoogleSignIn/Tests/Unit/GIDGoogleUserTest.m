@@ -57,8 +57,9 @@
   XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
   XCTAssertEqualObjects(user.refreshToken.tokenString, kRefreshToken);
   
-  NSDate *expectedExpirationDate = [NSDate dateWithTimeIntervalSince1970:kIDTokenExpires];
-  XCTAssertEqualObjects(user.idToken.expirationDate, expectedExpirationDate);
+  OIDIDToken *idToken = [[OIDIDToken alloc]
+      initWithIDTokenString:authState.lastTokenResponse.idToken];
+  XCTAssertEqualObjects(user.idToken.expirationDate, [idToken expiresAt]);
 }
 
 - (void)testCoding {
