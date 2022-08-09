@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,11 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
+  GIDToken *_accessToken;
+  GIDToken *_refreshToken;
+  GIDToken *_idToken;
 }
-
-@synthesize accessToken = _accessToken;
-@synthesize refreshToken = _refreshToken;
-@synthesize idToken = _idToken;
 
 - (nullable NSString *)userID {
   NSString *idTokenString = self.idToken.tokenString;
@@ -86,10 +85,16 @@ NS_ASSUME_NONNULL_BEGIN
   @synchronized(self) {
     // Caches the configuration since it would not change for one GIDGoogleUser instance.
     if (!_cachedConfiguration) {
-      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
-                                                         serverClientID:[self serverClientID]
+      NSString *clientID = _authState.lastAuthorizationResponse.request.clientID;
+      NSString *serverClientID =
+          _authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
+      NSString *openIDRealm =
+          _authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
+      
+      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:clientID
+                                                         serverClientID:serverClientID
                                                            hostedDomain:[self hostedDomain]
-                                                            openIDRealm:[self openIDRealm]];
+                                                            openIDRealm:openIDRealm];
     };
   }
   
@@ -99,8 +104,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (GIDToken *)accessToken {
   @synchronized(self) {
     if (!_accessToken) {
-      _accessToken = [[GIDToken alloc] initWithTokenString:[_authState.lastTokenResponse.accessToken copy]
-                                            expirationDate:_authState.lastTokenResponse.accessTokenExpirationDate];
+      _accessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
+                                            expirationDate:_authState.lastTokenResponse.
+                                                               accessTokenExpirationDate];
     }
   }
   return _accessToken;
@@ -109,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (GIDToken *)refreshToken {
   @synchronized(self) {
     if (!_refreshToken) {
-      _refreshToken = [[GIDToken alloc] initWithTokenString:[_authState.refreshToken copy]
+      _refreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
                                              expirationDate:nil];
     }
   }
@@ -118,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable GIDToken *)idToken {
   @synchronized(self) {
-    NSString *idTokenString = [_authState.lastTokenResponse.idToken copy];
+    NSString *idTokenString = _authState.lastTokenResponse.idToken;
     if (!_idToken && idTokenString) {
       NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
                                         initWithIDTokenString:idTokenString] expiresAt];
@@ -128,7 +134,6 @@ NS_ASSUME_NONNULL_BEGIN
   }
   return _idToken;
 }
-
 
 #pragma mark - Private Methods
 
@@ -157,27 +162,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Helpers
 
-- (NSString *)clientID {
-  return [_authState.lastAuthorizationResponse.request.clientID copy];
-}
-
 - (nullable NSString *)hostedDomain {
   NSString *idTokenString = self.idToken.tokenString;
   if (idTokenString) {
     OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
     if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
-      return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
+      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
     }
   }
   return nil;
-}
-
-- (nullable NSString *)serverClientID {
-  return [_authState.lastTokenResponse.request.additionalParameters[kAudienceParameter] copy];
-}
-
-- (nullable NSString *)openIDRealm {
-  return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
 }
 
 #pragma mark - NSSecureCoding

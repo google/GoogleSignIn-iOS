@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
                      expirationDate:(nullable NSDate *)expirationDate {
   self = [super init];
   if (self) {
-    _tokenString = tokenString;
+    _tokenString = [tokenString copy];
     _expirationDate  = expirationDate;
   }
   
