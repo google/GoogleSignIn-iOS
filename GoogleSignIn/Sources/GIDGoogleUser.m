@@ -45,9 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
-  GIDToken *_accessToken;
-  GIDToken *_refreshToken;
-  GIDToken *_idToken;
+  GIDToken *_cachedAccessToken;
+  GIDToken *_cachedRefreshToken;
+  GIDToken *_cachedIdToken;
 }
 
 - (nullable NSString *)userID {
@@ -103,36 +103,36 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (GIDToken *)accessToken {
   @synchronized(self) {
-    if (!_accessToken) {
-      _accessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
-                                            expirationDate:_authState.lastTokenResponse.
-                                                               accessTokenExpirationDate];
+    if (!_cachedAccessToken) {
+      _cachedAccessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
+                                                  expirationDate:_authState.lastTokenResponse.
+                                                                     accessTokenExpirationDate];
     }
   }
-  return _accessToken;
+  return _cachedAccessToken;
 }
 
 - (GIDToken *)refreshToken {
   @synchronized(self) {
-    if (!_refreshToken) {
-      _refreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
-                                             expirationDate:nil];
+    if (!_cachedRefreshToken) {
+      _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
+                                                   expirationDate:nil];
     }
   }
-  return _refreshToken;
+  return _cachedRefreshToken;
 }
 
 - (nullable GIDToken *)idToken {
   @synchronized(self) {
     NSString *idTokenString = _authState.lastTokenResponse.idToken;
-    if (!_idToken && idTokenString) {
+    if (!_cachedIdToken && idTokenString) {
       NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
                                         initWithIDTokenString:idTokenString] expiresAt];
-      _idToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                        expirationDate:idTokenExpirationDate];
+      _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                              expirationDate:idTokenExpirationDate];
     }
   }
-  return _idToken;
+  return _cachedIdToken;
 }
 
 #pragma mark - Private Methods
@@ -154,9 +154,9 @@ NS_ASSUME_NONNULL_BEGIN
     _profile = profileData;
     
     // These three tokens will be generated in the getter and cached .
-    _accessToken = nil;
-    _refreshToken = nil;
-    _idToken = nil;
+    _cachedAccessToken = nil;
+    _cachedRefreshToken = nil;
+    _cachedIdToken = nil;
   }
 }
 
