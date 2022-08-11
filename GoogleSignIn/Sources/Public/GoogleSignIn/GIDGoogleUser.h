@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class GIDAuthentication;
 @class GIDConfiguration;
+@class GIDToken;
 @class GIDProfileData;
 
 /// This class represents a user account.
@@ -39,6 +40,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The configuration that was used to sign in this user.
 @property(nonatomic, readonly) GIDConfiguration *configuration;
+
+/// The OAuth2 access token to access Google services.
+@property(nonatomic, readonly) GIDToken *accessToken;
+
+/// The OAuth2 refresh token to exchange for new access tokens.
+@property(nonatomic, readonly) GIDToken *refreshToken;
+
+/// An OpenID Connect ID token that identifies the user.
+///
+/// Send this token to your server to authenticate the user there. For more information on this topic,
+/// see https://developers.google.com/identity/sign-in/ios/backend-auth.
+@property(nonatomic, readonly, nullable) GIDToken *idToken;
 
 @end
 

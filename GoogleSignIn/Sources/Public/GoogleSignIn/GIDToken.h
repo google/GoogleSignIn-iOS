@@ -27,6 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// The estimated expiration date of the token.
 @property(nonatomic, readonly, nullable) NSDate *expirationDate;
 
+/// Check if current token is equal to another one.
+///
+/// @param otherToken - Another token to compare.
+- (BOOL)isEqualToToken:(GIDToken *)otherToken;
+
 /// Unsupported.
 + (instancetype)new NS_UNAVAILABLE;
 

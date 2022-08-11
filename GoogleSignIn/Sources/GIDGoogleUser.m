@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDToken_Private.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
 #import <AppAuth/AppAuth.h>
 #endif
-
-NS_ASSUME_NONNULL_BEGIN
 
 // The ID Token claim key for the hosted domain value.
 static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
@@ -41,15 +40,21 @@ static NSString *const kAuthState = @"authState";
 static NSString *const kAudienceParameter = @"audience";
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
+  GIDToken *_cachedAccessToken;
+  GIDToken *_cachedRefreshToken;
+  GIDToken *_cachedIdToken;
 }
 
 - (nullable NSString *)userID {
-  NSString *idToken = [self idToken];
-  if (idToken) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
+  NSString *idTokenString = self.idToken.tokenString;
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded =
+        [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
     if (idTokenDecoded && idTokenDecoded.subject) {
       return [idTokenDecoded.subject copy];
     }
@@ -80,14 +85,54 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   @synchronized(self) {
     // Caches the configuration since it would not change for one GIDGoogleUser instance.
     if (!_cachedConfiguration) {
-      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:[self clientID]
-                                                         serverClientID:[self serverClientID]
+      NSString *clientID = _authState.lastAuthorizationResponse.request.clientID;
+      NSString *serverClientID =
+          _authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
+      NSString *openIDRealm =
+          _authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
+      
+      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:clientID
+                                                         serverClientID:serverClientID
                                                            hostedDomain:[self hostedDomain]
-                                                            openIDRealm:[self openIDRealm]];
+                                                            openIDRealm:openIDRealm];
     };
   }
   
   return _cachedConfiguration;
+}
+
+- (GIDToken *)accessToken {
+  @synchronized(self) {
+    if (!_cachedAccessToken) {
+      _cachedAccessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
+                                                  expirationDate:_authState.lastTokenResponse.
+                                                                     accessTokenExpirationDate];
+    }
+  }
+  return _cachedAccessToken;
+}
+
+- (GIDToken *)refreshToken {
+  @synchronized(self) {
+    if (!_cachedRefreshToken) {
+      _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
+                                                   expirationDate:nil];
+    }
+  }
+  return _cachedRefreshToken;
+}
+
+- (nullable GIDToken *)idToken {
+  @synchronized(self) {
+    NSString *idTokenString = _authState.lastTokenResponse.idToken;
+    if (!_cachedIdToken && idTokenString) {
+      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
+                                        initWithIDTokenString:idTokenString] expiresAt];
+      _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                              expirationDate:idTokenExpirationDate];
+    }
+  }
+  return _cachedIdToken;
 }
 
 #pragma mark - Private Methods
@@ -103,38 +148,29 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 - (void)updateAuthState:(OIDAuthState *)authState
             profileData:(nullable GIDProfileData *)profileData {
-  _authState = authState;
-  _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
-  _profile = profileData;
+  @synchronized(self) {
+    _authState = authState;
+    _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
+    _profile = profileData;
+    
+    // These three tokens will be generated in the getter and cached .
+    _cachedAccessToken = nil;
+    _cachedRefreshToken = nil;
+    _cachedIdToken = nil;
+  }
 }
 
 #pragma mark - Helpers
 
-- (NSString *)clientID {
-  return _authState.lastAuthorizationResponse.request.clientID;
-}
-
 - (nullable NSString *)hostedDomain {
-  NSString *idToken = [self idToken];
-  if (idToken) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idToken];
+  NSString *idTokenString = self.idToken.tokenString;
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
     if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
-      return [idTokenDecoded.claims[kHostedDomainIDTokenClaimKey] copy];
+      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
     }
   }
   return nil;
-}
-
-- (NSString *)idToken {
-  return _authState ? _authState.lastTokenResponse.idToken : nil;
-}
-
-- (nullable NSString *)serverClientID {
-  return [_authState.lastTokenResponse.request.additionalParameters[kAudienceParameter] copy];
-}
-
-- (nullable NSString *)openIDRealm {
-  return [_authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter] copy];
 }
 
 #pragma mark - NSSecureCoding
@@ -146,15 +182,17 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];
   if (self) {
-    _profile = [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
+    GIDProfileData *profileData =
+        [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
+    OIDAuthState *authState;
     if ([decoder containsValueForKey:kAuthState]) { // Current encoding
-      _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
+      authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
     } else { // Old encoding
       GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
                                                                 forKey:kAuthenticationKey];
-      _authState = authentication.authState;
+      authState = authentication.authState;
     }
-    _authentication = [[GIDAuthentication alloc] initWithAuthState:_authState];
+    [self updateAuthState:authState profileData:profileData];
   }
   return self;
 }

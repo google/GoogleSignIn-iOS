@@ -37,6 +37,7 @@
   id presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   NSString *loginHint = @"login_hint";
+
   void (^completion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error) =
       ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {};
   GIDSignInInternalOptions *options =

@@ -15,6 +15,8 @@
 #import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
+
 #import "GoogleSignIn/Tests/Unit/GIDAuthentication+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDConfiguration+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
@@ -35,13 +37,17 @@
   return [self.authentication isEqual:other.authentication] &&
       [self.userID isEqual:other.userID] &&
       [self.profile isEqual:other.profile] &&
-      [self.configuration isEqual:other.configuration];
+      [self.configuration isEqual:other.configuration] &&
+      [self.idToken isEqual:other.idToken] &&
+      [self.refreshToken isEqual:other.refreshToken] &&
+      [self.accessToken isEqual:other.accessToken];
 }
 
 // Not the hash implemention you want to use on prod, but just to match |isEqual:| here.
 - (NSUInteger)hash {
   return [self.authentication hash] ^ [self.userID hash] ^ [self.configuration hash] ^
-      [self.profile hash] ;
+      [self.profile hash] ^ [self.idToken hash] ^ [self.refreshToken hash] ^
+      [self.accessToken hash];
 }
 
 @end

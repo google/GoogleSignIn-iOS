@@ -397,6 +397,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization expect] andReturn:_authState] authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
+  OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
 
   id idTokenDecoded = OCMClassMock([OIDIDToken class]);
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
@@ -412,6 +413,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
   OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
+  OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
+  OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
+  
 
   [_signIn restorePreviousSignInNoRefresh];
 
@@ -1228,8 +1232,9 @@ static void *kTestObserverContext = &kTestObserverContext;
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    void (^completion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error) =
-    ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
+    GIDUserAuthCompletion completion =
+        ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
+
       [expectation fulfill];
       if (userAuth) {
           XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);

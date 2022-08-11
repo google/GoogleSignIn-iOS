@@ -19,6 +19,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
@@ -53,6 +54,12 @@
   XCTAssertEqualObjects(user.configuration.hostedDomain, kHostedDomain);
   XCTAssertEqualObjects(user.configuration.clientID, OIDAuthorizationRequestTestingClientID);
   XCTAssertEqualObjects(user.profile, [GIDProfileData testInstance]);
+  XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
+  XCTAssertEqualObjects(user.refreshToken.tokenString, kRefreshToken);
+  
+  OIDIDToken *idToken = [[OIDIDToken alloc]
+      initWithIDTokenString:authState.lastTokenResponse.idToken];
+  XCTAssertEqualObjects(user.idToken.expirationDate, [idToken expiresAt]);
 }
 
 - (void)testCoding {
