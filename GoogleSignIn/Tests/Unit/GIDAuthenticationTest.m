@@ -14,10 +14,10 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
+
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -64,38 +64,6 @@ static NSString *const kOldIOSName = @"iPhone OS";
 // The system name in new iOS versions.
 static NSString *const kNewIOSName = @"iOS";
 
-// List of observed properties of the class being tested.
-static NSString *const kObservedProperties[] = {
-  @"accessToken",
-  @"accessTokenExpirationDate",
-  @"idToken",
-  @"idTokenExpirationDate"
-};
-static const NSUInteger kNumberOfObservedProperties =
-    sizeof(kObservedProperties) / sizeof(*kObservedProperties);
-
-// Bit position for notification change type bitmask flags.
-// Must match the list of observed properties above.
-typedef NS_ENUM(NSUInteger, ChangeType) {
-  kChangeTypeAccessTokenPrior,
-  kChangeTypeAccessToken,
-  kChangeTypeAccessTokenExpirationDatePrior,
-  kChangeTypeAccessTokenExpirationDate,
-  kChangeTypeIDTokenPrior,
-  kChangeTypeIDToken,
-  kChangeTypeIDTokenExpirationDatePrior,
-  kChangeTypeIDTokenExpirationDate,
-  kChangeTypeEnd  // not a real change type but an end mark for calculating |kChangeAll|
-};
-
-static const NSUInteger kChangeNone = 0u;
-static const NSUInteger kChangeAll = (1u << kChangeTypeEnd) - 1u;
-
-#if __has_feature(c_static_assert) || __has_extension(c_static_assert)
-_Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObservedProperties)) * 2,
-               "List of observed properties must match list of change notification enums");
-#endif
-
 @interface GIDAuthenticationTest : XCTestCase
 @end
 
@@ -117,12 +85,6 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 
   // The saved token request.
   OIDTokenRequest *_tokenRequest;
-
-  // All GIDAuthentication objects that are observed.
-  NSMutableArray *_observedAuths;
-
-  // Bitmask flags for observed changes, as specified in |ChangeType|.
-  NSUInteger _changesObserved;
 
   // The fake system name used for testing.
   NSString *_fakeSystemName;
@@ -149,8 +111,6 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     self->_tokenRequest = [request copy];
     return nil;
   }];
-  _observedAuths = [[NSMutableArray alloc] init];
-  _changesObserved = 0;
   _fakeSystemName = kNewIOSName;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [GULSwizzler swizzleClass:[UIDevice class]
@@ -168,44 +128,10 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   [GULSwizzler unswizzleClass:[UIDevice class]
                      selector:@selector(systemName)
               isClassSelector:NO];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  for (GIDAuthentication *auth in _observedAuths) {
-    for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
-      [auth removeObserver:self forKeyPath:kObservedProperties[i]];
-    }
-  }
-  _observedAuths = nil;
+#endif
 }
 
 #pragma mark - Tests
-
-- (void)testInitWithAuthState {
-  OIDAuthState *authState = [OIDAuthState testInstance];
-  GIDAuthentication *auth = [[GIDAuthentication alloc] initWithAuthState:authState];
-
-  XCTAssertEqualObjects(auth.clientID, authState.lastAuthorizationResponse.request.clientID);
-  XCTAssertEqualObjects(auth.accessToken, authState.lastTokenResponse.accessToken);
-  XCTAssertEqualObjects(auth.accessTokenExpirationDate,
-                        authState.lastTokenResponse.accessTokenExpirationDate);
-  XCTAssertEqualObjects(auth.refreshToken, authState.refreshToken);
-  XCTAssertEqualObjects(auth.idToken, authState.lastTokenResponse.idToken);
-  OIDIDToken *idToken = [[OIDIDToken alloc]
-      initWithIDTokenString:authState.lastTokenResponse.idToken];
-  XCTAssertEqualObjects(auth.idTokenExpirationDate, [idToken expiresAt]);
-}
-
-- (void)testInitWithAuthStateNoIDToken {
-  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:nil];
-  GIDAuthentication *auth = [[GIDAuthentication alloc] initWithAuthState:authState];
-
-  XCTAssertEqualObjects(auth.clientID, authState.lastAuthorizationResponse.request.clientID);
-  XCTAssertEqualObjects(auth.accessToken, authState.lastTokenResponse.accessToken);
-  XCTAssertEqualObjects(auth.accessTokenExpirationDate,
-                        authState.lastTokenResponse.accessTokenExpirationDate);
-  XCTAssertEqualObjects(auth.refreshToken, authState.refreshToken);
-  XCTAssertNil(auth.idToken);
-  XCTAssertNil(auth.idTokenExpirationDate);
-}
 
 - (void)testAuthState {
   OIDAuthState *authState = [OIDAuthState testInstance];
@@ -214,31 +140,6 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 
   XCTAssertEqual(authState, authStateReturned);
 }
-
-- (void)testCoding {
-  if (@available(iOS 11, macOS 10.13, *)) {
-    GIDAuthentication *auth = [self auth];
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth requiringSecureCoding:YES error:nil];
-    GIDAuthentication *newAuth = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDAuthentication class]
-                                                                   fromData:data
-                                                                      error:nil];
-    XCTAssertEqualObjects(auth, newAuth);
-    XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
-  } else {
-    XCTSkip(@"Required API is not available for this test.");
-  }
-}
-
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// Deprecated in iOS 13 and macOS 10.14
-- (void)testLegacyCoding {
-  GIDAuthentication *auth = [self auth];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:auth];
-  GIDAuthentication *newAuth = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-  XCTAssertEqualObjects(auth, newAuth);
-  XCTAssertTrue([GIDAuthentication supportsSecureCoding]);
-}
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void)testFetcherAuthorizer {
   // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works
@@ -288,37 +189,37 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 
 - (void)testDoWithFreshTokensError {
   [self setTokensExpireTime:-10];  // expired 10 seconds ago
-  GIDAuthentication *auth = [self observedAuth];
+  GIDAuthentication *auth = [self auth];
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
-  [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
+  [auth doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
     [expectation fulfill];
-    XCTAssertNil(authentication);
+    XCTAssertNil(authState);
     XCTAssertNotNil(error);
   }];
   _tokenFetchHandler(nil, [self fakeError]);
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  [self assertOldTokensInAuth:auth];
+  [self assertOldTokensInAuth:auth.authState];
 }
 
 - (void)testDoWithFreshTokensQueue {
-  GIDAuthentication *auth = [self observedAuth];
+  GIDAuthentication *auth = [self auth];
   XCTestExpectation *firstExpectation =
       [self expectationWithDescription:@"First callback is called"];
-  [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
+  [auth doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
     [firstExpectation fulfill];
-    [self assertNewTokensInAuth:authentication];
+    [self assertNewTokensInAuth:authState];
     XCTAssertNil(error);
   }];
   XCTestExpectation *secondExpectation =
       [self expectationWithDescription:@"Second callback is called"];
-  [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
+  [auth doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
     [secondExpectation fulfill];
-    [self assertNewTokensInAuth:authentication];
+    [self assertNewTokensInAuth:authState];
     XCTAssertNil(error);
   }];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  [self assertNewTokensInAuth:auth];
+  [self assertNewTokensInAuth:auth.authState];
 }
 
 #pragma mark - EMM Support
@@ -330,8 +231,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"emm_support" : @"xyz",
   };
   GIDAuthentication *auth = [self auth];
-  [auth doWithFreshTokens:^(GIDAuthentication * _Nonnull authentication,
-                            NSError * _Nullable error) {}];
+  [auth doWithFreshTokens:^(OIDAuthState *authState, NSError *error){}];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
   NSDictionary *expectedParameters = @{
     @"emm_support" : @"xyz",
@@ -350,7 +250,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"emm_support" : @"xyz",
   };
   GIDAuthentication *auth = [self auth];
-  [auth doWithFreshTokens:^(GIDAuthentication * _Nonnull authentication,
+  [auth doWithFreshTokens:^(OIDAuthState * _Nonnull authState,
                             NSError * _Nullable error) {}];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
   NSDictionary *expectedParameters = @{
@@ -371,7 +271,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
     @"emm_passcode_info" : @"something",
   };
   GIDAuthentication *auth = [self auth];
-  [auth doWithFreshTokens:^(GIDAuthentication * _Nonnull authentication,
+  [auth doWithFreshTokens:^(OIDAuthState * _Nonnull authState,
                             NSError * _Nullable error) {}];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
   NSDictionary *expectedParameters = @{
@@ -409,10 +309,10 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
   notCalled.inverted = YES;
   XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
-  [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
+  [auth doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
     [notCalled fulfill];
     [called fulfill];
-    XCTAssertNil(authentication);
+    XCTAssertNil(authState);
     XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeEMM);
   }];
@@ -424,7 +324,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   [self waitForExpectations:@[ notCalled ] timeout:1];
   completion();
   [self waitForExpectations:@[ called ] timeout:1];
-  [self assertOldTokensInAuth:auth];
+  [self assertOldTokensInAuth:auth.authState];
 }
 
 - (void)testNonEMMError {
@@ -450,10 +350,10 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
   notCalled.inverted = YES;
   XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
-  [auth doWithFreshTokens:^(GIDAuthentication *authentication, NSError *error) {
+  [auth doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
     [notCalled fulfill];
     [called fulfill];
-    XCTAssertNil(authentication);
+    XCTAssertNil(authState);
     XCTAssertEqualObjects(error.domain, @"anydomain");
     XCTAssertEqual(error.code, 12345);
   }];
@@ -465,7 +365,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   [self waitForExpectations:@[ notCalled ] timeout:1];
   completion();
   [self waitForExpectations:@[ called ] timeout:1];
-  [self assertOldTokensInAuth:auth];
+  [self assertOldTokensInAuth:auth.authState];
 }
 
 - (void)testCodingPreserveEMMParameters {
@@ -476,7 +376,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   };
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[self auth]];
   GIDAuthentication *auth = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-  [auth doWithFreshTokens:^(GIDAuthentication * _Nonnull authentication,
+  [auth doWithFreshTokens:^(OIDAuthState * _Nonnull authState,
                             NSError * _Nullable error) {}];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
   NSDictionary *expectedParameters = @{
@@ -492,59 +392,6 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
-#pragma mark - NSKeyValueObserving
-
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context {
-  GIDAuthentication *auth = (GIDAuthentication *)object;
-  ChangeType changeType;
-  if ([keyPath isEqualToString:@"accessToken"]) {
-    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
-      XCTAssertEqualObjects(auth.accessToken, kAccessToken);
-      changeType = kChangeTypeAccessTokenPrior;
-    } else {
-      XCTAssertEqualObjects(auth.accessToken, kNewAccessToken);
-      changeType = kChangeTypeAccessToken;
-    }
-  } else if ([keyPath isEqualToString:@"accessTokenExpirationDate"]) {
-    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
-      [self assertDate:auth.accessTokenExpirationDate equalTime:_accessTokenExpireTime];
-      changeType = kChangeTypeAccessTokenExpirationDatePrior;
-    } else {
-      [self assertDate:auth.accessTokenExpirationDate equalTime:kNewExpireTime];
-      changeType = kChangeTypeAccessTokenExpirationDate;
-    }
-  } else if ([keyPath isEqualToString:@"idToken"]) {
-    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
-      XCTAssertEqualObjects(auth.idToken, [self idToken]);
-      changeType = kChangeTypeIDTokenPrior;
-    } else {
-      XCTAssertEqualObjects(auth.idToken, [self idTokenNew]);
-      changeType = kChangeTypeIDToken;
-    }
-  } else if ([keyPath isEqualToString:@"idTokenExpirationDate"]) {
-    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
-      if (_hasIDToken) {
-        [self assertDate:auth.idTokenExpirationDate equalTime:_idTokenExpireTime];
-      }
-      changeType = kChangeTypeIDTokenExpirationDatePrior;
-    } else {
-      if (_hasIDToken) {
-        [self assertDate:auth.idTokenExpirationDate equalTime:kNewExpireTime2];
-      }
-      changeType = kChangeTypeIDTokenExpirationDate;
-    }
-  } else {
-    XCTFail(@"unexpected keyPath");
-    return;  // so compiler knows |changeType| is always assigned
-  }
-  NSUInteger changeMask = 1u << changeType;
-  XCTAssertFalse(_changesObserved & changeMask);  // each change type should only fire once
-  _changesObserved |= changeMask;
-}
 
 #pragma mark - Helpers
 
@@ -578,19 +425,6 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   return [self idTokenWithExpireTime:kNewExpireTime2];
 }
 
-// Return the auth object that has certain property changes observed.
-- (GIDAuthentication *)observedAuth {
-  GIDAuthentication *auth = [self auth];
-  for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
-    [auth addObserver:self
-           forKeyPath:kObservedProperties[i]
-              options:NSKeyValueObservingOptionPrior
-              context:NULL];
-  }
-  [_observedAuths addObject:auth];
-  return auth;
-}
-
 - (OIDTokenResponse *)tokenResponseWithNewTokens {
   NSNumber *expiresIn = @(kNewExpireTime - [NSDate timeIntervalSinceReferenceDate]);
   return [OIDTokenResponse testInstanceWithIDToken:(_hasIDToken ? [self idTokenNew] : nil)
@@ -607,31 +441,29 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTAssertEqualWithAccuracy([date timeIntervalSinceReferenceDate], time, kTimeAccuracy);
 }
 
-- (void)assertOldAccessTokenInAuth:(GIDAuthentication *)auth {
-  XCTAssertEqualObjects(auth.accessToken, kAccessToken);
-  [self assertDate:auth.accessTokenExpirationDate equalTime:_accessTokenExpireTime];
-  XCTAssertEqual(_changesObserved, kChangeNone);
+- (void)assertOldAccessTokenInAuth:(OIDAuthState *)auth {
+  XCTAssertEqualObjects([self accessTokenString:auth], kAccessToken);
+  [self assertDate:[self accessTokenExpirationDate:auth] equalTime:_accessTokenExpireTime];
 }
 
-- (void)assertNewAccessTokenInAuth:(GIDAuthentication *)auth {
-  XCTAssertEqualObjects(auth.accessToken, kNewAccessToken);
-  [self assertDate:auth.accessTokenExpirationDate equalTime:kNewExpireTime];
-  XCTAssertEqual(_changesObserved, kChangeAll);
+- (void)assertNewAccessTokenInAuth:(OIDAuthState *)auth {
+  XCTAssertEqualObjects([self accessTokenString:auth], kNewAccessToken);
+  [self assertDate:[self accessTokenExpirationDate:auth] equalTime:kNewExpireTime];
 }
 
-- (void)assertOldTokensInAuth:(GIDAuthentication *)auth {
+- (void)assertOldTokensInAuth:(OIDAuthState *)auth {
   [self assertOldAccessTokenInAuth:auth];
-  XCTAssertEqualObjects(auth.idToken, [self idToken]);
+  XCTAssertEqualObjects([self idTokenString:auth], [self idToken]);
   if (_hasIDToken) {
-    [self assertDate:auth.idTokenExpirationDate equalTime:_idTokenExpireTime];
+    [self assertDate:[self idTokenExpirationDate:auth] equalTime:_idTokenExpireTime];
   }
 }
 
-- (void)assertNewTokensInAuth:(GIDAuthentication *)auth {
+- (void)assertNewTokensInAuth:(OIDAuthState *)auth {
   [self assertNewAccessTokenInAuth:auth];
-  XCTAssertEqualObjects(auth.idToken, [self idTokenNew]);
+  XCTAssertEqualObjects([self idTokenString:auth], [self idTokenNew]);
   if (_hasIDToken) {
-    [self assertDate:auth.idTokenExpirationDate equalTime:kNewExpireTime2];
+    [self assertDate:[self idTokenExpirationDate:auth] equalTime:kNewExpireTime2];
   }
 }
 
@@ -645,37 +477,63 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 - (void)verifyTokensRefreshedWithMethod:(SEL)sel {
-  GIDAuthentication *auth = [self observedAuth];
+  GIDAuthentication *auth = [self auth];
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   // We know the method doesn't return anything, so there is no risk of leaking.
-  [auth performSelector:sel withObject:^(GIDAuthentication *authentication, NSError *error) {
+  [auth performSelector:sel withObject:^(OIDAuthState *authState, NSError *error) {
 #pragma clang diagnostic pop
     [expectation fulfill];
-    [self assertNewTokensInAuth:authentication];
+    [self assertNewTokensInAuth:authState];
     XCTAssertNil(error);
   }];
   _tokenFetchHandler([self tokenResponseWithNewTokens], nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  [self assertNewTokensInAuth:auth];
+  [self assertNewTokensInAuth:auth.authState];
 }
 
 - (void)verifyTokensNotRefreshedWithMethod:(SEL)sel {
-  GIDAuthentication *auth = [self observedAuth];
+  GIDAuthentication *auth = [self auth];
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   // We know the method doesn't return anything, so there is no risk of leaking.
-  [auth performSelector:sel withObject:^(GIDAuthentication *authentication, NSError *error) {
+  [auth performSelector:sel withObject:^(OIDAuthState *authState, NSError *error) {
 #pragma clang diagnostic pop
     [expectation fulfill];
-    [self assertOldTokensInAuth:authentication];
+    [self assertOldTokensInAuth:authState];
     XCTAssertNil(error);
   }];
   XCTAssertNil(_tokenFetchHandler);
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  [self assertOldTokensInAuth:auth];
+  [self assertOldTokensInAuth:auth.authState];
+}
+
+#pragma mark - Parse OIDAuthState
+
+- (NSString *)accessTokenString:(OIDAuthState *)authState {
+  return authState.lastTokenResponse.accessToken;
+}
+
+- (NSDate *)accessTokenExpirationDate:(OIDAuthState *)authState {
+  return authState.lastTokenResponse.accessTokenExpirationDate;
+}
+
+- (NSString *)refreshTokenString:(OIDAuthState *)authState {
+  return authState.refreshToken;
+}
+
+- (nullable NSString *)idTokenString:(OIDAuthState *)authState {
+  return authState.lastTokenResponse.idToken;
+}
+
+- (nullable NSDate *)idTokenExpirationDate:(OIDAuthState *)authState {
+  NSString *idTokenString = [self idTokenString:authState];
+  if (!idTokenString) {
+    return nil;
+  }
+  return [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
 }
 
 @end

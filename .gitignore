@@ -5,6 +5,7 @@
 *.pbxuser
 *.mode1v3
 *.mode2v3
+*.pbxproj
 *.perspectivev3
 *.xcuserstate
 *.xcworkspace/

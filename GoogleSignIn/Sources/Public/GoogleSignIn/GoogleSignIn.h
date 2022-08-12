@@ -15,7 +15,6 @@
  */
 #import <TargetConditionals.h>
 
-#import "GIDAuthentication.h"
 #import "GIDConfiguration.h"
 #import "GIDGoogleUser.h"
 #import "GIDProfileData.h"

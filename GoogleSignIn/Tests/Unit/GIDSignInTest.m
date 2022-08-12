@@ -26,10 +26,10 @@
 // Test module imports
 @import GoogleSignIn;
 
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -1233,6 +1233,7 @@ static void *kTestObserverContext = &kTestObserverContext;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
     GIDUserAuthCompletion completion =
         ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
+
       [expectation fulfill];
       if (userAuth) {
           XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);

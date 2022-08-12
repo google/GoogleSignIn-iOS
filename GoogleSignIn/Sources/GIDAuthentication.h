@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
+#import <Foundation/Foundation.h>
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -26,8 +26,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^GIDAuthenticationCompletion)(OIDAuthState *_Nullable authState,
+                                            NSError *_Nullable error);
+
 // Internal methods for the class that are not part of the public API.
-@interface GIDAuthentication () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate>
+@interface GIDAuthentication : NSObject<GTMAppAuthFetcherAuthorizationTokenRefreshDelegate>
 
 // A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
@@ -38,6 +41,17 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState;
+
+// Gets a new authorizer for `GTLService`, `GTMSessionFetcher`, or `GTMHTTPFetcher`.
+- (id<GTMFetcherAuthorizationProtocol>)fetcherAuthorizer;
+
+// Get a OIDAuthState which contains a valid access token and a valid ID token, refreshing it first
+// if at least one token has expired or is about to expire.
+//
+// @param completion A completion block that takes a `OIDAuthState` or an error if the attempt
+//     to refresh tokens was unsuccessful.  The block will be called asynchronously on the main
+//     queue.
+- (void)doWithFreshTokens:(GIDAuthenticationCompletion)completion;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 // Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.

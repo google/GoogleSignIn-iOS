@@ -16,12 +16,17 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
+@class GIDAuthentication;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class OIDAuthState;
 
 // Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser ()
+
+/// The authentication object for the user.
+@property(nonatomic, readonly) GIDAuthentication *authentication;
 
 // Create a object with an auth state, scopes, and profile data.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState

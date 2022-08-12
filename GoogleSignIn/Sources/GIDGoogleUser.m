@@ -18,7 +18,7 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
@@ -135,6 +135,22 @@ NS_ASSUME_NONNULL_BEGIN
   return _cachedIdToken;
 }
 
+- (id<GTMFetcherAuthorizationProtocol>) fetcherAuthorizer {
+  return [_authentication fetcherAuthorizer];
+}
+
+- (void)doWithFreshTokens:(void (^)(GIDGoogleUser *_Nullable user,
+                                    NSError *_Nullable error))completion {
+  [_authentication doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
+    if (authState) {
+      [self updateAuthState:authState];
+      completion(self, error);
+    } else {
+      completion(nil, error);
+    }
+  }];
+}
+
 #pragma mark - Private Methods
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
@@ -148,15 +164,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateAuthState:(OIDAuthState *)authState
             profileData:(nullable GIDProfileData *)profileData {
-  @synchronized(self) {
-    _authState = authState;
-    _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
-    _profile = profileData;
-    
-    // These three tokens will be generated in the getter and cached .
-    _cachedAccessToken = nil;
-    _cachedRefreshToken = nil;
-    _cachedIdToken = nil;
+  _profile = profileData;
+  [self updateAuthState:authState];
+}
+
+- (void)updateAuthState:(OIDAuthState *)authState {
+    @synchronized(self) {
+      _authState = authState;
+      _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
+      
+      // These three tokens will be generated in the getter and cached .
+      _cachedAccessToken = nil;
+      _cachedRefreshToken = nil;
+      _cachedIdToken = nil;
   }
 }
 

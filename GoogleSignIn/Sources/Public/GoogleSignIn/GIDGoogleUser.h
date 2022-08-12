@@ -16,12 +16,19 @@
 
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
+// We have to import GTMAppAuth because forward declaring the protocol does
+// not generate the `fetcherAuthorizer` method below for Swift.
+#ifdef SWIFT_PACKAGE
+@import GTMAppAuth;
+#else
+#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
+#endif
 
-@class GIDAuthentication;
 @class GIDConfiguration;
 @class GIDToken;
 @class GIDProfileData;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// This class represents a user account.
 @interface GIDGoogleUser : NSObject <NSSecureCoding>
@@ -31,9 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Representation of basic profile data for the user.
 @property(nonatomic, readonly, nullable) GIDProfileData *profile;
-
-/// The authentication object for the user.
-@property(nonatomic, readonly) GIDAuthentication *authentication;
 
 /// The API scopes granted to the app in an array of `NSString`.
 @property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
@@ -52,6 +56,20 @@ NS_ASSUME_NONNULL_BEGIN
 /// Send this token to your server to authenticate the user there. For more information on this topic,
 /// see https://developers.google.com/identity/sign-in/ios/backend-auth.
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
+
+/// Gets a new authorizer for `GTLService`, `GTMSessionFetcher`, or `GTMHTTPFetcher`.
+///
+/// @return A new authorizer
+- (id<GTMFetcherAuthorizationProtocol>) fetcherAuthorizer;
+
+/// Get a valid access token and a valid ID token, refreshing them first if they have expired or are
+/// about to expire.
+///
+/// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt
+///     to refresh tokens was unsuccessful.  The block will be called asynchronously on the main
+///     queue.
+- (void)doWithFreshTokens:(void (^)(GIDGoogleUser *_Nullable user,
+                                    NSError *_Nullable error))completion;
 
 @end
 

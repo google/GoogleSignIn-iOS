@@ -16,12 +16,11 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
@@ -45,10 +44,6 @@
   OIDAuthState *authState = [OIDAuthState testInstance];
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                      profileData:[GIDProfileData testInstance]];
-  GIDAuthentication *authentication =
-      [[GIDAuthentication alloc] initWithAuthState:authState];
-
-  XCTAssertEqualObjects(user.authentication, authentication);
   XCTAssertEqualObjects(user.grantedScopes, @[ OIDAuthorizationRequestTestingScope2 ]);
   XCTAssertEqualObjects(user.userID, kUserID);
   XCTAssertEqualObjects(user.configuration.hostedDomain, kHostedDomain);

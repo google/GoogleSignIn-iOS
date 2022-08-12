@@ -42,8 +42,8 @@ final class BirthdayLoader: ObservableObject {
     guard let accessToken = GIDSignIn
             .sharedInstance
             .currentUser?
-            .authentication
-            .accessToken else { return nil }
+            .accessToken
+            .tokenString else { return nil }
     let configuration = URLSessionConfiguration.default
     configuration.httpAdditionalHeaders = [
       "Authorization": "Bearer \(accessToken)"
@@ -52,9 +52,9 @@ final class BirthdayLoader: ObservableObject {
   }()
 
   private func sessionWithFreshToken(completion: @escaping (Result<URLSession, Error>) -> Void) {
-    let authentication = GIDSignIn.sharedInstance.currentUser?.authentication
-    authentication?.do { auth, error in
-      guard let token = auth?.accessToken else {
+    let currentUser = GIDSignIn.sharedInstance.currentUser
+    currentUser?.do { auth, error in
+      guard let token = auth?.accessToken.tokenString else {
         completion(.failure(.couldNotCreateURLSession(error)))
         return
       }

@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
-
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
 
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
@@ -56,6 +54,9 @@ static NSString *const kOldIOSSystemName = @"iPhone OS";
 
 // New UIDevice system name for iOS.
 static NSString *const kNewIOSSystemName = @"iOS";
+
+typedef void (^GIDAuthenticationCompletion)(OIDAuthState *_Nullable authState,
+                                            NSError *_Nullable error);
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -169,32 +170,6 @@ static NSString *const kNewIOSSystemName = @"iOS";
   return self;
 }
 
-#pragma mark - Public property accessors
-
-- (NSString *)clientID {
-  return _authState.lastAuthorizationResponse.request.clientID;
-}
-
-- (NSString *)accessToken {
-  return _authState.lastTokenResponse.accessToken;
-}
-
-- (NSDate *)accessTokenExpirationDate {
-  return _authState.lastTokenResponse.accessTokenExpirationDate;
-}
-
-- (NSString *)refreshToken {
-  return _authState.refreshToken;
-}
-
-- (nullable NSString *)idToken {
-  return _authState.lastTokenResponse.idToken;
-}
-
-- (nullable NSDate *)idTokenExpirationDate {
-  return [[[OIDIDToken alloc] initWithIDTokenString:self.idToken] expiresAt];
-}
-
 #pragma mark - Private property accessors
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -220,10 +195,14 @@ static NSString *const kNewIOSSystemName = @"iOS";
 }
 
 - (void)doWithFreshTokens:(GIDAuthenticationCompletion)completion {
-  if (!([self.accessTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
-      (self.idToken && [self.idTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
+  NSDate *accessTokenExpirationDate = _authState.lastTokenResponse.accessTokenExpirationDate;
+  NSString *idToken = _authState.lastTokenResponse.idToken;
+  NSDate *idTokenExpirationDate = [[[OIDIDToken alloc] initWithIDTokenString:idToken] expiresAt];
+  
+  if (!([accessTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
+      (idToken && [idTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
     dispatch_async(dispatch_get_main_queue(), ^{
-      completion(self, nil);
+      completion(self->_authState, nil);
     });
     return;
   }
@@ -255,15 +234,7 @@ static NSString *const kNewIOSSystemName = @"iOS";
                                       callback:^(OIDTokenResponse *_Nullable tokenResponse,
                                                  NSError *_Nullable error) {
     if (tokenResponse) {
-      [self willChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
-      [self willChangeValueForKey:NSStringFromSelector(@selector(accessTokenExpirationDate))];
-      [self willChangeValueForKey:NSStringFromSelector(@selector(idToken))];
-      [self willChangeValueForKey:NSStringFromSelector(@selector(idTokenExpirationDate))];
       [self->_authState updateWithTokenResponse:tokenResponse error:nil];
-      [self didChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
-      [self didChangeValueForKey:NSStringFromSelector(@selector(accessTokenExpirationDate))];
-      [self didChangeValueForKey:NSStringFromSelector(@selector(idToken))];
-      [self didChangeValueForKey:NSStringFromSelector(@selector(idTokenExpirationDate))];
     } else {
       if (error.domain == OIDOAuthTokenErrorDomain) {
         [self->_authState updateWithAuthorizationError:error];
@@ -279,7 +250,7 @@ static NSString *const kNewIOSSystemName = @"iOS";
       }
       for (GIDAuthenticationCompletion completion in authenticationHandlerQueue) {
         dispatch_async(dispatch_get_main_queue(), ^{
-          completion(error ? nil : self, error);
+          completion(error ? nil : self->_authState, error);
         });
       }
     }];
@@ -291,7 +262,7 @@ static NSString *const kNewIOSSystemName = @"iOS";
     }
     for (GIDAuthenticationCompletion completion in authenticationHandlerQueue) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        completion(error ? nil : self, error);
+        completion(error ? nil : self->_authState, error);
       });
     }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
