@@ -17,6 +17,7 @@
 #if !arch(arm) && !arch(i386)
 
 import Foundation
+import GoogleSignIn
 
 // MARK: - Bundle Extensions
 
@@ -40,7 +41,7 @@ extension Bundle {
       return Bundle(path: mainPath)
     }
 
-    let classBundle = Bundle(for: GoogleSignInButtonViewModel.self)
+    let classBundle = Bundle(for: GIDSignIn.self)
 
     if let classPath = classBundle.path(
       forResource: GoogleSignInBundleName,
