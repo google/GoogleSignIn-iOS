@@ -54,8 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, weak, nullable) NSWindow *presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-/// The completion block to be called at the completion of the flow.
-@property(nonatomic, readonly, nullable) GIDSignInCompletion completion;
+/// The callback block to be called at the completion of the flow.
+@property(nonatomic, readonly, nullable) GIDSignInCallback callback;
 
 /// The scopes to be used during the flow.
 @property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
@@ -69,32 +69,32 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable GIDSignInCompletion)completion;
+                                       callback:(nullable GIDSignInCallback)callback;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable GIDSignInCompletion)completion;
+                                       callback:(nullable GIDSignInCallback)callback;
 
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable GIDSignInCompletion)completion;
+                                       callback:(nullable GIDSignInCallback)callback;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable GIDSignInCompletion)completion;
+                                       callback:(nullable GIDSignInCallback)callback;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// Creates the options to sign in silently.
-+ (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion;
++ (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
 
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.
