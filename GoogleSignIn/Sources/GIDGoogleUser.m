@@ -103,36 +103,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (GIDToken *)accessToken {
   @synchronized(self) {
-    if (!_cachedAccessToken) {
-      _cachedAccessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
-                                                  expirationDate:_authState.lastTokenResponse.
-                                                                     accessTokenExpirationDate];
-    }
+    return _cachedAccessToken;
   }
-  return _cachedAccessToken;
 }
 
 - (GIDToken *)refreshToken {
   @synchronized(self) {
-    if (!_cachedRefreshToken) {
-      _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
-                                                   expirationDate:nil];
-    }
+    return _cachedRefreshToken;
   }
-  return _cachedRefreshToken;
 }
 
 - (nullable GIDToken *)idToken {
   @synchronized(self) {
-    NSString *idTokenString = _authState.lastTokenResponse.idToken;
-    if (!_cachedIdToken && idTokenString) {
-      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
-                                        initWithIDTokenString:idTokenString] expiresAt];
-      _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                              expirationDate:idTokenExpirationDate];
-    }
+    return _cachedIdToken;
   }
-  return _cachedIdToken;
 }
 
 - (id<GTMFetcherAuthorizationProtocol>) fetcherAuthorizer {
@@ -143,8 +127,25 @@ NS_ASSUME_NONNULL_BEGIN
                                     NSError *_Nullable error))completion {
   [_authentication doWithFreshTokens:^(OIDAuthState *authState, NSError *error) {
     if (authState) {
-      [self updateAuthState:authState];
-      completion(self, error);
+      NSString *accessTokenString = authState.lastTokenResponse.accessToken;
+      NSDate *accessTokenExpirationDate = authState.lastTokenResponse.accessTokenExpirationDate;
+      NSString *refreshTokenString = authState.refreshToken;
+      NSString *idTokenString = authState.lastTokenResponse.idToken;
+      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
+                                        initWithIDTokenString:idTokenString] expiresAt];
+      
+      // Check if it is the current authState.
+      if ([accessTokenString isEqual:self.accessToken.tokenString] &&
+          [self isTheSameExpirationDate:accessTokenExpirationDate
+                                   with:self.accessToken.expirationDate] &&
+          [refreshTokenString isEqual:self.refreshToken.tokenString] &&
+          [idTokenString isEqual:self.idToken.tokenString] &&
+          [self isTheSameExpirationDate:idTokenExpirationDate with:self.idToken.expirationDate]) {
+          completion(self, nil);;
+      } else {
+        [self updateAuthState:authState notifyTokenChanges:YES];
+        completion(self, nil);
+      }
     } else {
       completion(nil, error);
     }
@@ -157,26 +158,51 @@ NS_ASSUME_NONNULL_BEGIN
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
-    [self updateAuthState:authState profileData:profileData];
+    [self updateAuthState:authState profileData:profileData notifyTokenChanges:NO];
   }
   return self;
 }
 
 - (void)updateAuthState:(OIDAuthState *)authState
-            profileData:(nullable GIDProfileData *)profileData {
+            profileData:(nullable GIDProfileData *)profileData
+     notifyTokenChanges:(BOOL)notify{
   _profile = profileData;
-  [self updateAuthState:authState];
+  [self updateAuthState:authState notifyTokenChanges:notify];
 }
 
-- (void)updateAuthState:(OIDAuthState *)authState {
-    @synchronized(self) {
-      _authState = authState;
-      _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
-      
-      // These three tokens will be generated in the getter and cached .
-      _cachedAccessToken = nil;
-      _cachedRefreshToken = nil;
-      _cachedIdToken = nil;
+- (void)updateAuthState:(OIDAuthState *)authState
+     notifyTokenChanges:(BOOL)notify{
+  @synchronized(self) {
+    _authState = authState;
+    _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
+    
+    if (notify) {
+      [self willChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
+      [self willChangeValueForKey:NSStringFromSelector(@selector(idToken))];
+      [self willChangeValueForKey:NSStringFromSelector(@selector(refreshToken))];
+    }
+    
+    // Update three tokens
+    _cachedAccessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
+                                                expirationDate:_authState.lastTokenResponse.
+                                                                   accessTokenExpirationDate];
+    _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
+                                                 expirationDate:nil];
+    
+    _cachedIdToken = nil;
+    NSString *idTokenString = _authState.lastTokenResponse.idToken;
+    if (idTokenString) {
+      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
+                                        initWithIDTokenString:idTokenString] expiresAt];
+      _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                              expirationDate:idTokenExpirationDate];
+    }
+    
+    if (notify) {
+      [self didChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
+      [self didChangeValueForKey:NSStringFromSelector(@selector(idToken))];
+      [self didChangeValueForKey:NSStringFromSelector(@selector(refreshToken))];
+    }
   }
 }
 
@@ -191,6 +217,16 @@ NS_ASSUME_NONNULL_BEGIN
     }
   }
   return nil;
+}
+
+// The date is nullable in GIDToken. If they are both nil they are considered equal.
+- (BOOL)isTheSameExpirationDate:(nullable NSDate *)date1
+                           with:(nullable NSDate *)date2 {
+  if (!date1 && !date2) {
+    return YES;
+  }
+  
+  return [date1 isEqualToDate:date2];
 }
 
 #pragma mark - NSSecureCoding
@@ -212,7 +248,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                 forKey:kAuthenticationKey];
       authState = authentication.authState;
     }
-    [self updateAuthState:authState profileData:profileData];
+    [self updateAuthState:authState profileData:profileData notifyTokenChanges:NO];
   }
   return self;
 }

@@ -34,7 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Update the auth state and profile data.
 - (void)updateAuthState:(OIDAuthState *)authState
-            profileData:(nullable GIDProfileData *)profileData;
+            profileData:(nullable GIDProfileData *)profileData
+     notifyTokenChanges:(BOOL)notify;
 
 @end
 

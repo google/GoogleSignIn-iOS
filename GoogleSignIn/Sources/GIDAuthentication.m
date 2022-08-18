@@ -36,8 +36,6 @@
 #import <AppAuth/OIDTokenResponse.h>
 #endif
 
-NS_ASSUME_NONNULL_BEGIN
-
 // Minimal time interval before expiration for the access token or it needs to be refreshed.
 NSTimeInterval kMinimalTimeToExpire = 60.0;
 
@@ -55,8 +53,7 @@ static NSString *const kOldIOSSystemName = @"iPhone OS";
 // New UIDevice system name for iOS.
 static NSString *const kNewIOSSystemName = @"iOS";
 
-typedef void (^GIDAuthenticationCompletion)(OIDAuthState *_Nullable authState,
-                                            NSError *_Nullable error);
+NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 

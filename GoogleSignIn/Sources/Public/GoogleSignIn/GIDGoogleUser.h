@@ -58,9 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
 
 /// Gets a new authorizer for `GTLService`, `GTMSessionFetcher`, or `GTMHTTPFetcher`.
-///
-/// @return A new authorizer
-- (id<GTMFetcherAuthorizationProtocol>) fetcherAuthorizer;
+@property(nonatomic, readonly) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
 
 /// Get a valid access token and a valid ID token, refreshing them first if they have expired or are
 /// about to expire.

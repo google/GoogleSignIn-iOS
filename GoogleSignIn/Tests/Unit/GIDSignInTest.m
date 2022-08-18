@@ -1356,7 +1356,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   } else {
     if (addScopesFlow) {
       [[_user expect] updateAuthState:SAVE_TO_ARG_BLOCK(authState)
-                          profileData:SAVE_TO_ARG_BLOCK(profileData)];
+                          profileData:SAVE_TO_ARG_BLOCK(profileData)
+                   notifyTokenChanges:YES];
     } else {
       [[[_user stub] andReturn:_user] alloc];
       (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
