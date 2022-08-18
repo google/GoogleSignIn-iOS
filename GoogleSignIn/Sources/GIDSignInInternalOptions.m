@@ -31,14 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                       callback:(nullable GIDSignInCallback)callback {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                       callback:(nullable GIDSignInCallback)callback {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_presentingWindow = presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_loginHint = loginHint;
-    options->_completion = completion;
+    options->_callback = callback;
     options->_scopes = [GIDScopes scopesWithBasicProfile:scopes];
   }
   return options;
@@ -64,13 +64,13 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                       callback:(nullable GIDSignInCallback)callback {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable GIDSignInCompletion)completion {
+                                       callback:(nullable GIDSignInCallback)callback {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -81,11 +81,11 @@ NS_ASSUME_NONNULL_BEGIN
                                                                     loginHint:loginHint
                                                                 addScopesFlow:addScopesFlow
                                                                        scopes:@[]
-                                                                   completion:completion];
+                                                                     callback:callback];
   return options;
 }
 
-+ (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion {
++ (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback {
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                    presentingViewController:nil
@@ -93,8 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                            presentingWindow:nil
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                                   loginHint:nil
-                                                              addScopesFlow:NO
-                                                                 completion:completion];
+                                                               addScopesFlow:NO
+                                                                   callback:callback];
   if (options) {
     options->_interactive = NO;
   }
@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_presentingWindow = _presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_loginHint = _loginHint;
-    options->_completion = _completion;
+    options->_callback = _callback;
     options->_scopes = _scopes;
     options->_extraParams = [extraParams copy];
   }

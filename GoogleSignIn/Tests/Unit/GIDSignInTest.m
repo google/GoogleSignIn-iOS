@@ -217,7 +217,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSError *_authError;
 
   // Whether callback block has been called.
-  BOOL _completionCalled;
+  BOOL _callbackCalled;
 
   // Fake fetcher service to emulate network requests.
   GIDFakeFetcherService *_fetcherService;
@@ -240,8 +240,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   // The login hint to be used when testing |GIDSignIn|.
   NSString *_hint;
 
-  // The completion to be used when testing |GIDSignIn|.
-  GIDSignInCompletion _completion;
+  // The callback to be used when testing |GIDSignIn|.
+  GIDSignInCallback _callback;
 
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
@@ -283,7 +283,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   _saveAuthorizationReturnValue = YES;
 
   // States
-  _completionCalled = NO;
+  _callbackCalled = NO;
   _keychainSaved = NO;
   _keychainRemoved = NO;
   _changedKeyPaths = [[NSMutableSet alloc] init];
@@ -346,13 +346,13 @@ static void *kTestObserverContext = &kTestObserverContext;
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
-  _completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  _callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     GIDSignInTest *strongSelf = weakSelf;
     if (!user) {
       XCTAssertNotNil(error, @"should have an error if user is nil");
     }
-    XCTAssertFalse(strongSelf->_completionCalled, @"callback already called");
-    strongSelf->_completionCalled = YES;
+    XCTAssertFalse(strongSelf->_callbackCalled, @"callback already called");
+    strongSelf->_callbackCalled = YES;
     strongSelf->_authError = error;
   };
 
@@ -434,7 +434,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_authorization verify];
   [_authState verify];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
-  XCTAssertFalse(_completionCalled, @"should not call delegate");
+  XCTAssertFalse(_callbackCalled, @"should not call delegate");
   XCTAssertNil(_authError, @"should have no error");
 }
 
@@ -445,19 +445,19 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_authorization verify];
   [_authState verify];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
-  XCTAssertFalse(_completionCalled, @"should not call delegate");
+  XCTAssertFalse(_callbackCalled, @"should not call delegate");
 }
 
 - (void)testRestorePreviousSignInWhenSignedOut {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:NO]] isAuthorized];
-  _completionCalled = NO;
+  _callbackCalled = NO;
   _authError = nil;
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
 
-  [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
-                                                 NSError * _Nullable error) {
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                               NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNotNil(error, @"error should not have been nil");
     XCTAssertEqual(error.domain,
@@ -670,7 +670,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                      oldAccessToken:NO
                         modalCancel:NO];
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
 }
 
@@ -684,7 +684,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                      oldAccessToken:NO
                         modalCancel:YES];
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
 }
 
@@ -699,7 +699,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                         modalCancel:NO];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainSaved, @"should save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeKeychain);
 }
@@ -731,13 +731,13 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongSchemeURL]],
                  @"should not handle URL");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
-  XCTAssertFalse(_completionCalled, @"should not call delegate");
+  XCTAssertFalse(_callbackCalled, @"should not call delegate");
 }
 
 - (void)testNotHandleWrongPath {
   XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongPathURL]], @"should not handle URL");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
-  XCTAssertFalse(_completionCalled, @"should not call delegate");
+  XCTAssertFalse(_callbackCalled, @"should not call delegate");
 }
 
 #pragma mark - Tests - disconnectWithCallback:
@@ -750,7 +750,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with nil error"];
-  [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
     if (error == nil) {
       [expectation fulfill];
     }
@@ -767,7 +767,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  [_signIn disconnectWithCompletion:nil];
+  [_signIn disconnectWithCallback:nil];
   [self verifyAndRevokeToken:kAccessToken hasCallback:NO];
   [_authorization verify];
   [_authState verify];
@@ -784,7 +784,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with nil error"];
-  [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
     if (error == nil) {
       [expectation fulfill];
     }
@@ -803,7 +803,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with an error"];
-  [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
     if (error != nil) {
       [expectation fulfill];
     }
@@ -824,7 +824,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  [_signIn disconnectWithCompletion:nil];
+  [_signIn disconnectWithCallback:nil];
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   // Emulate result back from server.
   NSError *error = [self error];
@@ -844,7 +844,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with nil error"];
-  [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
+  [_signIn disconnectWithCallback:^(NSError * _Nullable error) {
     if (error == nil) {
       [expectation fulfill];
     }
@@ -864,7 +864,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
-  [_signIn disconnectWithCompletion:nil];
+  [_signIn disconnectWithCallback:nil];
   XCTAssertFalse([self isFetcherStarted], @"should not fetch");
   XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
   [_authorization verify];
@@ -887,7 +887,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                                   presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                               hint:_hint
-                                        completion:_completion]);
+                                          callback:_callback]);
 }
 
 - (void)testClientIDMissingException {
@@ -903,7 +903,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #elif TARGET_OS_OSX
                     presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                          completion:nil];
+                            callback:nil];
   } @catch (NSException *exception) {
     threw = YES;
     XCTAssertEqualObjects(exception.description,
@@ -924,7 +924,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                     presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                 hint:_hint
-                          completion:_completion];
+                            callback:_callback];
   } @catch (NSException *exception) {
     threw = YES;
     XCTAssertEqualObjects(exception.description,
@@ -1040,7 +1040,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
@@ -1079,7 +1079,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   [_authentication verify];
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertTrue(_callbackCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
@@ -1220,13 +1220,13 @@ static void *kTestObserverContext = &kTestObserverContext;
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    GIDSignInCallback callback = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
       [expectation fulfill];
       if (!user) {
         XCTAssertNotNil(error, @"should have an error if user is nil");
       }
-      XCTAssertFalse(self->_completionCalled, @"callback already called");
-      self->_completionCalled = YES;
+      XCTAssertFalse(self->_callbackCalled, @"callback already called");
+      self->_callbackCalled = YES;
       self->_authError = error;
     };
     if (addScopesFlow) {
@@ -1236,7 +1236,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #elif TARGET_OS_OSX
         presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-              completion:completion];
+                callback:callback];
     } else {
       if (useAdditionalScopes) {
         [_signIn signInWithConfiguration:_configuration
@@ -1247,7 +1247,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                     hint:_hint
                         additionalScopes:additionalScopes
-                              completion:completion];
+                                callback:callback];
       } else {
         [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -1256,7 +1256,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                         presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                     hint:_hint
-                              completion:completion];
+                                callback:callback];
       }
     }
 
@@ -1305,8 +1305,8 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   if (restoredSignIn && oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
-    [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
-                                                   NSError * _Nullable error) {
+    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                 NSError * _Nullable error) {
       [expectation fulfill];
       XCTAssertNil(error, @"should have no error");
     }];
@@ -1351,8 +1351,8 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   if (restoredSignIn && !oldAccessToken) {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
-    [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
-                                                   NSError * _Nullable error) {
+    [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                                 NSError * _Nullable error) {
       [expectation fulfill];
       XCTAssertNil(error, @"should have no error");
     }];
@@ -1375,7 +1375,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertTrue(profileData.hasImage);
 
   // If attempt to authenticate again, will reuse existing auth object.
-  _completionCalled = NO;
+  _callbackCalled = NO;
   _keychainRemoved = NO;
   _keychainSaved = NO;
   _authError = nil;
@@ -1385,18 +1385,18 @@ static void *kTestObserverContext = &kTestObserverContext;
     [[[_user expect] andReturn:_authentication] authentication];
   }
 
-  __block GIDAuthenticationCompletion completion;
-  [[_authentication expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(completion)];
+  __block GIDAuthenticationAction action;
+  [[_authentication expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(action)];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
 
-  [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
-                                                 NSError * _Nullable error) {
+  [_signIn restorePreviousSignInWithCallback:^(GIDGoogleUser * _Nullable user,
+                                               NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error, @"should have no error");
   }];
 
-  completion(_authentication, nil);
+  action(_authentication, nil);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
