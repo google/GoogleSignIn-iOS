@@ -259,8 +259,7 @@ static NSString * const kClientID =
 - (IBAction)signIn:(id)sender {
   [GIDSignIn.sharedInstance signInWithConfiguration:_configuration
                            presentingViewController:self
-                                           callback:^(GIDGoogleUser * _Nullable user,
-                                                      NSError * _Nullable error) {
+                                         completion:^(GIDGoogleUser *user, NSError *error) {
     if (error) {
       self->_signInAuthStatus.text =
           [NSString stringWithFormat:@"Status: Authentication error: %@", error];
@@ -278,7 +277,7 @@ static NSString * const kClientID =
 }
 
 - (IBAction)disconnect:(id)sender {
-  [GIDSignIn.sharedInstance disconnectWithCallback:^(NSError * _Nullable error) {
+  [GIDSignIn.sharedInstance disconnectWithCompletion:^(NSError *error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to disconnect: %@",
                                       error];
@@ -293,8 +292,7 @@ static NSString * const kClientID =
 - (IBAction)addScopes:(id)sender {
   [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
              presentingViewController:self
-                             callback:^(GIDGoogleUser * _Nullable user,
-                                        NSError * _Nullable error) {
+                           completion:^(GIDGoogleUser *user, NSError *error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to add scopes: %@",
                                       error];
