@@ -1,3 +1,7 @@
+# 6.2.3 (2022-8-18)
+- Fix resource loading in GoogleSignInSwift with CocoaPods use_frameworks! ([#197](https://github.com/google/GoogleSignIn-iOS/pull/197))
+- Prevent build errors for GoogleSignInSwift in certain scenarios when using Swift Package Manager. ([#166](https://github.com/google/GoogleSignIn-iOS/pull/166))
+
 # 6.2.2 (2022-5-27)
 - Prevent build errors for GoogleSignInSwift when using Swift Package Manager. ([#157](https://github.com/google/GoogleSignIn-iOS/pull/157))
 - Prevent a build error on Xcode 12 and earlier. ([#158](https://github.com/google/GoogleSignIn-iOS/pull/158))
