@@ -647,7 +647,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authFlow.authState = [[OIDAuthState alloc]
           initWithAuthorizationResponse:authorizationResponse];
       // perform auth code exchange
-      [self maybeFetchToken:authFlow fallback:nil];
+      [self maybeFetchToken:authFlow];
     } else {
       // There was a failure, convert to appropriate error code.
       NSString *errorString;
@@ -719,9 +719,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   // Complete the auth flow using saved auth in keychain.
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
   authFlow.authState = authState;
-  [self maybeFetchToken:authFlow fallback:options.interactive ? ^() {
-    [self authenticateInteractivelyWithOptions:options];
-  } : nil];
+  [self maybeFetchToken:authFlow];
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
   [self addCompletionCallback:authFlow];
@@ -729,7 +727,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 // Fetches the access token if necessary as part of the auth flow. If |fallback|
 // is provided, call it instead of continuing the auth flow in case of error.
-- (void)maybeFetchToken:(GIDAuthFlow *)authFlow fallback:(nullable void (^)(void))fallback {
+- (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
   OIDAuthState *authState = authFlow.authState;
   // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
   if (authFlow.error ||
@@ -775,14 +773,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                             NSError *_Nullable error) {
     [authState updateWithTokenResponse:tokenResponse error:error];
     authFlow.error = error;
-
-    if (!tokenResponse.accessToken || error) {
-      if (fallback) {
-        [authFlow reset];
-        fallback();
-        return;
-      }
-    }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {
