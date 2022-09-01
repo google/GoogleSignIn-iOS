@@ -589,7 +589,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -600,34 +599,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
          presentingViewController:options.presentingViewController
+#elif TARGET_OS_OSX
+                 presentingWindow:options.presentingWindow
+#endif // TARGET_OS_OSX
                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error) {
     [self processAuthorizationResponse:authorizationResponse
                                  error:error
                             emmSupport:emmSupport];
   }];
-#elif TARGET_OS_OSX
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                clientSecret:@""
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
-
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-                 presentingWindow:options.presentingWindow
-                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                    NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport];
-  }];
-#endif // TARGET_OS_OSX
-
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
