@@ -725,8 +725,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self addCompletionCallback:authFlow];
 }
 
-// Fetches the access token if necessary as part of the auth flow. If |fallback|
-// is provided, call it instead of continuing the auth flow in case of error.
+// Fetches the access token if necessary as part of the auth flow.
 - (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
   OIDAuthState *authState = authFlow.authState;
   // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
