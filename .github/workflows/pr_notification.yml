@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Pull Request Details
       run: |
-        echo "Pull Request: ${{ github.event.pull_request.title }}"
+        echo "Pull Request: ${{ github.event.pull_request.number }}"
         echo "Author: ${{ github.event.pull_request.user.login }}"
 
     - name: Google Chat Notification
@@ -31,12 +31,6 @@ jobs:
                       "keyValue": {
                         "topLabel": "Repo",
                         "content": "${{ github.event.pull_request.head.repo.full_name }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Title",
-                        "content": "${{ github.event.pull_request.title }}"
                       }
                     },
                     {
