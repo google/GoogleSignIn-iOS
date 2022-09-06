@@ -26,6 +26,7 @@
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDTokenRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
 #ifdef SWIFT_PACKAGE
@@ -34,10 +35,28 @@
 #import <AppAuth/OIDAuthState.h>
 #endif
 
+static NSString *const kNewAccessToken = @"new_access_token";
+static NSTimeInterval const kExpireTime = 442886117;
+static NSTimeInterval const kNewExpireTime = 442886123;
+static NSTimeInterval const kNewExpireTime2 = 442886124;
+
+static NSTimeInterval const kTimeAccuracy = 10;
+
 @interface GIDGoogleUserTest : XCTestCase
 @end
 
-@implementation GIDGoogleUserTest
+@implementation GIDGoogleUserTest {
+  // Fake data used to generate the expiration date of the access token.
+  NSTimeInterval _accessTokenExpireTime;
+  
+  // Fake data used to generate the expiration date of the ID token.
+  NSTimeInterval _idTokenExpireTime;
+}
+
+- (void)setUp {
+  _accessTokenExpireTime = kAccessTokenExpiresIn;
+  _idTokenExpireTime = kExpireTime;
+}
 
 #pragma mark - Tests
 
@@ -90,5 +109,65 @@
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
+- (void) testUpdateAuthState {
+  GIDGoogleUser *user = [self googleUser];
+  XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
+  [self assertDate:user.accessToken.expirationDate equalTime:_accessTokenExpireTime];
+  XCTAssertEqualObjects(user.idToken.tokenString, [self idToken]);
+  [self assertDate:user.idToken.expirationDate equalTime:_idTokenExpireTime];
+  
+  OIDAuthState *newAuthState = [self newAuthState];
+  [user updateAuthState:newAuthState profileData:nil];
+  
+  XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+  [self assertDate:user.accessToken.expirationDate equalTime:kNewExpireTime];
+  XCTAssertEqualObjects(user.idToken.tokenString, [self idTokenNew]);
+  [self assertDate:user.idToken.expirationDate equalTime:kNewExpireTime2];
+}
+
+#pragma mark - Helpers
+
+- (GIDGoogleUser *)googleUser {
+  NSString *idToken = [self idToken];
+  NSNumber *accessTokenExpiresIn =
+      @(_accessTokenExpireTime - [[NSDate date] timeIntervalSinceReferenceDate]);
+  OIDTokenRequest *tokenRequest =
+      [OIDTokenRequest testInstanceWithAdditionalParameters:nil];
+  OIDTokenResponse *tokenResponse =
+      [OIDTokenResponse testInstanceWithIDToken:idToken
+                                    accessToken:kAccessToken
+                                      expiresIn:accessTokenExpiresIn
+                                   tokenRequest:tokenRequest];
+  return [[GIDGoogleUser alloc]
+          initWithAuthState:[OIDAuthState testInstanceWithTokenResponse:tokenResponse]
+                profileData:nil];
+}
+
+- (NSString *)idToken {
+  return [self idTokenWithExpireTime:_idTokenExpireTime];
+}
+
+- (NSString *)idTokenNew {
+  return [self idTokenWithExpireTime:kNewExpireTime2];
+}
+
+- (NSString *)idTokenWithExpireTime:(NSTimeInterval)expireTime {
+  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime + NSTimeIntervalSince1970)];
+}
+
+- (OIDAuthState *)newAuthState {
+  NSNumber *expiresIn = @(kNewExpireTime - [NSDate timeIntervalSinceReferenceDate]);
+  OIDTokenResponse *newResponse =
+    [OIDTokenResponse testInstanceWithIDToken:[self idTokenNew]
+                                  accessToken:kNewAccessToken
+                                    expiresIn:expiresIn
+                                 tokenRequest:nil];
+  return [OIDAuthState testInstanceWithTokenResponse:newResponse];
+}
+
+- (void)assertDate:(NSDate *)date equalTime:(NSTimeInterval)time {
+  XCTAssertEqualWithAccuracy([date timeIntervalSinceReferenceDate], time, kTimeAccuracy);
+}
 
 @end
