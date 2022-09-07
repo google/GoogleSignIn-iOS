@@ -7,6 +7,9 @@ on:
 jobs:
   notify-pull-request:
     runs-on: ubuntu-latest
+    env:
+      TITLE: ${{ github.event.pull_request.title }}
+      LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
     steps:
     - name: Pull Request Details
       run: |
@@ -31,6 +34,12 @@ jobs:
                       "keyValue": {
                         "topLabel": "Repo",
                         "content": "${{ github.event.pull_request.head.repo.full_name }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Title",
+                        "content": "$TITLE"
                       }
                     },
                     {
@@ -60,7 +69,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Labels",
-                        "content": "- ${{ join(github.event.pull_request.labels.*.name, ', ') }}"
+                        "content": "- $LABELS"
                       }
                     },
                     {
