@@ -167,8 +167,6 @@ NS_ASSUME_NONNULL_BEGIN
   [self didChangeValueForKey:NSStringFromSelector(@selector(idToken))];
 }
 
-
-
 #pragma mark - NSSecureCoding
 
 + (BOOL)supportsSecureCoding {

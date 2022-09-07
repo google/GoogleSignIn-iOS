@@ -37,10 +37,39 @@
 
 static NSString *const kNewAccessToken = @"new_access_token";
 static NSTimeInterval const kExpireTime = 442886117;
-static NSTimeInterval const kNewExpireTime = 442886123;
-static NSTimeInterval const kNewExpireTime2 = 442886124;
+static NSTimeInterval const kNewAccessTokenExpireTime = 442886123;
+static NSTimeInterval const kNewIDTokenExpireTime = 442886124;
 
 static NSTimeInterval const kTimeAccuracy = 10;
+
+// List of observed properties of the class being tested.
+static NSString *const kObservedProperties[] = {
+  @"accessToken",
+  @"refreshToken",
+  @"idToken",
+};
+static const NSUInteger kNumberOfObservedProperties =
+    sizeof(kObservedProperties) / sizeof(*kObservedProperties);
+
+// Bit position for notification change type bitmask flags.
+// Must match the list of observed properties above.
+typedef NS_ENUM(NSUInteger, ChangeType) {
+  kChangeTypeAccessTokenPrior,
+  kChangeTypeAccessToken,
+  kChangeTypeRefreshTokenPrior,
+  kChangeTypeRefreshToken,
+  kChangeTypeIDTokenPrior,
+  kChangeTypeIDToken,
+  kChangeTypeEnd  // not a real change type but an end mark for calculating |kChangeAll|
+};
+
+static const NSUInteger kChangeNone = 0u;
+static const NSUInteger kChangeAll = (1u << kChangeTypeEnd) - 1u;
+
+#if __has_feature(c_static_assert) || __has_extension(c_static_assert)
+_Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObservedProperties)) * 2,
+               "List of observed properties must match list of change notification enums");
+#endif
 
 @interface GIDGoogleUserTest : XCTestCase
 @end
@@ -51,11 +80,15 @@ static NSTimeInterval const kTimeAccuracy = 10;
   
   // Fake data used to generate the expiration date of the ID token.
   NSTimeInterval _idTokenExpireTime;
+
+  // Bitmask flags for observed changes, as specified in |ChangeType|.
+  NSUInteger _changesObserved;
 }
 
 - (void)setUp {
   _accessTokenExpireTime = kAccessTokenExpiresIn;
   _idTokenExpireTime = kExpireTime;
+  _changesObserved = 0;
 }
 
 #pragma mark - Tests
@@ -111,7 +144,7 @@ static NSTimeInterval const kTimeAccuracy = 10;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void) testUpdateAuthState {
-  GIDGoogleUser *user = [self googleUser];
+  GIDGoogleUser *user = [self observedGoogleUser];
   XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
   [self assertDate:user.accessToken.expirationDate equalTime:_accessTokenExpireTime];
   XCTAssertEqualObjects(user.idToken.tokenString, [self idToken]);
@@ -121,12 +154,24 @@ static NSTimeInterval const kTimeAccuracy = 10;
   [user updateAuthState:newAuthState profileData:nil];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
-  [self assertDate:user.accessToken.expirationDate equalTime:kNewExpireTime];
+  [self assertDate:user.accessToken.expirationDate equalTime:kNewAccessTokenExpireTime];
   XCTAssertEqualObjects(user.idToken.tokenString, [self idTokenNew]);
-  [self assertDate:user.idToken.expirationDate equalTime:kNewExpireTime2];
+  [self assertDate:user.idToken.expirationDate equalTime:kNewIDTokenExpireTime];
+  XCTAssertEqual(_changesObserved, kChangeAll);
 }
 
 #pragma mark - Helpers
+
+- (GIDGoogleUser *)observedGoogleUser {
+  GIDGoogleUser *user = [self googleUser];
+  for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
+    [user addObserver:self
+           forKeyPath:kObservedProperties[i]
+              options:NSKeyValueObservingOptionPrior
+              context:NULL];
+  }
+  return user;
+}
 
 - (GIDGoogleUser *)googleUser {
   NSString *idToken = [self idToken];
@@ -149,7 +194,7 @@ static NSTimeInterval const kTimeAccuracy = 10;
 }
 
 - (NSString *)idTokenNew {
-  return [self idTokenWithExpireTime:kNewExpireTime2];
+  return [self idTokenWithExpireTime:kNewIDTokenExpireTime];
 }
 
 - (NSString *)idTokenWithExpireTime:(NSTimeInterval)expireTime {
@@ -157,7 +202,7 @@ static NSTimeInterval const kTimeAccuracy = 10;
 }
 
 - (OIDAuthState *)newAuthState {
-  NSNumber *expiresIn = @(kNewExpireTime - [NSDate timeIntervalSinceReferenceDate]);
+  NSNumber *expiresIn = @(kNewAccessTokenExpireTime - [NSDate timeIntervalSinceReferenceDate]);
   OIDTokenResponse *newResponse =
     [OIDTokenResponse testInstanceWithIDToken:[self idTokenNew]
                                   accessToken:kNewAccessToken
@@ -168,6 +213,50 @@ static NSTimeInterval const kTimeAccuracy = 10;
 
 - (void)assertDate:(NSDate *)date equalTime:(NSTimeInterval)time {
   XCTAssertEqualWithAccuracy([date timeIntervalSinceReferenceDate], time, kTimeAccuracy);
+}
+
+#pragma mark - NSKeyValueObserving
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey,id> *)change
+                       context:(void *)context {
+  GIDGoogleUser *user = (GIDGoogleUser*)object;
+  ChangeType changeType;
+  if ([keyPath isEqualToString:@"accessToken"]) {
+    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
+      XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
+      [self assertDate:user.accessToken.expirationDate equalTime:_accessTokenExpireTime];
+      changeType = kChangeTypeAccessTokenPrior;
+    } else {
+      XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+      [self assertDate:user.accessToken.expirationDate equalTime:kNewAccessTokenExpireTime];
+      changeType = kChangeTypeAccessToken;
+    }
+  } else if ([keyPath isEqualToString:@"refreshToken"]) {
+    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
+      changeType = kChangeTypeRefreshTokenPrior;
+    } else {
+      changeType = kChangeTypeRefreshToken;
+    }
+  } else if ([keyPath isEqualToString:@"idToken"]) {
+    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
+      XCTAssertEqualObjects(user.idToken.tokenString, [self idToken]);
+      [self assertDate:user.idToken.expirationDate equalTime:_idTokenExpireTime];
+      changeType = kChangeTypeIDTokenPrior;
+    } else {
+      XCTAssertEqualObjects(user.idToken.tokenString, [self idTokenNew]);
+      [self assertDate:user.idToken.expirationDate equalTime:kNewIDTokenExpireTime];
+      changeType = kChangeTypeIDToken;
+    }
+  } else {
+    XCTFail(@"unexpected keyPath");
+    return;  // so compiler knows |changeType| is always assigned
+  }
+  
+  NSInteger changeMask = 1 << changeType;
+  XCTAssertFalse(_changesObserved & changeMask);  // each change type should only fire once
+  _changesObserved |= changeMask;
 }
 
 @end
