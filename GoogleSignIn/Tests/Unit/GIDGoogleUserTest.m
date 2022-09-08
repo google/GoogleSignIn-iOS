@@ -105,7 +105,7 @@ static NSTimeInterval const kTimeAccuracy = 10;
 }
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-- (void) testUpdateAuthState {
+- (void)testUpdateAuthState {
   NSString *idToken = [self idTokenWithExpireTime:kIDTokenExpireTime];
   OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
                                                       accessToken:kAccessToken

@@ -39,11 +39,11 @@
   NSNumber *accessTokenExpiresIn =
       @(accessTokenExpireTime - [[NSDate date] timeIntervalSinceReferenceDate]);
   OIDTokenResponse *newResponse =
-    [OIDTokenResponse testInstanceWithIDToken:idToken
-                                  accessToken:accessToken
-                                    expiresIn:accessTokenExpiresIn
-                                 tokenRequest:nil];
-  return [OIDAuthState testInstanceWithTokenResponse:newResponse];
+      [OIDTokenResponse testInstanceWithIDToken:idToken
+                                    accessToken:accessToken
+                                      expiresIn:accessTokenExpiresIn
+                                   tokenRequest:nil];
+  return [self testInstanceWithTokenResponse:newResponse];
 }
 
 @end
