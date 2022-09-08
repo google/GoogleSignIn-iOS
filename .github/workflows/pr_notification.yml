@@ -7,10 +7,13 @@ on:
 jobs:
   notify-pull-request:
     runs-on: ubuntu-latest
+    env:
+      TITLE: ${{ github.event.pull_request.title }}
+      LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
     steps:
     - name: Pull Request Details
       run: |
-        echo "Pull Request: ${{ github.event.pull_request.title }}"
+        echo "Pull Request: ${{ github.event.pull_request.number }}"
         echo "Author: ${{ github.event.pull_request.user.login }}"
 
     - name: Google Chat Notification
@@ -36,7 +39,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Title",
-                        "content": "${{ github.event.pull_request.title }}"
+                        "content": "$TITLE"
                       }
                     },
                     {
@@ -66,7 +69,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Labels",
-                        "content": "- ${{ join(github.event.pull_request.labels.*.name, ', ') }}"
+                        "content": "- $LABELS"
                       }
                     },
                     {
