@@ -26,7 +26,7 @@ jobs:
             {
               "header": {
                 "title": "Push to main branch",
-                "subtitle": "$COMMIT"
+                "subtitle": "'"$COMMIT"'"
               },
               "sections": [
                 {
