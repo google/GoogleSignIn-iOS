@@ -119,13 +119,15 @@ static NSTimeInterval const kTimeAccuracy = 10;
   XCTAssertEqualObjects(user.idToken.tokenString, idToken);
   XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
                              kIDTokenExpireTime, kTimeAccuracy);
+  XCTAssertNil(user.profile);
   
   NSString *idTokenNew = [self idTokenWithExpireTime:kNewIDTokenExpireTime];
   OIDAuthState *newAuthState = [OIDAuthState testInstanceWithIDToken:idTokenNew
                                                          accessToken:kNewAccessToken
                                                accessTokenExpireTime:kNewAccessTokenExpireTime];
+  GIDProfileData *newProfileData = [GIDProfileData testInstance];
   
-  [user updateAuthState:newAuthState profileData:nil];
+  [user updateAuthState:newAuthState profileData:newProfileData];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
   XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSinceReferenceDate],
@@ -133,6 +135,7 @@ static NSTimeInterval const kTimeAccuracy = 10;
   XCTAssertEqualObjects(user.idToken.tokenString, idTokenNew);
   XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
                              kNewIDTokenExpireTime, kTimeAccuracy);
+  XCTAssertEqual(user.profile, newProfileData);
 }
 
 #pragma mark - Helpers
