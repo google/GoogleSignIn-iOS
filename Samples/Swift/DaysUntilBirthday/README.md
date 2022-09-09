@@ -26,6 +26,25 @@ open DaysUntilBirthday.xcodeproj
 ```
 2. Run the `DaysUntilBirthday (iOS)` or `DaysUntilBirthday (macOS)` target.
 
+## A Note on running the macOS Sample
+
+If you are running the `DaysUntilBirthday` sample app on macOS, you may see an
+error like the below:
+
+```
+Error! Optional(Error Domain=com.google.GIDSignIn Code=-2 "keychain error" UserInfo={NSLocalizedDescription=keychain error})
+```
+
+This error is related to the signing of the sample app.
+You have two choices to remedy the problem.
+
+1. We suggest that you manually manage the signing of the macOS sample app so
+that you can provide a provisioning profile. Make sure to select a profile
+that is able to sign macOS apps.
+2. If you do not have the correct provisioning profile, and are unable to
+generate one, then you can add the ["Keychain Sharing" capability](https://developer.apple.com/documentation/xcode/configuring-keychain-sharing)
+to the `DaysUntilBirthday (macOS)` target as a workaround.
+
 ## Integration Tests
 
 We run integration tests on the `DaysUntilBirthday(iOS)` sample app.
