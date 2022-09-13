@@ -133,9 +133,12 @@ static NSString *const kNewIOSSystemName = @"iOS";
   GTMAppAuthFetcherAuthorizationEMMChainedDelegate *chainedDelegate =
       [[GTMAppAuthFetcherAuthorizationEMMChainedDelegate alloc] initWithDelegate:delegate
                                                                         selector:sel];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [super authorizeRequest:request
                  delegate:chainedDelegate
         didFinishSelector:@selector(authentication:request:finishedWithError:)];
+#pragma clang diagnostic pop
 }
 
 - (void)authorizeRequest:(nullable NSMutableURLRequest *)request
@@ -206,7 +209,10 @@ static NSString *const kNewIOSSystemName = @"iOS";
 
 #pragma mark - Public methods
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (id<GTMFetcherAuthorizationProtocol>)fetcherAuthorizer {
+#pragma clang diagnostic pop
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
       [[GTMAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
