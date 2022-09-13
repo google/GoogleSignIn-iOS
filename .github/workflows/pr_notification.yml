@@ -10,10 +10,14 @@ jobs:
     steps:
     - name: Pull Request Details
       run: |
-        echo "Pull Request: ${{ github.event.pull_request.title }}"
+        echo "Pull Request: ${{ github.event.pull_request.number }}"
         echo "Author: ${{ github.event.pull_request.user.login }}"
 
     - name: Google Chat Notification
+      shell: bash
+      env:
+        TITLE: ${{ github.event.pull_request.title }}
+        LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
       run: |
         curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
         --header 'Content-Type: application/json' \
@@ -36,7 +40,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Title",
-                        "content": "${{ github.event.pull_request.title }}"
+                        "content": "'"$TITLE"'"
                       }
                     },
                     {
@@ -66,7 +70,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Labels",
-                        "content": "- ${{ join(github.event.pull_request.labels.*.name, ', ') }}"
+                        "content": "- '"$LABELS"'"
                       }
                     },
                     {
