@@ -28,10 +28,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A completion block that takes a `GIDAuthentication` or an error if the attempt to refresh tokens
+/// A callback block that takes a `GIDAuthentication` or an error if the attempt to refresh tokens
 /// was unsuccessful.
-typedef void (^GIDAuthenticationCompletion)(GIDAuthentication *_Nullable authentication,
-                                            NSError *_Nullable error);
+typedef void (^GIDAuthenticationAction)(GIDAuthentication *_Nullable authentication,
+                                        NSError *_Nullable error);
 
 /// This class represents the OAuth 2.0 entities needed for sign-in.
 @interface GIDAuthentication : NSObject <NSSecureCoding>
@@ -67,10 +67,9 @@ typedef void (^GIDAuthenticationCompletion)(GIDAuthentication *_Nullable authent
 /// Get a valid access token and a valid ID token, refreshing them first if they have expired or are
 /// about to expire.
 ///
-/// @param completion A completion block that takes a `GIDAuthentication` or an error if the attempt
-///     to refresh tokens was unsuccessful.  The block will be called asynchronously on the main
-///     queue.
-- (void)doWithFreshTokens:(GIDAuthenticationCompletion)completion;
+/// @param action A callback block that takes a `GIDAuthentication` or an error if the attempt to
+///     refresh tokens was unsuccessful.  The block will be called asynchronously on the main queue.
+- (void)doWithFreshTokens:(GIDAuthenticationAction)action;
 
 @end
 

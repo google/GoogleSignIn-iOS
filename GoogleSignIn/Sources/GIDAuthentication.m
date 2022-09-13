@@ -228,17 +228,17 @@ static NSString *const kNewIOSSystemName = @"iOS";
   return authorization;
 }
 
-- (void)doWithFreshTokens:(GIDAuthenticationCompletion)completion {
+- (void)doWithFreshTokens:(GIDAuthenticationAction)action {
   if (!([self.accessTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
       (self.idToken && [self.idTokenExpirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
     dispatch_async(dispatch_get_main_queue(), ^{
-      completion(self, nil);
+      action(self, nil);
     });
     return;
   }
   @synchronized (_authenticationHandlerQueue) {
     // Push the handler into the callback queue.
-    [_authenticationHandlerQueue addObject:[completion copy]];
+    [_authenticationHandlerQueue addObject:[action copy]];
     if (_authenticationHandlerQueue.count > 1) {
       // This is not the first handler in the queue, no fetch is needed.
       return;
@@ -286,9 +286,9 @@ static NSString *const kNewIOSSystemName = @"iOS";
         authenticationHandlerQueue = [self->_authenticationHandlerQueue copy];
         [self->_authenticationHandlerQueue removeAllObjects];
       }
-      for (GIDAuthenticationCompletion completion in authenticationHandlerQueue) {
+      for (GIDAuthenticationAction action in authenticationHandlerQueue) {
         dispatch_async(dispatch_get_main_queue(), ^{
-          completion(error ? nil : self, error);
+          action(error ? nil : self, error);
         });
       }
     }];
@@ -298,9 +298,9 @@ static NSString *const kNewIOSSystemName = @"iOS";
       authenticationHandlerQueue = [self->_authenticationHandlerQueue copy];
       [self->_authenticationHandlerQueue removeAllObjects];
     }
-    for (GIDAuthenticationCompletion completion in authenticationHandlerQueue) {
+    for (GIDAuthenticationAction action in authenticationHandlerQueue) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        completion(error ? nil : self, error);
+        action(error ? nil : self, error);
       });
     }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
