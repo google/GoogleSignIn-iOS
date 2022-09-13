@@ -127,9 +127,12 @@ static NSString *const kNewIOSSystemName = @"iOS";
 
 @implementation GTMAppAuthFetcherAuthorizationWithEMMSupport
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)authorizeRequest:(nullable NSMutableURLRequest *)request
                 delegate:(id)delegate
        didFinishSelector:(SEL)sel {
+#pragma clang diagnostic pop
   GTMAppAuthFetcherAuthorizationEMMChainedDelegate *chainedDelegate =
       [[GTMAppAuthFetcherAuthorizationEMMChainedDelegate alloc] initWithDelegate:delegate
                                                                         selector:sel];
