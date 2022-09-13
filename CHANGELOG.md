@@ -1,5 +1,5 @@
-# 6.2.4 (2022-9-7)
-* Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207))
+# 6.2.4 (2022-9-13)
+- Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207))
 
 # 6.2.3 (2022-8-18)
 - Fix resource loading in GoogleSignInSwift with CocoaPods use_frameworks! ([#197](https://github.com/google/GoogleSignIn-iOS/pull/197))
