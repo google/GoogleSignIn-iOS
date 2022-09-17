@@ -37,6 +37,9 @@
 
 static NSString *const kNewAccessToken = @"new_access_token";
 static NSTimeInterval const kTimeAccuracy = 10;
+// The difference between times.
+// It should be larger than kTimeAccuracy which is used in the method `XCTAssertEqualWithAccuracy`.
+static NSTimeInterval const kTimeIncrement = 100;
 
 @interface GIDGoogleUserTest : XCTestCase
 @end
@@ -97,7 +100,7 @@ static NSTimeInterval const kTimeAccuracy = 10;
 
 - (void)testUpdateAuthState {
   NSTimeInterval accessTokenExpireTime = [NSDate timeIntervalSinceReferenceDate];
-  NSTimeInterval idTokenExpireTime = [NSDate timeIntervalSinceReferenceDate] + 100;
+  NSTimeInterval idTokenExpireTime = accessTokenExpireTime + kTimeIncrement;
   
   NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
   OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
@@ -106,16 +109,8 @@ static NSTimeInterval const kTimeAccuracy = 10;
   
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
   
-  XCTAssertEqualObjects(user.accessToken.tokenString, kAccessToken);
-  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSinceReferenceDate],
-                             accessTokenExpireTime, kTimeAccuracy);
-  XCTAssertEqualObjects(user.idToken.tokenString, idToken);
-  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
-                             idTokenExpireTime, kTimeAccuracy);
-  XCTAssertNil(user.profile);
-  
-  NSTimeInterval updatedAccessTokenExpireTime = [NSDate timeIntervalSinceReferenceDate] + 200;
-  NSTimeInterval updatedIDTokenExpireTime = [NSDate timeIntervalSinceReferenceDate] + 300;
+  NSTimeInterval updatedAccessTokenExpireTime = idTokenExpireTime + kTimeIncrement;
+  NSTimeInterval updatedIDTokenExpireTime = updatedAccessTokenExpireTime + kTimeIncrement;
   NSString *updatedIDToken = [self idTokenWithExpireTime:updatedIDTokenExpireTime];
   OIDAuthState *updatedAuthState = [OIDAuthState testInstanceWithIDToken:updatedIDToken
                                                              accessToken:kNewAccessToken
