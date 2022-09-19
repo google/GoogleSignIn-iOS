@@ -28,4 +28,8 @@
 
 + (instancetype)testInstanceWithTokenResponse:(OIDTokenResponse *)tokenResponse;
 
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                  accessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime;
+
 @end
