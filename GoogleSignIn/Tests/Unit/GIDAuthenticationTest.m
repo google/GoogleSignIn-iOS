@@ -245,7 +245,10 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   // internally, so let's just take the shortcut here by asserting we get a
   // GTMAppAuthFetcherAuthorization object.
   GIDAuthentication *auth = [self auth];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   id<GTMFetcherAuthorizationProtocol> fetcherAuthroizer = auth.fetcherAuthorizer;
+#pragma clang diagnostic pop
   XCTAssertTrue([fetcherAuthroizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
   XCTAssertTrue([fetcherAuthroizer canAuthorize]);
 }

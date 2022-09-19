@@ -592,7 +592,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -603,34 +602,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
          presentingViewController:options.presentingViewController
-                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+#elif TARGET_OS_OSX
+                 presentingWindow:options.presentingWindow
+#endif // TARGET_OS_OSX
+                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error) {
     [self processAuthorizationResponse:authorizationResponse
                                  error:error
                             emmSupport:emmSupport];
   }];
-#elif TARGET_OS_OSX
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                clientSecret:@""
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
-
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-                 presentingWindow:options.presentingWindow
-                         callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                    NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport];
-  }];
-#endif // TARGET_OS_OSX
-
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
@@ -650,7 +632,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authFlow.authState = [[OIDAuthState alloc]
           initWithAuthorizationResponse:authorizationResponse];
       // perform auth code exchange
-      [self maybeFetchToken:authFlow fallback:nil];
+      [self maybeFetchToken:authFlow];
     } else {
       // There was a failure, convert to appropriate error code.
       NSString *errorString;
@@ -722,17 +704,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   // Complete the auth flow using saved auth in keychain.
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
   authFlow.authState = authState;
-  [self maybeFetchToken:authFlow fallback:options.interactive ? ^() {
-    [self authenticateInteractivelyWithOptions:options];
-  } : nil];
+  [self maybeFetchToken:authFlow];
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
   [self addCompletionCallback:authFlow];
 }
 
-// Fetches the access token if necessary as part of the auth flow. If |fallback|
-// is provided, call it instead of continuing the auth flow in case of error.
-- (void)maybeFetchToken:(GIDAuthFlow *)authFlow fallback:(nullable void (^)(void))fallback {
+// Fetches the access token if necessary as part of the auth flow.
+- (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
   OIDAuthState *authState = authFlow.authState;
   // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
   if (authFlow.error ||
@@ -778,14 +757,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                             NSError *_Nullable error) {
     [authState updateWithTokenResponse:tokenResponse error:error];
     authFlow.error = error;
-
-    if (!tokenResponse.accessToken || error) {
-      if (fallback) {
-        [authFlow reset];
-        fallback();
-        return;
-      }
-    }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {

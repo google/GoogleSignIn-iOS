@@ -1,0 +1,42 @@
+name: integration_tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  swift-button-functional-test:
+    runs-on: macOS-latest
+    defaults:
+      run:
+        working-directory: Samples/Swift/DaysUntilBirthday
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build test target for Google Sign-in button for Swift
+      run: |
+        xcodebuild \
+          -project DaysUntilBirthday.xcodeproj \
+          build-for-testing \
+          -scheme DaysUntilBirthday\ \(iOS\) \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 11'
+    - name: Run test target for Google Sign-in button for Swift
+      env:
+        EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
+        PASSWORD_SECRET : ${{ secrets.PASSWORD_SECRET }}
+      run: |
+        xcodebuild \
+          -project DaysUntilBirthday.xcodeproj \
+          test-without-building \
+          -scheme DaysUntilBirthday\ \(iOS\) \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          EMAIL_SECRET=$EMAIL_SECRET \
+          PASSWORD_SECRET=$PASSWORD_SECRET
