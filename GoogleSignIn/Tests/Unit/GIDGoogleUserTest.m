@@ -41,10 +41,45 @@ static NSTimeInterval const kTimeAccuracy = 10;
 // It should be larger than kTimeAccuracy which is used in the method `XCTAssertEqualWithAccuracy`.
 static NSTimeInterval const kTimeIncrement = 100;
 
+// List of observed properties of the class being tested.
+static NSString *const kObservedProperties[] = {
+  @"accessToken",
+  @"refreshToken",
+  @"idToken",
+};
+static const NSUInteger kNumberOfObservedProperties =
+    sizeof(kObservedProperties) / sizeof(*kObservedProperties);
+
+// Bit position for notification change type bitmask flags.
+// Must match the list of observed properties above.
+typedef NS_ENUM(NSUInteger, ChangeType) {
+  kChangeTypeAccessTokenPrior,
+  kChangeTypeAccessToken,
+  kChangeTypeRefreshTokenPrior,
+  kChangeTypeRefreshToken,
+  kChangeTypeIDTokenPrior,
+  kChangeTypeIDToken,
+  kChangeTypeEnd  // not a real change type but an end mark for calculating |kChangeAll|
+};
+
+static const NSUInteger kChangeAll = (1u << kChangeTypeEnd) - 1u;
+
+#if __has_feature(c_static_assert) || __has_extension(c_static_assert)
+_Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObservedProperties)) * 2,
+               "List of observed properties must match list of change notification enums");
+#endif
+
 @interface GIDGoogleUserTest : XCTestCase
 @end
 
-@implementation GIDGoogleUserTest
+@implementation GIDGoogleUserTest {
+  // Bitmask flags for observed changes, as specified in |ChangeType|.
+  NSUInteger _changesObserved;
+}
+
+- (void)setUp {
+  _changesObserved = 0;
+}
 
 #pragma mark - Tests
 
@@ -102,12 +137,8 @@ static NSTimeInterval const kTimeIncrement = 100;
   NSTimeInterval accessTokenExpireTime = [NSDate timeIntervalSinceReferenceDate];
   NSTimeInterval idTokenExpireTime = accessTokenExpireTime + kTimeIncrement;
   
-  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
-  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
-                                                      accessToken:kAccessToken
-                                            accessTokenExpireTime:accessTokenExpireTime];
-  
-  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  GIDGoogleUser *user = [self observedGoogleUserWithAccessTokenExpireTime:accessTokenExpireTime
+                                                        idTokenExpireTime:idTokenExpireTime];
   
   NSTimeInterval updatedAccessTokenExpireTime = idTokenExpireTime + kTimeIncrement;
   NSTimeInterval updatedIDTokenExpireTime = updatedAccessTokenExpireTime + kTimeIncrement;
@@ -126,12 +157,72 @@ static NSTimeInterval const kTimeIncrement = 100;
   XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
                              updatedIDTokenExpireTime, kTimeAccuracy);
   XCTAssertEqual(user.profile, updatedProfileData);
+  XCTAssertEqual(_changesObserved, kChangeAll);
 }
 
 #pragma mark - Helpers
 
+- (GIDGoogleUser *)observedGoogleUserWithAccessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
+                                             idTokenExpireTime:(NSTimeInterval)idTokenExpireTime {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpireTime:accessTokenExpireTime
+                                                idTokenExpireTime:idTokenExpireTime];
+  for (unsigned int i = 0; i < kNumberOfObservedProperties; ++i) {
+    [user addObserver:self
+           forKeyPath:kObservedProperties[i]
+              options:NSKeyValueObservingOptionPrior
+              context:NULL];
+  }
+  return user;
+}
+
+- (GIDGoogleUser *)googleUserWithAccessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
+                                     idTokenExpireTime:(NSTimeInterval)idTokenExpireTime {
+  
+  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                            accessTokenExpireTime:accessTokenExpireTime];
+  
+  return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+}
+
 - (NSString *)idTokenWithExpireTime:(NSTimeInterval)expireTime {
   return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime + NSTimeIntervalSince1970)];
+}
+
+#pragma mark - NSKeyValueObserving
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey,id> *)change
+                       context:(void *)context {
+  ChangeType changeType;
+  if ([keyPath isEqualToString:@"accessToken"]) {
+    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
+      changeType = kChangeTypeAccessTokenPrior;
+    } else {
+      changeType = kChangeTypeAccessToken;
+    }
+  } else if ([keyPath isEqualToString:@"refreshToken"]) {
+    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
+      changeType = kChangeTypeRefreshTokenPrior;
+    } else {
+      changeType = kChangeTypeRefreshToken;
+    }
+  } else if ([keyPath isEqualToString:@"idToken"]) {
+    if (change[NSKeyValueChangeNotificationIsPriorKey]) {
+      changeType = kChangeTypeIDTokenPrior;
+    } else {
+      changeType = kChangeTypeIDToken;
+    }
+  } else {
+    XCTFail(@"unexpected keyPath");
+    return;  // so compiler knows |changeType| is always assigned
+  }
+
+  NSInteger changeMask = 1 << changeType;
+  XCTAssertFalse(_changesObserved & changeMask);  // each change type should only fire once
+  _changesObserved |= changeMask;
 }
 
 @end
