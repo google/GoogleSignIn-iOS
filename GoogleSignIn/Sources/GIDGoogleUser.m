@@ -102,36 +102,14 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (GIDToken *)accessToken {
-  @synchronized(self) {
-    if (!_cachedAccessToken) {
-      _cachedAccessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
-                                                  expirationDate:_authState.lastTokenResponse.
-                                                                     accessTokenExpirationDate];
-    }
-  }
   return _cachedAccessToken;
 }
 
 - (GIDToken *)refreshToken {
-  @synchronized(self) {
-    if (!_cachedRefreshToken) {
-      _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
-                                                   expirationDate:nil];
-    }
-  }
   return _cachedRefreshToken;
 }
 
 - (nullable GIDToken *)idToken {
-  @synchronized(self) {
-    NSString *idTokenString = _authState.lastTokenResponse.idToken;
-    if (!_cachedIdToken && idTokenString) {
-      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
-                                        initWithIDTokenString:idTokenString] expiresAt];
-      _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                              expirationDate:idTokenExpirationDate];
-    }
-  }
   return _cachedIdToken;
 }
 
@@ -153,10 +131,25 @@ NS_ASSUME_NONNULL_BEGIN
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
     _profile = profileData;
     
-    // These three tokens will be generated in the getter and cached .
-    _cachedAccessToken = nil;
-    _cachedRefreshToken = nil;
-    _cachedIdToken = nil;
+    [self sendKVONotificationsBeforeChanges];
+    [self updateTokensWithAuthState:authState];
+    [self sendKVONotificationAfterChanges];
+  }
+}
+
+- (void)updateTokensWithAuthState:(OIDAuthState *)authState {
+  _cachedAccessToken = [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                                              expirationDate:authState.lastTokenResponse.
+                                                                 accessTokenExpirationDate];
+  _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+                                               expirationDate:nil];
+  _cachedIdToken = nil;
+  NSString *idTokenString = authState.lastTokenResponse.idToken;
+  if (idTokenString) {
+    NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
+                                      initWithIDTokenString:idTokenString] expiresAt];
+    _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                            expirationDate:idTokenExpirationDate];
   }
 }
 
@@ -171,6 +164,18 @@ NS_ASSUME_NONNULL_BEGIN
     }
   }
   return nil;
+}
+
+- (void)sendKVONotificationsBeforeChanges {
+  [self willChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
+  [self willChangeValueForKey:NSStringFromSelector(@selector(refreshToken))];
+  [self willChangeValueForKey:NSStringFromSelector(@selector(idToken))];
+}
+
+- (void)sendKVONotificationAfterChanges {
+  [self didChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
+  [self didChangeValueForKey:NSStringFromSelector(@selector(refreshToken))];
+  [self didChangeValueForKey:NSStringFromSelector(@selector(idToken))];
 }
 
 #pragma mark - NSSecureCoding
