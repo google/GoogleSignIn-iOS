@@ -63,8 +63,8 @@ extern NSString * const kFatPictureURL;
 + (NSString *)fatIDToken;
 
 /**
- * @sub The subject of the user.
- * @exp The interval between the expire date and 00:00:00 UTC on 1 January 1970.
+ * @sub The subject of the ID token.
+ * @exp The interval between 00:00:00 UTC on 1 January 1970 and the expiration date of the ID token.
  */
 + (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp;
 
