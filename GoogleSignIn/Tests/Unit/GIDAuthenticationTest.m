@@ -554,7 +554,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 - (GIDAuthentication *)auth {
   NSString *idToken = [self idToken];
   NSNumber *accessTokenExpiresIn =
-      @(_accessTokenExpireTime - [[NSDate date] timeIntervalSinceReferenceDate]);
+      @(_accessTokenExpireTime - [[NSDate date] timeIntervalSince1970]);
   OIDTokenRequest *tokenRequest =
       [OIDTokenRequest testInstanceWithAdditionalParameters:_additionalTokenRequestParameters];
   OIDTokenResponse *tokenResponse =
@@ -571,7 +571,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   if (!_hasIDToken) {
     return nil;
   }
-  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime + NSTimeIntervalSince1970)];
+  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime)];
 }
 
 - (NSString *)idToken {
@@ -596,7 +596,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 - (OIDTokenResponse *)tokenResponseWithNewTokens {
-  NSNumber *expiresIn = @(kNewExpireTime - [NSDate timeIntervalSinceReferenceDate]);
+  NSNumber *expiresIn = @(kNewExpireTime - [[NSDate date] timeIntervalSince1970]);
   return [OIDTokenResponse testInstanceWithIDToken:(_hasIDToken ? [self idTokenNew] : nil)
                                        accessToken:kNewAccessToken
                                          expiresIn:expiresIn
@@ -609,7 +609,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 - (void)assertDate:(NSDate *)date equalTime:(NSTimeInterval)time {
-  XCTAssertEqualWithAccuracy([date timeIntervalSinceReferenceDate], time, kTimeAccuracy);
+  XCTAssertEqualWithAccuracy([date timeIntervalSince1970], time, kTimeAccuracy);
 }
 
 - (void)assertOldAccessTokenInAuth:(GIDAuthentication *)auth {
@@ -645,8 +645,8 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 
 - (void)setExpireTimeForAccessToken:(NSTimeInterval)accessExpire IDToken:(NSTimeInterval)idExpire {
-  _accessTokenExpireTime = [[NSDate date] timeIntervalSinceReferenceDate] + accessExpire;
-  _idTokenExpireTime = [[NSDate date] timeIntervalSinceReferenceDate] + idExpire;
+  _accessTokenExpireTime = [[NSDate date] timeIntervalSince1970] + accessExpire;
+  _idTokenExpireTime = [[NSDate date] timeIntervalSince1970] + idExpire;
 }
 
 - (void)verifyTokensRefreshedWithMethod:(SEL)sel {

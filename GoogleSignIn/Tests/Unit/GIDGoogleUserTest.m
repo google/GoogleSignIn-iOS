@@ -136,7 +136,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void)testUpdateAuthState {
-  NSTimeInterval accessTokenExpireTime = [NSDate timeIntervalSinceReferenceDate];
+  NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
   NSTimeInterval idTokenExpireTime = accessTokenExpireTime + kTimeIncrement;
   
   GIDGoogleUser *user = [self observedGoogleUserWithAccessTokenExpireTime:accessTokenExpireTime
@@ -154,10 +154,10 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   [user updateAuthState:updatedAuthState profileData:updatedProfileData];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
-  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSinceReferenceDate],
+  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSince1970],
                              updatedAccessTokenExpireTime, kTimeAccuracy);
   XCTAssertEqualObjects(user.idToken.tokenString, updatedIDToken);
-  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
+  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSince1970],
                              updatedIDTokenExpireTime, kTimeAccuracy);
   XCTAssertEqualObjects(user.refreshToken.tokenString, kNewRefreshToken);
   XCTAssertEqual(user.profile, updatedProfileData);
@@ -191,8 +191,9 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
 }
 
+// The expireTime should be based on 1970.
 - (NSString *)idTokenWithExpireTime:(NSTimeInterval)expireTime {
-  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime + NSTimeIntervalSince1970)];
+  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime)];
 }
 
 #pragma mark - NSKeyValueObserving
