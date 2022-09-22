@@ -37,7 +37,7 @@
                             accessToken:(NSString *)accessToken
                   accessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime {
   NSNumber *accessTokenExpiresIn =
-      @(accessTokenExpireTime - [[NSDate date] timeIntervalSinceReferenceDate]);
+      @(accessTokenExpireTime - [[NSDate date] timeIntervalSince1970]);
   OIDTokenResponse *newResponse =
       [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:accessToken

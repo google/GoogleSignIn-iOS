@@ -99,7 +99,7 @@ static NSTimeInterval const kTimeIncrement = 100;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 - (void)testUpdateAuthState {
-  NSTimeInterval accessTokenExpireTime = [NSDate timeIntervalSinceReferenceDate];
+  NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
   NSTimeInterval idTokenExpireTime = accessTokenExpireTime + kTimeIncrement;
   
   NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
@@ -120,18 +120,19 @@ static NSTimeInterval const kTimeIncrement = 100;
   [user updateAuthState:updatedAuthState profileData:updatedProfileData];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
-  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSinceReferenceDate],
+  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSince1970],
                              updatedAccessTokenExpireTime, kTimeAccuracy);
   XCTAssertEqualObjects(user.idToken.tokenString, updatedIDToken);
-  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
+  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSince1970],
                              updatedIDTokenExpireTime, kTimeAccuracy);
   XCTAssertEqual(user.profile, updatedProfileData);
 }
 
 #pragma mark - Helpers
 
+// The expireTime should be based on 1970.
 - (NSString *)idTokenWithExpireTime:(NSTimeInterval)expireTime {
-  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime + NSTimeIntervalSince1970)];
+  return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime)];
 }
 
 @end
