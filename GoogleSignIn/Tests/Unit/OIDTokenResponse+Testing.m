@@ -61,7 +61,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   return [OIDTokenResponse testInstanceWithIDToken:idToken
                                        accessToken:nil
                                          expiresIn:nil
-                                      refreshToken:kRefreshToken
+                                      refreshToken:nil
                                       tokenRequest:nil];
 }
 
@@ -75,7 +75,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
     @"access_token" : accessToken ?: kAccessToken,
     @"expires_in" : expiresIn ?: @(kAccessTokenExpiresIn),
     @"token_type" : @"example_token_type",
-    @"refresh_token" : refreshToken,
+    @"refresh_token" : refreshToken ?: kRefreshToken,
     @"scope" : [OIDScopeUtilities scopesWithArray:@[ OIDAuthorizationRequestTestingScope2 ]],
     @"server_code" : kServerAuthCode,
   }];
