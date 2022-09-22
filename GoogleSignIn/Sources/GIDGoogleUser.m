@@ -42,7 +42,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDGoogleUser()
+@interface GIDGoogleUser ()
 
 @property(nonatomic, readwrite) GIDToken *accessToken;
 
@@ -129,21 +129,31 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  self.accessToken = [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+  GIDToken *accessToken = [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
                                             expirationDate:authState.lastTokenResponse.
                                                                accessTokenExpirationDate];
+  if (![self.accessToken isEqualToToken:accessToken]) {
+    self.accessToken = accessToken;
+  }
   
-  self.refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+  GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
                                              expirationDate:nil];
+  if (![self.refreshToken isEqualToToken:refreshToken]) {
+    self.refreshToken = refreshToken;
+  }
   
+  GIDToken *idToken;
   NSString *idTokenString = authState.lastTokenResponse.idToken;
   if (idTokenString) {
     NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
                                       initWithIDTokenString:idTokenString] expiresAt];
-    self.idToken = [[GIDToken alloc] initWithTokenString:idTokenString
+    idToken = [[GIDToken alloc] initWithTokenString:idTokenString
                                             expirationDate:idTokenExpirationDate];
   } else {
-    self.idToken = nil;
+    idToken = nil;
+  }
+  if ((self.idToken || idToken) && ![self.idToken isEqualToToken:idToken]) {
+    self.idToken = idToken;
   }
 }
 

@@ -36,6 +36,8 @@
 #endif
 
 static NSString *const kNewAccessToken = @"new_access_token";
+static NSString *const kNewRefreshToken = @"new_refresh_token";
+
 static NSTimeInterval const kTimeAccuracy = 10;
 // The difference between times.
 // It should be larger than kTimeAccuracy which is used in the method `XCTAssertEqualWithAccuracy`.
@@ -145,7 +147,8 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   NSString *updatedIDToken = [self idTokenWithExpireTime:updatedIDTokenExpireTime];
   OIDAuthState *updatedAuthState = [OIDAuthState testInstanceWithIDToken:updatedIDToken
                                                              accessToken:kNewAccessToken
-                                                   accessTokenExpireTime:updatedAccessTokenExpireTime];
+                                                   accessTokenExpireTime:updatedAccessTokenExpireTime
+                                                            refreshToken:kNewRefreshToken];
   GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
   
   [user updateAuthState:updatedAuthState profileData:updatedProfileData];
@@ -156,6 +159,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   XCTAssertEqualObjects(user.idToken.tokenString, updatedIDToken);
   XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSinceReferenceDate],
                              updatedIDTokenExpireTime, kTimeAccuracy);
+  XCTAssertEqualObjects(user.refreshToken.tokenString, kNewRefreshToken);
   XCTAssertEqual(user.profile, updatedProfileData);
   XCTAssertEqual(_changesObserved, kChangeAll);
 }
@@ -181,7 +185,8 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
   OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
                                                       accessToken:kAccessToken
-                                            accessTokenExpireTime:accessTokenExpireTime];
+                                            accessTokenExpireTime:accessTokenExpireTime
+                                                     refreshToken:kRefreshToken];
   
   return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
 }

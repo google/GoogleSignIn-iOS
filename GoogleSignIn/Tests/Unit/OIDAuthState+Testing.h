@@ -30,6 +30,7 @@
 
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
                             accessToken:(NSString *)accessToken
-                  accessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime;
+                  accessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
+                           refreshToken:(NSString *)refreshToken;
 
 @end

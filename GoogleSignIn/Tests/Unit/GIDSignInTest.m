@@ -1202,6 +1202,7 @@ static void *kTestObserverContext = &kTestObserverContext;
       [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
                                     accessToken:restoredSignIn ? kAccessToken : nil
                                       expiresIn:oldAccessToken ? @(300) : nil
+                                   refreshToken:kRefreshToken
                                    tokenRequest:nil];
 
   OIDTokenRequest *tokenRequest = [[OIDTokenRequest alloc]
