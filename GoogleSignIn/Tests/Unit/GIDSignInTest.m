@@ -342,7 +342,7 @@ static void *kTestObserverContext = &kTestObserverContext;
                                           forKey:kAppHasRunBeforeKey];
 
   _signIn = [[GIDSignIn alloc] initPrivate];
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -607,10 +607,10 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testOpenIDRealm {
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                               serverClientID:nil
-                                                 hostedDomain:nil
-                                                  openIDRealm:kOpenIDRealm];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                      serverClientID:nil
+                                                        hostedDomain:nil
+                                                         openIDRealm:kOpenIDRealm];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -642,10 +642,10 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testOAuthLogin_HostedDomain {
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                               serverClientID:nil
-                                                 hostedDomain:kHostedDomain
-                                                  openIDRealm:nil];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                      serverClientID:nil
+                                                        hostedDomain:kHostedDomain
+                                                         openIDRealm:nil];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -880,30 +880,28 @@ static void *kTestObserverContext = &kTestObserverContext;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 
-  XCTAssertThrows([_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                          presentingViewController:_presentingViewController
+  XCTAssertThrows([_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                                  presentingWindow:_presentingWindow
+  XCTAssertThrows([_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                              hint:_hint
-                                        completion:_completion]);
+                                                 hint:_hint
+                                           completion:_completion]);
 }
 
 - (void)testClientIDMissingException {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnonnull"
-  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:nil];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
 #pragma GCC diagnostic pop
   BOOL threw = NO;
   @try {
-    [_signIn signInWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            presentingViewController:_presentingViewController
+    [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                    presentingWindow:_presentingWindow
+    [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                          completion:nil];
+                             completion:nil];
   } @catch (NSException *exception) {
     threw = YES;
     XCTAssertEqualObjects(exception.description,
@@ -917,14 +915,13 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_fakeMainBundle fakeMissingAllSchemes];
   BOOL threw = NO;
   @try {
-    [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            presentingViewController:_presentingViewController
+    [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                    presentingWindow:_presentingWindow
+    [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                hint:_hint
-                          completion:_completion];
+                                   hint:_hint
+                             completion:_completion];
   } @catch (NSException *exception) {
     threw = YES;
     XCTAssertEqualObjects(exception.description,
@@ -1239,24 +1236,22 @@ static void *kTestObserverContext = &kTestObserverContext;
               completion:completion];
     } else {
       if (useAdditionalScopes) {
-        [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                presentingViewController:_presentingViewController
+        [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                        presentingWindow:_presentingWindow
+        [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                    hint:_hint
-                        additionalScopes:additionalScopes
-                              completion:completion];
+                                       hint:_hint
+                           additionalScopes:additionalScopes
+                                 completion:completion];
       } else {
-        [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                presentingViewController:_presentingViewController
+        [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                        presentingWindow:_presentingWindow
+        [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                    hint:_hint
-                              completion:completion];
+                                       hint:_hint
+                                 completion:completion];
       }
     }
 
