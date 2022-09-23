@@ -129,15 +129,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  GIDToken *accessToken = [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
-                                            expirationDate:authState.lastTokenResponse.
-                                                               accessTokenExpirationDate];
+  GIDToken *accessToken =
+      [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                             expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
   if (![self.accessToken isEqualToToken:accessToken]) {
     self.accessToken = accessToken;
   }
   
   GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
-                                             expirationDate:nil];
+                                                  expirationDate:nil];
   if (![self.refreshToken isEqualToToken:refreshToken]) {
     self.refreshToken = refreshToken;
   }
@@ -145,10 +145,10 @@ NS_ASSUME_NONNULL_BEGIN
   GIDToken *idToken;
   NSString *idTokenString = authState.lastTokenResponse.idToken;
   if (idTokenString) {
-    NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
-                                      initWithIDTokenString:idTokenString] expiresAt];
+    NSDate *idTokenExpirationDate =
+        [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
     idToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                            expirationDate:idTokenExpirationDate];
+                                     expirationDate:idTokenExpirationDate];
   } else {
     idToken = nil;
   }

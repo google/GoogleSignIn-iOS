@@ -128,6 +128,31 @@ static NSTimeInterval const kTimeIncrement = 100;
   XCTAssertEqual(user.profile, updatedProfileData);
 }
 
+- (void)testUpdateAuthStateWithUnchangedRefreshTokenAndIDToken {
+  NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
+  NSTimeInterval idTokenExpireTime = [[NSDate date] timeIntervalSince1970];
+  
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpireTime:accessTokenExpireTime
+                                                idTokenExpireTime:idTokenExpireTime];
+  
+  GIDToken *accessTokenBeforeUpdate = user.accessToken;
+  GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
+  GIDToken *idTokenBeforeUpdate = user.idToken;
+  
+  NSString *updatedIDToken = [self idTokenWithExpireTime:idTokenExpireTime];
+  OIDAuthState *updatedAuthState = [OIDAuthState testInstanceWithIDToken:updatedIDToken
+                                                             accessToken:kNewAccessToken
+                                                   accessTokenExpireTime:accessTokenExpireTime
+                                                            refreshToken:kRefreshToken];
+  GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
+  
+  [user updateAuthState:updatedAuthState profileData:updatedProfileData];
+  
+  XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
+  XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+  XCTAssertNotIdentical(user.accessToken, accessTokenBeforeUpdate);
+}
+
 #pragma mark - Helpers
 
 - (GIDGoogleUser *)googleUserWithAccessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
