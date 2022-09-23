@@ -128,6 +128,31 @@ static NSTimeInterval const kTimeIncrement = 100;
   XCTAssertEqual(user.profile, updatedProfileData);
 }
 
+// When updating with a new OIDAuthState in which token information is not changed, the token object
+// should remain the same.
+- (void)testUpdateAuthState_tokensAreNotChanged {
+  NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
+  NSTimeInterval idTokenExpireTime = [[NSDate date] timeIntervalSince1970];
+  
+  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                            accessTokenExpireTime:accessTokenExpireTime
+                                                     refreshToken:kRefreshToken];
+  
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  
+  GIDToken *accessTokenBeforeUpdate = user.accessToken;
+  GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
+  GIDToken *idTokenBeforeUpdate = user.idToken;
+  
+  [user updateAuthState:authState profileData:nil];
+  
+  XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
+  XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
+  XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+}
+
 #pragma mark - Helpers
 
 - (GIDGoogleUser *)googleUserWithAccessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
