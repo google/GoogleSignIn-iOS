@@ -240,19 +240,6 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
 }
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-- (void)testFetcherAuthorizer {
-  // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works
-  // internally, so let's just take the shortcut here by asserting we get a
-  // GTMAppAuthFetcherAuthorization object.
-  GIDAuthentication *auth = [self auth];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  id<GTMFetcherAuthorizationProtocol> fetcherAuthroizer = auth.fetcherAuthorizer;
-#pragma clang diagnostic pop
-  XCTAssertTrue([fetcherAuthroizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
-  XCTAssertTrue([fetcherAuthroizer canAuthorize]);
-}
-
 - (void)testDoWithFreshTokensWithBothExpired {
   // Both tokens expired 10 seconds ago.
   [self setExpireTimeForAccessToken:-10 IDToken:-10];

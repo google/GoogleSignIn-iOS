@@ -27,15 +27,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 // Internal methods for the class that are not part of the public API.
-@interface GIDAuthentication () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate>
+@interface GIDAuthentication ()
 
 // A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-// A string indicating support for Enterprise Mobility Management.
-@property(nonatomic, readonly) NSString *emmSupport;
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState;
 
