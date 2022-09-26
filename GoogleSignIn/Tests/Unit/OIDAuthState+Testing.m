@@ -35,14 +35,12 @@
 
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
                             accessToken:(NSString *)accessToken
-                  accessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
+                   accessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
                            refreshToken:(NSString *)refreshToken {
-  NSNumber *accessTokenExpiresIn =
-      @(accessTokenExpireTime - [[NSDate date] timeIntervalSince1970]);
   OIDTokenResponse *newResponse =
       [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:accessToken
-                                      expiresIn:accessTokenExpiresIn
+                                      expiresIn:@(accessTokenExpiresIn)
                                    refreshToken:refreshToken
                                    tokenRequest:nil];
   return [self testInstanceWithTokenResponse:newResponse];
