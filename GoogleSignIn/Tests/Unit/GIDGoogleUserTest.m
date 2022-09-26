@@ -128,7 +128,7 @@ static NSTimeInterval const kTimeIncrement = 100;
   XCTAssertEqual(user.profile, updatedProfileData);
 }
 
-// When updating with a new OIDAuthState in which token information is not changed, the token object
+// When updating with a new OIDAuthState in which token information is not changed, the token objects
 // should remain the same.
 - (void)testUpdateAuthState_tokensAreNotChanged {
   NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
