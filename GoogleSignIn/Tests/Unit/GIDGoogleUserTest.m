@@ -128,28 +128,28 @@ static NSTimeInterval const kTimeIncrement = 100;
   XCTAssertEqual(user.profile, updatedProfileData);
 }
 
-- (void)testUpdateAuthStateWithUnchangedRefreshTokenAndIDToken {
+// When updating with a new OIDAuthState in which token information is not changed, the token objects
+// should remain the same.
+- (void)testUpdateAuthState_tokensAreNotChanged {
   NSTimeInterval idTokenExpireTime = [[NSDate date] timeIntervalSince1970];
   
-  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
-                                               idTokenExpireTime:idTokenExpireTime];
+  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                            accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                     refreshToken:kRefreshToken];
+  
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
   
   GIDToken *accessTokenBeforeUpdate = user.accessToken;
   GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
   GIDToken *idTokenBeforeUpdate = user.idToken;
   
-  NSString *updatedIDToken = [self idTokenWithExpireTime:idTokenExpireTime];
-  OIDAuthState *updatedAuthState = [OIDAuthState testInstanceWithIDToken:updatedIDToken
-                                                             accessToken:kNewAccessToken
-                                                    accessTokenExpiresIn:kAccessTokenExpiresIn
-                                                            refreshToken:kRefreshToken];
-  GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
+  [user updateAuthState:authState profileData:nil];
   
-  [user updateAuthState:updatedAuthState profileData:updatedProfileData];
-  
+  XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
   XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
   XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
-  XCTAssertNotIdentical(user.accessToken, accessTokenBeforeUpdate);
 }
 
 #pragma mark - Helpers
