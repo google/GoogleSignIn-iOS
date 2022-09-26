@@ -561,6 +561,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
       [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:kAccessToken
                                       expiresIn:accessTokenExpiresIn
+                                   refreshToken:kRefreshToken
                                    tokenRequest:tokenRequest];
   return [[GIDAuthentication alloc]
       initWithAuthState:[OIDAuthState testInstanceWithTokenResponse:tokenResponse]];
@@ -599,6 +600,7 @@ _Static_assert(kChangeTypeEnd == (sizeof(kObservedProperties) / sizeof(*kObserve
   return [OIDTokenResponse testInstanceWithIDToken:(_hasIDToken ? [self idTokenNew] : nil)
                                        accessToken:kNewAccessToken
                                          expiresIn:expiresIn
+                                      refreshToken:kRefreshToken
                                       tokenRequest:_tokenRequest ?: nil];
 }
 

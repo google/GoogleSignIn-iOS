@@ -42,12 +42,19 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface GIDGoogleUser ()
+
+@property(nonatomic, readwrite) GIDToken *accessToken;
+
+@property(nonatomic, readwrite) GIDToken *refreshToken;
+
+@property(nonatomic, readwrite, nullable) GIDToken *idToken;
+
+@end
+
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
-  GIDToken *_cachedAccessToken;
-  GIDToken *_cachedRefreshToken;
-  GIDToken *_cachedIdToken;
 }
 
 - (nullable NSString *)userID {
@@ -59,7 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
       return [idTokenDecoded.subject copy];
     }
   }
-
   return nil;
 }
 
@@ -97,42 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                             openIDRealm:openIDRealm];
     };
   }
-  
   return _cachedConfiguration;
-}
-
-- (GIDToken *)accessToken {
-  @synchronized(self) {
-    if (!_cachedAccessToken) {
-      _cachedAccessToken = [[GIDToken alloc] initWithTokenString:_authState.lastTokenResponse.accessToken
-                                                  expirationDate:_authState.lastTokenResponse.
-                                                                     accessTokenExpirationDate];
-    }
-  }
-  return _cachedAccessToken;
-}
-
-- (GIDToken *)refreshToken {
-  @synchronized(self) {
-    if (!_cachedRefreshToken) {
-      _cachedRefreshToken = [[GIDToken alloc] initWithTokenString:_authState.refreshToken
-                                                   expirationDate:nil];
-    }
-  }
-  return _cachedRefreshToken;
-}
-
-- (nullable GIDToken *)idToken {
-  @synchronized(self) {
-    NSString *idTokenString = _authState.lastTokenResponse.idToken;
-    if (!_cachedIdToken && idTokenString) {
-      NSDate *idTokenExpirationDate = [[[OIDIDToken alloc]
-                                        initWithIDTokenString:idTokenString] expiresAt];
-      _cachedIdToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                              expirationDate:idTokenExpirationDate];
-    }
-  }
-  return _cachedIdToken;
 }
 
 #pragma mark - Private Methods
@@ -153,10 +124,36 @@ NS_ASSUME_NONNULL_BEGIN
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
     _profile = profileData;
     
-    // These three tokens will be generated in the getter and cached .
-    _cachedAccessToken = nil;
-    _cachedRefreshToken = nil;
-    _cachedIdToken = nil;
+    [self updateTokensWithAuthState:authState];
+  }
+}
+
+- (void)updateTokensWithAuthState:(OIDAuthState *)authState {
+  GIDToken *accessToken =
+      [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                             expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
+  if (![self.accessToken isEqualToToken:accessToken]) {
+    self.accessToken = accessToken;
+  }
+  
+  GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+                                                  expirationDate:nil];
+  if (![self.refreshToken isEqualToToken:refreshToken]) {
+    self.refreshToken = refreshToken;
+  }
+  
+  GIDToken *idToken;
+  NSString *idTokenString = authState.lastTokenResponse.idToken;
+  if (idTokenString) {
+    NSDate *idTokenExpirationDate =
+        [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
+    idToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                     expirationDate:idTokenExpirationDate];
+  } else {
+    idToken = nil;
+  }
+  if ((self.idToken || idToken) && ![self.idToken isEqualToToken:idToken]) {
+    self.idToken = idToken;
   }
 }
 

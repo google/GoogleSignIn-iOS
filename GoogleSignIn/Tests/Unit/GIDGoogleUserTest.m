@@ -36,6 +36,8 @@
 #endif
 
 static NSString *const kNewAccessToken = @"new_access_token";
+static NSString *const kNewRefreshToken = @"new_refresh_token";
+
 static NSTimeInterval const kTimeAccuracy = 10;
 // The difference between times.
 // It should be larger than kTimeAccuracy which is used in the method `XCTAssertEqualWithAccuracy`.
@@ -102,19 +104,16 @@ static NSTimeInterval const kTimeIncrement = 100;
   NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
   NSTimeInterval idTokenExpireTime = accessTokenExpireTime + kTimeIncrement;
   
-  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
-  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
-                                                      accessToken:kAccessToken
-                                            accessTokenExpireTime:accessTokenExpireTime];
-  
-  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpireTime:accessTokenExpireTime
+                                                idTokenExpireTime:idTokenExpireTime];
   
   NSTimeInterval updatedAccessTokenExpireTime = idTokenExpireTime + kTimeIncrement;
   NSTimeInterval updatedIDTokenExpireTime = updatedAccessTokenExpireTime + kTimeIncrement;
   NSString *updatedIDToken = [self idTokenWithExpireTime:updatedIDTokenExpireTime];
   OIDAuthState *updatedAuthState = [OIDAuthState testInstanceWithIDToken:updatedIDToken
                                                              accessToken:kNewAccessToken
-                                                   accessTokenExpireTime:updatedAccessTokenExpireTime];
+                                                   accessTokenExpireTime:updatedAccessTokenExpireTime
+                                                            refreshToken:kNewRefreshToken];
   GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
   
   [user updateAuthState:updatedAuthState profileData:updatedProfileData];
@@ -125,10 +124,47 @@ static NSTimeInterval const kTimeIncrement = 100;
   XCTAssertEqualObjects(user.idToken.tokenString, updatedIDToken);
   XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSince1970],
                              updatedIDTokenExpireTime, kTimeAccuracy);
+  XCTAssertEqualObjects(user.refreshToken.tokenString, kNewRefreshToken);
   XCTAssertEqual(user.profile, updatedProfileData);
 }
 
+// When updating with a new OIDAuthState in which token information is not changed, the token objects
+// should remain the same.
+- (void)testUpdateAuthState_tokensAreNotChanged {
+  NSTimeInterval accessTokenExpireTime = [[NSDate date] timeIntervalSince1970];
+  NSTimeInterval idTokenExpireTime = [[NSDate date] timeIntervalSince1970];
+  
+  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                            accessTokenExpireTime:accessTokenExpireTime
+                                                     refreshToken:kRefreshToken];
+  
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  
+  GIDToken *accessTokenBeforeUpdate = user.accessToken;
+  GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
+  GIDToken *idTokenBeforeUpdate = user.idToken;
+  
+  [user updateAuthState:authState profileData:nil];
+  
+  XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
+  XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
+  XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+}
+
 #pragma mark - Helpers
+
+- (GIDGoogleUser *)googleUserWithAccessTokenExpireTime:(NSTimeInterval)accessTokenExpireTime
+                                     idTokenExpireTime:(NSTimeInterval)idTokenExpireTime {
+  NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                            accessTokenExpireTime:accessTokenExpireTime
+                                                     refreshToken:kRefreshToken];
+  
+  return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+}
 
 // The expireTime should be based on 1970.
 - (NSString *)idTokenWithExpireTime:(NSTimeInterval)expireTime {
