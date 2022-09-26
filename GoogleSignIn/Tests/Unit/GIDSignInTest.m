@@ -85,6 +85,7 @@ static NSString * const kFakeIDToken = @"FakeIDToken";
 static NSString * const kClientId = @"FakeClientID";
 static NSString * const kDotReversedClientId = @"FakeClientID";
 static NSString * const kClientId2 = @"FakeClientID2";
+static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kAppBundleId = @"FakeBundleID";
 static NSString * const kLanguage = @"FakeLanguage";
 static NSString * const kScope = @"FakeScope";
@@ -342,7 +343,6 @@ static void *kTestObserverContext = &kTestObserverContext;
                                           forKey:kAppHasRunBeforeKey];
 
   _signIn = [[GIDSignIn alloc] initPrivate];
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -392,6 +392,37 @@ static void *kTestObserverContext = &kTestObserverContext;
   GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
   GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
+}
+
+- (void)testInitPrivate {
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNotNil(signIn.configuration);
+  XCTAssertEqual(signIn.configuration.clientID, kClientId);
+  XCTAssertNil(signIn.configuration.serverClientID);
+  XCTAssertNil(signIn.configuration.hostedDomain);
+  XCTAssertNil(signIn.configuration.openIDRealm);
+}
+
+- (void)testInitPrivate_noConfig {
+  [_fakeMainBundle fakeWithClientID:nil
+                     serverClientID:nil
+                       hostedDomain:nil
+                        openIDRealm:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNil(signIn.configuration);
+}
+
+- (void)testInitPrivate_fullConfig {
+  [_fakeMainBundle fakeWithClientID:kClientId
+                     serverClientID:kServerClientId
+                       hostedDomain:kFakeHostedDomain
+                        openIDRealm:kOpenIDRealm];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNotNil(signIn.configuration);
+  XCTAssertEqual(signIn.configuration.clientID, kClientId);
+  XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
+  XCTAssertEqual(signIn.configuration.hostedDomain, kFakeHostedDomain);
+  XCTAssertEqual(signIn.configuration.openIDRealm, kOpenIDRealm);
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
