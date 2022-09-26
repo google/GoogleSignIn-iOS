@@ -136,7 +136,7 @@ static NSTimeInterval const kTimeIncrement = 100;
   NSString *idToken = [self idTokenWithExpireTime:idTokenExpireTime];
   OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
                                                       accessToken:kAccessToken
-                                            accessTokenExpiresIn:kAccessTokenExpiresIn
+                                             accessTokenExpiresIn:kAccessTokenExpiresIn
                                                      refreshToken:kRefreshToken];
   
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
