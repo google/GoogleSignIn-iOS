@@ -18,6 +18,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// We have to import GTMAppAuth because forward declaring the protocol does
+// not generate the `fetcherAuthorizer` method below for Swift.
+#ifdef SWIFT_PACKAGE
+@import GTMAppAuth;
+#else
+#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
+#endif
+
 @class GIDAuthentication;
 @class GIDConfiguration;
 @class GIDToken;
@@ -52,6 +60,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// Send this token to your server to authenticate the user there. For more information on this topic,
 /// see https://developers.google.com/identity/sign-in/ios/backend-auth.
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
+
+/// A new authorizer for `GTLService`, `GTMSessionFetcher`, or `GTMHTTPFetcher`.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+@property(nonatomic, readonly) (id<GTMFetcherAuthorizationProtocol>)fetcherAuthorizer;
+#pragma clang diagnostic pop
 
 @end
 

@@ -25,7 +25,14 @@
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
-#import <AppAuth/AppAuth.h>
+#import <AppAuth/OIDAuthState.h>
+#import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDError.h>
+#import <AppAuth/OIDIDToken.h>
+#import <AppAuth/OIDTokenRequest.h>
+#import <AppAuth/OIDTokenResponse.h>
 #endif
 
 // The ID Token claim key for the hosted domain value.
@@ -40,7 +47,110 @@ static NSString *const kAuthState = @"authState";
 static NSString *const kAudienceParameter = @"audience";
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
+// Additional parameter names for EMM.
+static NSString *const kEMMSupportParameterName = @"emm_support";
+
 NS_ASSUME_NONNULL_BEGIN
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+// The specialized GTMAppAuthFetcherAuthorization delegate that handles potential EMM error
+// responses.
+@interface GTMAppAuthFetcherAuthorizationEMMChainedDelegate : NSObject
+
+// Initializes with chained delegate and selector.
+- (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector;
+
+// The callback method for GTMAppAuthFetcherAuthorization to invoke.
+- (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
+               request:(NSMutableURLRequest *)request
+     finishedWithError:(nullable NSError *)error;
+
+@end
+
+@implementation GTMAppAuthFetcherAuthorizationEMMChainedDelegate {
+  // We use a weak reference here to match GTMAppAuthFetcherAuthorization.
+  __weak id _delegate;
+  SEL _selector;
+  // We need to maintain a reference to the chained delegate because GTMAppAuthFetcherAuthorization
+  // only keeps a weak reference.
+  GTMAppAuthFetcherAuthorizationEMMChainedDelegate *_retained_self;
+}
+
+- (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector {
+  self = [super init];
+  if (self) {
+    _delegate = delegate;
+    _selector = selector;
+    _retained_self = self;
+  }
+  return self;
+}
+
+- (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
+               request:(NSMutableURLRequest *)request
+     finishedWithError:(nullable NSError *)error {
+  [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
+    if (!self->_delegate || !self->_selector) {
+      return;
+    }
+    NSMethodSignature *signature = [self->_delegate methodSignatureForSelector:self->_selector];
+    if (!signature) {
+      return;
+    }
+    id argument1 = auth;
+    id argument2 = request;
+    id argument3 = error;
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setTarget:self->_delegate];  // index 0
+    [invocation setSelector:self->_selector];  // index 1
+    [invocation setArgument:&argument1 atIndex:2];
+    [invocation setArgument:&argument2 atIndex:3];
+    [invocation setArgument:&argument3 atIndex:4];
+    [invocation invoke];
+  }];
+  // Prepare to deallocate the chained delegate instance because the above block will retain the
+  // iVar references it uses.
+  _retained_self = nil;
+}
+
+@end
+
+// A specialized GTMAppAuthFetcherAuthorization subclass with EMM support.
+@interface GTMAppAuthFetcherAuthorizationWithEMMSupport : GTMAppAuthFetcherAuthorization
+@end
+
+@implementation GTMAppAuthFetcherAuthorizationWithEMMSupport
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+- (void)authorizeRequest:(nullable NSMutableURLRequest *)request
+                delegate:(id)delegate
+       didFinishSelector:(SEL)sel {
+#pragma clang diagnostic pop
+  GTMAppAuthFetcherAuthorizationEMMChainedDelegate *chainedDelegate =
+      [[GTMAppAuthFetcherAuthorizationEMMChainedDelegate alloc] initWithDelegate:delegate
+                                                                        selector:sel];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  [super authorizeRequest:request
+                 delegate:chainedDelegate
+        didFinishSelector:@selector(authentication:request:finishedWithError:)];
+#pragma clang diagnostic pop
+}
+
+- (void)authorizeRequest:(nullable NSMutableURLRequest *)request
+       completionHandler:(GTMAppAuthFetcherAuthorizationCompletion)handler {
+  [super authorizeRequest:request completionHandler:^(NSError *_Nullable error) {
+    [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
+      handler(error);
+    }];
+  }];
+}
+
+@end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 @interface GIDGoogleUser ()
 
@@ -55,6 +165,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
+  
+  // A queue for pending authentication handlers so we don't fire multiple requests in parallel.
+  // Access to this ivar should be synchronized.
+  NSMutableArray *_authenticationHandlerQueue;
 }
 
 - (nullable NSString *)userID {
@@ -106,12 +220,36 @@ NS_ASSUME_NONNULL_BEGIN
   return _cachedConfiguration;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (id<GTMFetcherAuthorizationProtocol>)fetcherAuthorizer {
+#pragma clang diagnostic pop
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
+      [[GTMAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  GTMAppAuthFetcherAuthorization *authorization =
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  authorization.tokenRefreshDelegate = self;
+  return authorization;
+}
+
 #pragma mark - Private Methods
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (NSString *)emmSupport {
+  return
+      _authState.lastAuthorizationResponse.request.additionalParameters[kEMMSupportParameterName];
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
+    _authenticationHandlerQueue = [[NSMutableArray alloc] init];
     [self updateAuthState:authState profileData:profileData];
   }
   return self;
@@ -168,6 +306,18 @@ NS_ASSUME_NONNULL_BEGIN
     }
   }
   return nil;
+}
+
+#pragma mark - GTMAppAuthFetcherAuthorizationTokenRefreshDelegate
+
+- (nullable NSDictionary *)additionalRefreshParameters:
+    (GTMAppAuthFetcherAuthorization *)authorization {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  return [GIDAuthentication updatedEMMParametersWithParameters:
+      authorization.authState.lastTokenResponse.request.additionalParameters];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  return authorization.authState.lastTokenResponse.request.additionalParameters;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 #pragma mark - NSSecureCoding
