@@ -28,18 +28,14 @@ static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
 static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 @implementation GIDFakeMainBundle {
-  // Represents the CFBundleURLTypes of the mocked app bundle's info.plist.
-  __block NSArray *_fakeSupportedSchemes;
-  
+  NSString *_clientId;
+  NSString *_bundleId;
+
   // Represents the Info.plist keys to fake.
   NSArray *_fakedKeys;
 
   // Represents the values for any Info.plist keys to be faked.
   NSMutableDictionary *_fakeConfig;
-  
-
-  NSString *_clientId;
-  NSString *_bundleId;
 }
 
 - (void)startFakingWithBundleId:(NSString *)bundleId clientId:(NSString *)clientId {
@@ -184,11 +180,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   ];
 }
 
-- (void)fakeWithClientID:(NSString *)clientID
-          serverClientID:(NSString *)serverClientID
-            hostedDomain:(NSString *)hostedDomain
-             openIDRealm:(NSString *)openIDRealm {
-  _clientId = clientID;
+- (void)fakeWithClientID:(id)clientID
+          serverClientID:(id)serverClientID
+            hostedDomain:(id)hostedDomain
+             openIDRealm:(id)openIDRealm {
   _fakeConfig[kConfigClientIDKey] = clientID;
   _fakeConfig[kConfigServerClientIDKey] = serverClientID;
   _fakeConfig[kConfigHostedDomainKey] = hostedDomain;

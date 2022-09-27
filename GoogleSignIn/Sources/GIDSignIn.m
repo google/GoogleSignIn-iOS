@@ -479,12 +479,31 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     NSBundle *bundle = [NSBundle mainBundle];
     
     // Retrieve any config parameters from the main bundle.
-    NSString *clientID = [bundle objectForInfoDictionaryKey:kConfigClientIDKey];
-    NSString *serverClientID = [bundle objectForInfoDictionaryKey:kConfigServerClientIDKey];
-    NSString *hostedDomain = [bundle objectForInfoDictionaryKey:kConfigHostedDomainKey];
-    NSString *openIDRealm = [bundle objectForInfoDictionaryKey:kConfigOpenIDRealmKey];
+    NSString *clientID;
+    id configClientID = [bundle objectForInfoDictionaryKey:kConfigClientIDKey];
+    if ([configClientID isKindOfClass:[NSString class]]) {
+      clientID = configClientID;
+    }
     
-    // Try to construct an initial configuration, we need at least a client ID.
+    NSString *serverClientID;
+    id configServerClientID = [bundle objectForInfoDictionaryKey:kConfigServerClientIDKey];
+    if ([configServerClientID isKindOfClass:[NSString class]]) {
+      serverClientID = configServerClientID;
+    }
+    
+    NSString *hostedDomain;
+    id configHostedDomain = [bundle objectForInfoDictionaryKey:kConfigHostedDomainKey];
+    if ([configHostedDomain isKindOfClass:[NSString class]]) {
+      hostedDomain = configHostedDomain;
+    }
+
+    NSString *openIDRealm;
+    id configopenIDRealm = [bundle objectForInfoDictionaryKey:kConfigOpenIDRealmKey];
+    if ([configopenIDRealm isKindOfClass:[NSString class]]) {
+      openIDRealm = configopenIDRealm;
+    }
+    
+    // Try to construct an initial configuration.  We need at least a client ID.
     GIDConfiguration *configuration;
     if (clientID) {
       configuration = [[GIDConfiguration alloc] initWithClientID:clientID

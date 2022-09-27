@@ -84,9 +84,9 @@
  * @fn fakeWithClientID:serverClientID:hostedDomain:openIDRealm:
  * @brief Sets values for faked Info.plist params.
  */
-- (void)fakeWithClientID:(NSString *)clientID
-          serverClientID:(NSString *)serverClientID
-            hostedDomain:(NSString *)hostedDomain
-             openIDRealm:(NSString *)openIDRealm;
+- (void)fakeWithClientID:(id)clientID
+          serverClientID:(id)serverClientID
+            hostedDomain:(id)hostedDomain
+             openIDRealm:(id)openIDRealm;
 
 @end

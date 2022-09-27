@@ -425,6 +425,15 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertEqual(signIn.configuration.openIDRealm, kOpenIDRealm);
 }
 
+- (void)testInitPrivate_invalidConfig {
+  [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
+                     serverClientID:nil
+                       hostedDomain:nil
+                        openIDRealm:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNil(signIn.configuration);
+}
+
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization expect] andReturn:_authState] authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
