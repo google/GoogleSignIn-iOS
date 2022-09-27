@@ -23,7 +23,7 @@
 @interface GIDFakeMainBundle : NSObject
 
 /**
- * @fn startFakingWithBundleId:clientId:
+ * @fn startFakingWithClientId:
  * @brief Starts faking [NSBundle mainBundle]
  * @param clientId The fake client idenfitier for the app.
  */
@@ -82,6 +82,10 @@
 /**
  * @fn fakeWithClientID:serverClientID:hostedDomain:openIDRealm:
  * @brief Sets values for faked Info.plist params.
+ * @param clientId The fake client idenfitier for the app.
+ * @param serverClientId The fake server client idenfitier for the app.
+ * @param hostedDomain The fake hosted domain for the app.
+ * @param openIDRealm The fake OpenID realm for the app.
  */
 - (void)fakeWithClientID:(id)clientID
           serverClientID:(id)serverClientID
