@@ -37,7 +37,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSMutableDictionary *_fakeConfig;
 }
 
-- (void)startFakingWithClientId:(NSString *)clientId {
+- (void)startFakingWithClientID:(NSString *)clientId {
   _clientId = clientId;
 
   _fakedKeys = @[ kCFBundleURLTypesKey,

@@ -28,7 +28,7 @@ static NSString *const kClientId = @"FakeClientID";
 
 - (void)setUp {
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithClientId:kClientId];
+  [_fakeMainBundle startFakingWithClientID:kClientId];
 }
 
 - (void)tearDown {
