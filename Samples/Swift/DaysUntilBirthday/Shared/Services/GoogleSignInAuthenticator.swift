@@ -19,7 +19,7 @@ import GoogleSignIn
 
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
-    private var authViewModel: AuthenticationViewModel
+  private var authViewModel: AuthenticationViewModel
 
   /// Creates an instance of this authenticator.
   /// - parameter authViewModel: The view model this authenticator will set logged in status on.
