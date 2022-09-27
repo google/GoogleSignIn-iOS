@@ -25,10 +25,9 @@
 /**
  * @fn startFakingWithBundleId:clientId:
  * @brief Starts faking [NSBundle mainBundle]
- * @param bundleId The fake bundle idenfitier for the app.
  * @param clientId The fake client idenfitier for the app.
  */
-- (void)startFakingWithBundleId:(NSString *)bundleId clientId:(NSString *)clientId;
+- (void)startFakingWithClientId:(NSString *)clientId;
 
 /**
  * @fn stopFaking

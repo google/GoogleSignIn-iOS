@@ -86,7 +86,6 @@ static NSString * const kClientId = @"FakeClientID";
 static NSString * const kDotReversedClientId = @"FakeClientID";
 static NSString * const kClientId2 = @"FakeClientID2";
 static NSString * const kServerClientId = @"FakeServerClientID";
-static NSString * const kAppBundleId = @"FakeBundleID";
 static NSString * const kLanguage = @"FakeLanguage";
 static NSString * const kScope = @"FakeScope";
 static NSString * const kScope2 = @"FakeScope2";
@@ -335,7 +334,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Fakes
   _fetcherService = [[GIDFakeFetcherService alloc] init];
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithBundleId:kAppBundleId clientId:kClientId];
+  [_fakeMainBundle startFakingWithClientId:kClientId];
   [_fakeMainBundle fakeAllSchemesSupported];
 
   // Object under test

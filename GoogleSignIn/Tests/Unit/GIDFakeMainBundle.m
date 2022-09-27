@@ -29,7 +29,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 @implementation GIDFakeMainBundle {
   NSString *_clientId;
-  NSString *_bundleId;
 
   // Represents the Info.plist keys to fake.
   NSArray *_fakedKeys;
@@ -38,8 +37,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSMutableDictionary *_fakeConfig;
 }
 
-- (void)startFakingWithBundleId:(NSString *)bundleId clientId:(NSString *)clientId {
-  _bundleId = bundleId;
+- (void)startFakingWithClientId:(NSString *)clientId {
   _clientId = clientId;
 
   _fakedKeys = @[ kCFBundleURLTypesKey,
@@ -112,9 +110,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)fakeAllSchemesSupported {
   _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
-      kCFBundleURLSchemesKey : @[ _bundleId ]
-    },
-    @{
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
   ];
@@ -124,7 +119,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
       kCFBundleURLSchemesKey : @[
-        _bundleId,
         [self reversedClientId]
       ]
     },
@@ -132,14 +126,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)fakeAllSchemesSupportedWithCasesMangled {
-  NSString *caseFlippedBundleId =
-      [self stringByFlippingCasesInString:_bundleId];
   NSString *caseFlippedReverseClientId =
       [self stringByFlippingCasesInString:[self reversedClientId]];
   _fakeConfig[kCFBundleURLTypesKey] = @[
-    @{
-      kCFBundleURLSchemesKey : @[ caseFlippedBundleId ]
-    },
     @{
       kCFBundleURLSchemesKey : @[ caseFlippedReverseClientId ]
     }
@@ -147,11 +136,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)fakeMissingClientIdScheme {
-  _fakeConfig[kCFBundleURLTypesKey] = @[
-    @{
-      kCFBundleURLSchemesKey : @[ _bundleId ]
-    }
-  ];
+  [self fakeMissingAllSchemes];
 }
 
 - (void)fakeMissingAllSchemes {
@@ -168,9 +153,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)fakeOtherSchemesAndAllSchemes {
   _fakeConfig[kCFBundleURLTypesKey] = @[
-    @{
-      kCFBundleURLSchemesKey : @[ _bundleId ]
-    },
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     },
