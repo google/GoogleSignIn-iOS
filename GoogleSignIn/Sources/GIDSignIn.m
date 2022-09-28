@@ -503,15 +503,13 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       openIDRealm = configopenIDRealm;
     }
     
-    // Try to construct an initial configuration.  We need at least a client ID.
-    GIDConfiguration *configuration;
+    // If we have at least a client ID, try to construct an initial configuration.
     if (clientID) {
-      configuration = [[GIDConfiguration alloc] initWithClientID:clientID
-                                                  serverClientID:serverClientID
-                                                    hostedDomain:hostedDomain
-                                                     openIDRealm:openIDRealm];
       // Set the initial active configuation
-      _configuration = configuration;
+      _configuration = [[GIDConfiguration alloc] initWithClientID:clientID
+                                                   serverClientID:serverClientID
+                                                     hostedDomain:hostedDomain
+                                                      openIDRealm:openIDRealm];
     }
     
     // Check to see if the 3P app is being run for the first time after a fresh install.
