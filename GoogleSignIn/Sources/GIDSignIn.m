@@ -475,41 +475,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   self = [super init];
   if (self) {
-    // Get the app's main bundle.
-    NSBundle *bundle = [NSBundle mainBundle];
-    
-    // Retrieve any config parameters from the main bundle.
-    NSString *clientID;
-    id configClientID = [bundle objectForInfoDictionaryKey:kConfigClientIDKey];
-    if ([configClientID isKindOfClass:[NSString class]]) {
-      clientID = configClientID;
-    }
-    
-    NSString *serverClientID;
-    id configServerClientID = [bundle objectForInfoDictionaryKey:kConfigServerClientIDKey];
-    if ([configServerClientID isKindOfClass:[NSString class]]) {
-      serverClientID = configServerClientID;
-    }
-    
-    NSString *hostedDomain;
-    id configHostedDomain = [bundle objectForInfoDictionaryKey:kConfigHostedDomainKey];
-    if ([configHostedDomain isKindOfClass:[NSString class]]) {
-      hostedDomain = configHostedDomain;
-    }
+    // Get the bundle of the current executable.
+    NSBundle *bundle = NSBundle.mainBundle;
 
-    NSString *openIDRealm;
-    id configopenIDRealm = [bundle objectForInfoDictionaryKey:kConfigOpenIDRealmKey];
-    if ([configopenIDRealm isKindOfClass:[NSString class]]) {
-      openIDRealm = configopenIDRealm;
-    }
-    
-    // If we have at least a client ID, try to construct an initial configuration.
-    if (clientID) {
-      // Set the initial active configuation
-      _configuration = [[GIDConfiguration alloc] initWithClientID:clientID
-                                                   serverClientID:serverClientID
-                                                     hostedDomain:hostedDomain
-                                                      openIDRealm:openIDRealm];
+    // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
+    if (bundle) {
+      _configuration = [GIDSignIn configurationFromBundle:bundle];
     }
     
     // Check to see if the 3P app is being run for the first time after a fresh install.
@@ -1005,10 +976,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 // Assert that the presenting view controller has been set.
 - (void)assertValidPresentingViewController {
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  if (!_currentOptions.presentingViewController) {
+  if (!_currentOptions.presentingViewController)
 #elif TARGET_OS_OSX
-  if (!_currentOptions.presentingWindow) {
+  if (!_currentOptions.presentingWindow)
 #endif // TARGET_OS_OSX
+  {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];
@@ -1068,6 +1040,38 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
   _currentUser = user;
   [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+}
+
+// Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.
++ (nullable NSString *)configValueFromBundle:(NSBundle *)bundle forKey:(NSString *)key {
+  NSString *value;
+  id configValue = [bundle objectForInfoDictionaryKey:key];
+  if ([configValue isKindOfClass:[NSString class]]) {
+    value = configValue;
+  }
+  return value;
+}
+
+// Try to generate a |GIDConfiguration| from an |NSBundle|'s Info.plist.
++ (nullable GIDConfiguration *)configurationFromBundle:(NSBundle *)bundle {
+  GIDConfiguration *configuration;
+
+  // Retrieve any valid config parameters from the bundle's Info.plist.
+  NSString *clientID = [GIDSignIn configValueFromBundle:bundle forKey:kConfigClientIDKey];
+  NSString *serverClientID = [GIDSignIn configValueFromBundle:bundle
+                                                       forKey:kConfigServerClientIDKey];
+  NSString *hostedDomain = [GIDSignIn configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
+  NSString *openIDRealm = [GIDSignIn configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
+    
+  // If we have at least a client ID, try to construct a configuration.
+  if (clientID) {
+    configuration = [[GIDConfiguration alloc] initWithClientID:clientID
+                                                 serverClientID:serverClientID
+                                                   hostedDomain:hostedDomain
+                                                    openIDRealm:openIDRealm];
+  }
+  
+  return configuration;
 }
 
 @end
