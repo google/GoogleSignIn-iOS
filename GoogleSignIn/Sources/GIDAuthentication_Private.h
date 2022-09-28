@@ -34,20 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState;
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
-+ (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
-                                emmSupport:(nullable NSString *)emmSupport
-                    isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;
-
-// Gets a new set of URL parameters that contains updated EMM-related URL parameters if needed.
-+ (NSDictionary *)updatedEMMParametersWithParameters:(NSDictionary *)parameters;
-
-// Handles potential EMM error from token fetch response.
-+ (void)handleTokenFetchEMMError:(nullable NSError *)error
-                      completion:(void (^)(NSError *_Nullable))completion;
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 @end
 
 NS_ASSUME_NONNULL_END

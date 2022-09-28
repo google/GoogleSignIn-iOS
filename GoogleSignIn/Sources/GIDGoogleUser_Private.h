@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 // A string indicating support for Enterprise Mobility Management.
-@property(nonatomic, readonly) NSString *emmSupport;
+@property(nonatomic, readonly, nullable) NSString *emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Create a object with an auth state, scopes, and profile data.

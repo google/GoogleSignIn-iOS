@@ -17,7 +17,7 @@
 #import <Foundation/Foundation.h>
 
 // We have to import GTMAppAuth because forward declaring the protocol does
-// not generate the `fetcherAuthorizer` method below for Swift.
+// not generate the `fetcherAuthorizer` property below for Swift.
 #ifdef SWIFT_PACKAGE
 @import GTMAppAuth;
 #else

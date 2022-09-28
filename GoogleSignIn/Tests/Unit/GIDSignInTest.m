@@ -26,6 +26,7 @@
 // Test module imports
 @import GoogleSignIn;
 
+#import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -1068,9 +1069,10 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSError *emmError = [NSError errorWithDomain:@"anydomain"
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorFieldError : errorJSON }];
-  [[_authentication expect] handleTokenFetchEMMError:emmError
-                                          completion:SAVE_TO_ARG_BLOCK(completion)];
-
+  id appAuthFetcherAuthorization =
+      OCMStrictClassMock([GIDAppAuthFetcherAuthorizationWithEMMSupport class]);
+  [[appAuthFetcherAuthorization expect] handleTokenFetchEMMError:emmError
+                                                      completion:SAVE_TO_ARG_BLOCK(completion)];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil

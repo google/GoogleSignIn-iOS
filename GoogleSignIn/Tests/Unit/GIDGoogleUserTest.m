@@ -157,11 +157,14 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
                                                 idTokenExpiresIn:kIDTokenExpiresIn];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  id<GTMFetcherAuthorizationProtocol> fetcherAuthroizer = user.fetcherAuthorizer;
+  id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
 #pragma clang diagnostic pop
-  XCTAssertTrue([fetcherAuthroizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
-  XCTAssertTrue([fetcherAuthroizer canAuthorize]);
+  XCTAssertTrue([fetcherAuthorizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
+  XCTAssertTrue([fetcherAuthorizer canAuthorize]);
 }
+
+// TODO(pinlu): Add a test that the property `fetcherAuthorizer` returns the same instance
+// after authState is updated.
 
 #pragma mark - Helpers
 

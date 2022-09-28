@@ -40,6 +40,8 @@ final class AuthenticationViewModel: ObservableObject {
   init() {
     if let user = GIDSignIn.sharedInstance.currentUser {
       self.state = .signedIn(user)
+      
+      let authorization = user.fetcherAuthorizer
     } else {
       self.state = .signedOut
     }
