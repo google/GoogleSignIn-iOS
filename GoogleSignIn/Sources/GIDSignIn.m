@@ -154,13 +154,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 @implementation GIDAuthFlow
 @end
 
-@interface GIDSignIn ()
-
-// Redeclare |currentUser| as readwrite for internal use.
-@property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
-
-@end
-
 @implementation GIDSignIn {
   // This value is used when sign-in flows are resumed via the handling of a URL. Its value is
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
