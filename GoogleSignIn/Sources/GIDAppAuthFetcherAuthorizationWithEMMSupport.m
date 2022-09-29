@@ -57,6 +57,55 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@implementation GTMAppAuthFetcherAuthorizationEMMChainedDelegate {
+  // We use a weak reference here to match GTMAppAuthFetcherAuthorization.
+  __weak id _delegate;
+  SEL _selector;
+  // We need to maintain a reference to the chained delegate because GTMAppAuthFetcherAuthorization
+  // only keeps a weak reference.
+  GTMAppAuthFetcherAuthorizationEMMChainedDelegate *_retained_self;
+}
+
+- (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector {
+  self = [super init];
+  if (self) {
+    _delegate = delegate;
+    _selector = selector;
+    _retained_self = self;
+  }
+  return self;
+}
+
+- (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
+               request:(NSMutableURLRequest *)request
+     finishedWithError:(nullable NSError *)error {
+  [GIDAppAuthFetcherAuthorizationWithEMMSupport handleTokenFetchEMMError:error
+                                                              completion:^(NSError *_Nullable error) {
+    if (!self->_delegate || !self->_selector) {
+      return;
+    }
+    NSMethodSignature *signature = [self->_delegate methodSignatureForSelector:self->_selector];
+    if (!signature) {
+      return;
+    }
+    id argument1 = auth;
+    id argument2 = request;
+    id argument3 = error;
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setTarget:self->_delegate];  // index 0
+    [invocation setSelector:self->_selector];  // index 1
+    [invocation setArgument:&argument1 atIndex:2];
+    [invocation setArgument:&argument2 atIndex:3];
+    [invocation setArgument:&argument3 atIndex:4];
+    [invocation invoke];
+  }];
+  // Prepare to deallocate the chained delegate instance because the above block will retain the
+  // iVar references it uses.
+  _retained_self = nil;
+}
+
+@end
+
 @implementation GIDAppAuthFetcherAuthorizationWithEMMSupport
 
 #pragma clang diagnostic push
@@ -131,57 +180,6 @@ NS_ASSUME_NONNULL_BEGIN
     allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
   }
   return allParameters;
-}
-
-@end
-
-#pragma mark - GTMAppAuthFetcherAuthorizationEMMChainedDelegate
-
-@implementation GTMAppAuthFetcherAuthorizationEMMChainedDelegate {
-  // We use a weak reference here to match GTMAppAuthFetcherAuthorization.
-  __weak id _delegate;
-  SEL _selector;
-  // We need to maintain a reference to the chained delegate because GTMAppAuthFetcherAuthorization
-  // only keeps a weak reference.
-  GTMAppAuthFetcherAuthorizationEMMChainedDelegate *_retained_self;
-}
-
-- (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector {
-  self = [super init];
-  if (self) {
-    _delegate = delegate;
-    _selector = selector;
-    _retained_self = self;
-  }
-  return self;
-}
-
-- (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
-               request:(NSMutableURLRequest *)request
-     finishedWithError:(nullable NSError *)error {
-  [GIDAppAuthFetcherAuthorizationWithEMMSupport handleTokenFetchEMMError:error
-                                                              completion:^(NSError *_Nullable error) {
-    if (!self->_delegate || !self->_selector) {
-      return;
-    }
-    NSMethodSignature *signature = [self->_delegate methodSignatureForSelector:self->_selector];
-    if (!signature) {
-      return;
-    }
-    id argument1 = auth;
-    id argument2 = request;
-    id argument3 = error;
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setTarget:self->_delegate];  // index 0
-    [invocation setSelector:self->_selector];  // index 1
-    [invocation setArgument:&argument1 atIndex:2];
-    [invocation setArgument:&argument2 atIndex:3];
-    [invocation setArgument:&argument3 atIndex:4];
-    [invocation invoke];
-  }];
-  // Prepare to deallocate the chained delegate instance because the above block will retain the
-  // iVar references it uses.
-  _retained_self = nil;
 }
 
 @end
