@@ -18,7 +18,6 @@
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
 
 static NSString *const kClientId = @"FakeClientID";
-static NSString *const kBundleId = @"FakeBundleID";
 
 @interface GIDSignInCallbackSchemesTest : XCTestCase
 @end
@@ -29,7 +28,7 @@ static NSString *const kBundleId = @"FakeBundleID";
 
 - (void)setUp {
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithBundleId:kBundleId clientId:kClientId];
+  [_fakeMainBundle startFakingWithClientID:kClientId];
 }
 
 - (void)tearDown {
