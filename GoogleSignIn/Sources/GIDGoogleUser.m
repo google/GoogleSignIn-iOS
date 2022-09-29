@@ -125,17 +125,6 @@ NS_ASSUME_NONNULL_BEGIN
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
-        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    GTMAppAuthFetcherAuthorization *authorization =
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    authorization.tokenRefreshDelegate = self;
-    self.fetcherAuthorizer = authorization;
-    
     [self updateAuthState:authState profileData:profileData];
   }
   return self;
@@ -147,6 +136,17 @@ NS_ASSUME_NONNULL_BEGIN
     _authState = authState;
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
     _profile = profileData;
+    
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
+        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    authorization.tokenRefreshDelegate = self;
+    self.fetcherAuthorizer = authorization;
     
     [self updateTokensWithAuthState:authState];
   }
