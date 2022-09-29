@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#import <TargetConditionals.h>
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #ifdef SWIFT_PACKAGE

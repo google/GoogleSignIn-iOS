@@ -1091,7 +1091,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
-  [_authentication verify];
+  [appAuthFetcherAuthorization verify];
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");

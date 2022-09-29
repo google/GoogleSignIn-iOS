@@ -16,14 +16,6 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 
-#ifdef SWIFT_PACKAGE
-@import AppAuth;
-@import GTMAppAuth;
-#else
-#import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAppAuth.h>
-#endif
-
 NS_ASSUME_NONNULL_BEGIN
 
 // Internal methods for the class that are not part of the public API.
