@@ -54,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, readwrite, nullable) GIDToken *idToken;
 
+@property(nonatomic, readwrite) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
+
 @end
 
 @implementation GIDGoogleUser {
@@ -110,23 +112,6 @@ NS_ASSUME_NONNULL_BEGIN
   return _cachedConfiguration;
 }
 
-// TODO(pinlu): Create fetcherAuthorizer at initialization and observe authState changes.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (id<GTMFetcherAuthorizationProtocol>)fetcherAuthorizer {
-#pragma clang diagnostic pop
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
-      [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  authorization.tokenRefreshDelegate = self;
-  return authorization;
-}
-
 #pragma mark - Private Methods
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -140,6 +125,17 @@ NS_ASSUME_NONNULL_BEGIN
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
+        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    authorization.tokenRefreshDelegate = self;
+    self.fetcherAuthorizer = authorization;
+    
     [self updateAuthState:authState profileData:profileData];
   }
   return self;

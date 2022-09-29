@@ -163,8 +163,15 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTAssertTrue([fetcherAuthorizer canAuthorize]);
 }
 
-// TODO(pinlu): Add a test that the property `fetcherAuthorizer` returns the same instance
-// after authState is updated.
+- (void)testFetcherAuthorizer_returnTheSameInstance {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  
+  id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
+  id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer2 = user.fetcherAuthorizer;
+  
+  XCTAssertIdentical(fetcherAuthorizer, fetcherAuthorizer2);
+}
 
 #pragma mark - Helpers
 
