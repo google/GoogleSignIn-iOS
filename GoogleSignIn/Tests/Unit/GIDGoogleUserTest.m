@@ -167,9 +167,12 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
                                                 idTokenExpiresIn:kIDTokenExpiresIn];
   
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
   id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer2 = user.fetcherAuthorizer;
-  
+#pragma clang diagnostic pop
+
   XCTAssertIdentical(fetcherAuthorizer, fetcherAuthorizer2);
 }
 

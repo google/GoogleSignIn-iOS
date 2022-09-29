@@ -54,7 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, readwrite, nullable) GIDToken *idToken;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @property(nonatomic, readwrite) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
+#pragma clang diagnostic pop
 
 @end
 
