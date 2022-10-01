@@ -22,7 +22,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
-#import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
@@ -584,9 +584,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-      [GIDAppAuthFetcherAuthorizationWithEMMSupport parametersWithParameters:options.extraParams
-                                                                  emmSupport:emmSupport
-                                                      isPasscodeInfoRequired:NO]];
+      [GIDEMMSupport parametersWithParameters:options.extraParams
+                                   emmSupport:emmSupport
+                       isPasscodeInfoRequired:NO]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
@@ -733,10 +733,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
   [additionalParameters addEntriesFromDictionary:
-      [GIDAppAuthFetcherAuthorizationWithEMMSupport
-          parametersWithParameters:@{}
-                        emmSupport:authFlow.emmSupport
-            isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+      [GIDEMMSupport parametersWithParameters:@{}
+                                   emmSupport:authFlow.emmSupport
+                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
@@ -762,8 +761,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {
-      [GIDAppAuthFetcherAuthorizationWithEMMSupport
-          handleTokenFetchEMMError:error completion:^(NSError *error) {
+      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
         authFlow.error = error;
         [authFlow next];
       }];

@@ -18,9 +18,7 @@
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 
-#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -30,22 +28,11 @@
 #import <GTMAppAuth/GTMAppAuth.h>
 #endif
 
-// Additional parameter names for EMM.
-static NSString *const kEMMSupportParameterName = @"emm_support";
-static NSString *const kEMMOSVersionParameterName = @"device_os";
-static NSString *const kEMMPasscodeInfoParameterName = @"emm_passcode_info";
-
-// Old UIDevice system name for iOS.
-static NSString *const kOldIOSSystemName = @"iPhone OS";
-
-// New UIDevice system name for iOS.
-static NSString *const kNewIOSSystemName = @"iOS";
-
 NS_ASSUME_NONNULL_BEGIN
 
 // The specialized GTMAppAuthFetcherAuthorization delegate that handles potential EMM error
 // responses.
-@interface GTMAppAuthFetcherAuthorizationEMMChainedDelegate : NSObject
+@interface GIDAppAuthFetcherAuthorizationEMMChainedDelegate : NSObject
 
 // Initializes with chained delegate and selector.
 - (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector;
@@ -57,13 +44,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation GTMAppAuthFetcherAuthorizationEMMChainedDelegate {
+@implementation GIDAppAuthFetcherAuthorizationEMMChainedDelegate {
   // We use a weak reference here to match GTMAppAuthFetcherAuthorization.
   __weak id _delegate;
   SEL _selector;
   // We need to maintain a reference to the chained delegate because GTMAppAuthFetcherAuthorization
   // only keeps a weak reference.
-  GTMAppAuthFetcherAuthorizationEMMChainedDelegate *_retained_self;
+  GIDAppAuthFetcherAuthorizationEMMChainedDelegate *_retained_self;
 }
 
 - (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector {
@@ -79,8 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
                request:(NSMutableURLRequest *)request
      finishedWithError:(nullable NSError *)error {
-  [GIDAppAuthFetcherAuthorizationWithEMMSupport handleTokenFetchEMMError:error
-                                                              completion:^(NSError *_Nullable error) {
+  [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
     if (!self->_delegate || !self->_selector) {
       return;
     }
@@ -114,8 +100,8 @@ NS_ASSUME_NONNULL_BEGIN
                 delegate:(id)delegate
        didFinishSelector:(SEL)sel {
 #pragma clang diagnostic pop
-  GTMAppAuthFetcherAuthorizationEMMChainedDelegate *chainedDelegate =
-      [[GTMAppAuthFetcherAuthorizationEMMChainedDelegate alloc] initWithDelegate:delegate
+  GIDAppAuthFetcherAuthorizationEMMChainedDelegate *chainedDelegate =
+      [[GIDAppAuthFetcherAuthorizationEMMChainedDelegate alloc] initWithDelegate:delegate
                                                                         selector:sel];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -128,58 +114,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)authorizeRequest:(nullable NSMutableURLRequest *)request
        completionHandler:(GTMAppAuthFetcherAuthorizationCompletion)handler {
   [super authorizeRequest:request completionHandler:^(NSError *_Nullable error) {
-    [[self class] handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
+    [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       handler(error);
     }];
   }];
-}
-
-+ (void)handleTokenFetchEMMError:(nullable NSError *)error
-                      completion:(void (^)(NSError *_Nullable))completion {
-  NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
-  if (errorJSON) {
-    __block BOOL handled = NO;
-    handled = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:errorJSON
-                                                                completion:^() {
-      if (handled) {
-        completion([NSError errorWithDomain:kGIDSignInErrorDomain
-                                       code:kGIDSignInErrorCodeEMM
-                                   userInfo:error.userInfo]);
-      } else {
-        completion(error);
-      }
-    }];
-  } else {
-    completion(error);
-  }
-}
-
-+ (NSDictionary *)updatedEMMParametersWithParameters:(NSDictionary *)parameters {
-  return [[self class] parametersWithParameters:parameters
-                                     emmSupport:parameters[kEMMSupportParameterName]
-                         isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
-}
-
-
-+ (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
-                                emmSupport:(nullable NSString *)emmSupport
-                    isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
-  if (!emmSupport) {
-    return parameters;
-  }
-  NSMutableDictionary *allParameters = [(parameters ?: @{}) mutableCopy];
-  allParameters[kEMMSupportParameterName] = emmSupport;
-  UIDevice *device = [UIDevice currentDevice];
-  NSString *systemName = device.systemName;
-  if ([systemName isEqualToString:kOldIOSSystemName]) {
-    systemName = kNewIOSSystemName;
-  }
-  allParameters[kEMMOSVersionParameterName] =
-      [NSString stringWithFormat:@"%@ %@", systemName, device.systemVersion];
-  if (isPasscodeInfoRequired) {
-    allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
-  }
-  return allParameters;
 }
 
 @end

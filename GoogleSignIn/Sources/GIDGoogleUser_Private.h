@@ -31,6 +31,17 @@ NS_ASSUME_NONNULL_BEGIN
 // Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate>
 
+@property(nonatomic, readwrite) GIDToken *accessToken;
+
+@property(nonatomic, readwrite) GIDToken *refreshToken;
+
+@property(nonatomic, readwrite, nullable) GIDToken *idToken;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+@property(nonatomic, readwrite) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
+#pragma clang diagnostic pop
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 // A string indicating support for Enterprise Mobility Management.
 @property(nonatomic, readonly, nullable) NSString *emmSupport;
