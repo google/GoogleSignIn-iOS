@@ -18,7 +18,9 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
+#import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
@@ -27,6 +29,8 @@
 #else
 #import <AppAuth/AppAuth.h>
 #endif
+
+NS_ASSUME_NONNULL_BEGIN
 
 // The ID Token claim key for the hosted domain value.
 static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
@@ -40,17 +44,8 @@ static NSString *const kAuthState = @"authState";
 static NSString *const kAudienceParameter = @"audience";
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface GIDGoogleUser ()
-
-@property(nonatomic, readwrite) GIDToken *accessToken;
-
-@property(nonatomic, readwrite) GIDToken *refreshToken;
-
-@property(nonatomic, readwrite, nullable) GIDToken *idToken;
-
-@end
+// Additional parameter names for EMM.
+static NSString *const kEMMSupportParameterName = @"emm_support";
 
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
@@ -108,6 +103,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private Methods
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (nullable NSString *)emmSupport {
+  return
+      _authState.lastAuthorizationResponse.request.additionalParameters[kEMMSupportParameterName];
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
@@ -123,6 +125,17 @@ NS_ASSUME_NONNULL_BEGIN
     _authState = authState;
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
     _profile = profileData;
+    
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
+        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    authorization.tokenRefreshDelegate = self;
+    self.fetcherAuthorizer = authorization;
     
     [self updateTokensWithAuthState:authState];
   }
@@ -168,6 +181,18 @@ NS_ASSUME_NONNULL_BEGIN
     }
   }
   return nil;
+}
+
+#pragma mark - GTMAppAuthFetcherAuthorizationTokenRefreshDelegate
+
+- (nullable NSDictionary *)additionalRefreshParameters:
+    (GTMAppAuthFetcherAuthorization *)authorization {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  return [GIDEMMSupport updatedEMMParametersWithParameters:
+      authorization.authState.lastTokenResponse.request.additionalParameters];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  return authorization.authState.lastTokenResponse.request.additionalParameters;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 #pragma mark - NSSecureCoding

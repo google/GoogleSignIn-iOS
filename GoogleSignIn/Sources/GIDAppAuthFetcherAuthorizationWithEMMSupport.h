@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+#ifdef SWIFT_PACKAGE
+@import GTMAppAuth;
+#else
+#import <GTMAppAuth/GTMAppAuth.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Internal methods for the class that are not part of the public API.
-@interface GIDAuthentication ()
-
-// A representation of the state of the OAuth session for this instance.
-@property(nonatomic, readonly) OIDAuthState *authState;
-
-- (instancetype)initWithAuthState:(OIDAuthState *)authState;
+// A specialized GTMAppAuthFetcherAuthorization subclass with EMM support.
+@interface GIDAppAuthFetcherAuthorizationWithEMMSupport : GTMAppAuthFetcherAuthorization
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

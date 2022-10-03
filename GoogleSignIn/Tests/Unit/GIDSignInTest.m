@@ -26,6 +26,7 @@
 // Test module imports
 @import GoogleSignIn;
 
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -396,6 +397,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization expect] andReturn:_authState] authState];
+  [[_authorization expect] setTokenRefreshDelegate:OCMOCK_ANY];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
 
@@ -1068,9 +1070,9 @@ static void *kTestObserverContext = &kTestObserverContext;
   NSError *emmError = [NSError errorWithDomain:@"anydomain"
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorFieldError : errorJSON }];
-  [[_authentication expect] handleTokenFetchEMMError:emmError
-                                          completion:SAVE_TO_ARG_BLOCK(completion)];
-
+  id emmSupport = OCMStrictClassMock([GIDEMMSupport class]);
+  [[emmSupport expect] handleTokenFetchEMMError:emmError
+                                     completion:SAVE_TO_ARG_BLOCK(completion)];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -1089,7 +1091,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
-  [_authentication verify];
+  [emmSupport verify];
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");

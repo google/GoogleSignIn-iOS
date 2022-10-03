@@ -16,12 +16,36 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GTMAppAuth;
+#else
+#import <AppAuth/AppAuth.h>
+#import <GTMAppAuth/GTMAppAuth.h>
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class OIDAuthState;
 
 // Internal methods for the class that are not part of the public API.
-@interface GIDGoogleUser ()
+@interface GIDGoogleUser () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate>
+
+@property(nonatomic, readwrite) GIDToken *accessToken;
+
+@property(nonatomic, readwrite) GIDToken *refreshToken;
+
+@property(nonatomic, readwrite, nullable) GIDToken *idToken;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+@property(nonatomic, readwrite) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
+#pragma clang diagnostic pop
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+// A string indicating support for Enterprise Mobility Management.
+@property(nonatomic, readonly, nullable) NSString *emmSupport;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Create a object with an auth state, scopes, and profile data.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState

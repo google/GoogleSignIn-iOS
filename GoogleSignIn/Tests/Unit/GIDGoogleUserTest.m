@@ -149,6 +149,33 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
 }
 
+- (void)testFetcherAuthorizer {
+  // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works
+  // internally, so let's just take the shortcut here by asserting we get a
+  // GTMAppAuthFetcherAuthorization object.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
+#pragma clang diagnostic pop
+  XCTAssertTrue([fetcherAuthorizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
+  XCTAssertTrue([fetcherAuthorizer canAuthorize]);
+}
+
+- (void)testFetcherAuthorizer_returnTheSameInstance {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
+  id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer2 = user.fetcherAuthorizer;
+#pragma clang diagnostic pop
+
+  XCTAssertIdentical(fetcherAuthorizer, fetcherAuthorizer2);
+}
+
 #pragma mark - Helpers
 
 - (GIDGoogleUser *)googleUserWithAccessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
