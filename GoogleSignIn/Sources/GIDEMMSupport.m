@@ -67,9 +67,9 @@ static NSString *const kNewIOSSystemName = @"iOS";
 }
 
 + (NSDictionary *)updatedEMMParametersWithParameters:(NSDictionary *)parameters {
-  return [[self class] parametersWithParameters:parameters
-                                     emmSupport:parameters[kEMMSupportParameterName]
-                         isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
+  return [self parametersWithParameters:parameters
+                             emmSupport:parameters[kEMMSupportParameterName]
+                 isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
 }
 
 
