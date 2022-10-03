@@ -19,9 +19,9 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
 #ifdef SWIFT_PACKAGE
@@ -47,9 +47,16 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 // Additional parameter names for EMM.
 static NSString *const kEMMSupportParameterName = @"emm_support";
 
+// Minimal time interval before expiration for the access token or it needs to be refreshed.
+NSTimeInterval kMinimalTimeToExpire = 60.0;
+
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
+  
+  // A queue for pending refrsh token handlers so we don't fire multiple requests in parallel.
+  // Access to this ivar should be synchronized.
+  NSMutableArray *_refreshTokensHandlerQueue;
 }
 
 - (nullable NSString *)userID {
@@ -101,6 +108,77 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
   return _cachedConfiguration;
 }
 
+- (void)doWithFreshTokens:(GIDGoogleUserCompletion)completion {
+  if (!([self.accessToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
+      (self.idToken && [self.idToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      completion(self, nil);
+    });
+    return;
+  }
+  @synchronized (_refreshTokensHandlerQueue) {
+    // Push the handler into the callback queue.
+    [_refreshTokensHandlerQueue addObject:[completion copy]];
+    if (_refreshTokensHandlerQueue.count > 1) {
+      // This is not the first handler in the queue, no fetch is needed.
+      return;
+    }
+  }
+  // This is the first handler in the queue, a fetch is needed.
+  NSMutableDictionary *additionalParameters = [@{} mutableCopy];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport updatedEMMParametersWithParameters:
+          _authState.lastTokenResponse.request.additionalParameters]];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:
+      _authState.lastTokenResponse.request.additionalParameters];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  OIDTokenRequest *tokenRefreshRequest =
+      [_authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
+                 originalAuthorizationResponse:_authState.lastAuthorizationResponse
+                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                                 NSError *_Nullable error) {
+    if (tokenResponse) {
+      [self->_authState updateWithTokenResponse:tokenResponse error:nil];
+    } else {
+      if (error.domain == OIDOAuthTokenErrorDomain) {
+        [self->_authState updateWithAuthorizationError:error];
+      }
+    }
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
+      // Process the handler queue to call back.
+      NSArray *refreshTokensHandlerQueue;
+      @synchronized(self->_refreshTokensHandlerQueue) {
+        refreshTokensHandlerQueue = [self->_refreshTokensHandlerQueue copy];
+        [self->_refreshTokensHandlerQueue removeAllObjects];
+      }
+      for (GIDGoogleUserCompletion completion in refreshTokensHandlerQueue) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          completion(error ? nil : self, error);
+        });
+      }
+    }];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    NSArray *refreshTokensHandlerQueue;
+    @synchronized(self->_refreshTokensHandlerQueue) {
+      refreshTokensHandlerQueue = [self->_refreshTokensHandlerQueue copy];
+      [self->_refreshTokensHandlerQueue removeAllObjects];
+    }
+    for (GIDAuthenticationCompletion completion in refreshTokensHandlerQueue) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        completion(error ? nil : self, error);
+      });
+    }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  }];
+}
+
 #pragma mark - Private Methods
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -114,16 +192,9 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
-    [self updateAuthState:authState profileData:profileData];
-  }
-  return self;
-}
-
-- (void)updateAuthState:(OIDAuthState *)authState
-            profileData:(nullable GIDProfileData *)profileData {
-  @synchronized(self) {
+    _refreshTokensHandlerQueue = [[NSMutableArray alloc] init];
     _authState = authState;
-    _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
+    _authState.stateChangeDelegate = self;
     _profile = profileData;
     
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -138,6 +209,17 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
     self.fetcherAuthorizer = authorization;
     
     [self updateTokensWithAuthState:authState];
+  }
+  return self;
+}
+
+- (void)updateWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse
+                    profileData:(nullable GIDProfileData *)profileData {
+  @synchronized(self) {
+    _profile = profileData;
+    if (tokenResponse) {
+      [_authState updateWithTokenResponse:tokenResponse error:nil];
+    }
   }
 }
 
@@ -195,6 +277,12 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
+#pragma mark - OIDAuthStateChangeDelegate
+
+- (void)didChangeState:(OIDAuthState *)state {
+   [self updateTokensWithAuthState:state];
+}
+
 #pragma mark - NSSecureCoding
 
 + (BOOL)supportsSecureCoding {
@@ -204,17 +292,23 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];
   if (self) {
-    GIDProfileData *profileData =
-        [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
-    OIDAuthState *authState;
-    if ([decoder containsValueForKey:kAuthState]) { // Current encoding
-      authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
-    } else { // Old encoding
-      GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
-                                                                forKey:kAuthenticationKey];
-      authState = authentication.authState;
-    }
-    [self updateAuthState:authState profileData:profileData];
+    _refreshTokensHandlerQueue = [[NSMutableArray alloc] init];
+    _profile = [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
+    _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
+    _authState.stateChangeDelegate = self;
+    
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
+        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    authorization.tokenRefreshDelegate = self;
+    self.fetcherAuthorizer = authorization;
+    
+    [self updateTokensWithAuthState:_authState];
   }
   return self;
 }

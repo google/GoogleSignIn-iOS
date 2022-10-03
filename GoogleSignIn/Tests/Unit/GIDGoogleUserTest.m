@@ -16,12 +16,10 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
@@ -53,10 +51,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   OIDAuthState *authState = [OIDAuthState testInstance];
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                      profileData:[GIDProfileData testInstance]];
-  GIDAuthentication *authentication =
-      [[GIDAuthentication alloc] initWithAuthState:authState];
-
-  XCTAssertEqualObjects(user.authentication, authentication);
+  
   XCTAssertEqualObjects(user.grantedScopes, @[ OIDAuthorizationRequestTestingScope2 ]);
   XCTAssertEqualObjects(user.userID, kUserID);
   XCTAssertEqualObjects(user.configuration.hostedDomain, kHostedDomain);
@@ -110,7 +105,8 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
                                                             refreshToken:kNewRefreshToken];
   GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
   
-  [user updateAuthState:updatedAuthState profileData:updatedProfileData];
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+                    profileData:updatedProfileData];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
   NSDate *expectedAccessTokenExpirationDate = [[NSDate date] dateByAddingTimeInterval:kAccessTokenExpiresIn];
@@ -142,7 +138,8 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
   GIDToken *idTokenBeforeUpdate = user.idToken;
   
-  [user updateAuthState:authState profileData:nil];
+  [user updateWithTokenResponse:authState.lastTokenResponse
+                    profileData:nil];
   
   XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
   XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);

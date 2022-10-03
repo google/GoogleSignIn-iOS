@@ -24,12 +24,15 @@
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #endif
 
-@class GIDAuthentication;
 @class GIDConfiguration;
+@class GIDGoogleUser;
 @class GIDToken;
 @class GIDProfileData;
 
 NS_ASSUME_NONNULL_BEGIN
+
+/// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
+typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
 /// This class represents a user account.
 @interface GIDGoogleUser : NSObject <NSSecureCoding>
@@ -39,9 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Representation of basic profile data for the user.
 @property(nonatomic, readonly, nullable) GIDProfileData *profile;
-
-/// The authentication object for the user.
-@property(nonatomic, readonly) GIDAuthentication *authentication;
 
 /// The API scopes granted to the app in an array of `NSString`.
 @property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
@@ -66,6 +66,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @property(nonatomic, readonly) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
 #pragma clang diagnostic pop
+
+/// Get a valid access token and a valid ID token, refreshing them first if they have expired or are about to expire.
+///
+/// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was
+///     unsuccessful.  The block will be called asynchronously on the main queue.
+- (void)doWithFreshTokens:(GIDGoogleUserCompletion)completion;
 
 @end
 

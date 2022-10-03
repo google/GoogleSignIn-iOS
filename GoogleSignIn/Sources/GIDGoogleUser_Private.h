@@ -29,13 +29,17 @@ NS_ASSUME_NONNULL_BEGIN
 @class OIDAuthState;
 
 // Internal methods for the class that are not part of the public API.
-@interface GIDGoogleUser () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate>
+@interface GIDGoogleUser () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate,
+                             OIDAuthStateChangeDelegate>
 
 @property(nonatomic, readwrite) GIDToken *accessToken;
 
 @property(nonatomic, readwrite) GIDToken *refreshToken;
 
 @property(nonatomic, readwrite, nullable) GIDToken *idToken;
+
+// A representation of the state of the OAuth session for this instance.
+@property(nonatomic, readonly) OIDAuthState *authState;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -52,8 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
                       profileData:(nullable GIDProfileData *)profileData;
 
 // Update the auth state and profile data.
-- (void)updateAuthState:(OIDAuthState *)authState
-            profileData:(nullable GIDProfileData *)profileData;
+- (void)updateWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse
+                    profileData:(nullable GIDProfileData *)profileData;
 
 @end
 

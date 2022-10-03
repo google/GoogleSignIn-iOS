@@ -16,7 +16,6 @@
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
@@ -33,7 +32,6 @@
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDUserAuth_Private.h"
@@ -183,7 +181,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (BOOL)hasPreviousSignIn {
-  if ([_currentUser.authentication.authState isAuthorized]) {
+  if ([_currentUser.authState isAuthorized]) {
     return YES;
   }
   OIDAuthState *authState = [self loadAuthState];
@@ -415,8 +413,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
-  GIDGoogleUser *user = _currentUser;
-  OIDAuthState *authState = user.authentication.authState;
+  OIDAuthState *authState = _currentUser.authState;
   if (!authState) {
     // Even the user is not signed in right now, we still need to remove any token saved in the
     // keychain.
@@ -536,8 +533,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 
   // If this is a non-interactive flow, use cached authentication if possible.
-  if (!options.interactive && _currentUser.authentication) {
-    [_currentUser.authentication doWithFreshTokens:^(GIDAuthentication *unused, NSError *error) {
+  if (!options.interactive && _currentUser) {
+    [_currentUser doWithFreshTokens:^(GIDGoogleUser *unused, NSError *error) {
       if (error) {
         [self authenticateWithOptions:options];
       } else {
@@ -788,8 +785,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       }
 
       if (self->_currentOptions.addScopesFlow) {
-        [self->_currentUser updateAuthState:authState
-                                profileData:handlerAuthFlow.profileData];
+        [self->_currentUser updateWithTokenResponse:authState.lastTokenResponse
+                                        profileData:handlerAuthFlow.profileData];
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                            profileData:handlerAuthFlow.profileData];
