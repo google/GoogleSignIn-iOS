@@ -170,7 +170,7 @@ NSTimeInterval kMinimalTimeToExpire = 60.0;
       refreshTokensHandlerQueue = [self->_refreshTokensHandlerQueue copy];
       [self->_refreshTokensHandlerQueue removeAllObjects];
     }
-    for (GIDAuthenticationCompletion completion in refreshTokensHandlerQueue) {
+    for (GIDGoogleUserCompletion completion in refreshTokensHandlerQueue) {
       dispatch_async(dispatch_get_main_queue(), ^{
         completion(error ? nil : self, error);
       });
