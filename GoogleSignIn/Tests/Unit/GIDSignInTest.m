@@ -207,9 +207,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Mock for |GIDGoogleUser|.
   id _user;
 
-  // Mock for |GIDAuthentication|.
-  id _authentication;
-
   // Mock for |OIDAuthorizationService|
   id _oidAuthorizationService;
 
@@ -367,7 +364,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMVerifyAll(_tokenRequest);
   OCMVerifyAll(_authorization);
   OCMVerifyAll(_user);
-  OCMVerifyAll(_authentication);
   OCMVerifyAll(_oidAuthorizationService);
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -417,8 +413,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
   
-  
-
   [_signIn restorePreviousSignInNoRefresh];
 
   [_authorization verify];

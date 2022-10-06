@@ -81,7 +81,6 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
-  
 }
 
 #pragma mark - Tests
@@ -236,8 +235,6 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   
   _tokenFetchHandler(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  
-  
 }
 
 - (void)testDoWithRefreshTokens_refresh_givenBothTokensExpired_NoNewIDToken {
@@ -265,8 +262,6 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   
   _tokenFetchHandler(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  
-  
 }
 
 - (void)testDoWithFreshTokens_refresh_givenAccessTokenExpired {
@@ -327,7 +322,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testDoWithFreshTokens_noRefreh_givenBothNotExpire {
+- (void)testDoWithFreshTokens_noRefresh_givenBothTokensNotExpired {
   // Both tokens will expire in 10 min.
   NSTimeInterval expiresIn = 10 * 60;
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
