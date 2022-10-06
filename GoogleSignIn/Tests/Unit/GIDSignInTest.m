@@ -153,9 +153,6 @@ static NSString *const kEMMSupport = @"1";
 static NSString *const kGrantedScope = @"grantedScope";
 static NSString *const kNewScope = @"newScope";
 
-/// Unique pointer value for KVO tests.
-static void *kTestObserverContext = &kTestObserverContext;
-
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 // This category is used to allow the test to swizzle a private method.
 @interface UIViewController (Testing)
@@ -263,9 +260,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   // The saved token request callback.
   OIDTokenCallback _savedTokenCallback;
 
-  // Set of all |GIDSignIn| key paths which were observed to change.
-  NSMutableSet *_changedKeyPaths;
-
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
 }
@@ -286,7 +280,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   _completionCalled = NO;
   _keychainSaved = NO;
   _keychainRemoved = NO;
-  _changedKeyPaths = [[NSMutableSet alloc] init];
 
   // Mocks
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -354,11 +347,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     strongSelf->_completionCalled = YES;
     strongSelf->_authError = error;
   };
-
-  [_signIn addObserver:self
-            forKeyPath:NSStringFromSelector(@selector(currentUser))
-               options:0
-               context:kTestObserverContext];
 }
 
 - (void)tearDown {
@@ -379,10 +367,6 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
-
-  [_signIn removeObserver:self
-               forKeyPath:NSStringFromSelector(@selector(currentUser))
-                  context:kTestObserverContext];
 }
 
 #pragma mark - Tests
@@ -759,8 +743,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_signIn signOut];
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertTrue(_keychainRemoved, @"should remove keychain");
-  XCTAssertTrue([_changedKeyPaths containsObject:NSStringFromSelector(@selector(currentUser))],
-                @"should notify observers that signed in user changed");
 
   OCMVerify([_authorization removeAuthorizationFromKeychainForName:kKeychainName
                                          useDataProtectionKeychain:YES]);
@@ -1442,18 +1424,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     OCMVerify([_authorization saveAuthorization:OCMOCK_ANY
                               toKeychainForName:kKeychainName
                       useDataProtectionKeychain:YES]);
-  }
-}
-
-
-#pragma mark - Key Value Observing
-
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change
-                       context:(void *)context {
-  if (context == kTestObserverContext && object == _signIn) {
-    [_changedKeyPaths addObject:keyPath];
   }
 }
 
