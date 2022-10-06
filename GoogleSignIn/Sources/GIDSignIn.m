@@ -214,7 +214,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   GIDProfileData *profileData = [self profileDataWithIDToken:idToken];
 
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
-  [self setCurrentUserWithKVO:user];
+  self.currentUser = user;
   return YES;
 }
 
@@ -401,9 +401,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)signOut {
   // Clear the current user if there is one.
   if (_currentUser) {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-    _currentUser = nil;
-    [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+    self.currentUser = nil;
   }
   // Remove all state from the keychain.
   [self removeAllKeychainEntries];
@@ -803,7 +801,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                            profileData:handlerAuthFlow.profileData];
-        [self setCurrentUserWithKVO:user];
+        self.currentUser = user;
       }
     }
   }];
@@ -935,17 +933,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   return YES;
 }
 
-#pragma mark - Key-Value Observing
-
-// Override |NSObject(NSKeyValueObservingCustomization)| method in order to provide custom KVO
-// notifications for the |currentUser| property.
-+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
-  if ([key isEqual:NSStringFromSelector(@selector(currentUser))]) {
-    return NO;
-  }
-  return [super automaticallyNotifiesObserversForKey:key];
-}
-
 #pragma mark - Helpers
 
 - (NSError *)errorWithString:(NSString *)errorString code:(GIDSignInErrorCode)code {
@@ -1033,13 +1020,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
           givenName:idToken.claims[kBasicProfileGivenNameKey]
           familyName:idToken.claims[kBasicProfileFamilyNameKey]
             imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
-}
-
-// Set currentUser making appropriate KVO calls.
-- (void)setCurrentUserWithKVO:(GIDGoogleUser *_Nullable)user {
-  [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-  _currentUser = user;
-  [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
 }
 
 // Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.
