@@ -28,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class OIDAuthState;
 
+/// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
+typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
+
 // Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate,
                              OIDAuthStateChangeDelegate>

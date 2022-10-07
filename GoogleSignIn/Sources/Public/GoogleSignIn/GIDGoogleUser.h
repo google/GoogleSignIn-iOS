@@ -31,9 +31,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
-typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
-
 /// This class represents a user account.
 @interface GIDGoogleUser : NSObject <NSSecureCoding>
 
@@ -67,11 +64,13 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 @property(nonatomic, readonly) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
 #pragma clang diagnostic pop
 
-/// Get a valid access token and a valid ID token, refreshing them first if they have expired or are about to expire.
+/// Get a valid access token and a valid ID token, refreshing them first if they have expired or
+/// are about to expire.
 ///
-/// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was
-///     unsuccessful.  The block will be called asynchronously on the main queue.
-- (void)doWithFreshTokens:(GIDGoogleUserCompletion)completion;
+/// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt to
+///     refresh tokens was unsuccessful.  The block will be called asynchronously on the main queue.
+- (void)doWithFreshTokens:(void (^)(GIDGoogleUser *_Nullable user,
+                                    NSError *_Nullable error))completion;
 
 @end
 

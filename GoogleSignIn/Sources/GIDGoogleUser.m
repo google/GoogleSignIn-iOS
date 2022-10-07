@@ -38,7 +38,7 @@ static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
 // Key constants used for encode and decode.
 static NSString *const kAuthenticationKey = @"authentication";
 static NSString *const kProfileDataKey = @"profileData";
-static NSString *const kAuthState = @"authState";
+static NSString *const kAuthStateKey = @"authState";
 
 // Parameters for the token exchange endpoint.
 static NSString *const kAudienceParameter = @"audience";
@@ -48,15 +48,58 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 static NSString *const kEMMSupportParameterName = @"emm_support";
 
 // Minimal time interval before expiration for the access token or it needs to be refreshed.
-NSTimeInterval kMinimalTimeToExpire = 60.0;
+static NSTimeInterval const kMinimalTimeToExpire = 60.0;
+
+#pragma mark - GIDAuthentication
+
+// Internal class for GIDGoogleUser decoding backward compatibility.
+@interface GIDAuthentication : NSObject <NSSecureCoding>
+
+@property(nonatomic) OIDAuthState* authState;
+
+- (instancetype)initWithAuthState:(OIDAuthState *)authState;
+
+@end
+
+@implementation GIDAuthentication
+
+- (instancetype)initWithAuthState:(OIDAuthState *)authState {
+  self = [super init];
+  if (self) {
+    _authState = authState;
+  }
+  return self;
+}
+
+#pragma mark - NSSecureCoding
+
++ (BOOL)supportsSecureCoding {
+  return YES;
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)decoder {
+  self = [super init];
+  if (self) {
+    _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
+  }
+  return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+  [encoder encodeObject:_authState forKey:kAuthStateKey];
+}
+
+@end
+
+#pragma mark - GIDGoogleUser
 
 @implementation GIDGoogleUser {
   OIDAuthState *_authState;
   GIDConfiguration *_cachedConfiguration;
   
-  // A queue for pending refrsh token handlers so we don't fire multiple requests in parallel.
+  // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
-  NSMutableArray *_refreshTokensHandlerQueue;
+  NSMutableArray<GIDGoogleUserCompletion> *_tokenRefreshHandlerQueue;
 }
 
 - (nullable NSString *)userID {
@@ -116,10 +159,10 @@ NSTimeInterval kMinimalTimeToExpire = 60.0;
     });
     return;
   }
-  @synchronized (_refreshTokensHandlerQueue) {
+  @synchronized (_tokenRefreshHandlerQueue) {
     // Push the handler into the callback queue.
-    [_refreshTokensHandlerQueue addObject:[completion copy]];
-    if (_refreshTokensHandlerQueue.count > 1) {
+    [_tokenRefreshHandlerQueue addObject:[completion copy]];
+    if (_tokenRefreshHandlerQueue.count > 1) {
       // This is not the first handler in the queue, no fetch is needed.
       return;
     }
@@ -153,10 +196,10 @@ NSTimeInterval kMinimalTimeToExpire = 60.0;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
-      NSArray *refreshTokensHandlerQueue;
-      @synchronized(self->_refreshTokensHandlerQueue) {
-        refreshTokensHandlerQueue = [self->_refreshTokensHandlerQueue copy];
-        [self->_refreshTokensHandlerQueue removeAllObjects];
+      NSArray<GIDGoogleUserCompletion> *refreshTokensHandlerQueue;
+      @synchronized(self->_tokenRefreshHandlerQueue) {
+        refreshTokensHandlerQueue = [self->_tokenRefreshHandlerQueue copy];
+        [self->_tokenRefreshHandlerQueue removeAllObjects];
       }
       for (GIDGoogleUserCompletion completion in refreshTokensHandlerQueue) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -165,10 +208,10 @@ NSTimeInterval kMinimalTimeToExpire = 60.0;
       }
     }];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    NSArray *refreshTokensHandlerQueue;
-    @synchronized(self->_refreshTokensHandlerQueue) {
-      refreshTokensHandlerQueue = [self->_refreshTokensHandlerQueue copy];
-      [self->_refreshTokensHandlerQueue removeAllObjects];
+    NSArray<GIDGoogleUserCompletion> *refreshTokensHandlerQueue;
+    @synchronized(self->_tokenRefreshHandlerQueue) {
+      refreshTokensHandlerQueue = [self->_tokenRefreshHandlerQueue copy];
+      [self->_tokenRefreshHandlerQueue removeAllObjects];
     }
     for (GIDGoogleUserCompletion completion in refreshTokensHandlerQueue) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -192,7 +235,7 @@ NSTimeInterval kMinimalTimeToExpire = 60.0;
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
-    _refreshTokensHandlerQueue = [[NSMutableArray alloc] init];
+    _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
     _authState = authState;
     _authState.stateChangeDelegate = self;
     _profile = profileData;
@@ -292,30 +335,26 @@ NSTimeInterval kMinimalTimeToExpire = 60.0;
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];
   if (self) {
-    _refreshTokensHandlerQueue = [[NSMutableArray alloc] init];
-    _profile = [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
-    _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthState];
-    _authState.stateChangeDelegate = self;
+    GIDProfileData *profile =
+        [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
     
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
-        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:_authState] :
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    GTMAppAuthFetcherAuthorization *authorization =
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:_authState];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    authorization.tokenRefreshDelegate = self;
-    self.fetcherAuthorizer = authorization;
+    OIDAuthState *authState;
+    if ([decoder containsValueForKey:kAuthStateKey]) { // Current encoding
+      authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
+    } else { // Old encoding
+      GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
+                                                                   forKey:kAuthenticationKey];
+      authState = authentication.authState;
+    }
     
-    [self updateTokensWithAuthState:_authState];
+    self = [self initWithAuthState:authState profileData:profile];
   }
   return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
   [encoder encodeObject:_profile forKey:kProfileDataKey];
-  [encoder encodeObject:_authState forKey:kAuthState];
+  [encoder encodeObject:_authState forKey:kAuthStateKey];
 }
 
 @end
