@@ -1,16 +1,18 @@
-// Copyright 2022 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright 2022 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #import <TargetConditionals.h>
 
@@ -74,10 +76,10 @@ static NSString *const kNewIOSName = @"iOS";
   NSDictionary *updatedEMMParameters =
       [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
 
+  NSString *systemVersion = [UIDevice currentDevice].systemVersion;
   NSDictionary *expectedParameters = @{
     @"emm_support" : @"xyz",
-    @"device_os" : [NSString stringWithFormat:@"%@ %@",
-                    kNewIOSName, [UIDevice currentDevice].systemVersion]
+    @"device_os" : [NSString stringWithFormat:@"%@ %@", kNewIOSName, systemVersion]
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
@@ -154,24 +156,26 @@ static NSString *const kNewIOSName = @"iOS";
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
   __block void (^savedCompletion)(void);
-  [[[mockEMMErrorHandler expect] andReturnValue:@YES]
+  [[[mockEMMErrorHandler stub] andReturnValue:@YES]
       handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
     savedCompletion = arg;
     return YES;
   }]];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
+  notCalled.inverted = YES;
+  XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
 
   [GIDEMMSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
-    [expectation fulfill];
+    [notCalled fulfill];
+    [called fulfill];
     XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeEMM);
   }];
-
+  
+  [self waitForExpectations:@[ notCalled ] timeout:1];
   savedCompletion();
-  [self waitForExpectationsWithTimeout:3 handler:nil];
-  [mockEMMErrorHandler verify];
-  [mockEMMErrorHandler stopMocking];
+  [self waitForExpectations:@[ called ] timeout:1];
 }
 
 - (void)testHandleTokenFetchEMMError_errorIsNotEMM {
@@ -183,24 +187,26 @@ static NSString *const kNewIOSName = @"iOS";
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
   __block void (^savedCompletion)(void);
-  [[[mockEMMErrorHandler expect] andReturnValue:@NO]
+  [[[mockEMMErrorHandler stub] andReturnValue:@NO]
       handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
     savedCompletion = arg;
     return YES;
   }]];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
-
+  XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
+  notCalled.inverted = YES;
+  XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
+  
   [GIDEMMSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
-    [expectation fulfill];
+    [notCalled fulfill];
+    [called fulfill];
     XCTAssertEqualObjects(error.domain, @"anydomain");
     XCTAssertEqual(error.code, 12345);
   }];
 
+  [self waitForExpectations:@[ notCalled ] timeout:1];
   savedCompletion();
-  [self waitForExpectationsWithTimeout:3 handler:nil];
-  [mockEMMErrorHandler verify];
-  [mockEMMErrorHandler stopMocking];
+  [self waitForExpectations:@[ called ] timeout:1];
 }
 
 @end
