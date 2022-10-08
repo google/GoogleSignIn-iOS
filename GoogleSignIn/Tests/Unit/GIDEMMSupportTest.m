@@ -47,14 +47,19 @@ static NSString *const kOldIOSName = @"iPhone OS";
 // The system name in new iOS versions.
 static NSString *const kNewIOSName = @"iOS";
 
+// They keys in EMM dictionary.
+static NSString *const kEMMKey = @"emm_support";
+static NSString *const kDeviceOSKey = @"device_os";
+static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
+
 @interface GIDEMMSupportTest : XCTestCase
 @end
 
 @implementation GIDEMMSupportTest
 
-- (void)testUpdatedEMMParametersWithParameters_NoEMM {
+- (void)testUpdatedEMMParametersWithParameters_NoEMMKey {
   NSDictionary *originalParameters = @{
-    @"xyz" : @"xyz",
+    @"not_emm_support_key" : @"xyz",
   };
 
   NSDictionary *updatedEMMParameters =
@@ -70,7 +75,7 @@ static NSString *const kNewIOSName = @"iOS";
                   withBlock:^(id sender) { return kNewIOSName; }];
 
   NSDictionary *originalParameters = @{
-    @"emm_support" : @"xyz",
+    kEMMKey : @"xyz",
   };
 
   NSDictionary *updatedEMMParameters =
@@ -78,16 +83,17 @@ static NSString *const kNewIOSName = @"iOS";
 
   NSString *systemVersion = [UIDevice currentDevice].systemVersion;
   NSDictionary *expectedParameters = @{
-    @"emm_support" : @"xyz",
-    @"device_os" : [NSString stringWithFormat:@"%@ %@", kNewIOSName, systemVersion]
+    kEMMKey : @"xyz",
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, systemVersion]
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
 
-
-  [GULSwizzler unswizzleClass:[UIDevice class]
-                     selector:@selector(systemName)
-              isClassSelector:NO];
+  [self addTeardownBlock:^{
+    [GULSwizzler unswizzleClass:[UIDevice class]
+                       selector:@selector(systemName)
+                isClassSelector:NO];
+  }];
 }
 
 // When the systemName is @"iPhone OS" we still get "iOS".
@@ -98,15 +104,15 @@ static NSString *const kNewIOSName = @"iOS";
                    withBlock:^(id sender) { return kOldIOSName; }];
 
   NSDictionary *originalParameters = @{
-    @"emm_support" : @"xyz",
+    kEMMKey : @"xyz",
   };
 
   NSDictionary *updatedEMMParameters =
       [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
 
   NSDictionary *expectedParameters = @{
-    @"emm_support" : @"xyz",
-    @"device_os" : [NSString stringWithFormat:@"%@ %@",
+    kEMMKey : @"xyz",
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@",
                     kNewIOSName, [UIDevice currentDevice].systemVersion]
   };
 
@@ -125,19 +131,19 @@ static NSString *const kNewIOSName = @"iOS";
                   withBlock:^(id sender) { return kOldIOSName; }];
 
   NSDictionary *originalParameters = @{
-    @"emm_support" : @"xyz",
-    @"device_os" : @"old one",
-    @"emm_passcode_info" : @"something",
+    kEMMKey : @"xyz",
+    kDeviceOSKey : @"old one",
+    kEMMPasscodeInfoKey : @"something",
   };
 
   NSDictionary *updatedEMMParameters =
       [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
 
   NSDictionary *expectedParameters = @{
-    @"emm_support" : @"xyz",
-    @"device_os" : [NSString stringWithFormat:@"%@ %@",
+    kEMMKey : @"xyz",
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@",
         kNewIOSName, [UIDevice currentDevice].systemVersion],
-    @"emm_passcode_info" : [GIDMDMPasscodeState passcodeState].info,
+    kEMMPasscodeInfoKey : [GIDMDMPasscodeState passcodeState].info,
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
