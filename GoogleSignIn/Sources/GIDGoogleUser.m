@@ -57,19 +57,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 @property(nonatomic) OIDAuthState* authState;
 
-- (instancetype)initWithAuthState:(OIDAuthState *)authState;
-
 @end
 
 @implementation GIDAuthentication
-
-- (instancetype)initWithAuthState:(OIDAuthState *)authState {
-  self = [super init];
-  if (self) {
-    _authState = authState;
-  }
-  return self;
-}
 
 #pragma mark - NSSecureCoding
 
