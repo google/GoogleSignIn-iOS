@@ -116,10 +116,11 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
 
-
-  [GULSwizzler unswizzleClass:[UIDevice class]
-                     selector:@selector(systemName)
-              isClassSelector:NO];
+  [self addTeardownBlock:^{
+    [GULSwizzler unswizzleClass:[UIDevice class]
+                       selector:@selector(systemName)
+                isClassSelector:NO];
+  }];
 }
 
 - (void)testUpdateEMMParametersWithParameters_passcodInfo {
@@ -145,9 +146,12 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
 
-  [GULSwizzler unswizzleClass:[UIDevice class]
-                     selector:@selector(systemName)
-              isClassSelector:NO];
+  [self addTeardownBlock:^{
+    [GULSwizzler unswizzleClass:[UIDevice class]
+                       selector:@selector(systemName)
+                isClassSelector:NO];
+  }];
+  
 }
 
 - (void)testHandleTokenFetchEMMError_errorIsEMM {
