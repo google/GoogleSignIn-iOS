@@ -81,10 +81,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   NSDictionary *updatedEMMParameters =
       [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
 
-  NSString *systemVersion = [UIDevice currentDevice].systemVersion;
   NSDictionary *expectedParameters = @{
     kEMMKey : @"xyz",
-    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, systemVersion]
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, [self systemVersion]]
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
@@ -112,8 +111,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   NSDictionary *expectedParameters = @{
     kEMMKey : @"xyz",
-    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@",
-                    kNewIOSName, [UIDevice currentDevice].systemVersion]
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, [self systemVersion]]
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
@@ -141,8 +139,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   NSDictionary *expectedParameters = @{
     kEMMKey : @"xyz",
-    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@",
-        kNewIOSName, [UIDevice currentDevice].systemVersion],
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, [self systemVersion]],
     kEMMPasscodeInfoKey : [GIDMDMPasscodeState passcodeState].info,
   };
 
@@ -213,6 +210,12 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   [self waitForExpectations:@[ notCalled ] timeout:1];
   savedCompletion();
   [self waitForExpectations:@[ called ] timeout:1];
+}
+
+# pragma mark - Helpers
+
+- (NSString *)systemVersion {
+  return [UIDevice currentDevice].systemVersion;
 }
 
 @end
