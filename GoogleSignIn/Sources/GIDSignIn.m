@@ -787,6 +787,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
       if (self->_currentOptions.addScopesFlow) {
         [self->_currentUser updateWithTokenResponse:authState.lastTokenResponse
+                              authorizationResponse:authState.lastAuthorizationResponse
                                         profileData:handlerAuthFlow.profileData];
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState

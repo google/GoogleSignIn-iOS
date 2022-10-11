@@ -144,6 +144,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
   
   [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
                     profileData:updatedProfileData];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
@@ -173,6 +174,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   GIDToken *idTokenBeforeUpdate = user.idToken;
   
   [user updateWithTokenResponse:authState.lastTokenResponse
+          authorizationResponse:authState.lastAuthorizationResponse
                     profileData:nil];
   
   XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);

@@ -247,9 +247,17 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
+          authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
   @synchronized(self) {
     _profile = profileData;
+    
+    // We don't want to trigger the delegate before we update authState completely. So we unset the
+    // delegate before the first update. Also the order of updates is important because
+    // `updateWithAuthorizationResponse` would clears the last token reponse and refresh token.
+    self.authState.stateChangeDelegate = nil;
+    [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
+    self.authState.stateChangeDelegate = self;
     [self.authState updateWithTokenResponse:tokenResponse error:nil];
   }
 }

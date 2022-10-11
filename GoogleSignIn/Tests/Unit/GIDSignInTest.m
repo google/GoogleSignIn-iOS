@@ -1346,14 +1346,17 @@ static void *kTestObserverContext = &kTestObserverContext;
   // SaveAuthCallback
   __block OIDAuthState *authState;
   __block OIDTokenResponse *updatedTokenResponse;
+  __block OIDAuthorizationResponse *updatedAuthorizationResponse;
   __block GIDProfileData *profileData;
 
   if (keychainError) {
     _saveAuthorizationReturnValue = NO;
   } else {
     if (addScopesFlow) {
+      [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[_user expect] updateWithTokenResponse:SAVE_TO_ARG_BLOCK(updatedTokenResponse)
+                        authorizationResponse:SAVE_TO_ARG_BLOCK(updatedAuthorizationResponse)
                                   profileData:SAVE_TO_ARG_BLOCK(profileData)];
     } else {
       [[[_user stub] andReturn:_user] alloc];
@@ -1389,6 +1392,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
   if (addScopesFlow) {
     XCTAssertNotNil(updatedTokenResponse);
+    XCTAssertNotNil(updatedAuthorizationResponse);
   } else {
     XCTAssertNotNil(authState);
   }
