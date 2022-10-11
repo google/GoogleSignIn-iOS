@@ -59,7 +59,7 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
                       profileData:(nullable GIDProfileData *)profileData;
 
 // Update the auth state and profile data.
-- (void)updateWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse
+- (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
                     profileData:(nullable GIDProfileData *)profileData;
 
 @end

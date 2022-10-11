@@ -390,7 +390,7 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authorization stub] andReturn:_authState] authState];
   [[_authorization expect] setTokenRefreshDelegate:OCMOCK_ANY];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);

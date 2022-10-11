@@ -25,7 +25,6 @@
 #endif
 
 @class GIDConfiguration;
-@class GIDGoogleUser;
 @class GIDToken;
 @class GIDProfileData;
 

@@ -216,7 +216,8 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
   GIDProfileData *profileData = [self profileDataWithIDToken:idToken];
 
-  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                     profileData:profileData];
   [self setCurrentUserWithKVO:user];
   return YES;
 }
@@ -861,8 +862,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
           completion(nil, handlerAuthFlow.error);
         } else {
           OIDAuthState *authState = handlerAuthFlow.authState;
-          NSString *_Nullable serverAuthCode = [authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
-          GIDUserAuth *userAuth = [[GIDUserAuth alloc] initWithGoogleUser:self->_currentUser serverAuthCode:serverAuthCode];
+          NSString *_Nullable serverAuthCode =
+              [authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
+          GIDUserAuth *userAuth = [[GIDUserAuth alloc] initWithGoogleUser:self->_currentUser
+                                                           serverAuthCode:serverAuthCode];
           completion(userAuth, nil);
         }
       });
