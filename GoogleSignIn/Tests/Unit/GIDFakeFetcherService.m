@@ -63,6 +63,11 @@
   return nil;
 }
 
+- (NSURLSession *)sessionWithCreationBlock:
+    (NS_NOESCAPE GTMSessionFetcherSessionCreationBlock)creationBlock {
+  return nil;
+}
+
 - (id<NSURLSessionDelegate>)sessionDelegate {
   return nil;
 }
