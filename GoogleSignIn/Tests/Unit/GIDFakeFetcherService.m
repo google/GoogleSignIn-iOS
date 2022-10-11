@@ -63,8 +63,12 @@
   return nil;
 }
 
+// TODO: replace with GTMSessionFetcherSessionCreationBlock once that has become
+// available by updating the version dependencies.
+typedef NSURLSession *_Nullable (^GIDFakeFetcherSessionCreationBlock)(
+    id<NSURLSessionDelegate> _Nullable delegate);
 - (NSURLSession *)sessionWithCreationBlock:
-    (NS_NOESCAPE GTMSessionFetcherSessionCreationBlock)creationBlock {
+    (NS_NOESCAPE GIDFakeFetcherSessionCreationBlock)creationBlock {
   return nil;
 }
 
