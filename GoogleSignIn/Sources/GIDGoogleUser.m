@@ -19,6 +19,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -48,39 +49,6 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
 
 // Minimal time interval before expiration for the access token or it needs to be refreshed.
 static NSTimeInterval const kMinimalTimeToExpire = 60.0;
-
-#pragma mark - GIDAuthentication
-
-// Internal class for GIDGoogleUser NSCoding backward compatibility.
-@interface GIDAuthentication : NSObject <NSSecureCoding>
-
-@property(nonatomic) OIDAuthState* authState;
-
-@end
-
-@implementation GIDAuthentication
-
-#pragma mark - NSSecureCoding
-
-+ (BOOL)supportsSecureCoding {
-  return YES;
-}
-
-- (nullable instancetype)initWithCoder:(NSCoder *)decoder {
-  self = [super init];
-  if (self) {
-    self.authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
-  }
-  return self;
-}
-
-- (void)encodeWithCoder:(NSCoder *)encoder {
-  [encoder encodeObject:self.authState forKey:kAuthStateKey];
-}
-
-@end
-
-#pragma mark - GIDGoogleUser
 
 @implementation GIDGoogleUser {
   GIDConfiguration *_cachedConfiguration;
@@ -327,7 +295,6 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 + (BOOL)supportsSecureCoding {
   return YES;
 }
-
 
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];

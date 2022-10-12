@@ -21,6 +21,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+#import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
@@ -131,6 +132,24 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
+// Test the old encoding format for backword compatability.
+- (void)testOldFormatCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    OIDAuthState *authState = [OIDAuthState testInstance];
+    GIDProfileData *profileDate = [GIDProfileData testInstance];
+    GIDGoogleUserOldFormat *user =
+        [[GIDGoogleUserOldFormat alloc] initOldGIDGoogleUserWithAuthState:authState
+                                                              profileData:profileDate];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user
+                                         requiringSecureCoding:YES
+                                                         error:nil];
+    GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDGoogleUser class]
+                                                               fromData:data
+                                                                  error:nil];
+    XCTAssertEqualObjects(user, newUser);
+  }
+}
 
 - (void)testUpdateAuthState {
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn

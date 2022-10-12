@@ -24,9 +24,9 @@
 #import <GTMAppAuth/GTMAppAuth.h>
 #endif
 
-NS_ASSUME_NONNULL_BEGIN
-
 @class OIDAuthState;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
