@@ -31,7 +31,7 @@ static NSString *const kAuthStateKey = @"authState";
 - (instancetype)initWithAuthState:(OIDAuthState *)authState {
   self = [super init];
   if (self) {
-    self.authState = authState;
+    _authState = authState;
   }
   return self;
 }
@@ -45,7 +45,7 @@ static NSString *const kAuthStateKey = @"authState";
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
   self = [super init];
   if (self) {
-    self.authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
+    _authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
   }
   return self;
 }

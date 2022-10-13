@@ -138,9 +138,8 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   if (@available(iOS 11, macOS 10.13, *)) {
     OIDAuthState *authState = [OIDAuthState testInstance];
     GIDProfileData *profileDate = [GIDProfileData testInstance];
-    GIDGoogleUserOldFormat *user =
-        [[GIDGoogleUserOldFormat alloc] initOldGIDGoogleUserWithAuthState:authState
-                                                              profileData:profileDate];
+    GIDGoogleUserOldFormat *user = [[GIDGoogleUserOldFormat alloc] initWithAuthState:authState
+                                                                         profileData:profileDate];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user
                                          requiringSecureCoding:YES
                                                          error:nil];

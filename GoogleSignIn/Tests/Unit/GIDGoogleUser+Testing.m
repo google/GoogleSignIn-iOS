@@ -61,8 +61,8 @@ static NSString *const kAuthentication = @"authentication";
   GIDProfileData *_profile;
 }
 
-- (instancetype)initOldGIDGoogleUserWithAuthState:(OIDAuthState *)authState
-                                      profileData:(GIDProfileData *)profileData {
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(GIDProfileData *)profileData {
   self = [super initWithAuthState:authState profileData:profileData];
   if (self) {
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];

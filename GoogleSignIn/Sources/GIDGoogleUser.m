@@ -222,7 +222,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     
     // We don't want to trigger the delegate before we update authState completely. So we unset the
     // delegate before the first update. Also the order of updates is important because
-    // `updateWithAuthorizationResponse` would clears the last token reponse and refresh token.
+    // `updateWithAuthorizationResponse` would clear the last token reponse and refresh token.
+    // TODO: Rewrite authState update logic when the issue is addressed.(openid/AppAuth-iOS#728)
     self.authState.stateChangeDelegate = nil;
     [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
     self.authState.stateChangeDelegate = self;
