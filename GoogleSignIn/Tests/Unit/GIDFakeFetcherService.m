@@ -20,10 +20,6 @@
   NSMutableArray *_fetchers;
 }
 
-@synthesize delegateQueue;
-@synthesize callbackQueue;
-@synthesize reuseSession;
-
 - (instancetype)init {
   self = [super init];
   if (self) {
@@ -63,15 +59,6 @@
   return nil;
 }
 
-// TODO: replace with GTMSessionFetcherSessionCreationBlock once that has become
-// available by updating the version dependencies.
-typedef NSURLSession *_Nullable (^GIDFakeFetcherSessionCreationBlock)(
-    id<NSURLSessionDelegate> _Nullable delegate);
-- (NSURLSession *)sessionWithCreationBlock:
-    (NS_NOESCAPE GIDFakeFetcherSessionCreationBlock)creationBlock {
-  return nil;
-}
-
 - (id<NSURLSessionDelegate>)sessionDelegate {
   return nil;
 }
@@ -82,6 +69,24 @@ typedef NSURLSession *_Nullable (^GIDFakeFetcherSessionCreationBlock)(
 
 - (NSDate *)stoppedAllFetchersDate {
   return nil;
+}
+
+- (dispatch_queue_t)callbackQueue {
+  return nil;
+}
+
+- (void)setCallbackQueue:(dispatch_queue_t)callbackQueue {
+}
+
+- (NSOperationQueue *)delegateQueue {
+  return nil;
+}
+
+- (BOOL)reuseSession {
+  return NO;
+}
+
+- (void)setReuseSession:(BOOL)reuseSession {
 }
 
 @end
