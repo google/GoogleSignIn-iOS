@@ -88,8 +88,9 @@ final class GoogleSignInAuthenticator: ObservableObject {
       fatalError("No root view controller!")
     }
 
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: rootViewController) { userAuth, error in
+    GIDSignIn.sharedInstance.currentUser?.addScopes(
+      [BirthdayLoader.birthdayReadScope], presenting: rootViewController)
+    { userAuth, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return

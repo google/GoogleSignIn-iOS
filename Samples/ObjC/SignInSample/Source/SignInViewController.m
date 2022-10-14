@@ -248,7 +248,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 
 - (IBAction)signIn:(id)sender {
   [GIDSignIn.sharedInstance signInWithPresentingViewController:self
-                                                    completion:^(GIDGoogleUser *user,
+                                                    completion:^(GIDUserAuth *userAuth,
                                                                  NSError *error) {
     if (error) {
       self->_signInAuthStatus.text =
@@ -280,10 +280,11 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 }
 
 - (IBAction)addScopes:(id)sender {
-  [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
-             presentingViewController:self
-                           completion:^(GIDUserAuth *_Nullable userAuth,
-                                        NSError *_Nullable error) {
+  GIDGoogleUser *currentUser = GIDSignIn.sharedInstance.currentUser;
+  [currentUser addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
+      presentingViewController:self
+                    completion:^(GIDUserAuth *_Nullable userAuth,
+                                 NSError *_Nullable error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to add scopes: %@",
                                       error];
