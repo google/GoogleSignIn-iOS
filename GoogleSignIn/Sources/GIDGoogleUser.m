@@ -17,12 +17,12 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
@@ -188,9 +188,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                                 NSError *_Nullable error))completion {
-  [[GIDSignIn sharedInstance] addScopes:scopes
-               presentingViewController:presentingViewController
-                             completion:completion];
+  [GIDSignIn.sharedInstance addScopes:scopes
+             presentingViewController:presentingViewController
+                           completion:completion];
 }
 
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
@@ -199,9 +199,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
  presentingWindow:(NSWindow *)presentingWindow
        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                      NSError *_Nullable error))completion {
-  [[GIDSignIn sharedInstance] addScopes:scopes
-               presentingViewController:presentingWindow
-                             completion:completion];
+  [GIDSignIn.sharedInstance addScopes:scopes
+             presentingViewController:presentingWindow
+                           completion:completion];
 }
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
