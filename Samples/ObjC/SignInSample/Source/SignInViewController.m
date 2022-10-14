@@ -248,7 +248,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 
 - (IBAction)signIn:(id)sender {
   [GIDSignIn.sharedInstance signInWithPresentingViewController:self
-                                                    completion:^(GIDGoogleUser *user,
+                                                    completion:^(GIDUserAuth *userAuth,
                                                                  NSError *error) {
     if (error) {
       self->_signInAuthStatus.text =
