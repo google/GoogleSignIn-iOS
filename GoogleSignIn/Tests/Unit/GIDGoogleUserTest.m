@@ -16,13 +16,12 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+#import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
@@ -31,8 +30,21 @@
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
+@import GoogleUtilities_MethodSwizzler;
+@import GoogleUtilities_SwizzlerTestHelpers;
+@import GTMAppAuth;
 #else
 #import <AppAuth/OIDAuthState.h>
+#import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDError.h>
+#import <AppAuth/OIDIDToken.h>
+#import <AppAuth/OIDTokenRequest.h>
+#import <AppAuth/OIDTokenResponse.h>
+#import <GoogleUtilities/GULSwizzler.h>
+#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
+#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #endif
 
 static NSString *const kNewAccessToken = @"new_access_token";
@@ -45,7 +57,32 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
 @interface GIDGoogleUserTest : XCTestCase
 @end
 
-@implementation GIDGoogleUserTest
+@implementation GIDGoogleUserTest {
+  // The saved token fetch handler.
+  OIDTokenCallback _tokenFetchHandler;
+}
+
+- (void)setUp {
+  _tokenFetchHandler = nil;
+  
+  // We need to use swizzle here because OCMock can not stub class method with arguments.
+  [GULSwizzler swizzleClass:[OIDAuthorizationService class]
+                    selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
+            isClassSelector:YES
+                  withBlock:^(id sender,
+                              OIDTokenRequest *request,
+                              OIDAuthorizationResponse *authorizationResponse,
+                              OIDTokenCallback callback) {
+    // Save the OIDTokenCallback.
+    self->_tokenFetchHandler = [callback copy];
+  }];
+}
+
+- (void)tearDown {
+  [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
+                     selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
+              isClassSelector:YES];
+}
 
 #pragma mark - Tests
 
@@ -53,10 +90,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   OIDAuthState *authState = [OIDAuthState testInstance];
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                      profileData:[GIDProfileData testInstance]];
-  GIDAuthentication *authentication =
-      [[GIDAuthentication alloc] initWithAuthState:authState];
-
-  XCTAssertEqualObjects(user.authentication, authentication);
+  
   XCTAssertEqualObjects(user.grantedScopes, @[ OIDAuthorizationRequestTestingScope2 ]);
   XCTAssertEqualObjects(user.userID, kUserID);
   XCTAssertEqualObjects(user.configuration.hostedDomain, kHostedDomain);
@@ -99,6 +133,23 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
 }
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
+// Test the old encoding format for backword compatability.
+- (void)testOldFormatCoding {
+  if (@available(iOS 11, macOS 10.13, *)) {
+    OIDAuthState *authState = [OIDAuthState testInstance];
+    GIDProfileData *profileDate = [GIDProfileData testInstance];
+    GIDGoogleUserOldFormat *user = [[GIDGoogleUserOldFormat alloc] initWithAuthState:authState
+                                                                         profileData:profileDate];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user
+                                         requiringSecureCoding:YES
+                                                         error:nil];
+    GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDGoogleUser class]
+                                                               fromData:data
+                                                                  error:nil];
+    XCTAssertEqualObjects(user, newUser);
+  }
+}
+
 - (void)testUpdateAuthState {
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
                                                 idTokenExpiresIn:kIDTokenExpiresIn];
@@ -110,17 +161,15 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
                                                             refreshToken:kNewRefreshToken];
   GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
   
-  [user updateAuthState:updatedAuthState profileData:updatedProfileData];
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
+                    profileData:updatedProfileData];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
-  NSDate *expectedAccessTokenExpirationDate = [[NSDate date] dateByAddingTimeInterval:kAccessTokenExpiresIn];
-  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSince1970],
-                             [expectedAccessTokenExpirationDate timeIntervalSince1970], kTimeAccuracy);
+  [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
   
   XCTAssertEqualObjects(user.idToken.tokenString, updatedIDToken);
-  NSDate *expectedIDTokenExpirationDate = [[NSDate date] dateByAddingTimeInterval:kNewIDTokenExpiresIn];
-  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSince1970],
-                             [expectedIDTokenExpirationDate timeIntervalSince1970], kTimeAccuracy);
+  [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
   
   XCTAssertEqualObjects(user.refreshToken.tokenString, kNewRefreshToken);
   
@@ -142,7 +191,9 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
   GIDToken *idTokenBeforeUpdate = user.idToken;
   
-  [user updateAuthState:authState profileData:nil];
+  [user updateWithTokenResponse:authState.lastTokenResponse
+          authorizationResponse:authState.lastAuthorizationResponse
+                    profileData:nil];
   
   XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
   XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
@@ -176,8 +227,219 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTAssertIdentical(fetcherAuthorizer, fetcherAuthorizer2);
 }
 
+#pragma mark - Test `doWithFreshTokens:`
+
+- (void)testDoWithFreshTokens_refresh_givenBothTokensExpired {
+  // Both tokens expired 10 seconds ago.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
+  NSString *newIdToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  
+  // Save the intermediate states.
+  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+    [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
+    XCTAssertEqualObjects(user.idToken.tokenString, newIdToken);
+    [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
+  }];
+  
+  // Creates a fake response.
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:newIdToken
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:nil];
+  
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testDoWithRefreshTokens_refresh_givenBothTokensExpired_NoNewIDToken {
+  // Both tokens expired 10 seconds ago.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
+  // Creates a fake response without ID token.
+  
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:nil];
+  
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  
+  // Save the intermediate states.
+  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+    [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
+    XCTAssertNil(user.idToken);
+  }];
+  
+  
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testDoWithFreshTokens_refresh_givenAccessTokenExpired {
+  // Access token expired 10 seconds ago. ID token will expire in 10 minutes.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:10 * 60];
+  // Creates a fake response.
+  NSString *newIdToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:newIdToken
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:nil];
+  
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  
+  // Save the intermediate states.
+  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+    [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
+    XCTAssertEqualObjects(user.idToken.tokenString, newIdToken);
+    [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
+  }];
+  
+  
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testDoWithFreshTokens_refresh_givenIDTokenExpired {
+  // ID token expired 10 seconds ago. Access token will expire in 10 minutes.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:10 * 60 idTokenExpiresIn:-10];
+  
+  // Creates a fake response.
+  NSString *newIdToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:newIdToken
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:nil];
+  
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  
+  // Save the intermediate states.
+  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+    [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
+    
+    XCTAssertEqualObjects(user.idToken.tokenString, newIdToken);
+    [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
+  }];
+  
+  
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testDoWithFreshTokens_noRefresh_givenBothTokensNotExpired {
+  // Both tokens will expire in 10 min.
+  NSTimeInterval expiresIn = 10 * 60;
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
+                                                idTokenExpiresIn:expiresIn];
+  
+  NSString *accessTokenStringBeforeRefresh = user.accessToken.tokenString;
+  NSString *idTokenStringBeforeRefresh = user.idToken.tokenString;
+  
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  
+  // Save the intermediate states.
+  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(error);
+  }];
+  
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  
+  XCTAssertEqualObjects(user.accessToken.tokenString, accessTokenStringBeforeRefresh);
+  [self verifyUser:user accessTokenExpiresIn:expiresIn];
+  XCTAssertEqualObjects(user.idToken.tokenString, idTokenStringBeforeRefresh);
+  [self verifyUser:user idTokenExpiresIn:expiresIn];
+}
+
+- (void)testDoWithFreshTokens_noRefresh_givenRefreshErrors {
+  // Both tokens expired 10 second ago.
+  NSTimeInterval expiresIn = -10;
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
+                                                idTokenExpiresIn:expiresIn];
+  
+  NSString *accessTokenStringBeforeRefresh = user.accessToken.tokenString;
+  NSString *idTokenStringBeforeRefresh = user.idToken.tokenString;
+  
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  
+  // Save the intermediate states.
+  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNotNil(error);
+    XCTAssertNil(user);
+  }];
+  
+  _tokenFetchHandler(nil, [self fakeError]);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  
+  XCTAssertEqualObjects(user.accessToken.tokenString, accessTokenStringBeforeRefresh);
+  [self verifyUser:user accessTokenExpiresIn:expiresIn];
+  XCTAssertEqualObjects(user.idToken.tokenString, idTokenStringBeforeRefresh);
+  [self verifyUser:user idTokenExpiresIn:expiresIn];
+}
+
+- (void)testDoWithFreshTokens_handleConcurrentRefresh {
+  // Both tokens expired 10 second ago.
+  NSTimeInterval expiresIn = -10;
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
+                                                idTokenExpiresIn:expiresIn];
+  // Creates a fake response.
+  NSString *newIdToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:newIdToken
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:nil];
+  
+  XCTestExpectation *firstExpectation =
+      [self expectationWithDescription:@"First callback is called"];
+  [user doWithFreshTokens:^(GIDGoogleUser *user, NSError *error) {
+    [firstExpectation fulfill];
+    XCTAssertNil(error);
+    
+    XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+    [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
+    
+    XCTAssertEqualObjects(user.idToken.tokenString, newIdToken);
+    [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
+  }];
+  XCTestExpectation *secondExpectation =
+      [self expectationWithDescription:@"Second callback is called"];
+  [user doWithFreshTokens:^(GIDGoogleUser *user, NSError *error) {
+    [secondExpectation fulfill];
+    XCTAssertNil(error);
+    
+    XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
+    [self verifyUser:user accessTokenExpiresIn:kAccessTokenExpiresIn];
+    
+    XCTAssertEqualObjects(user.idToken.tokenString, newIdToken);
+    [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
+  }];
+  
+  
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 #pragma mark - Helpers
 
+// Returns a GIDGoogleUser with different tokens expiresIn time. The token strings are constants.
 - (GIDGoogleUser *)googleUserWithAccessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
                                      idTokenExpiresIn:(NSTimeInterval)idTokenExpiresIn {
   NSString *idToken = [self idTokenWithExpiresIn:idTokenExpiresIn];
@@ -193,6 +455,23 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   // The expireTime should be based on 1970.
   NSTimeInterval expireTime = [[NSDate date] timeIntervalSince1970] + expiresIn;
   return [OIDTokenResponse idTokenWithSub:kUserID exp:@(expireTime)];
+}
+
+- (void)verifyUser:(GIDGoogleUser *)user accessTokenExpiresIn:(NSTimeInterval)expiresIn {
+  NSDate *expectedAccessTokenExpirationDate = [[NSDate date] dateByAddingTimeInterval:expiresIn];
+  XCTAssertEqualWithAccuracy([user.accessToken.expirationDate timeIntervalSince1970],
+                             [expectedAccessTokenExpirationDate timeIntervalSince1970],
+                             kTimeAccuracy);
+}
+
+- (void)verifyUser:(GIDGoogleUser *)user idTokenExpiresIn:(NSTimeInterval)expiresIn {
+  NSDate *expectedIDTokenExpirationDate = [[NSDate date] dateByAddingTimeInterval:expiresIn];
+  XCTAssertEqualWithAccuracy([user.idToken.expirationDate timeIntervalSince1970],
+                             [expectedIDTokenExpirationDate timeIntervalSince1970], kTimeAccuracy);
+}
+
+- (NSError *)fakeError {
+  return [NSError errorWithDomain:@"fake.domain" code:-1 userInfo:nil];
 }
 
 @end

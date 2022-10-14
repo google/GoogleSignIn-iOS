@@ -185,7 +185,7 @@ static NSString * const kClientID =
 
 - (void)reportAuthStatus {
   GIDGoogleUser *googleUser = [GIDSignIn.sharedInstance currentUser];
-  if (googleUser.authentication) {
+  if (googleUser) {
     _signInAuthStatus.text = @"Status: Authenticated";
   } else {
     // To authenticate, use Google Sign-In button.
@@ -198,7 +198,7 @@ static NSString * const kClientID =
 // Update the interface elements containing user data to reflect the
 // currently signed in user.
 - (void)refreshUserInfo {
-  if (GIDSignIn.sharedInstance.currentUser.authentication == nil) {
+  if (!GIDSignIn.sharedInstance.currentUser) {
     self.userName.text = kPlaceholderUserName;
     self.userEmailAddress.text = kPlaceholderEmailAddress;
     self.userAvatar.image = [UIImage imageNamed:kPlaceholderAvatarImageName];

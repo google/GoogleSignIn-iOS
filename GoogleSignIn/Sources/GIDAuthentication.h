@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
+#import <Foundation/Foundation.h>
+
+@class OIDAuthState;
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Internal methods for the class that are not part of the public API.
-@interface GIDAuthentication ()
+// Internal class for GIDGoogleUser NSCoding backward compatibility.
+@interface GIDAuthentication : NSObject <NSSecureCoding>
 
-// A representation of the state of the OAuth session for this instance.
-@property(nonatomic, readonly) OIDAuthState *authState;
+@property(nonatomic) OIDAuthState* authState;
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState;
 

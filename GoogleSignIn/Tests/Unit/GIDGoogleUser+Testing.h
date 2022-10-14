@@ -23,3 +23,12 @@
 - (NSUInteger)hash;
 
 @end
+
+// The old format GIDGoogleUser contains a GIDAuthentication.
+// Note: remove this class when GIDGoogleUser no longer support old encoding.
+@interface GIDGoogleUserOldFormat : GIDGoogleUser
+
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(GIDProfileData *)profileData;
+
+@end

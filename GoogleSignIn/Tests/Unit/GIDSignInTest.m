@@ -30,7 +30,6 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -208,9 +207,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Mock for |GIDGoogleUser|.
   id _user;
 
-  // Mock for |GIDAuthentication|.
-  id _authentication;
-
   // Mock for |OIDAuthorizationService|
   id _oidAuthorizationService;
 
@@ -318,7 +314,6 @@ static void *kTestObserverContext = &kTestObserverContext;
         self->_keychainRemoved = YES;
       });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
-  _authentication = OCMStrictClassMock([GIDAuthentication class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([_oidAuthorizationService
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
@@ -369,7 +364,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMVerifyAll(_tokenRequest);
   OCMVerifyAll(_authorization);
   OCMVerifyAll(_user);
-  OCMVerifyAll(_authentication);
   OCMVerifyAll(_oidAuthorizationService);
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -396,10 +390,11 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authorization stub] andReturn:_authState] authState];
   [[_authorization expect] setTokenRefreshDelegate:OCMOCK_ANY];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
+  [[_authState expect] setStateChangeDelegate:OCMOCK_ANY];
 
   id idTokenDecoded = OCMClassMock([OIDIDToken class]);
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
@@ -418,7 +413,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
   
-
   [_signIn restorePreviousSignInNoRefresh];
 
   [_authorization verify];
@@ -580,8 +574,6 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   id profile = OCMStrictClassMock([GIDProfileData class]);
   OCMStub([profile email]).andReturn(kUserEmail);
-
-  OCMStub([_user authentication]).andReturn(_authentication);
   
   // Mock for the method `addScopes`.
   OCMStub([_user configuration]).andReturn(_configuration);
@@ -1353,14 +1345,19 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   // SaveAuthCallback
   __block OIDAuthState *authState;
+  __block OIDTokenResponse *updatedTokenResponse;
+  __block OIDAuthorizationResponse *updatedAuthorizationResponse;
   __block GIDProfileData *profileData;
 
   if (keychainError) {
     _saveAuthorizationReturnValue = NO;
   } else {
     if (addScopesFlow) {
-      [[_user expect] updateAuthState:SAVE_TO_ARG_BLOCK(authState)
-                          profileData:SAVE_TO_ARG_BLOCK(profileData)];
+      [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+      [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
+      [[_user expect] updateWithTokenResponse:SAVE_TO_ARG_BLOCK(updatedTokenResponse)
+                        authorizationResponse:SAVE_TO_ARG_BLOCK(updatedAuthorizationResponse)
+                                  profileData:SAVE_TO_ARG_BLOCK(profileData)];
     } else {
       [[[_user stub] andReturn:_user] alloc];
       (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
@@ -1393,7 +1390,12 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_authState verify];
   
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
-  XCTAssertNotNil(authState);
+  if (addScopesFlow) {
+    XCTAssertNotNil(updatedTokenResponse);
+    XCTAssertNotNil(updatedAuthorizationResponse);
+  } else {
+    XCTAssertNotNil(authState);
+  }
   // Check fat ID token decoding
   XCTAssertEqualObjects(profileData.name, kFatName);
   XCTAssertEqualObjects(profileData.givenName, kFatGivenName);
@@ -1406,13 +1408,8 @@ static void *kTestObserverContext = &kTestObserverContext;
   _keychainSaved = NO;
   _authError = nil;
 
-  if (!addScopesFlow) {
-    [[[_user expect] andReturn:_authentication] authentication];
-    [[[_user expect] andReturn:_authentication] authentication];
-  }
-
-  __block GIDAuthenticationCompletion completion;
-  [[_authentication expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(completion)];
+  __block GIDGoogleUserCompletion completion;
+  [[_user expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(completion)];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
 
@@ -1422,7 +1419,7 @@ static void *kTestObserverContext = &kTestObserverContext;
     XCTAssertNil(error, @"should have no error");
   }];
 
-  completion(_authentication, nil);
+  completion(_user, nil);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
