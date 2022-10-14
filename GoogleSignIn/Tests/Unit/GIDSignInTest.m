@@ -85,7 +85,7 @@ static NSString * const kFakeIDToken = @"FakeIDToken";
 static NSString * const kClientId = @"FakeClientID";
 static NSString * const kDotReversedClientId = @"FakeClientID";
 static NSString * const kClientId2 = @"FakeClientID2";
-static NSString * const kAppBundleId = @"FakeBundleID";
+static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kLanguage = @"FakeLanguage";
 static NSString * const kScope = @"FakeScope";
 static NSString * const kScope2 = @"FakeScope2";
@@ -152,9 +152,6 @@ static NSString *const kEMMSupport = @"1";
 
 static NSString *const kGrantedScope = @"grantedScope";
 static NSString *const kNewScope = @"newScope";
-
-/// Unique pointer value for KVO tests.
-static void *kTestObserverContext = &kTestObserverContext;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 // This category is used to allow the test to swizzle a private method.
@@ -260,9 +257,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   // The saved token request callback.
   OIDTokenCallback _savedTokenCallback;
 
-  // Set of all |GIDSignIn| key paths which were observed to change.
-  NSMutableSet *_changedKeyPaths;
-
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
 }
@@ -283,7 +277,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   _completionCalled = NO;
   _keychainSaved = NO;
   _keychainRemoved = NO;
-  _changedKeyPaths = [[NSMutableSet alloc] init];
 
   // Mocks
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -330,7 +323,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   // Fakes
   _fetcherService = [[GIDFakeFetcherService alloc] init];
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithBundleId:kAppBundleId clientId:kClientId];
+  [_fakeMainBundle startFakingWithClientID:kClientId];
   [_fakeMainBundle fakeAllSchemesSupported];
 
   // Object under test
@@ -338,7 +331,6 @@ static void *kTestObserverContext = &kTestObserverContext;
                                           forKey:kAppHasRunBeforeKey];
 
   _signIn = [[GIDSignIn alloc] initPrivate];
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -351,11 +343,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     strongSelf->_completionCalled = YES;
     strongSelf->_authError = error;
   };
-
-  [_signIn addObserver:self
-            forKeyPath:NSStringFromSelector(@selector(currentUser))
-               options:0
-               context:kTestObserverContext];
 }
 
 - (void)tearDown {
@@ -375,10 +362,6 @@ static void *kTestObserverContext = &kTestObserverContext;
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
-
-  [_signIn removeObserver:self
-               forKeyPath:NSStringFromSelector(@selector(currentUser))
-                  context:kTestObserverContext];
 }
 
 #pragma mark - Tests
@@ -387,6 +370,46 @@ static void *kTestObserverContext = &kTestObserverContext;
   GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
   GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
+}
+
+- (void)testInitPrivate {
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNotNil(signIn.configuration);
+  XCTAssertEqual(signIn.configuration.clientID, kClientId);
+  XCTAssertNil(signIn.configuration.serverClientID);
+  XCTAssertNil(signIn.configuration.hostedDomain);
+  XCTAssertNil(signIn.configuration.openIDRealm);
+}
+
+- (void)testInitPrivate_noConfig {
+  [_fakeMainBundle fakeWithClientID:nil
+                     serverClientID:nil
+                       hostedDomain:nil
+                        openIDRealm:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNil(signIn.configuration);
+}
+
+- (void)testInitPrivate_fullConfig {
+  [_fakeMainBundle fakeWithClientID:kClientId
+                     serverClientID:kServerClientId
+                       hostedDomain:kFakeHostedDomain
+                        openIDRealm:kOpenIDRealm];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNotNil(signIn.configuration);
+  XCTAssertEqual(signIn.configuration.clientID, kClientId);
+  XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
+  XCTAssertEqual(signIn.configuration.hostedDomain, kFakeHostedDomain);
+  XCTAssertEqual(signIn.configuration.openIDRealm, kOpenIDRealm);
+}
+
+- (void)testInitPrivate_invalidConfig {
+  [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
+                     serverClientID:nil
+                       hostedDomain:nil
+                        openIDRealm:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  XCTAssertNil(signIn.configuration);
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
@@ -576,7 +599,11 @@ static void *kTestObserverContext = &kTestObserverContext;
   OCMStub([profile email]).andReturn(kUserEmail);
   
   // Mock for the method `addScopes`.
-  OCMStub([_user configuration]).andReturn(_configuration);
+  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                                serverClientID:nil
+                                                                  hostedDomain:nil
+                                                                   openIDRealm:kOpenIDRealm];
+  OCMStub([_user configuration]).andReturn(configuration);
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
 
@@ -612,10 +639,10 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testOpenIDRealm {
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                               serverClientID:nil
-                                                 hostedDomain:nil
-                                                  openIDRealm:kOpenIDRealm];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                      serverClientID:nil
+                                                        hostedDomain:nil
+                                                         openIDRealm:kOpenIDRealm];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -647,10 +674,10 @@ static void *kTestObserverContext = &kTestObserverContext;
 }
 
 - (void)testOAuthLogin_HostedDomain {
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                               serverClientID:nil
-                                                 hostedDomain:kHostedDomain
-                                                  openIDRealm:nil];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                      serverClientID:nil
+                                                        hostedDomain:kHostedDomain
+                                                         openIDRealm:nil];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -725,8 +752,6 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_signIn signOut];
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertTrue(_keychainRemoved, @"should remove keychain");
-  XCTAssertTrue([_changedKeyPaths containsObject:NSStringFromSelector(@selector(currentUser))],
-                @"should notify observers that signed in user changed");
 
   OCMVerify([_authorization removeAuthorizationFromKeychainForName:kKeychainName
                                          useDataProtectionKeychain:YES]);
@@ -885,30 +910,28 @@ static void *kTestObserverContext = &kTestObserverContext;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 
-  XCTAssertThrows([_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                          presentingViewController:_presentingViewController
+  XCTAssertThrows([_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                                  presentingWindow:_presentingWindow
+  XCTAssertThrows([_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                              hint:_hint
-                                        completion:_completion]);
+                                                 hint:_hint
+                                           completion:_completion]);
 }
 
 - (void)testClientIDMissingException {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnonnull"
-  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:nil];
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
 #pragma GCC diagnostic pop
   BOOL threw = NO;
   @try {
-    [_signIn signInWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            presentingViewController:_presentingViewController
+    [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                    presentingWindow:_presentingWindow
+    [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                          completion:nil];
+                             completion:nil];
   } @catch (NSException *exception) {
     threw = YES;
     XCTAssertEqualObjects(exception.description,
@@ -922,14 +945,13 @@ static void *kTestObserverContext = &kTestObserverContext;
   [_fakeMainBundle fakeMissingAllSchemes];
   BOOL threw = NO;
   @try {
-    [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            presentingViewController:_presentingViewController
+    [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                    presentingWindow:_presentingWindow
+    [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                hint:_hint
-                          completion:_completion];
+                                   hint:_hint
+                             completion:_completion];
   } @catch (NSException *exception) {
     threw = YES;
     XCTAssertEqualObjects(exception.description,
@@ -1250,24 +1272,22 @@ static void *kTestObserverContext = &kTestObserverContext;
               completion:completion];
     } else {
       if (useAdditionalScopes) {
-        [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                presentingViewController:_presentingViewController
+        [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                        presentingWindow:_presentingWindow
+        [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                    hint:_hint
-                        additionalScopes:additionalScopes
-                              completion:completion];
+                                       hint:_hint
+                           additionalScopes:additionalScopes
+                                 completion:completion];
       } else {
-        [_signIn signInWithConfiguration:_configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                presentingViewController:_presentingViewController
+        [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-                        presentingWindow:_presentingWindow
+        [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                    hint:_hint
-                              completion:completion];
+                                       hint:_hint
+                                 completion:completion];
       }
     }
 
@@ -1431,18 +1451,6 @@ static void *kTestObserverContext = &kTestObserverContext;
     OCMVerify([_authorization saveAuthorization:OCMOCK_ANY
                               toKeychainForName:kKeychainName
                       useDataProtectionKeychain:YES]);
-  }
-}
-
-
-#pragma mark - Key Value Observing
-
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change
-                       context:(void *)context {
-  if (context == kTestObserverContext && object == _signIn) {
-    [_changedKeyPaths addObject:keyPath];
   }
 }
 

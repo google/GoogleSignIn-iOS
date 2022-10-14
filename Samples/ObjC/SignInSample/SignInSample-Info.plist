@@ -67,5 +67,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+  <!-- Do not use this client ID in your own app, it will only work for this sample. -->
+  <key>GIDClientID</key>
+  <string>589453917038-qaoga89fitj2ukrsq27ko56fimmojac6.apps.googleusercontent.com</string>
 </dict>
 </plist>

@@ -19,17 +19,6 @@ import GoogleSignIn
 
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
-  // TODO: Replace this with your own ID.
-  #if os(iOS)
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
-  #elseif os(macOS)
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
-  #endif
-
-  private lazy var configuration: GIDConfiguration = {
-    return GIDConfiguration(clientID: clientID)
-  }()
-
   private var authViewModel: AuthenticationViewModel
 
   /// Creates an instance of this authenticator.
@@ -47,8 +36,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: rootViewController) { userAuth, error in
+    GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { userAuth, error in
       guard let userAuth = userAuth else {
         print("Error! \(String(describing: error))")
         return
@@ -62,8 +50,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: presentingWindow) { userAuth, error in
+    GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) { userAuth, error in
       guard let userAuth = userAuth else {
         print("Error! \(String(describing: error))")
         return
