@@ -83,8 +83,8 @@ typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *
 // @param completion The block that is called on completion.  This block will be called asynchronously
 //     on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
- presentingWindow:(NSWindow *)presentingWindow
-       completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+    presentingWindow:(NSWindow *)presentingWindow
+          completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                      NSError *_Nullable error))completion;
 
 #endif
