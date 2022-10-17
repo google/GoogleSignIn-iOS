@@ -108,7 +108,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
     }
 
     currentUser?.addScopes([BirthdayLoader.birthdayReadScope],
-                          presenting: presentingWindow) { userAuth, error in
+                           presenting: presentingWindow) { userAuth, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
