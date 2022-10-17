@@ -200,7 +200,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                      NSError *_Nullable error))completion {
   [GIDSignIn.sharedInstance addScopes:scopes
-             presentingViewController:presentingWindow
+                     presentingWindow:presentingWindow
                            completion:completion];
 }
 
