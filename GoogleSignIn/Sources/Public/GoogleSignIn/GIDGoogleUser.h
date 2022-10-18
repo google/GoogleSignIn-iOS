@@ -76,8 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt to
 ///     refresh tokens was unsuccessful.  The block will be called asynchronously on the main queue.
-- (void)doWithFreshTokens:(void (^)(GIDGoogleUser *_Nullable user,
-                                    NSError *_Nullable error))completion;
+- (void)refreshTokensWithCompletion:(void (^)(GIDGoogleUser *_Nullable user,
+                                              NSError *_Nullable error))completion;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 

@@ -52,7 +52,7 @@ final class BirthdayLoader: ObservableObject {
   }()
 
   private func sessionWithFreshToken(completion: @escaping (Result<URLSession, Error>) -> Void) {
-    GIDSignIn.sharedInstance.currentUser?.do { user, error in
+    GIDSignIn.sharedInstance.currentUser?.refreshTokens { user, error in
       guard let token = user?.accessToken.tokenString else {
         completion(.failure(.couldNotCreateURLSession(error)))
         return

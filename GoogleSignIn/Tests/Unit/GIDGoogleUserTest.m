@@ -227,9 +227,9 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTAssertIdentical(fetcherAuthorizer, fetcherAuthorizer2);
 }
 
-#pragma mark - Test `doWithFreshTokens:`
+#pragma mark - Test `refreshTokensWithCompletion:`
 
-- (void)testDoWithFreshTokens_refresh_givenBothTokensExpired {
+- (void)testRefreshTokensWithCompletion_refresh_givenBothTokensExpired {
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
   NSString *newIdToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
@@ -237,7 +237,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   
   // Save the intermediate states.
-  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error);
     XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
@@ -257,7 +257,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testDoWithRefreshTokens_refresh_givenBothTokensExpired_NoNewIDToken {
+- (void)testRefreshTokens_refresh_givenBothTokensExpired_NoNewIDToken {
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
   // Creates a fake response without ID token.
@@ -271,7 +271,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   
   // Save the intermediate states.
-  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error);
     XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
@@ -284,7 +284,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testDoWithFreshTokens_refresh_givenAccessTokenExpired {
+- (void)testRefreshTokensWithCompletion_refresh_givenAccessTokenExpired {
   // Access token expired 10 seconds ago. ID token will expire in 10 minutes.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:10 * 60];
   // Creates a fake response.
@@ -298,7 +298,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   
   // Save the intermediate states.
-  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error);
     XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
@@ -312,7 +312,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testDoWithFreshTokens_refresh_givenIDTokenExpired {
+- (void)testRefreshTokensWithCompletion_refresh_givenIDTokenExpired {
   // ID token expired 10 seconds ago. Access token will expire in 10 minutes.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:10 * 60 idTokenExpiresIn:-10];
   
@@ -327,7 +327,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   
   // Save the intermediate states.
-  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error);
     XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
@@ -342,7 +342,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testDoWithFreshTokens_noRefresh_givenBothTokensNotExpired {
+- (void)testRefreshTokensWithCompletion_noRefresh_givenBothTokensNotExpired {
   // Both tokens will expire in 10 min.
   NSTimeInterval expiresIn = 10 * 60;
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
@@ -354,7 +354,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   
   // Save the intermediate states.
-  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNil(error);
   }];
@@ -367,7 +367,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self verifyUser:user idTokenExpiresIn:expiresIn];
 }
 
-- (void)testDoWithFreshTokens_noRefresh_givenRefreshErrors {
+- (void)testRefreshTokensWithCompletion_noRefresh_givenRefreshErrors {
   // Both tokens expired 10 second ago.
   NSTimeInterval expiresIn = -10;
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
@@ -379,7 +379,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
   
   // Save the intermediate states.
-  [user doWithFreshTokens:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNotNil(error);
     XCTAssertNil(user);
@@ -394,7 +394,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   [self verifyUser:user idTokenExpiresIn:expiresIn];
 }
 
-- (void)testDoWithFreshTokens_handleConcurrentRefresh {
+- (void)testRefreshTokensWithCompletion_handleConcurrentRefresh {
   // Both tokens expired 10 second ago.
   NSTimeInterval expiresIn = -10;
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
@@ -409,7 +409,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   
   XCTestExpectation *firstExpectation =
       [self expectationWithDescription:@"First callback is called"];
-  [user doWithFreshTokens:^(GIDGoogleUser *user, NSError *error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser *user, NSError *error) {
     [firstExpectation fulfill];
     XCTAssertNil(error);
     
@@ -421,7 +421,7 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   }];
   XCTestExpectation *secondExpectation =
       [self expectationWithDescription:@"Second callback is called"];
-  [user doWithFreshTokens:^(GIDGoogleUser *user, NSError *error) {
+  [user refreshTokensWithCompletion:^(GIDGoogleUser *user, NSError *error) {
     [secondExpectation fulfill];
     XCTAssertNil(error);
     

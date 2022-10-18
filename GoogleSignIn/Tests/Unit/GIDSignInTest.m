@@ -1429,7 +1429,7 @@ static NSString *const kNewScope = @"newScope";
   _authError = nil;
 
   __block GIDGoogleUserCompletion completion;
-  [[_user expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(completion)];
+  [[_user expect] refreshTokensWithCompletion:SAVE_TO_ARG_BLOCK(completion)];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
 
