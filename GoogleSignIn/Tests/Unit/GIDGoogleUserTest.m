@@ -15,9 +15,11 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
 #import <XCTest/XCTest.h>
+#import <TargetConditionals.h>
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
@@ -33,6 +35,7 @@
 @import GoogleUtilities_MethodSwizzler;
 @import GoogleUtilities_SwizzlerTestHelpers;
 @import GTMAppAuth;
+@import OCMock;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
@@ -45,6 +48,7 @@
 #import <GoogleUtilities/GULSwizzler.h>
 #import <GoogleUtilities/GULSwizzler+Unswizzle.h>
 #import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
+#import <OCMock/OCMock.h>
 #endif
 
 static NSString *const kNewAccessToken = @"new_access_token";
@@ -53,6 +57,8 @@ static NSString *const kNewRefreshToken = @"new_refresh_token";
 static NSTimeInterval const kTimeAccuracy = 10;
 static NSTimeInterval const kIDTokenExpiresIn = 100;
 static NSTimeInterval const kNewIDTokenExpiresIn = 200;
+
+static NSString *const kNewScope = @"newScope";
 
 @interface GIDGoogleUserTest : XCTestCase
 @end
@@ -434,6 +440,75 @@ static NSTimeInterval const kNewIDTokenExpiresIn = 200;
   
   
   _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testAddScopes_success {
+  id signIn = OCMClassMock([GIDSignIn class]);
+  OCMStub([signIn sharedInstance]).andReturn(signIn);
+  [[signIn expect] addScopes:OCMOCK_ANY
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+    presentingViewController:OCMOCK_ANY
+#elif TARGET_OS_OSX
+            presentingWindow:OCMOCK_ANY
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                  completion:OCMOCK_ANY];
+  
+  GIDGoogleUser *currentUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                       idTokenExpiresIn:kIDTokenExpiresIn];
+  
+  OCMStub([signIn currentUser]).andReturn(currentUser);
+  
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  UIViewController *presentingViewController = [[UIViewController alloc] init];
+  [currentUser addScopes:@[kNewScope]
+    presentingViewController:presentingViewController
+                  completion:nil];
+#elif TARGET_OS_OSX
+  NSWindow *presentingWindow = [[NSWindow alloc] init];
+  [currentUser addScopes:@[kNewScope]
+    presentingWindow:presentingWindow
+          completion:nil];
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  
+  [signIn verify];
+}
+
+- (void)testAddScopes_failure_addScopesToPreviousAccount {
+  id signIn = OCMClassMock([GIDSignIn class]);
+  OCMStub([signIn sharedInstance]).andReturn(signIn);
+
+  GIDGoogleUser *currentUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                       idTokenExpiresIn:kIDTokenExpiresIn];
+  
+  OCMStub([signIn currentUser]).andReturn(currentUser);
+  
+  GIDGoogleUser *previousUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                        idTokenExpiresIn:kNewIDTokenExpiresIn];
+  
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Completion is called."];
+  
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  UIViewController *presentingViewController = [[UIViewController alloc] init];
+  [previousUser addScopes:@[kNewScope]
+    presentingViewController:presentingViewController
+                  completion:^(GIDUserAuth *userAuth, NSError *error) {
+    [expectation fulfill];
+    XCTAssertNil(userAuth);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodePreviousUser);
+  }];
+#elif TARGET_OS_OSX
+  NSWindow *presentingWindow = [[NSWindow alloc] init];
+  [previousUser addScopes:@[kNewScope]
+         presentingWindow:presentingWindow
+                  completion:^(GIDUserAuth *userAuth, NSError *error) {
+    [expectation fulfill];
+    XCTAssertNil(userAuth);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodePreviousUser);
+  }];
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 

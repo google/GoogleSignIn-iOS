@@ -17,6 +17,7 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDAuthentication.h"
@@ -183,28 +184,39 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                                 NSError *_Nullable error))completion {
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+- (void)addScopes:(NSArray<NSString *> *)scopes
+    presentingWindow:(NSWindow *)presentingWindow
+          completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                        NSError *_Nullable error))completion {
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+  if (self != GIDSignIn.sharedInstance.currentUser) {
+    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                         code:kGIDSignInErrorCodePreviousUser
+                                     userInfo:nil];
+    if (completion) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        completion(nil, error);
+      });
+    }
+    return;
+  }
+  
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [GIDSignIn.sharedInstance addScopes:scopes
              presentingViewController:presentingViewController
                            completion:completion];
-}
-
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-
-- (void)addScopes:(NSArray<NSString *> *)scopes
- presentingWindow:(NSWindow *)presentingWindow
-       completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                     NSError *_Nullable error))completion {
   [GIDSignIn.sharedInstance addScopes:scopes
                      presentingWindow:presentingWindow
                            completion:completion];
-}
-
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+}
 
 #pragma mark - Private Methods
 

@@ -55,9 +55,9 @@ typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-/// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
+/// Starts an interactive consent flow on iOS to add scopes to the user's grants.
 ///
-/// The completion will be called at the end of this process.  If successful, a new `GIDGoogleUser`
+/// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes The scopes to ask the user to consent to.
@@ -74,9 +74,9 @@ typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *
 
 #elif TARGET_OS_OSX
 
-/// Starts an interactive consent flow on macOS to add scopes to the current user's grants
+/// Starts an interactive consent flow on macOS to add scopes to the user's grants
 ///
-/// The completion will be called at the end of this process.  If successful, a new `GIDGoogleUser`
+/// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes An array of scopes to ask the user to consent to.
@@ -87,7 +87,7 @@ typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingWindow:(NSWindow *)presentingWindow
           completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                     NSError *_Nullable error))completion;
+                                        NSError *_Nullable error))completion;
 
 #endif
 
