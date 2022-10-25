@@ -27,7 +27,7 @@ jobs:
           - podspec: GoogleSignInSwiftSupport.podspec
             includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Update Bundler
       run: bundle update --bundler
     - name: Install Ruby gems with Bundler
@@ -50,7 +50,7 @@ jobs:
           - sdk: 'iphonesimulator'
             destination: '"platform=iOS Simulator,name=iPhone 11"'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build unit test target
       run: |
         xcodebuild \
