@@ -14,11 +14,23 @@
 
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
+#import <AppAuth/AppAuth.h>template
+#end
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const kLSOServer = @"accounts.google.com";
 static NSString *const kTokenServer = @"oauth2.googleapis.com";
 static NSString *const kUserInfoServer = @"www.googleapis.com";
+
+// The URL template for the authorization endpoint.
+static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
+
+// The URL template for the token endpoint.
+static NSString *const kTokenURLTemplate = @"https://%@/token";
 
 // The name of the query parameter used for logging the SDK version.
 NSString *const kSDKVersionLoggingParameter = @"gpsdk";
@@ -92,6 +104,16 @@ NSString* GIDEnvironment(void) {
 
 + (NSString *)googleUserInfoServer {
   return kUserInfoServer;
+}
+
++ (OIDServiceConfiguration *)appAuthConfiguration {
+  NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
+      [GIDSignInPreferences googleAuthorizationServer]];
+  NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
+      [GIDSignInPreferences googleTokenServer]];
+  return [[OIDServiceConfiguration alloc]
+      initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
+                      tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
 }
 
 @end

@@ -489,13 +489,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [self removeAllKeychainEntries];
     }
 
-    NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
-    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
-    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+
+    _appAuthConfiguration = [GIDSignInPreferences appAuthConfiguration];
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
@@ -519,7 +514,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   if (options.interactive) {
     // Ensure that a configuration has been provided.
-    if (!_configuration) {
+    if (!options.configuration) {
       // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
       [NSException raise:NSInvalidArgumentException
                   format:@"No active configuration.  Make sure GIDClientID is set in Info.plist."];

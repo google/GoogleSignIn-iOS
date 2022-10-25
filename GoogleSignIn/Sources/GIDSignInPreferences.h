@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class OIDServiceConfiguration;
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const kSDKVersionLoggingParameter;
@@ -30,6 +32,7 @@ NSString* GIDEnvironment(void);
 + (NSString *)googleAuthorizationServer;
 + (NSString *)googleTokenServer;
 + (NSString *)googleUserInfoServer;
++ (OIDServiceConfiguration *)appAuthConfiguration;
 
 @end
 
