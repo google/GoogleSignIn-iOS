@@ -1054,13 +1054,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                        forKey:kConfigServerClientIDKey];
   NSString *hostedDomain = [GIDSignIn configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
   NSString *openIDRealm = [GIDSignIn configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
-    
+
   // If we have at least a client ID, try to construct a configuration.
   if (clientID) {
     configuration = [[GIDConfiguration alloc] initWithClientID:clientID
                                                  serverClientID:serverClientID
                                                    hostedDomain:hostedDomain
-                                                    openIDRealm:openIDRealm];
+                                                    openIDRealm:openIDRealm
+                                                          nonce:nil];
   }
   
   return configuration;
