@@ -265,20 +265,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable GIDUserAuthCompletion)completion {
-  // A currentUser must be available in order to complete this flow.
-  if (!self.currentUser) {
-    // No currentUser is set, notify callback of failure.
-    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodeNoCurrentUser
-                                     userInfo:nil];
-    if (completion) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        completion(nil, error);
-      });
-    }
-    return;
-  }
-
   GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
@@ -350,20 +336,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)addScopes:(NSArray<NSString *> *)scopes
  presentingWindow:(NSWindow *)presentingWindow
        completion:(nullable GIDUserAuthCompletion)completion {
-  // A currentUser must be available in order to complete this flow.
-  if (!self.currentUser) {
-    // No currentUser is set, notify callback of failure.
-    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodeNoCurrentUser
-                                     userInfo:nil];
-    if (completion) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        completion(nil, error);
-      });
-    }
-    return;
-  }
-
   GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
