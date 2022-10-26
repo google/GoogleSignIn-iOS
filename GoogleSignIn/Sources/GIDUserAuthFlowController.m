@@ -1,11 +1,5 @@
 #import "GoogleSignIn/Sources/GIDUserAuthFlowController.h"
 
-#ifdef SWIFT_PACKAGE
-@import AppAuth;
-#else
-#import <AppAuth/AppAuth.h>
-#endif
-
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
@@ -19,10 +13,25 @@
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDUserAuth_Private.h"
+
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
+#import <AppAuth/AppAuth.h>
+#endif
+
+NS_ASSUME_NONNULL_BEGIN
+
+// The name of the query parameter used for logging the restart of auth from EMM callback.
+static NSString *const kEMMRestartAuthParameter = @"emmres";
 
 // The URL template for the URL to get user info.
 static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
@@ -53,11 +62,21 @@ static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes
 static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
 
+// Parameters in the callback URL coming back from browser.
+static NSString *const kOAuth2ErrorKeyName = @"error";
+static NSString *const kOAuth2AccessDenied = @"access_denied";
+
 // Error string for unavailable keychain.
 static NSString *const kKeychainError = @"keychain error";
 
+// Error string for user cancelations.
+static NSString *const kUserCanceledError = @"The user canceled the sign-in flow.";
+
 // Maximum retry interval in seconds for the fetcher.
 static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
+
+// The delay before the new sign-in flow can be presented after the existing one is cancelled.
+static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -596,3 +615,5 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

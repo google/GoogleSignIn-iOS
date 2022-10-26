@@ -17,8 +17,8 @@
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
-#import <AppAuth/AppAuth.h>template
-#end
+#import <AppAuth/AppAuth.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
