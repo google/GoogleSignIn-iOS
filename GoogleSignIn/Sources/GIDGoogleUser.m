@@ -197,7 +197,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
   if (self != GIDSignIn.sharedInstance.currentUser) {
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodePreviousUser
+                                         code:kGIDSignInErrorCodeMismatchWithCurrentUser
                                      userInfo:nil];
     if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{

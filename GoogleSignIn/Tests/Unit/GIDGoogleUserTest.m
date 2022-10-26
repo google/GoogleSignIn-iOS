@@ -496,7 +496,7 @@ static NSString *const kNewScope = @"newScope";
                     completion:^(GIDUserAuth *userAuth, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(userAuth);
-    XCTAssertEqual(error.code, kGIDSignInErrorCodePreviousUser);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
 #elif TARGET_OS_OSX
   NSWindow *presentingWindow = [[NSWindow alloc] init];
@@ -505,7 +505,7 @@ static NSString *const kNewScope = @"newScope";
                completion:^(GIDUserAuth *userAuth, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(userAuth);
-    XCTAssertEqual(error.code, kGIDSignInErrorCodePreviousUser);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
@@ -532,7 +532,7 @@ static NSString *const kNewScope = @"newScope";
                     completion:^(GIDUserAuth *userAuth, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(userAuth);
-    XCTAssertEqual(error.code, kGIDSignInErrorCodePreviousUser);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
 #elif TARGET_OS_OSX
   NSWindow *presentingWindow = [[NSWindow alloc] init];
@@ -541,7 +541,7 @@ static NSString *const kNewScope = @"newScope";
                completion:^(GIDUserAuth *userAuth, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(userAuth);
-    XCTAssertEqual(error.code, kGIDSignInErrorCodePreviousUser);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
