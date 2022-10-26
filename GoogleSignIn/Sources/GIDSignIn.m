@@ -135,6 +135,12 @@ static NSString *const kHostedDomainParameter = @"hd";
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
+// Info.plist config keys
+static NSString *const kConfigClientIDKey = @"GIDClientID";
+static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
+static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
+static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
+
 // The callback queue used for authentication flow.
 @interface GIDAuthFlow : GIDCallbackQueue
 
@@ -208,18 +214,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   GIDProfileData *profileData = [self profileDataWithIDToken:idToken];
 
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
-  [self setCurrentUserWithKVO:user];
+  self.currentUser = user;
   return YES;
 }
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
-                           hint:(nullable NSString *)hint
-                     completion:(nullable GIDSignInCompletion)completion {
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                                completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                        presentingViewController:presentingViewController
                                                       loginHint:hint
                                                   addScopesFlow:NO
@@ -227,13 +232,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:options];
 }
 
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
-                           hint:(nullable NSString *)hint
-               additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                     completion:(nullable GIDSignInCompletion)completion {
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                          additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                                completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
-    [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+    [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                      presentingViewController:presentingViewController
                                                     loginHint:hint
                                                 addScopesFlow:NO
@@ -242,13 +246,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:options];
 }
 
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-       presentingViewController:(UIViewController *)presentingViewController
-                     completion:(nullable GIDSignInCompletion)completion {
-  [self signInWithConfiguration:configuration
-       presentingViewController:presentingViewController
-                           hint:nil
-                     completion:completion];
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                completion:(nullable GIDSignInCompletion)completion {
+  [self signInWithPresentingViewController:presentingViewController
+                                      hint:nil
+                                completion:completion];
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
@@ -307,12 +309,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 #elif TARGET_OS_OSX
 
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-               presentingWindow:(NSWindow *)presentingWindow
-                           hint:(nullable NSString *)hint
-                     completion:(nullable GIDSignInCompletion)completion {
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                        completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                                presentingWindow:presentingWindow
                                                       loginHint:hint
                                                   addScopesFlow:NO
@@ -320,22 +321,19 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [self signInWithOptions:options];
 }
 
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-               presentingWindow:(NSWindow *)presentingWindow
-                     completion:(nullable GIDSignInCompletion)completion {
-  [self signInWithConfiguration:configuration
-               presentingWindow:presentingWindow
-                           hint:nil
-                     completion:completion];
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                        completion:(nullable GIDSignInCompletion)completion {
+  [self signInWithPresentingWindow:presentingWindow
+                              hint:nil
+                        completion:completion];
 }
 
-- (void)signInWithConfiguration:(GIDConfiguration *)configuration
-               presentingWindow:(NSWindow *)presentingWindow
-                           hint:(nullable NSString *)hint
-               additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                     completion:(nullable GIDSignInCompletion)completion {
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                  additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                        completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
-    [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+    [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                              presentingWindow:presentingWindow
                                                     loginHint:hint
                                                 addScopesFlow:NO
@@ -403,9 +401,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (void)signOut {
   // Clear the current user if there is one.
   if (_currentUser) {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-    _currentUser = nil;
-    [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+    self.currentUser = nil;
   }
   // Remove all state from the keychain.
   [self removeAllKeychainEntries];
@@ -477,6 +473,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 - (id)initPrivate {
   self = [super init];
   if (self) {
+    // Get the bundle of the current executable.
+    NSBundle *bundle = NSBundle.mainBundle;
+
+    // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
+    if (bundle) {
+      _configuration = [GIDSignIn configurationFromBundle:bundle];
+    }
+    
     // Check to see if the 3P app is being run for the first time after a fresh install.
     BOOL isFreshInstall = [self isFreshInstall];
 
@@ -514,6 +518,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 
   if (options.interactive) {
+    // Ensure that a configuration has been provided.
+    if (!_configuration) {
+      // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+      [NSException raise:NSInvalidArgumentException
+                  format:@"No active configuration.  Make sure GIDClientID is set in Info.plist."];
+      return;
+    }
+
     // Explicitly throw exception for missing client ID here. This must come before
     // scheme check because schemes rely on reverse client IDs.
     [self assertValidParameters];
@@ -789,7 +801,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                            profileData:handlerAuthFlow.profileData];
-        [self setCurrentUserWithKVO:user];
+        self.currentUser = user;
       }
     }
   }];
@@ -921,17 +933,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return YES;
 }
 
-#pragma mark - Key-Value Observing
-
-// Override |NSObject(NSKeyValueObservingCustomization)| method in order to provide custom KVO
-// notifications for the |currentUser| property.
-+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
-  if ([key isEqual:NSStringFromSelector(@selector(currentUser))]) {
-    return NO;
-  }
-  return [super automaticallyNotifiesObserversForKey:key];
-}
-
 #pragma mark - Helpers
 
 - (NSError *)errorWithString:(NSString *)errorString code:(GIDSignInErrorCode)code {
@@ -962,10 +963,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 // Assert that the presenting view controller has been set.
 - (void)assertValidPresentingViewController {
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  if (!_currentOptions.presentingViewController) {
+  if (!_currentOptions.presentingViewController)
 #elif TARGET_OS_OSX
-  if (!_currentOptions.presentingWindow) {
+  if (!_currentOptions.presentingWindow)
 #endif // TARGET_OS_OSX
+  {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];
@@ -1020,11 +1022,36 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
             imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
-// Set currentUser making appropriate KVO calls.
-- (void)setCurrentUserWithKVO:(GIDGoogleUser *_Nullable)user {
-  [self willChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
-  _currentUser = user;
-  [self didChangeValueForKey:NSStringFromSelector(@selector(currentUser))];
+// Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.
++ (nullable NSString *)configValueFromBundle:(NSBundle *)bundle forKey:(NSString *)key {
+  NSString *value;
+  id configValue = [bundle objectForInfoDictionaryKey:key];
+  if ([configValue isKindOfClass:[NSString class]]) {
+    value = configValue;
+  }
+  return value;
+}
+
+// Try to generate a |GIDConfiguration| from an |NSBundle|'s Info.plist.
++ (nullable GIDConfiguration *)configurationFromBundle:(NSBundle *)bundle {
+  GIDConfiguration *configuration;
+
+  // Retrieve any valid config parameters from the bundle's Info.plist.
+  NSString *clientID = [GIDSignIn configValueFromBundle:bundle forKey:kConfigClientIDKey];
+  NSString *serverClientID = [GIDSignIn configValueFromBundle:bundle
+                                                       forKey:kConfigServerClientIDKey];
+  NSString *hostedDomain = [GIDSignIn configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
+  NSString *openIDRealm = [GIDSignIn configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
+    
+  // If we have at least a client ID, try to construct a configuration.
+  if (clientID) {
+    configuration = [[GIDConfiguration alloc] initWithClientID:clientID
+                                                 serverClientID:serverClientID
+                                                   hostedDomain:hostedDomain
+                                                    openIDRealm:openIDRealm];
+  }
+  
+  return configuration;
 }
 
 @end

@@ -21,24 +21,39 @@ static NSString *const kCFBundleURLTypesKey = @"CFBundleURLTypes";
 
 static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
 
-@implementation GIDFakeMainBundle {
-  // Represents the CFBundleURLTypes of the mocked app bundle's info.plist.
-  __block NSArray *_fakeSupportedSchemes;
+// Info.plist config keys
+static NSString *const kConfigClientIDKey = @"GIDClientID";
+static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
+static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
+static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
+@implementation GIDFakeMainBundle {
   NSString *_clientId;
-  NSString *_bundleId;
+
+  // Represents the Info.plist keys to fake.
+  NSArray *_fakedKeys;
+
+  // Represents the values for any Info.plist keys to be faked.
+  NSMutableDictionary *_fakeConfig;
 }
 
-- (void)startFakingWithBundleId:(NSString *)bundleId clientId:(NSString *)clientId {
-  _bundleId = bundleId;
+- (void)startFakingWithClientID:(NSString *)clientId {
   _clientId = clientId;
+
+  _fakedKeys = @[ kCFBundleURLTypesKey,
+                  kConfigClientIDKey,
+                  kConfigServerClientIDKey,
+                  kConfigHostedDomainKey,
+                  kConfigOpenIDRealmKey ];
+  
+  _fakeConfig = [@{ @"GIDClientID" : clientId } mutableCopy];
 
   [GULSwizzler swizzleClass:[NSBundle class]
                    selector:@selector(objectForInfoDictionaryKey:)
             isClassSelector:NO
-                  withBlock:^(id _self, NSString *key) {
-    if ([key isEqual:kCFBundleURLTypesKey]) {
-      return self->_fakeSupportedSchemes;
+                  withBlock:^id(id _self, NSString *key) {
+    if ([self->_fakedKeys containsObject:key]) {
+      return self->_fakeConfig[key];
     } else {
       @throw [NSException exceptionWithName:@"Requested unexpected info.plist key."
                                      reason:nil
@@ -51,7 +66,7 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
   [GULSwizzler unswizzleClass:[NSBundle class]
                      selector:@selector(objectForInfoDictionaryKey:)
               isClassSelector:NO];
-  _fakeSupportedSchemes = nil;
+  _fakeConfig = nil;
 }
 
 #pragma mark - Utilities
@@ -93,10 +108,7 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
 #pragma mark - URL Schemes
 
 - (void)fakeAllSchemesSupported {
-  _fakeSupportedSchemes = @[
-    @{
-      kCFBundleURLSchemesKey : @[ _bundleId ]
-    },
+  _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
@@ -104,10 +116,9 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
 }
 
 - (void)fakeAllSchemesSupportedAndMerged {
-  _fakeSupportedSchemes = @[
+  _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
       kCFBundleURLSchemesKey : @[
-        _bundleId,
         [self reversedClientId]
       ]
     },
@@ -115,14 +126,9 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
 }
 
 - (void)fakeAllSchemesSupportedWithCasesMangled {
-  NSString *caseFlippedBundleId =
-      [self stringByFlippingCasesInString:_bundleId];
   NSString *caseFlippedReverseClientId =
       [self stringByFlippingCasesInString:[self reversedClientId]];
-  _fakeSupportedSchemes = @[
-    @{
-      kCFBundleURLSchemesKey : @[ caseFlippedBundleId ]
-    },
+  _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
       kCFBundleURLSchemesKey : @[ caseFlippedReverseClientId ]
     }
@@ -130,19 +136,15 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
 }
 
 - (void)fakeMissingClientIdScheme {
-  _fakeSupportedSchemes = @[
-    @{
-      kCFBundleURLSchemesKey : @[ _bundleId ]
-    }
-  ];
+  [self fakeMissingAllSchemes];
 }
 
 - (void)fakeMissingAllSchemes {
-  _fakeSupportedSchemes = nil;
+  _fakeConfig[kCFBundleURLTypesKey] = nil;
 }
 
 - (void)fakeOtherSchemes {
-  _fakeSupportedSchemes = @[
+  _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     }
@@ -150,10 +152,7 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
 }
 
 - (void)fakeOtherSchemesAndAllSchemes {
-  _fakeSupportedSchemes = @[
-    @{
-      kCFBundleURLSchemesKey : @[ _bundleId ]
-    },
+  _fakeConfig[kCFBundleURLTypesKey] = @[
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     },
@@ -161,6 +160,16 @@ static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
   ];
+}
+
+- (void)fakeWithClientID:(id)clientID
+          serverClientID:(id)serverClientID
+            hostedDomain:(id)hostedDomain
+             openIDRealm:(id)openIDRealm {
+  _fakeConfig[kConfigClientIDKey] = clientID;
+  _fakeConfig[kConfigServerClientIDKey] = serverClientID;
+  _fakeConfig[kConfigHostedDomainKey] = hostedDomain;
+  _fakeConfig[kConfigOpenIDRealmKey] = openIDRealm;
 }
 
 @end
