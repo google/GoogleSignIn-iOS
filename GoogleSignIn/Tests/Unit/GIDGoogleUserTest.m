@@ -489,25 +489,17 @@ static NSString *const kNewScope = @"newScope";
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Completion is called."];
   
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  UIViewController *presentingViewController = [[UIViewController alloc] init];
   [previousUser addScopes:@[kNewScope]
-      presentingViewController:presentingViewController
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+      presentingViewController:[[UIViewController alloc] init]
+#elif TARGET_OS_OSX
+              presentingWindow:[[NSWindow alloc] init]
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                     completion:^(GIDUserAuth *userAuth, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(userAuth);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
-#elif TARGET_OS_OSX
-  NSWindow *presentingWindow = [[NSWindow alloc] init];
-  [previousUser addScopes:@[kNewScope]
-         presentingWindow:presentingWindow
-               completion:^(GIDUserAuth *userAuth, NSError *error) {
-    [expectation fulfill];
-    XCTAssertNil(userAuth);
-    XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
-  }];
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
@@ -525,25 +517,17 @@ static NSString *const kNewScope = @"newScope";
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Completion is called."];
   
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  UIViewController *presentingViewController = [[UIViewController alloc] init];
   [previousUser addScopes:@[kNewScope]
-      presentingViewController:presentingViewController
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+      presentingViewController:[[UIViewController alloc] init]
+#elif TARGET_OS_OSX
+              presentingWindow:[[NSWindow alloc] init]
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                     completion:^(GIDUserAuth *userAuth, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(userAuth);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
-#elif TARGET_OS_OSX
-  NSWindow *presentingWindow = [[NSWindow alloc] init];
-  [previousUser addScopes:@[kNewScope]
-         presentingWindow:presentingWindow
-               completion:^(GIDUserAuth *userAuth, NSError *error) {
-    [expectation fulfill];
-    XCTAssertNil(userAuth);
-    XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
-  }];
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
