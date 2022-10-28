@@ -45,10 +45,10 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   kGIDSignInErrorCodeCanceled = -5,
   /// Indicates an Enterprise Mobility Management related error has occurred.
   kGIDSignInErrorCodeEMM = -6,
-  /// Indicates there is no `currentUser`.
-  kGIDSignInErrorCodeNoCurrentUser = -7,
   /// Indicates the requested scopes have already been granted to the `currentUser`.
   kGIDSignInErrorCodeScopesAlreadyGranted = -8,
+  /// Indicates there is an operation on a previous user.
+  kGIDSignInErrorCodeMismatchWithCurrentUser = -9,
 };
 
 /// Represents a completion block that takes an error if the operation was unsuccessful.
