@@ -183,18 +183,14 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   return ((GTMAppAuthFetcherAuthorization *)self.fetcherAuthorizer).authState;
 }
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)addScopes:(NSArray<NSString *> *)scopes
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     presentingViewController:(UIViewController *)presentingViewController
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+            presentingWindow:(NSWindow *)presentingWindow
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
                   completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                                 NSError *_Nullable error))completion {
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-- (void)addScopes:(NSArray<NSString *> *)scopes
-    presentingWindow:(NSWindow *)presentingWindow
-          completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                        NSError *_Nullable error))completion {
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
   if (self != GIDSignIn.sharedInstance.currentUser) {
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeMismatchWithCurrentUser
@@ -207,15 +203,13 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     return;
   }
   
+  [GIDSignIn.sharedInstance addScopes:scopes
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  [GIDSignIn.sharedInstance addScopes:scopes
              presentingViewController:presentingViewController
-                           completion:completion];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [GIDSignIn.sharedInstance addScopes:scopes
                      presentingWindow:presentingWindow
-                           completion:completion];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+                           completion:completion];
 }
 
 #pragma mark - Private Methods
