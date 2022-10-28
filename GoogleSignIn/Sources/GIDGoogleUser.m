@@ -17,11 +17,13 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
@@ -179,6 +181,35 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (OIDAuthState *) authState{
   return ((GTMAppAuthFetcherAuthorization *)self.fetcherAuthorizer).authState;
+}
+
+- (void)addScopes:(NSArray<NSString *> *)scopes
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    presentingViewController:(UIViewController *)presentingViewController
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+            presentingWindow:(NSWindow *)presentingWindow
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+                  completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                NSError *_Nullable error))completion {
+  if (self != GIDSignIn.sharedInstance.currentUser) {
+    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                         code:kGIDSignInErrorCodeMismatchWithCurrentUser
+                                     userInfo:nil];
+    if (completion) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        completion(nil, error);
+      });
+    }
+    return;
+  }
+  
+  [GIDSignIn.sharedInstance addScopes:scopes
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+             presentingViewController:presentingViewController
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+                     presentingWindow:presentingWindow
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+                           completion:completion];
 }
 
 #pragma mark - Private Methods
