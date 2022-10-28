@@ -459,17 +459,13 @@ static NSString *const kNewScope = @"newScope";
   
   OCMStub([signIn currentUser]).andReturn(currentUser);
   
+  [currentUser addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  UIViewController *presentingViewController = [[UIViewController alloc] init];
-  [currentUser addScopes:@[kNewScope]
-      presentingViewController:presentingViewController
-                    completion:nil];
+      presentingViewController:[[UIViewController alloc] init]
 #elif TARGET_OS_OSX
-  NSWindow *presentingWindow = [[NSWindow alloc] init];
-  [currentUser addScopes:@[kNewScope]
-        presentingWindow:presentingWindow
-              completion:nil];
+              presentingWindow:[[NSWindow alloc] init]
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                    completion:nil];
   
   [signIn verify];
 }
