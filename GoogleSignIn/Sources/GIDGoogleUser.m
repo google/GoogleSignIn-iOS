@@ -108,7 +108,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   return _cachedConfiguration;
 }
 
-- (void)refreshTokensWithCompletion:(GIDGoogleUserCompletion)completion {
+- (void)refreshTokensIfNeededWithCompletion:(GIDGoogleUserCompletion)completion {
   if (!([self.accessToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
       (self.idToken && [self.idToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
     dispatch_async(dispatch_get_main_queue(), ^{
