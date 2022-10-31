@@ -80,6 +80,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
+/// Handles the URL returned from SFSafariViewController for iOS 9 and 10.
+///
 /// This method should be called from your `UIApplicationDelegate`'s `application:openURL:options:`
 /// method.
 ///
