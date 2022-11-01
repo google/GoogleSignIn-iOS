@@ -11,7 +11,7 @@ jobs:
 
   swift-button-functional-test:
     runs-on: macOS-12
-    if: !github.event.pull_request.head.repo.fork
+    if: "!github.event.pull_request.head.repo.fork"
     defaults:
       run:
         working-directory: Samples/Swift/DaysUntilBirthday
