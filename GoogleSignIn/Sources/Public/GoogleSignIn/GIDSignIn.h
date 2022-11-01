@@ -80,10 +80,11 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
-/// Handles the URL returned from SFSafariViewController for iOS 9 and 10.
+/// Handles the custom URL returned from SFSafariViewController.
 ///
-/// This method should be called from your `UIApplicationDelegate`'s `application:openURL:options:`
-/// method.
+/// For Enterprise Mobility Management (MDM/EMM) this method is used for app flipping on all iOS
+/// versions. For non EMM flow this method is used on iOS 9 and 10. This method should be called
+/// from your `UIApplicationDelegate`'s `application:openURL:options:` method.
 ///
 /// @param url The URL that was passed to the app.
 /// @return `YES` if `GIDSignIn` handled this URL.
