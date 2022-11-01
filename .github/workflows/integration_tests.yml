@@ -10,7 +10,7 @@ on:
 jobs:
 
   swift-button-functional-test:
-    runs-on: macOS-latest
+    runs-on: macOS-12
     defaults:
       run:
         working-directory: Samples/Swift/DaysUntilBirthday
