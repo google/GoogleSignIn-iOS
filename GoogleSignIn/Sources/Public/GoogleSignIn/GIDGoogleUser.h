@@ -76,12 +76,12 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt to
 ///     refresh tokens was unsuccessful.  The block will be called asynchronously on the main queue.
-- (void)doWithFreshTokens:(void (^)(GIDGoogleUser *_Nullable user,
-                                    NSError *_Nullable error))completion;
+- (void)refreshTokensIfNeededWithCompletion:(void (^)(GIDGoogleUser *_Nullable user,
+                                                      NSError *_Nullable error))completion;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-/// Starts an interactive consent flow on iOS to add scopes to the user's grants.
+/// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #elif TARGET_OS_OSX
 
-/// Starts an interactive consent flow on macOS to add scopes to the user's grants.
+/// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.

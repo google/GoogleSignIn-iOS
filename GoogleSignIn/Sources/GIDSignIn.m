@@ -518,7 +518,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   // If this is a non-interactive flow, use cached authentication if possible.
   if (!options.interactive && _currentUser) {
-    [_currentUser doWithFreshTokens:^(GIDGoogleUser *unused, NSError *error) {
+    [_currentUser refreshTokensIfNeededWithCompletion:^(GIDGoogleUser *unused, NSError *error) {
       if (error) {
         [self authenticateWithOptions:options];
       } else {
