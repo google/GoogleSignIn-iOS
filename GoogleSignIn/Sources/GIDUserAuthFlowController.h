@@ -33,6 +33,12 @@ typedef void (^GIDUserAuthFlowCompletion)(GIDUserAuthFlowResult *_Nullable resul
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options
                completion:(GIDUserAuthFlowCompletion)completion;
 
+- (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options
+                                  completion:(GIDUserAuthFlowCompletion)completion;
+
+- (void)authenticateNonInteractivelyWithOptions:(GIDSignInInternalOptions *)options
+                                     completion:(GIDUserAuthFlowCompletion)completion
+
 @end
 
 NS_ASSUME_NONNULL_END
