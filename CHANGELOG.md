@@ -1,5 +1,10 @@
+# 7.0.0
+- Support for [Swift Concurrency](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html). ([#187](https://github.com/google/GoogleSignIn-iOS/pull/187), [#191](https://github.com/google/GoogleSignIn-iOS/pull/191))
+- Configuration now provided via Info.plist. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
+- Improved `GIDGoogleUser` API surface. ([#249](https://github.com/google/GoogleSignIn-iOS/pull/249))
+
 # 6.2.4 (2022-9-13)
-- Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207))
+- Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207), [#191](https://github.com/google/GoogleSignIn-iOS/pull/191))
 
 # 6.2.3 (2022-8-18)
 - Fix resource loading in GoogleSignInSwift with CocoaPods use_frameworks! ([#197](https://github.com/google/GoogleSignIn-iOS/pull/197))
