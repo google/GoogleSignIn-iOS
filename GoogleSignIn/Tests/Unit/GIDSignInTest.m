@@ -1251,10 +1251,9 @@ static NSString *const kNewScope = @"newScope";
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
     GIDUserAuthCompletion completion =
         ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
-
       [expectation fulfill];
       if (userAuth) {
-          XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
+        XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
       } else {
         XCTAssertNotNil(error, @"Should have an error if the userAuth is nil");
       }
