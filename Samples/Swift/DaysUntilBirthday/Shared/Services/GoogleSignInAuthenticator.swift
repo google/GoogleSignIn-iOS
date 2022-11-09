@@ -38,9 +38,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// - returns: The signed in `GIDGoogleUser`.
   /// - throws: Any error that may arise during the sign in process.
   func signIn(with rootViewController: UIViewController) async throws -> GIDGoogleUser {
-    return try await GIDSignIn.sharedInstance.signIn(
-      presenting: rootViewController
-    )
+    return try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
   }
   #endif
 
@@ -50,9 +48,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// - returns: The signed in `GIDGoogleUser`.
   /// - throws: Any error that may arise during the sign in process.
   func signIn(with window: NSWindow) async throws -> GIDGoogleUser {
-    return try await GIDSignIn.sharedInstance.signIn(
-      presenting: window
-    )
+    return try await GIDSignIn.sharedInstance.signIn(withPresenting: window)
   }
   #endif
 
