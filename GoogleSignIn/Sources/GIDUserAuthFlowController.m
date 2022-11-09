@@ -9,10 +9,13 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
+#import "GoogleSignIn/Sources/GIDAuthFlow_TEMP.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDUserAuthFlowResult.h"
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -81,46 +84,24 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
-// The callback queue used for authentication flow.
-@interface GIDAuthFlow_TEMP : GIDCallbackQueue
-
-@property(nonatomic, strong, nullable) OIDAuthState *authState;
-@property(nonatomic, strong, nullable) NSError *error;
-@property(nonatomic, copy, nullable) NSString *emmSupport;
-@property(nonatomic, nullable) GIDProfileData *profileData;
-
-@end
-
-@implementation GIDAuthFlow_TEMP
-@end
+//@implementation GIDAuthFlow_TEMP
+//@end
 
 // Keychain constants for saving state in the authentication flow.
 static NSString *const kGTMAppAuthKeychainName = @"auth";
 
-@implementation GIDUserAuthFlowResult
-
-- (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(GIDProfileData *)profileData
-                   serverAuthCode:(nullable NSString *)serverAuthCode{
-  self = [super init];
-  if (self) {
-    _authState = authState;
-    _profileData = profileData;
-    _serverAuthCode = [serverAuthCode copy];
-  }
-  return self;
-};
-
-@end
-
 
 @implementation GIDUserAuthFlowController {
+  // This value is used when sign-in flows are resumed via the handling of a URL. Its value is
+  // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
+  // The completion block to be invoked at the end of the auth flow.
+  GIDUserAuthFlowCompletion _completion;
 }
 
 #pragma mark - Public methods
@@ -141,8 +122,8 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
   return NO;
 }
 
-- (void)signInWithOptions:(GIDSignInInternalOptions *)options
-               completion:(GIDUserAuthFlowCompletion)completion {
+- (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options
+                                  completion:(GIDUserAuthFlowCompletion)completion{
   // Options for continuation are not the options we want to cache. The purpose of caching the
   // options in the first place is to provide continuation flows with a starting place from which to
   // derive suitable options for the continuation!
@@ -150,19 +131,68 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
     _currentOptions = options;
   }
   
-  [self authenticateWithOptions:options completion:completion];
-}
+  GIDSignInCallbackSchemes *schemes =
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
+                                             [schemes clientIdentifierScheme],
+                                             kBrowserCallbackPath]];
+  NSString *emmSupport;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
-
-- (void)authenticateWithOptions:(GIDSignInInternalOptions *)options
-                     completion:(GIDUserAuthFlowCompletion)completion {
-  //If this is an interactive flow, we're not going to try to restore any saved auth state.
-  if (options.interactive) {
-    [self authenticateInteractivelyWithOptions:options
-                                    completion:completion];
-    return;
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
+  if (options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
+  }
+  if (options.loginHint) {
+    additionalParameters[kLoginHintParameter] = options.loginHint;
+  }
+  if (options.configuration.hostedDomain) {
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport parametersWithParameters:options.extraParams
+                                   emmSupport:emmSupport
+                       isPasscodeInfoRequired:NO]];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:options.extraParams];
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  OIDServiceConfiguration *appAuthConfiguration = [GIDSignInPreferences appAuthConfiguration];
+  OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:options.scopes
+                                                 redirectURL:redirectURL
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
+
+  _currentAuthorizationFlow = [OIDAuthorizationService
+      presentAuthorizationRequest:request
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+         presentingViewController:options.presentingViewController
+#elif TARGET_OS_OSX
+                 presentingWindow:options.presentingWindow
+#endif // TARGET_OS_OSX
+                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                   NSError *_Nullable error) {
+    [self processAuthorizationResponse:authorizationResponse
+                                 error:error
+                            emmSupport:emmSupport
+                            completion:completion];
+  }];
+}
+
+- (void)authenticateNonInteractivelyWithOptions:(GIDSignInInternalOptions *)options
+                                     completion:(GIDUserAuthFlowCompletion)completion {
   // Try retrieving an authorization object from the keychain.
   OIDAuthState *authState = [self loadAuthState];
 
@@ -252,67 +282,6 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
   }];
 }
 
-- (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options
-                                  completion:(GIDUserAuthFlowCompletion)completion{
-  GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
-  NSString *emmSupport;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
-  emmSupport = nil;
-#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
-
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
-  if (options.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
-  }
-  if (options.loginHint) {
-    additionalParameters[kLoginHintParameter] = options.loginHint;
-  }
-  if (options.configuration.hostedDomain) {
-    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
-  }
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:options.extraParams];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  OIDServiceConfiguration *appAuthConfiguration = [GIDSignInPreferences appAuthConfiguration];
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
-
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-         presentingViewController:options.presentingViewController
-#elif TARGET_OS_OSX
-                 presentingWindow:options.presentingWindow
-#endif // TARGET_OS_OSX
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                   NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport
-                            completion:completion];
-  }];
-}
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error
@@ -372,8 +341,7 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
 
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
-  [self addCompletionCallback:authFlow
-                   completion:completion];
+  [self addCompletionCallback:authFlow completion:completion];
 }
 
 
@@ -440,16 +408,6 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
         handlerAuthFlow.error = [self errorWithString:kKeychainError
                                                  code:kGIDSignInErrorCodeKeychain];
       }
-
-//      if (self->_currentOptions.addScopesFlow) {
-//        [self->_currentUser updateWithTokenResponse:authState.lastTokenResponse
-//                              authorizationResponse:authState.lastAuthorizationResponse
-//                                        profileData:handlerAuthFlow.profileData];
-//      } else {
-//        GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
-//                                                           profileData:handlerAuthFlow.profileData];
-//        self.currentUser = user;
-//      }
     }
   }];
 }
@@ -534,8 +492,10 @@ static NSString *const kGTMAppAuthKeychainName = @"auth";
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                  (int64_t)(kPresentationDelayAfterCancel * NSEC_PER_SEC)),
                  dispatch_get_main_queue(), ^{
-    [self signInWithOptions:[self->_currentOptions optionsWithExtraParameters:extraParameters
-                                                              forContinuation:YES]];
+    [self->_currentOptions optionsWithExtraParameters:extraParameters
+                                      forContinuation:YES];
+    [self authenticateInteractivelyWithOptions:self->_currentOptions
+                                    completion:self->_completion];
   });
   return YES;
 }
