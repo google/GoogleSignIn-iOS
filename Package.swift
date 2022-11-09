@@ -17,7 +17,7 @@
 
 import PackageDescription
 
-let googleSignInVersion = "6.2.2"
+let googleSignInVersion = "6.2.4"
 
 let package = Package(
   name: "GoogleSignIn",
@@ -52,7 +52,7 @@ let package = Package(
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
-      "1.5.0" ..< "2.0.0"),
+      "1.5.0" ..< "3.0.0"),
     .package(
       name: "OCMock",
       url: "https://github.com/firebase/ocmock.git",

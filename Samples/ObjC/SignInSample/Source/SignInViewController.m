@@ -37,11 +37,6 @@ static NSString *const kStyleCellLabel = @"Style";
 // Accessibility Identifiers.
 static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials";
 
-// DO NOT USE THIS CLIENT ID. IT WILL NOT WORK FOR YOUR APP.
-// Please use the client ID created for you by Google.
-static NSString * const kClientID =
-    @"589453917038-qaoga89fitj2ukrsq27ko56fimmojac6.apps.googleusercontent.com";
-
 @implementation SignInViewController {
   // This is an array of arrays, each one corresponding to the cell
   // labels for its respective section.
@@ -58,9 +53,6 @@ static NSString * const kClientID =
 
   // Map that keeps track of which cell corresponds to which DataPickerState.
   NSDictionary *_drilldownCellState;
-
-  // Configuration options for GIDSignIn.
-  GIDConfiguration *_configuration;
 }
 
 #pragma mark - View lifecycle
@@ -97,8 +89,6 @@ static NSString * const kClientID =
   // Make sure the GIDSignInButton class is linked in because references from
   // xib file doesn't count.
   [GIDSignInButton class];
-
-  _configuration = [[GIDConfiguration alloc] initWithClientID:kClientID];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil
@@ -257,10 +247,9 @@ static NSString * const kClientID =
 #pragma mark - IBActions
 
 - (IBAction)signIn:(id)sender {
-  [GIDSignIn.sharedInstance signInWithConfiguration:_configuration
-                           presentingViewController:self
-                                           callback:^(GIDGoogleUser * _Nullable user,
-                                                      NSError * _Nullable error) {
+  [GIDSignIn.sharedInstance signInWithPresentingViewController:self
+                                                    completion:^(GIDGoogleUser *user,
+                                                                 NSError *error) {
     if (error) {
       self->_signInAuthStatus.text =
           [NSString stringWithFormat:@"Status: Authentication error: %@", error];
@@ -278,7 +267,7 @@ static NSString * const kClientID =
 }
 
 - (IBAction)disconnect:(id)sender {
-  [GIDSignIn.sharedInstance disconnectWithCallback:^(NSError * _Nullable error) {
+  [GIDSignIn.sharedInstance disconnectWithCompletion:^(NSError *error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to disconnect: %@",
                                       error];
@@ -293,8 +282,7 @@ static NSString * const kClientID =
 - (IBAction)addScopes:(id)sender {
   [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
              presentingViewController:self
-                             callback:^(GIDGoogleUser * _Nullable user,
-                                        NSError * _Nullable error) {
+                           completion:^(GIDGoogleUser *user, NSError *error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to add scopes: %@",
                                       error];

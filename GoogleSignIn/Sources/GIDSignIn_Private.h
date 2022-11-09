@@ -24,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Private |GIDSignIn| methods that are used internally in this SDK and other Google SDKs.
 @interface GIDSignIn ()
 
+// Redeclare |currentUser| as readwrite for internal use.
+@property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
+
 // Private initializer for |GIDSignIn|.
 - (instancetype)initPrivate;
 

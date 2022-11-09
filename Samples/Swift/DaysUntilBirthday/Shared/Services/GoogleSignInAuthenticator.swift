@@ -23,18 +23,7 @@ import AppKit
 #endif
 
 /// An observable class for authenticating via Google.
-final class GoogleSignInAuthenticator {
-  // TODO: Replace this with your own ID.
-  #if os(iOS)
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
-  #elseif os(macOS)
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
-  #endif
-
-  private lazy var configuration: GIDConfiguration = {
-    return GIDConfiguration(clientID: clientID)
-  }()
-
+final class GoogleSignInAuthenticator: ObservableObject {
   private var authViewModel: AuthenticationViewModel
 
   /// Creates an instance of this authenticator.
@@ -42,7 +31,6 @@ final class GoogleSignInAuthenticator {
   init(authViewModel: AuthenticationViewModel) {
     self.authViewModel = authViewModel
   }
-
 
   #if os(iOS)
   /// Signs in the user based upon the selected account.

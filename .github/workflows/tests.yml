@@ -5,8 +5,6 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -27,7 +25,7 @@ jobs:
           - podspec: GoogleSignInSwiftSupport.podspec
             includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Update Bundler
       run: bundle update --bundler
     - name: Install Ruby gems with Bundler
@@ -50,7 +48,7 @@ jobs:
           - sdk: 'iphonesimulator'
             destination: '"platform=iOS Simulator,name=iPhone 11"'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build unit test target
       run: |
         xcodebuild \
@@ -66,33 +64,3 @@ jobs:
           -destination ${{ matrix.destination }} \
           test-without-building
 
-  swift-button-functional-test:
-    if: ${{ false }} # Disable integration tests while we figure out OTAs
-    runs-on: macOS-latest
-    defaults:
-      run:
-        working-directory: Samples/Swift/DaysUntilBirthday
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Build test target for Google Sign-in button for Swift
-      run: |
-        xcodebuild \
-          -project DaysUntilBirthday.xcodeproj \
-          build-for-testing \
-          -scheme DaysUntilBirthday\ \(iOS\) \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11'
-    - name: Run test target for Google Sign-in button for Swift
-      env:
-        EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
-        PASSWORD_SECRET : ${{ secrets.PASSWORD_SECRET }}
-      run: |
-        xcodebuild \
-          -project DaysUntilBirthday.xcodeproj \
-          test-without-building \
-          -scheme DaysUntilBirthday\ \(iOS\) \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
-          EMAIL_SECRET=$EMAIL_SECRET \
-          PASSWORD_SECRET=$PASSWORD_SECRET
