@@ -29,13 +29,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Check if current token is equal to another one.
 ///
-/// @param otherToken - Another token to compare.
+/// @param otherToken Another token to compare.
 - (BOOL)isEqualToToken:(GIDToken *)otherToken;
 
-/// Unsupported.
+/// Unavailable.
+/// :nodoc:
 + (instancetype)new NS_UNAVAILABLE;
 
-/// Unsupported.
+/// Unavailable.
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
