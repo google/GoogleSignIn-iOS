@@ -169,7 +169,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Public methods
 
-// Handles the custom URL returned from AppAuth or Device Policy App (EMM flow).
+// Opens the custom URL returned from AppAuth or Device Policy App (EMM flow).
 //
 // For Enterprise Mobility Management (MDM/EMM) flow this method is used on all iOS versions.
 // For AppAuth this method is used on iOS 9 and 10.
