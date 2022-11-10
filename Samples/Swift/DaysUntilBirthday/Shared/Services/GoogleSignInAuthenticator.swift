@@ -36,12 +36,12 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { user, error in
-      guard let user = user else {
+    GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { userAuth, error in
+      guard let userAuth = userAuth else {
         print("Error! \(String(describing: error))")
         return
       }
-      self.authViewModel.state = .signedIn(user)
+      self.authViewModel.state = .signedIn(userAuth.user)
     }
 
 #elseif os(macOS)
@@ -50,12 +50,12 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) { user, error in
-      guard let user = user else {
+    GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) { userAuth, error in
+      guard let userAuth = userAuth else {
         print("Error! \(String(describing: error))")
         return
       }
-      self.authViewModel.state = .signedIn(user)
+      self.authViewModel.state = .signedIn(userAuth.user)
     }
 #endif
   }
@@ -83,20 +83,24 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// - note: Successful requests will update the `authViewModel.state` with a new current user that
   /// has the granted scope.
   func addBirthdayReadScope(completion: @escaping () -> Void) {
+    guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
+      fatalError("No user signed in!")
+    }
+    
     #if os(iOS)
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       fatalError("No root view controller!")
     }
 
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: rootViewController) { user, error in
+    currentUser.addScopes([BirthdayLoader.birthdayReadScope],
+                          presenting: rootViewController) { userAuth, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
       }
 
-      guard let currentUser = user else { return }
-      self.authViewModel.state = .signedIn(currentUser)
+      guard let userAuth = userAuth else { return }
+      self.authViewModel.state = .signedIn(userAuth.user)
       completion()
     }
 
@@ -105,15 +109,15 @@ final class GoogleSignInAuthenticator: ObservableObject {
       fatalError("No presenting window!")
     }
 
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: presentingWindow) { user, error in
+    currentUser.addScopes([BirthdayLoader.birthdayReadScope],
+                          presenting: presentingWindow) { userAuth, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
       }
 
-      guard let currentUser = user else { return }
-      self.authViewModel.state = .signedIn(currentUser)
+      guard let userAuth = userAuth else { return }
+      self.authViewModel.state = .signedIn(userAuth.user)
       completion()
     }
 

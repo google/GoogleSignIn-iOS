@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
 
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDUserAuth.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+// Private |GIDUserAuth| methods that are used in this SDK.
+@interface GIDUserAuth ()
+
+// Private initializer for |GIDUserAuth|.
+// @param user The current GIDGoogleUser.
+// @param severAuthCode The one-time authorization code for backend to exchange
+//     access and refresh tokens.
+- (instancetype)initWithGoogleUser:(GIDGoogleUser *)user
+                    serverAuthCode:(nullable NSString *)serverAuthCode;
+
+@end
+
+NS_ASSUME_NONNULL_END

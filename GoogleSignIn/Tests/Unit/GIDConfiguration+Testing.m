@@ -46,6 +46,12 @@ NSString *const kOpenIDRealm = @"fakeOpenIDRealm";
           self.openIDRealm == other.openIDRealm);
 }
 
+// Not the hash implemention you want to use on prod, but just to match |isEqual:| here.
+- (NSUInteger)hash {
+  return [self.clientID hash] ^ [self.serverClientID hash] ^ [self.hostedDomain hash] ^
+      [self.openIDRealm hash];
+}
+
 + (instancetype)testInstance {
   return [[GIDConfiguration alloc] initWithClientID:OIDAuthorizationRequestTestingClientID
                                      serverClientID:kServerClientID

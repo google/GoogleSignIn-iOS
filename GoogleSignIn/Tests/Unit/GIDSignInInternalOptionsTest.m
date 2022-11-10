@@ -37,8 +37,9 @@
   id presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   NSString *loginHint = @"login_hint";
-  GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
-  
+
+  void (^completion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error) =
+      ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {};
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -63,9 +64,9 @@
 }
 
 - (void)testSilentOptions {
-  GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {};
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions
-                                       silentOptionsWithCompletion:completion];
+  void (^completion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error) =
+      ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {};
+  GIDSignInInternalOptions *options = [GIDSignInInternalOptions silentOptionsWithCompletion:completion];
   XCTAssertFalse(options.interactive);
   XCTAssertFalse(options.continuation);
   XCTAssertNil(options.extraParams);
