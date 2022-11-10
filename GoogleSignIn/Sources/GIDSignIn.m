@@ -16,11 +16,12 @@
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
@@ -31,9 +32,9 @@
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDUserAuth_Private.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -186,15 +187,23 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (BOOL)hasPreviousSignIn {
-  if ([_currentUser.authentication.authState isAuthorized]) {
+  if ([_currentUser.authState isAuthorized]) {
     return YES;
   }
   OIDAuthState *authState = [self loadAuthState];
   return [authState isAuthorized];
 }
 
-- (void)restorePreviousSignInWithCompletion:(nullable GIDSignInCompletion)completion {
-  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:completion]];
+- (void)restorePreviousSignInWithCompletion:(nullable void (^)(GIDGoogleUser *_Nullable user,
+                                                               NSError *_Nullable error))completion {
+  [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:
+                           ^(GIDUserAuth *userAuth, NSError *error) {
+    if (userAuth) {
+      completion(userAuth.user, nil);
+    } else {
+      completion(nil, error);
+    }
+  }]];
 }
 
 - (BOOL)restorePreviousSignInNoRefresh {
@@ -222,7 +231,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                                completion:(nullable GIDSignInCompletion)completion {
+                                completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                        presentingViewController:presentingViewController
@@ -235,7 +244,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                                completion:(nullable GIDSignInCompletion)completion {
+                                completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                      presentingViewController:presentingViewController
@@ -247,7 +256,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                                completion:(nullable GIDSignInCompletion)completion {
+                                completion:(nullable GIDUserAuthCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:nil
                                 completion:completion];
@@ -255,26 +264,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                  completion:(nullable GIDSignInCompletion)completion {
-  // A currentUser must be available in order to complete this flow.
-  if (!self.currentUser) {
-    // No currentUser is set, notify callback of failure.
-    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodeNoCurrentUser
-                                     userInfo:nil];
-    if (completion) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        completion(nil, error);
-      });
-    }
-    return;
-  }
-
-  GIDConfiguration *configuration =
-      [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
-                                  serverClientID:self.currentUser.serverClientID
-                                    hostedDomain:self.currentUser.hostedDomain
-                                     openIDRealm:self.currentUser.openIDRealm];
+                  completion:(nullable GIDUserAuthCompletion)completion {
+  GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
@@ -311,7 +302,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
-                        completion:(nullable GIDSignInCompletion)completion {
+                        completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                                presentingWindow:presentingWindow
@@ -322,7 +313,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
-                        completion:(nullable GIDSignInCompletion)completion {
+                        completion:(nullable GIDUserAuthCompletion)completion {
   [self signInWithPresentingWindow:presentingWindow
                               hint:nil
                         completion:completion];
@@ -331,7 +322,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                        completion:(nullable GIDSignInCompletion)completion {
+                        completion:(nullable GIDUserAuthCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                              presentingWindow:presentingWindow
@@ -344,26 +335,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
  presentingWindow:(NSWindow *)presentingWindow
-       completion:(nullable GIDSignInCompletion)completion {
-  // A currentUser must be available in order to complete this flow.
-  if (!self.currentUser) {
-    // No currentUser is set, notify callback of failure.
-    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodeNoCurrentUser
-                                     userInfo:nil];
-    if (completion) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        completion(nil, error);
-      });
-    }
-    return;
-  }
-
-  GIDConfiguration *configuration =
-      [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
-                                  serverClientID:self.currentUser.serverClientID
-                                    hostedDomain:self.currentUser.hostedDomain
-                                     openIDRealm:self.currentUser.openIDRealm];
+       completion:(nullable GIDUserAuthCompletion)completion {
+  GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                                presentingWindow:presentingWindow
@@ -408,8 +381,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
-  GIDGoogleUser *user = _currentUser;
-  OIDAuthState *authState = user.authentication.authState;
+  OIDAuthState *authState = _currentUser.authState;
   if (!authState) {
     // Even the user is not signed in right now, we still need to remove any token saved in the
     // keychain.
@@ -545,15 +517,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 
   // If this is a non-interactive flow, use cached authentication if possible.
-  if (!options.interactive && _currentUser.authentication) {
-    [_currentUser.authentication doWithFreshTokens:^(GIDAuthentication *unused, NSError *error) {
+  if (!options.interactive && _currentUser) {
+    [_currentUser refreshTokensIfNeededWithCompletion:^(GIDGoogleUser *unused, NSError *error) {
       if (error) {
         [self authenticateWithOptions:options];
       } else {
         if (options.completion) {
           self->_currentOptions = nil;
           dispatch_async(dispatch_get_main_queue(), ^{
-            options.completion(self->_currentUser, nil);
+            GIDUserAuth *userAuth = [[GIDUserAuth alloc] initWithGoogleUser:self->_currentUser serverAuthCode:nil];
+            options.completion(userAuth, nil);
           });
         }
       }
@@ -592,9 +565,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-      [GIDAuthentication parametersWithParameters:options.extraParams
-                                       emmSupport:emmSupport
-                           isPasscodeInfoRequired:NO]];
+      [GIDEMMSupport parametersWithParameters:options.extraParams
+                                   emmSupport:emmSupport
+                       isPasscodeInfoRequired:NO]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
@@ -741,9 +714,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
   [additionalParameters addEntriesFromDictionary:
-      [GIDAuthentication parametersWithParameters:@{}
-                                       emmSupport:authFlow.emmSupport
-                           isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+      [GIDEMMSupport parametersWithParameters:@{}
+                                   emmSupport:authFlow.emmSupport
+                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
@@ -769,7 +742,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {
-      [GIDAuthentication handleTokenFetchEMMError:error completion:^(NSError *error) {
+      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
         authFlow.error = error;
         [authFlow next];
       }];
@@ -796,8 +769,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       }
 
       if (self->_currentOptions.addScopesFlow) {
-        [self->_currentUser updateAuthState:authState
-                                profileData:handlerAuthFlow.profileData];
+        [self->_currentUser updateWithTokenResponse:authState.lastTokenResponse
+                              authorizationResponse:authState.lastAuthorizationResponse
+                                        profileData:handlerAuthFlow.profileData];
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                            profileData:handlerAuthFlow.profileData];
@@ -865,10 +839,19 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     if (self->_currentOptions.completion) {
-      GIDSignInCompletion completion = self->_currentOptions.completion;
+      GIDUserAuthCompletion completion = self->_currentOptions.completion;
       self->_currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
-        completion(self->_currentUser, handlerAuthFlow.error);
+        if (handlerAuthFlow.error) {
+          completion(nil, handlerAuthFlow.error);
+        } else {
+          OIDAuthState *authState = handlerAuthFlow.authState;
+          NSString *_Nullable serverAuthCode =
+              [authState.lastTokenResponse.additionalParameters[@"server_code"] copy];
+          GIDUserAuth *userAuth = [[GIDUserAuth alloc] initWithGoogleUser:self->_currentUser
+                                                           serverAuthCode:serverAuthCode];
+          completion(userAuth, nil);
+        }
       });
     }
   }];
