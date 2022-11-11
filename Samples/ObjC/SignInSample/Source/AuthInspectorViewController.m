@@ -36,13 +36,12 @@ static CGFloat const kTableViewCellPadding = 22.f;
   self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
   if (self) {
     _keyPaths = @[
-      @"authentication.accessToken",
-      @"authentication.accessTokenExpirationDate",
-      @"authentication.refreshToken",
-      @"authentication.idToken",
+      @"accessToken.tokenString",
+      @"accessToken.expirationDate",
+      @"refreshToken.tokenString",
+      @"idToken.tokenString",
       @"grantedScopes",
       @"userID",
-      @"serverAuthCode",
       @"profile.email",
       @"profile.name",
     ];
@@ -140,4 +139,3 @@ static CGFloat const kTableViewCellPadding = 22.f;
 }
 
 @end
-
