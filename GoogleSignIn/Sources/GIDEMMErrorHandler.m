@@ -267,13 +267,7 @@ typedef enum {
 }
 
 - (void)openURL:(NSURL *)url {
-  if (@available(iOS 10, *)) {
-    [UIApplication.sharedApplication openURL:url options:@{} completionHandler:nil];
-  } else {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-    [UIApplication.sharedApplication openURL:url];
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-  }
+  [UIApplication.sharedApplication openURL:url options:@{} completionHandler:nil];
 }
 
 #pragma mark - Localization
