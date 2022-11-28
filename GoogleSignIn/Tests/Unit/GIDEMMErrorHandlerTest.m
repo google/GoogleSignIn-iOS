@@ -114,11 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
                    selector:@selector(sharedApplication)
             isClassSelector:YES
                   withBlock:^() { return mockApplication; }];
-  if (@available(iOS 10, *)) {
-    [[mockApplication expect] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
-  } else {
-    [[mockApplication expect] openURL:[NSURL URLWithString:urlString]];
-  }
+  [[mockApplication expect] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
   action();
   [mockApplication verify];
   [GULSwizzler unswizzleClass:[UIApplication class]

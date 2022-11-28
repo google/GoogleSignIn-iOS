@@ -24,7 +24,7 @@ let package = Package(
   defaultLocalization: "en",
   platforms: [
     .macOS(.v10_15),
-    .iOS(.v9)
+    .iOS(.v10)
   ],
   products: [
     .library(
@@ -48,11 +48,11 @@ let package = Package(
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
-      "1.3.0" ..< "2.0.0"),
+      "1.3.0" ..< "3.0.0"),
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
-      "1.5.0" ..< "3.0.0"),
+      "1.5.0" ..< "4.0.0"),
     .package(
       name: "OCMock",
       url: "https://github.com/firebase/ocmock.git",

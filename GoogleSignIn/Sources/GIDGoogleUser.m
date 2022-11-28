@@ -184,11 +184,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     presentingViewController:(UIViewController *)presentingViewController
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX
             presentingWindow:(NSWindow *)presentingWindow
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                   completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
                                                 NSError *_Nullable error))completion {
   if (self != GIDSignIn.sharedInstance.currentUser) {
