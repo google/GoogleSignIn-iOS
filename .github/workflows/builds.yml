@@ -3,6 +3,7 @@ name: Build GSI for Valid Architectures
 on:
   schedule:
     - cron: '0 8 * * *' # Cron uses UTC; run at nightly at midnight PST
+  workflow_dispatch:
 
 jobs:
   cron:
