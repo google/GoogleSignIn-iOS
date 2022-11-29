@@ -170,6 +170,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Public methods
 
+// Handles the custom scheme URL opened by SFSafariViewController or the Device Policy App.
+//
+// For SFSafariViewController invoked via AppAuth, this method is used on iOS 10.
+// For the Device Policy App (EMM flow) this method is used on all iOS versions.
 - (BOOL)handleURL:(NSURL *)url {
   // Check if the callback path matches the expected one for a URL from Safari/Chrome/SafariVC.
   if ([url.path isEqual:kBrowserCallbackPath]) {
