@@ -1,7 +1,27 @@
 # 7.0.0
-- Support for [Swift Concurrency](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html). ([#187](https://github.com/google/GoogleSignIn-iOS/pull/187), [#191](https://github.com/google/GoogleSignIn-iOS/pull/191))
-- Configuration now provided via Info.plist. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
-- Improved `GIDGoogleUser` API surface. ([#249](https://github.com/google/GoogleSignIn-iOS/pull/249))
+- All configuration can now provided via Info.plist. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
+  - Use the following keys in `<key>` / `<string>` pairs to configure the SDK:
+    - `GIDClientID` (required)
+    - `GIDServerClientID` (optional)
+    - `GIDHostedDomain` (optional)
+    - `GIDOpenIDRealm` (optional)
+- Support for [Swift Concurrency](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html). ([#187](https://github.com/google/GoogleSignIn-iOS/pull/187))
+- API surface improvements ([#249](https://github.com/google/GoogleSignIn-iOS/pull/249), [#228](https://github.com/google/GoogleSignIn-iOS/pull/228), [#187](https://github.com/google/GoogleSignIn-iOS/pull/187))
+  - `GIDSignIn`
+    - New `configuration` property.
+    - Removed `addScopes:` and added it to `GIDGoogleUser`.
+    - `callback:` arguments renamed to `completion:` for asynchronous methods taking blocks.
+  - `GIDGoogleUser`
+    - New `configuration` property.
+    - New `addScopes:` method moved from `GIDGoogleUser`.
+    - Removed `authetication` property and replaced it with
+      - New `accessToken` property.
+      - New `refreshToken` property.
+      - New `idToken` property.
+      - New `fetcherAuthorizer` property.
+      - New `refreshTokensIfNeededWithCompletion:` method.
+  - New `GIDToken` class introduced to represent access, refresh, and ID tokens in `GIDGoogleUser`.
+  - New `GIDUserAuth` class introduced to represent the result of a successful auth flow in completetion blocks.
 
 # 6.2.4 (2022-9-13)
 - Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207))
