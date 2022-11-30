@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
 
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDUserAuth.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
+
+#import "GoogleSignIn/Sources/GIDUserAuth_Private.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
+
+@implementation GIDUserAuth
+
+- (instancetype)initWithGoogleUser:(GIDGoogleUser *)user
+                    serverAuthCode:(nullable NSString *)serverAuthCode {
+  self = [super init];
+  if (self) {
+    _user = user;
+    _serverAuthCode = serverAuthCode;
+  }
+  
+  return self;
+}
+
+@end

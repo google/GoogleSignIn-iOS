@@ -28,4 +28,15 @@
 
 + (instancetype)testInstanceWithTokenResponse:(OIDTokenResponse *)tokenResponse;
 
+/**
+ * @idToken The ID token.
+ * @accessToken The access token string.
+ * @accessTokenExipresIn The life time of the access token starting from the moment when `OIDTokenResponse` is created.
+ * @refreshToken The refresh token string.
+ */
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                   accessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
+                           refreshToken:(NSString *)refreshToken;
+
 @end
