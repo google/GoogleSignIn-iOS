@@ -9,11 +9,12 @@
 - API surface improvements ([#249](https://github.com/google/GoogleSignIn-iOS/pull/249), [#228](https://github.com/google/GoogleSignIn-iOS/pull/228), [#187](https://github.com/google/GoogleSignIn-iOS/pull/187))
   - `GIDSignIn`
     - New `configuration` property.
+    - `Configuration:` arguments removed from `signIn:` methods.
     - Removed `addScopes:` and added it to `GIDGoogleUser`.
     - `callback:` arguments renamed to `completion:` for asynchronous methods taking blocks.
   - `GIDGoogleUser`
     - New `configuration` property.
-    - New `addScopes:` method moved from `GIDGoogleUser`.
+    - New `addScopes:` method moved from `GIDSignIn`.
     - Removed `authentication` property and replaced it with:
       - New `accessToken` property.
       - New `refreshToken` property.
