@@ -18,6 +18,8 @@
 
 @class OIDAuthState;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @protocol GIDKeychainHandlling <NSObject>
 
 - (OIDAuthState *)loadAuthState;
@@ -27,3 +29,5 @@
 - (void)removeAllKeychainEntries;
 
 @end
+
+NS_ASSUME_NONNULL_END
