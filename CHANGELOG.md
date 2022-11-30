@@ -1,6 +1,6 @@
 # 7.0.0
-- All configuration can now provided via Info.plist. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
-  - Use the following keys in `<key>` / `<string>` pairs to configure the SDK:
+- All configuration can now be provided via your `Info.plist` file. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
+  - Use the following keys in `<key>KEY</key><string>VALUE</string>` pairs to configure the SDK:
     - `GIDClientID` (required)
     - `GIDServerClientID` (optional)
     - `GIDHostedDomain` (optional)
@@ -14,7 +14,7 @@
   - `GIDGoogleUser`
     - New `configuration` property.
     - New `addScopes:` method moved from `GIDGoogleUser`.
-    - Removed `authetication` property and replaced it with
+    - Removed `authentication` property and replaced it with:
       - New `accessToken` property.
       - New `refreshToken` property.
       - New `idToken` property.
