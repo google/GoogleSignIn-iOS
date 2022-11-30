@@ -61,19 +61,21 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   return [OIDTokenResponse testInstanceWithIDToken:idToken
                                        accessToken:nil
                                          expiresIn:nil
+                                      refreshToken:nil
                                       tokenRequest:nil];
 }
 
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
                             accessToken:(NSString *)accessToken
                               expiresIn:(NSNumber *)expiresIn
+                           refreshToken:(NSString *)refreshToken
                            tokenRequest:(OIDTokenRequest *)tokenRequest {
   NSMutableDictionary<NSString *, NSString *> *parameters;
   parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
     @"access_token" : accessToken ?: kAccessToken,
     @"expires_in" : expiresIn ?: @(kAccessTokenExpiresIn),
     @"token_type" : @"example_token_type",
-    @"refresh_token" : kRefreshToken,
+    @"refresh_token" : refreshToken ?: kRefreshToken,
     @"scope" : [OIDScopeUtilities scopesWithArray:@[ OIDAuthorizationRequestTestingScope2 ]],
     @"server_code" : kServerAuthCode,
   }];
@@ -112,7 +114,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   NSMutableDictionary<NSString *, NSString *> *payloadContents =
       [NSMutableDictionary dictionaryWithDictionary:@{
     @"sub" : sub,
-    @"hd" : kHostedDomain,
+    @"hd"  : kHostedDomain,
     @"iss" : kIssuer,
     @"aud" : kAudience,
     @"exp" : exp,
