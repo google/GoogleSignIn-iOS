@@ -204,11 +204,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   }
   
   [GIDSignIn.sharedInstance addScopes:scopes
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
              presentingViewController:presentingViewController
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX
                      presentingWindow:presentingWindow
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                            completion:completion];
 }
 
