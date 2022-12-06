@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDKeychainHandler
 
-
 - (OIDAuthState *)loadAuthState {
   GTMAppAuthFetcherAuthorization *authorization =
       [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName

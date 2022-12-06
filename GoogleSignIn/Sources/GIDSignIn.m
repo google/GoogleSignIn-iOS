@@ -777,7 +777,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     OIDAuthState *authState = handlerAuthFlow.authState;
     if (authState && !handlerAuthFlow.error) {
-      if (![_keychainHandler saveAuthState:authState]) {
+      if (![self->_keychainHandler saveAuthState:authState]) {
         handlerAuthFlow.error = [self errorWithString:kKeychainError
                                                  code:kGIDSignInErrorCodeKeychain];
         return;
