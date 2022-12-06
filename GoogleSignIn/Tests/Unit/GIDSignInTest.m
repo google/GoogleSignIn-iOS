@@ -30,6 +30,7 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDFakeKeychainHandler.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -192,6 +193,8 @@ static NSString *const kNewScope = @"newScope";
 
   // Mock |GTMAppAuthFetcherAuthorization|.
   id _authorization;
+  
+  GIDFakeKeychainHandler *_keychainHandler;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
@@ -218,12 +221,6 @@ static NSString *const kNewScope = @"newScope";
 
   // Fake [NSBundle mainBundle];
   GIDFakeMainBundle *_fakeMainBundle;
-
-  // Whether |saveParamsToKeychainForName:authentication:| has been called.
-  BOOL _keychainSaved;
-
-  // Whether |removeAuthFromKeychainForName:| has been called.
-  BOOL _keychainRemoved;
 
   // The |GIDSignIn| object being tested.
   GIDSignIn *_signIn;
@@ -256,9 +253,6 @@ static NSString *const kNewScope = @"newScope";
 
   // The saved token request callback.
   OIDTokenCallback _savedTokenCallback;
-
-  // Status returned by saveAuthorization:toKeychainForName:
-  BOOL _saveAuthorizationReturnValue;
 }
 @end
 
@@ -271,12 +265,9 @@ static NSString *const kNewScope = @"newScope";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   _isEligibleForEMM = [UIDevice currentDevice].systemVersion.integerValue >= 9;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  _saveAuthorizationReturnValue = YES;
 
   // States
   _completionCalled = NO;
-  _keychainSaved = NO;
-  _keychainRemoved = NO;
 
   // Mocks
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -290,22 +281,8 @@ static NSString *const kNewScope = @"newScope";
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAppAuthFetcherAuthorization class]);
-  OCMStub([_authorization authorizationFromKeychainForName:OCMOCK_ANY
-                                 useDataProtectionKeychain:YES]).andReturn(_authorization);
   OCMStub([_authorization alloc]).andReturn(_authorization);
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
-  OCMStub([_authorization saveAuthorization:OCMOCK_ANY
-                          toKeychainForName:OCMOCK_ANY
-                  useDataProtectionKeychain:YES])
-      .andDo(^(NSInvocation *invocation) {
-        self->_keychainSaved = self->_saveAuthorizationReturnValue;
-        [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
-      });
-  OCMStub([_authorization removeAuthorizationFromKeychainForName:OCMOCK_ANY
-                                       useDataProtectionKeychain:YES])
-      .andDo(^(NSInvocation *invocation) {
-        self->_keychainRemoved = YES;
-      });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([_oidAuthorizationService
@@ -330,7 +307,8 @@ static NSString *const kNewScope = @"newScope";
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initPrivate];
+  _keychainHandler = [[GIDFakeKeychainHandler alloc] init];
+  _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -349,7 +327,6 @@ static NSString *const kNewScope = @"newScope";
   OCMVerifyAll(_authState);
   OCMVerifyAll(_tokenResponse);
   OCMVerifyAll(_tokenRequest);
-  OCMVerifyAll(_authorization);
   OCMVerifyAll(_user);
   OCMVerifyAll(_oidAuthorizationService);
 
@@ -358,7 +335,6 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
   OCMVerifyAll(_presentingWindow);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
@@ -418,6 +394,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
   [[_authState expect] setStateChangeDelegate:OCMOCK_ANY];
+  [_keychainHandler saveAuthState:_authState];
 
   id idTokenDecoded = OCMClassMock([OIDIDToken class]);
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
@@ -438,8 +415,8 @@ static NSString *const kNewScope = @"newScope";
   
   [_signIn restorePreviousSignInNoRefresh];
 
-  [_authorization verify];
   [_authState verify];
+  [_authorization verify];
   [_tokenResponse verify];
   [_tokenRequest verify];
   [idTokenDecoded verify];
@@ -449,37 +426,31 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testRestoredPreviousSignInNoRefresh_hasNoPreviousUser {
-  [[[_authorization expect] andReturn:nil] authState];
-
+  XCTAssertNil([_keychainHandler loadAuthState]);
   [_signIn restorePreviousSignInNoRefresh];
 
-  [_authorization verify];
   XCTAssertNil(_signIn.currentUser);
 }
 
 - (void)testHasPreviousSignIn_HasBeenAuthenticated {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:YES]] isAuthorized];
   XCTAssertTrue([_signIn hasPreviousSignIn], @"should return |YES|");
-  [_authorization verify];
   [_authState verify];
-  XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
   XCTAssertNil(_authError, @"should have no error");
 }
 
 - (void)testHasPreviousSignIn_HasNotBeenAuthenticated {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:NO]] isAuthorized];
   XCTAssertFalse([_signIn hasPreviousSignIn], @"should return |NO|");
-  [_authorization verify];
   [_authState verify];
-  XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
 }
 
 - (void)testRestorePreviousSignInWhenSignedOut {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:NO]] isAuthorized];
   _completionCalled = NO;
   _authError = nil;
@@ -499,7 +470,6 @@ static NSString *const kNewScope = @"newScope";
   }];
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  [_authorization verify];
   [_authState verify];
 }
 
@@ -730,13 +700,13 @@ static NSString *const kNewScope = @"newScope";
                      oldAccessToken:NO
                         modalCancel:NO];
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(_keychainSaved, @"should save to keychain");
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeKeychain);
 }
 
 - (void)testSignOut {
+  XCTAssert([_keychainHandler saveAuthState:_authState]);
   // Sign in a user so that we can then sign them out.
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -748,25 +718,21 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:NO];
 
   XCTAssertNotNil(_signIn.currentUser);
+  XCTAssertNotNil([_keychainHandler loadAuthState]);
 
   [_signIn signOut];
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
-  XCTAssertTrue(_keychainRemoved, @"should remove keychain");
-
-  OCMVerify([_authorization removeAuthorizationFromKeychainForName:kKeychainName
-                                         useDataProtectionKeychain:YES]);
+  XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
 - (void)testNotHandleWrongScheme {
   XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongSchemeURL]],
                  @"should not handle URL");
-  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
 }
 
 - (void)testNotHandleWrongPath {
   XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongPathURL]], @"should not handle URL");
-  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
 }
 
@@ -774,7 +740,7 @@ static NSString *const kNewScope = @"newScope";
 
 // Verifies disconnect calls callback with no errors if access token is present.
 - (void)testDisconnect_accessToken {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
@@ -789,11 +755,12 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
 // Verifies disconnect if access token is present.
 - (void)testDisconnectNoCallback_accessToken {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
@@ -802,11 +769,12 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
 // Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshToken {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -822,12 +790,12 @@ static NSString *const kNewScope = @"newScope";
   [self verifyAndRevokeToken:kRefreshToken hasCallback:YES];
   [_authorization verify];
   [_authState verify];
-  [_tokenResponse verify];
+  XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
 // Verifies disconnect errors are passed along to the callback.
 - (void)testDisconnect_errors {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
@@ -850,7 +818,7 @@ static NSString *const kNewScope = @"newScope";
 
 // Verifies disconnect with errors
 - (void)testDisconnectNoCallback_errors {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
@@ -864,10 +832,9 @@ static NSString *const kNewScope = @"newScope";
   [_tokenResponse verify];
 }
 
-
 // Verifies disconnect calls callback with no errors and clears keychain if no tokens are present.
 - (void)testDisconnect_noTokens {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -881,25 +848,25 @@ static NSString *const kNewScope = @"newScope";
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse([self isFetcherStarted], @"should not fetch");
-  XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
 // Verifies disconnect clears keychain if no tokens are present.
 - (void)testDisconnectNoCallback_noTokens {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [_keychainHandler saveAuthState:_authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
   [_signIn disconnectWithCompletion:nil];
   XCTAssertFalse([self isFetcherStarted], @"should not fetch");
-  XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
 - (void)testPresentingViewControllerException {
@@ -1066,7 +1033,6 @@ static NSString *const kNewScope = @"newScope";
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
-  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
@@ -1106,7 +1072,6 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
   [emmSupport verify];
-  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
@@ -1167,7 +1132,6 @@ static NSString *const kNewScope = @"newScope";
   if (hasCallback) {
     [self waitForExpectationsWithTimeout:1 handler:nil];
   }
-  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
@@ -1203,7 +1167,7 @@ static NSString *const kNewScope = @"newScope";
                    additionalScopes:(NSArray *)additionalScopes {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
-    [[[_authorization expect] andReturn:_authState] authState];
+    [_keychainHandler saveAuthState:_authState];
     BOOL isAuthorized = restoredSignIn ? YES : NO;
     [[[_authState expect] andReturnValue:[NSNumber numberWithBool:isAuthorized]] isAuthorized];
   }
@@ -1290,7 +1254,6 @@ static NSString *const kNewScope = @"newScope";
       }
     }
 
-    [_authorization verify];
     [_authState verify];
 
     XCTAssertNotNil(_savedAuthorizationRequest);
@@ -1369,7 +1332,7 @@ static NSString *const kNewScope = @"newScope";
   __block GIDProfileData *profileData;
 
   if (keychainError) {
-    _saveAuthorizationReturnValue = NO;
+    _keychainHandler.failToSave = YES;
   } else {
     if (addScopesFlow) {
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
@@ -1408,7 +1371,6 @@ static NSString *const kNewScope = @"newScope";
   
   [_authState verify];
   
-  XCTAssertTrue(_keychainSaved, @"should save to keychain");
   if (addScopesFlow) {
     XCTAssertNotNil(updatedTokenResponse);
     XCTAssertNotNil(updatedAuthorizationResponse);
@@ -1423,8 +1385,6 @@ static NSString *const kNewScope = @"newScope";
 
   // If attempt to authenticate again, will reuse existing auth object.
   _completionCalled = NO;
-  _keychainRemoved = NO;
-  _keychainSaved = NO;
   _authError = nil;
 
   __block GIDGoogleUserCompletion completion;
@@ -1441,16 +1401,6 @@ static NSString *const kNewScope = @"newScope";
   completion(_user, nil);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
-  XCTAssertFalse(_keychainSaved, @"should not save to keychain again");
-  
-  if (restoredSignIn) {
-    OCMVerify([_authorization authorizationFromKeychainForName:kKeychainName
-                                     useDataProtectionKeychain:YES]);
-    OCMVerify([_authorization saveAuthorization:OCMOCK_ANY
-                              toKeychainForName:kKeychainName
-                      useDataProtectionKeychain:YES]);
-  }
 }
 
 @end

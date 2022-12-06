@@ -22,6 +22,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/GIDKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
@@ -166,6 +168,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
+  
+  id<GIDKeychainHandler> _keychainHandler;
 }
 
 #pragma mark - Public methods
@@ -194,7 +198,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   if ([_currentUser.authState isAuthorized]) {
     return YES;
   }
-  OIDAuthState *authState = [self loadAuthState];
+  OIDAuthState *authState = [_keychainHandler loadAuthState];
   return [authState isAuthorized];
 }
 
@@ -216,7 +220,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 
   // Try retrieving an authorization object from the keychain.
-  OIDAuthState *authState = [self loadAuthState];
+  OIDAuthState *authState = [_keychainHandler loadAuthState];
   if (!authState) {
     return NO;
   }
@@ -381,7 +385,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     self.currentUser = nil;
   }
   // Remove all state from the keychain.
-  [self removeAllKeychainEntries];
+  [_keychainHandler removeAllKeychainEntries];
 }
 
 - (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
@@ -389,7 +393,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   if (!authState) {
     // Even the user is not signed in right now, we still need to remove any token saved in the
     // keychain.
-    authState = [self loadAuthState];
+    authState = [_keychainHandler loadAuthState];
   }
   // Either access or refresh token would work, but we won't have access token if the auth is
   // retrieved from keychain.
@@ -447,6 +451,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Private methods
 
 - (id)initPrivate {
+  GIDKeychainHandler *keychainHandler = [[GIDKeychainHandler alloc] init];
+  return [self initWithKeychainHandler:keychainHandler];
+}
+
+- (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -462,7 +471,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
     // If this is a fresh install, ensure that any pre-existing keychain data is purged.
     if (isFreshInstall) {
-      [self removeAllKeychainEntries];
+      [_keychainHandler removeAllKeychainEntries];
     }
 
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
@@ -480,6 +489,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                           keychainName:kGTMAppAuthKeychainName
                                         isFreshInstall:isFreshInstall];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    
+    _keychainHandler = keychainHandler;
   }
   return self;
 }
@@ -671,7 +682,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 
   // Try retrieving an authorization object from the keychain.
-  OIDAuthState *authState = [self loadAuthState];
+  OIDAuthState *authState = [_keychainHandler loadAuthState];
 
   if (![authState isAuthorized]) {
     // No valid auth in keychain, per documentation/spec, notify callback of failure.
@@ -766,7 +777,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     OIDAuthState *authState = handlerAuthFlow.authState;
     if (authState && !handlerAuthFlow.error) {
-      if (![self saveAuthState:authState]) {
+      if (![_keychainHandler saveAuthState:authState]) {
         handlerAuthFlow.error = [self errorWithString:kKeychainError
                                                  code:kGIDSignInErrorCodeKeychain];
         return;
@@ -969,26 +980,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
   [defaults setBool:YES forKey:kAppHasRunBeforeKey];
   return YES;
-}
-
-- (void)removeAllKeychainEntries {
-  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName
-                                               useDataProtectionKeychain:YES];
-}
-
-- (BOOL)saveAuthState:(OIDAuthState *)authState {
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
-  return [GTMAppAuthFetcherAuthorization saveAuthorization:authorization
-                                         toKeychainForName:kGTMAppAuthKeychainName
-                                 useDataProtectionKeychain:YES];
-}
-
-- (OIDAuthState *)loadAuthState {
-  GTMAppAuthFetcherAuthorization *authorization =
-      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName
-                                             useDataProtectionKeychain:YES];
-  return authorization.authState;
 }
 
 // Generates user profile from OIDIDToken.
