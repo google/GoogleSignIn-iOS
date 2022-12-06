@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/GIDKeychainHandler/GIDKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/API/GIDKeychainHandler.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

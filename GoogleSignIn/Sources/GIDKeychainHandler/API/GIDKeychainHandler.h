@@ -16,13 +16,17 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/GIDKeychainHandler/GIDKeychainHandler.h"
+@class OIDAuthState;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDFakeKeychainHandler : NSObject<GIDKeychainHandler>
+@protocol GIDKeychainHandler <NSObject>
 
-@property(nonatomic) BOOL failToSave;
+- (nullable OIDAuthState *)loadAuthState;
+
+- (BOOL)saveAuthState:(OIDAuthState *)authState;
+
+- (void)removeAllKeychainEntries;
 
 @end
 

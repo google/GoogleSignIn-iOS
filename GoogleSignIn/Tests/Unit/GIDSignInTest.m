@@ -30,7 +30,7 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDFakeKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"

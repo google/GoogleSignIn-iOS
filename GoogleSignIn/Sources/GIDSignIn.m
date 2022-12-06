@@ -22,7 +22,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
-#import "GoogleSignIn/Sources/GIDKeychainHandler/GIDKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/API/GIDKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
