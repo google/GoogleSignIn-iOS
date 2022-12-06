@@ -1,4 +1,4 @@
-#import "GoogleSignIn/Sources/GIDKeychainHandlling/GIDKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDKeychainHandler.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -8,7 +8,6 @@
 #import <GTMAppAuth/GTMAppAuth.h>
 #endif
 
-// Keychain constants for saving state in the authentication flow.
 static NSString *const kGTMAppAuthKeychainName = @"auth";
 
 NS_ASSUME_NONNULL_BEGIN
