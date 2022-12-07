@@ -116,7 +116,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
 ///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
 ///     iOS 13+.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
+/// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                 completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
@@ -135,7 +135,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 ///     iOS 13+.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
+/// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
@@ -155,7 +155,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
+/// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
@@ -173,7 +173,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
 ///
 /// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
+/// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                         completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
@@ -189,7 +189,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
+/// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
@@ -207,7 +207,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
+/// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
