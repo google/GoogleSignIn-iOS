@@ -54,13 +54,13 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Represents a completion block that takes an error if the operation was unsuccessful.
 typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
-/// This class signs the user in with Google.
+/// This class is used to sign-in users with their Google account and manage their session.
 ///
-/// For reference, please see "Google Sign-In for iOS" at
+/// For reference, please see "Google Sign-In for iOS and macOS" at
 /// https://developers.google.com/identity/sign-in/ios
 @interface GIDSignIn : NSObject
 
-/// A shared `GIDSignIn` instance.
+/// The shared `GIDSignIn` instance.
 @property(class, nonatomic, readonly) GIDSignIn *sharedInstance;
 
 /// The `GIDGoogleUser` object representing the current user or `nil` if there is no signed-in user.
@@ -84,23 +84,22 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @return `YES` if `GIDSignIn` handled this URL.
 - (BOOL)handleURL:(NSURL *)url;
 
-/// Checks if there is a previously authenticated user saved in keychain.
+/// Checks if there is a previous user sign-in saved in keychain.
 ///
-/// @return `YES` if there is a previously authenticated user saved in keychain.
+/// @return `YES` if there is a previous user sign-in saved in keychain.
 - (BOOL)hasPreviousSignIn;
 
-/// Attempts to restore a previously authenticated user without interaction.
+/// Attempts to restore a previous user sign-in without interaction.
 ///
 /// @param completion The block that is called on completion.  This block will be called asynchronously
 ///     on the main queue.
 - (void)restorePreviousSignInWithCompletion:(nullable void (^)(GIDGoogleUser *_Nullable user,
                                                                NSError *_Nullable error))completion;
 
-/// Marks current user as being in the signed out state.
+/// Signs out the `currentUser`, removing them from the keychain.
 - (void)signOut;
 
-/// Disconnects the current user from the app and revokes previous authentication. If the operation
-/// succeeds, the OAuth 2.0 token is also removed from keychain.
+/// Disconnects the `currentUser` by signing them out and revoking all OAuth2 scope grants made to the app.
 ///
 /// @param completion The optional `GIDDisconnectCompletion` block that is called on completion.
 ///     This block will be called asynchronously on the main queue.

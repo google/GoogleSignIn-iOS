@@ -38,16 +38,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// This class represents a user account.
+/// This class represents a signed-in user.
 @interface GIDGoogleUser : NSObject <NSSecureCoding>
 
 /// The Google user ID.
 @property(nonatomic, readonly, nullable) NSString *userID;
 
-/// Representation of basic profile data for the user.
+/// The basic profile data for the user.
 @property(nonatomic, readonly, nullable) GIDProfileData *profile;
 
-/// The API scopes granted to the app in an array of `NSString`.
+/// The OAuth2 scopes granted to the app in an array of `NSString`.
 @property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
 
 /// The configuration that was used to sign in this user.
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The OAuth2 refresh token to exchange for new access tokens.
 @property(nonatomic, readonly) GIDToken *refreshToken;
 
-/// An OpenID Connect ID token that identifies the user.
+/// The OpenID Connect ID token that identifies the user.
 ///
 /// Send this token to your server to authenticate the user there. For more information on this topic,
 /// see https://developers.google.com/identity/sign-in/ios/backend-auth.
@@ -71,8 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
 #pragma clang diagnostic pop
 
-/// Get a valid access token and a valid ID token, refreshing them first if they have expired or
-/// are about to expire.
+/// Refresh the user's access and ID tokens if they have expired or are about to expire.
 ///
 /// @param completion A completion block that takes a `GIDGoogleUser` or an error if the attempt to
 ///     refresh tokens was unsuccessful.  The block will be called asynchronously on the main queue.
@@ -81,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-/// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
+/// Starts an interactive consent flow on iOS to add to the user's `grantedScopes`.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
@@ -100,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #elif TARGET_OS_OSX
 
-/// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
+/// Starts an interactive consent flow on macOS to add to the user's `grantedScopes`.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.

@@ -18,7 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// This class represents the basic information of a token.
+/// This class represents an OAuth2 or OpenID Connect token.
 @interface GIDToken : NSObject <NSSecureCoding>
 
 /// The token string.
