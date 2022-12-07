@@ -65,9 +65,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// see https://developers.google.com/identity/sign-in/ios/backend-auth.
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
 
-/// The authorizer for `GTLService`, `GTMSessionFetcher`, or `GTMHTTPFetcher`.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+/// The authorizer for use with `GTLRService`, `GTMSessionFetcher`, or `GTMHTTPFetcher`.
 @property(nonatomic, readonly) id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer;
 #pragma clang diagnostic pop
 
