@@ -54,7 +54,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Represents a completion block that takes an error if the operation was unsuccessful.
 typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
-/// This class is used to sign-in users with their Google account and manage their session.
+/// This class is used to sign in users with their Google account and manage their session.
 ///
 /// For reference, please see "Google Sign-In for iOS and macOS" at
 /// https://developers.google.com/identity/sign-in/ios
@@ -96,7 +96,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 - (void)restorePreviousSignInWithCompletion:(nullable void (^)(GIDGoogleUser *_Nullable user,
                                                                NSError *_Nullable error))completion;
 
-/// Signs out the `currentUser`, removing them from the keychain.
+/// Signs out the `currentUser`, removing it from the keychain.
 - (void)signOut;
 
 /// Disconnects the `currentUser` by signing them out and revoking all OAuth2 scope grants made to the app.

@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-/// Starts an interactive consent flow on iOS to add to the user's `grantedScopes`.
+/// Starts an interactive consent flow on iOS to add new scopes to the user's `grantedScopes`.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #elif TARGET_OS_OSX
 
-/// Starts an interactive consent flow on macOS to add to the user's `grantedScopes`.
+/// Starts an interactive consent flow on macOS to add new scopes to the user's `grantedScopes`.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
