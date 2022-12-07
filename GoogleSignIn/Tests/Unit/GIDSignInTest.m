@@ -814,6 +814,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  XCTAssertNotNil([_keychainHandler loadAuthState]);
 }
 
 // Verifies disconnect with errors
@@ -830,6 +831,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  XCTAssertNotNil([_keychainHandler loadAuthState]);
 }
 
 // Verifies disconnect calls callback with no errors and clears keychain if no tokens are present.
