@@ -384,7 +384,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   [self removeAllKeychainEntries];
 }
 
-- (void)disconnectWithCompletion:(nullable void (^)(NSError *_Nullable error))completion {
+- (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
   OIDAuthState *authState = _currentUser.authState;
   if (!authState) {
     // Even the user is not signed in right now, we still need to remove any token saved in the
