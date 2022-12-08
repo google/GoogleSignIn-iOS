@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Private |GIDUserAuth| methods that are used in this SDK.
-@interface GIDUserAuth ()
+// Private |GIDSignInResult| methods that are used in this SDK.
+@interface GIDSignInResult ()
 
-// Private initializer for |GIDUserAuth|.
+// Private initializer for |GIDSignInResult|.
 // @param user The current GIDGoogleUser.
 // @param severAuthCode The one-time authorization code for backend to exchange
 //     access and refresh tokens.
