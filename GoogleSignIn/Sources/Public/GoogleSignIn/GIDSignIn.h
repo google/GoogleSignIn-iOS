@@ -117,8 +117,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                                completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                                                              NSError *_Nullable error))completion
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint.
@@ -137,8 +138,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                                completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                                                              NSError *_Nullable error))completion
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint and additional scopes.
@@ -158,8 +160,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                                completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                                                              NSError *_Nullable error))completion
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
