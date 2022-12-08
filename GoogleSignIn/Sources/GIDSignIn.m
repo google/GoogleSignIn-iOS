@@ -306,7 +306,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
-                        completion:(nullable GIDSignInResultCompletion)completion {
+                        completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                                presentingWindow:presentingWindow
