@@ -38,19 +38,6 @@ final class BirthdayLoader {
     return URLRequest(url: url)
   }()
 
-  private lazy var session: URLSession? = {
-    guard let accessToken = GIDSignIn
-            .sharedInstance
-            .currentUser?
-            .accessToken
-            .tokenString else { return nil }
-    let configuration = URLSessionConfiguration.default
-    configuration.httpAdditionalHeaders = [
-      "Authorization": "Bearer \(accessToken)"
-    ]
-    return URLSession(configuration: configuration)
-  }()
-
   private func sessionWithFreshToken() async throws -> URLSession {
     guard let user = GIDSignIn.sharedInstance.currentUser else {
       throw Error.noCurrentUserForSessionWithFreshToken

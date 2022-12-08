@@ -33,25 +33,25 @@ final class GoogleSignInAuthenticator {
   }
 
 
-  #if os(iOS)
+#if os(iOS)
   /// Signs in the user based upon the selected account.
   /// - parameter rootViewController: The `UIViewController` to use during the sign in flow.
-  /// - returns: The signed in `GIDGoogleUser`.
+  /// - returns: The resulting`GIDUserAuth`.
   /// - throws: Any error that may arise during the sign in process.
   func signIn(with rootViewController: UIViewController) async throws -> GIDUserAuth {
     return try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
   }
-  #endif
+#endif
 
-  #if os(macOS)
+#if os(macOS)
   /// Signs in the user based upon the selected account.
   /// - parameter window: The `NSWindow` to use during the sign in flow.
-  /// - returns: The signed in `GIDGoogleUser`.
+  /// - returns: The resulting`GIDUserAuth`.
   /// - throws: Any error that may arise during the sign in process.
   func signIn(with window: NSWindow) async throws -> GIDUserAuth {
     return try await GIDSignIn.sharedInstance.signIn(withPresenting: window)
   }
-  #endif
+#endif
 
   /// Signs out the current user.
   func signOut() {
@@ -67,7 +67,7 @@ final class GoogleSignInAuthenticator {
 #if os(iOS)
   /// Adds the birthday read scope for the current user.
   /// - parameter viewController: The `UIViewController` to use while authorizing the scope.
-  /// - returns: The `GIDGoogleUser` with the authorized scope.
+  /// - returns: The resulting`GIDUserAuth`.
   /// - throws: Any error that may arise while authorizing the scope.
   func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDUserAuth {
     guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
@@ -83,7 +83,7 @@ final class GoogleSignInAuthenticator {
 #if os(macOS)
   /// Adds the birthday read scope for the current user.
   /// - parameter window: The `NSWindow` to use while authorizing the scope.
-  /// - returns: The `GIDGoogleUser` with the authorized scope.
+  /// - returns: The resulting`GIDUserAuth`.
   /// - throws: Any error that may arise while authorizing the scope.
   func addBirthdayReadScope(window: NSWindow) async throws -> GIDUserAuth {
     guard let currentUser = GIDSignIn.sharedInstance.currentUser else {

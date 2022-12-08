@@ -52,30 +52,26 @@ final class AuthenticationViewModel: ObservableObject {
       print("There is no root view controller!")
       return
     }
-
-    Task { @MainActor in
-      do {
-        let userAuth = try await authenticator.signIn(with: rootViewController)
-        self.state = .signedIn(userAuth.user)
-      } catch {
-        print("Error signing in: \(error)")
-      }
-    }
 #elseif os(macOS)
     guard let presentingWindow = NSApplication.shared.windows.first else {
       print("There is no presenting window!")
       return
     }
+#endif
 
     Task { @MainActor in
       do {
+
+#if os(iOS)
+        let userAuth = try await authenticator.signIn(with: rootViewController)
+#elseif os(macOS)
         let userAuth = try await authenticator.signIn(with: presentingWindow)
+#endif
         self.state = .signedIn(userAuth.user)
       } catch {
         print("Error signing in: \(error)")
       }
     }
-#endif
   }
 
   /// Signs the user out.
@@ -102,17 +98,18 @@ final class AuthenticationViewModel: ObservableObject {
 #if os(iOS)
   /// Adds the requested birthday read scope.
   /// - parameter viewController: A `UIViewController` to use while presenting the flow.
-  /// - returns: A `GIDGoogleUser` with the authorized scope.
+  /// - returns: The resulting`GIDUserAuth`.
   /// - throws: Any error that may arise while adding the read birthday scope.
   func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDUserAuth {
     return try await authenticator.addBirthdayReadScope(viewController: viewController)
   }
 #endif
 
+
 #if os(macOS)
   /// adds the requested birthday read scope.
   /// - parameter window: An `NSWindow` to use while presenting the flow.
-  /// - returns: A `GIDGoogleUser` with the authorized scope.
+  /// - returns: The resulting `GIDUserAuth`.
   /// - throws: Any error that may arise while adding the read birthday scope.
   func addBirthdayReadScope(window: NSWindow) async throws -> GIDUserAuth {
     return try await authenticator.addBirthdayReadScope(window: window)
