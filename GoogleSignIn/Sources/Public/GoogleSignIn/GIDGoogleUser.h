@@ -112,8 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingWindow:(NSWindow *)presentingWindow
           completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                        NSError *_Nullable error))completion
-    NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions.");
+                                        NSError *_Nullable error))completion;
 
 #endif
 
