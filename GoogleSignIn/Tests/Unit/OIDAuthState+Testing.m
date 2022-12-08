@@ -33,4 +33,17 @@
                                                tokenResponse:tokenResponse];
 }
 
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                   accessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
+                           refreshToken:(NSString *)refreshToken {
+  OIDTokenResponse *newResponse =
+      [OIDTokenResponse testInstanceWithIDToken:idToken
+                                    accessToken:accessToken
+                                      expiresIn:@(accessTokenExpiresIn)
+                                   refreshToken:refreshToken
+                                   tokenRequest:nil];
+  return [self testInstanceWithTokenResponse:newResponse];
+}
+
 @end

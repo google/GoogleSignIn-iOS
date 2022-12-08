@@ -26,10 +26,10 @@
 // Test module imports
 @import GoogleSignIn;
 
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDAuthentication_Private.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -204,9 +204,6 @@ static NSString *const kNewScope = @"newScope";
   // Mock for |GIDGoogleUser|.
   id _user;
 
-  // Mock for |GIDAuthentication|.
-  id _authentication;
-
   // Mock for |OIDAuthorizationService|
   id _oidAuthorizationService;
 
@@ -238,7 +235,7 @@ static NSString *const kNewScope = @"newScope";
   NSString *_hint;
 
   // The completion to be used when testing |GIDSignIn|.
-  GIDSignInCompletion _completion;
+  GIDUserAuthCompletion _completion;
 
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
@@ -310,7 +307,6 @@ static NSString *const kNewScope = @"newScope";
         self->_keychainRemoved = YES;
       });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
-  _authentication = OCMStrictClassMock([GIDAuthentication class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([_oidAuthorizationService
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
@@ -338,10 +334,10 @@ static NSString *const kNewScope = @"newScope";
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
-  _completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+  _completion = ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
     GIDSignInTest *strongSelf = weakSelf;
-    if (!user) {
-      XCTAssertNotNil(error, @"should have an error if user is nil");
+    if (!userAuth) {
+      XCTAssertNotNil(error, @"should have an error if the userAuth is nil");
     }
     XCTAssertFalse(strongSelf->_completionCalled, @"callback already called");
     strongSelf->_completionCalled = YES;
@@ -355,7 +351,6 @@ static NSString *const kNewScope = @"newScope";
   OCMVerifyAll(_tokenRequest);
   OCMVerifyAll(_authorization);
   OCMVerifyAll(_user);
-  OCMVerifyAll(_authentication);
   OCMVerifyAll(_oidAuthorizationService);
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -418,24 +413,36 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
-  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authorization stub] andReturn:_authState] authState];
+  [[_authorization expect] setTokenRefreshDelegate:OCMOCK_ANY];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
-  OCMStub([_tokenResponse scope]).andReturn(nil);
-  OCMStub([_tokenResponse additionalParameters]).andReturn(nil);
-  OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
-  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
-  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
+  OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
+  [[_authState expect] setStateChangeDelegate:OCMOCK_ANY];
 
   id idTokenDecoded = OCMClassMock([OIDIDToken class]);
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
-
+  
+  // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
+  OIDAuthorizationResponse *authResponse =
+      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
+                                                         errorString:nil];
+  
+  OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
+  OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
+  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
+  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
+  OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
+  OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
+  
   [_signIn restorePreviousSignInNoRefresh];
 
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+  [_tokenRequest verify];
+  [idTokenDecoded verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
 
   [idTokenDecoded stopMocking];
@@ -479,7 +486,7 @@ static NSString *const kNewScope = @"newScope";
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
 
-  [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
+  [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser *_Nullable user,
                                                  NSError * _Nullable error) {
     [expectation fulfill];
     XCTAssertNotNil(error, @"error should not have been nil");
@@ -590,13 +597,13 @@ static NSString *const kNewScope = @"newScope";
 
   id profile = OCMStrictClassMock([GIDProfileData class]);
   OCMStub([profile email]).andReturn(kUserEmail);
-
-  OCMStub([_user authentication]).andReturn(_authentication);
-  OCMStub([_authentication clientID]).andReturn(kClientId);
-  OCMStub([_user serverClientID]).andReturn(nil);
-  OCMStub([_user hostedDomain]).andReturn(nil);
-
-  OCMStub([_user openIDRealm]).andReturn(kOpenIDRealm);
+  
+  // Mock for the method `addScopes`.
+  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                                serverClientID:nil
+                                                                  hostedDomain:nil
+                                                                   openIDRealm:kOpenIDRealm];
+  OCMStub([_user configuration]).andReturn(configuration);
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
 
@@ -626,6 +633,8 @@ static NSString *const kNewScope = @"newScope";
   NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
 
+  [_user verify];
+  [profile verify];
   [profile stopMocking];
 }
 
@@ -1075,9 +1084,9 @@ static NSString *const kNewScope = @"newScope";
   NSError *emmError = [NSError errorWithDomain:@"anydomain"
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorFieldError : errorJSON }];
-  [[_authentication expect] handleTokenFetchEMMError:emmError
-                                          completion:SAVE_TO_ARG_BLOCK(completion)];
-
+  id emmSupport = OCMStrictClassMock([GIDEMMSupport class]);
+  [[emmSupport expect] handleTokenFetchEMMError:emmError
+                                     completion:SAVE_TO_ARG_BLOCK(completion)];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -1091,11 +1100,12 @@ static NSString *const kNewScope = @"newScope";
   NSError *handledError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                               code:kGIDSignInErrorCodeEMM
                                           userInfo:emmError.userInfo];
+  
   completion(handledError);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
-  [_authentication verify];
+  [emmSupport verify];
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
@@ -1208,6 +1218,7 @@ static NSString *const kNewScope = @"newScope";
       [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
                                     accessToken:restoredSignIn ? kAccessToken : nil
                                       expiresIn:oldAccessToken ? @(300) : nil
+                                   refreshToken:kRefreshToken
                                    tokenRequest:nil];
 
   OIDTokenRequest *tokenRequest = [[OIDTokenRequest alloc]
@@ -1238,10 +1249,13 @@ static NSString *const kNewScope = @"newScope";
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    GIDSignInCompletion completion = ^(GIDGoogleUser * _Nullable user, NSError * _Nullable error) {
+    GIDUserAuthCompletion completion =
+        ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
       [expectation fulfill];
-      if (!user) {
-        XCTAssertNotNil(error, @"should have an error if user is nil");
+      if (userAuth) {
+        XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
+      } else {
+        XCTAssertNotNil(error, @"Should have an error if the userAuth is nil");
       }
       XCTAssertFalse(self->_completionCalled, @"callback already called");
       self->_completionCalled = YES;
@@ -1350,19 +1364,29 @@ static NSString *const kNewScope = @"newScope";
 
   // SaveAuthCallback
   __block OIDAuthState *authState;
+  __block OIDTokenResponse *updatedTokenResponse;
+  __block OIDAuthorizationResponse *updatedAuthorizationResponse;
   __block GIDProfileData *profileData;
 
   if (keychainError) {
     _saveAuthorizationReturnValue = NO;
   } else {
     if (addScopesFlow) {
-      [[_user expect] updateAuthState:SAVE_TO_ARG_BLOCK(authState)
-                          profileData:SAVE_TO_ARG_BLOCK(profileData)];
+      [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+      [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
+      [[_user expect] updateWithTokenResponse:SAVE_TO_ARG_BLOCK(updatedTokenResponse)
+                        authorizationResponse:SAVE_TO_ARG_BLOCK(updatedAuthorizationResponse)
+                                  profileData:SAVE_TO_ARG_BLOCK(profileData)];
     } else {
       [[[_user stub] andReturn:_user] alloc];
       (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
                                                     profileData:SAVE_TO_ARG_BLOCK(profileData)];
     }
+  }
+  
+  // CompletionCallback - mock server auth code parsing
+  if (!keychainError) {
+    [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
   }
 
   if (restoredSignIn && !oldAccessToken) {
@@ -1377,13 +1401,20 @@ static NSString *const kNewScope = @"newScope";
     _savedTokenCallback(tokenResponse, nil);
   }
 
-  [_authState verify];
   if (keychainError) {
     return;
   }
   [self waitForExpectationsWithTimeout:1 handler:nil];
+  
+  [_authState verify];
+  
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
-  XCTAssertNotNil(authState);
+  if (addScopesFlow) {
+    XCTAssertNotNil(updatedTokenResponse);
+    XCTAssertNotNil(updatedAuthorizationResponse);
+  } else {
+    XCTAssertNotNil(authState);
+  }
   // Check fat ID token decoding
   XCTAssertEqualObjects(profileData.name, kFatName);
   XCTAssertEqualObjects(profileData.givenName, kFatGivenName);
@@ -1396,13 +1427,8 @@ static NSString *const kNewScope = @"newScope";
   _keychainSaved = NO;
   _authError = nil;
 
-  if (!addScopesFlow) {
-    [[[_user expect] andReturn:_authentication] authentication];
-    [[[_user expect] andReturn:_authentication] authentication];
-  }
-
-  __block GIDAuthenticationCompletion completion;
-  [[_authentication expect] doWithFreshTokens:SAVE_TO_ARG_BLOCK(completion)];
+  __block GIDGoogleUserCompletion completion;
+  [[_user expect] refreshTokensIfNeededWithCompletion:SAVE_TO_ARG_BLOCK(completion)];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
 
@@ -1412,7 +1438,7 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNil(error, @"should have no error");
   }];
 
-  completion(_authentication, nil);
+  completion(_user, nil);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");

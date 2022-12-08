@@ -55,8 +55,8 @@ final class AuthenticationViewModel: ObservableObject {
 
     Task { @MainActor in
       do {
-        let user = try await authenticator.signIn(with: rootViewController)
-        self.state = .signedIn(user)
+        let userAuth = try await authenticator.signIn(with: rootViewController)
+        self.state = .signedIn(userAuth.user)
       } catch {
         print("Error signing in: \(error)")
       }
@@ -69,8 +69,8 @@ final class AuthenticationViewModel: ObservableObject {
 
     Task { @MainActor in
       do {
-        let user = try await authenticator.signIn(with: presentingWindow)
-        self.state = .signedIn(user)
+        let userAuth = try await authenticator.signIn(with: presentingWindow)
+        self.state = .signedIn(userAuth.user)
       } catch {
         print("Error signing in: \(error)")
       }
@@ -104,7 +104,7 @@ final class AuthenticationViewModel: ObservableObject {
   /// - parameter viewController: A `UIViewController` to use while presenting the flow.
   /// - returns: A `GIDGoogleUser` with the authorized scope.
   /// - throws: Any error that may arise while adding the read birthday scope.
-  func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDGoogleUser {
+  func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDUserAuth {
     return try await authenticator.addBirthdayReadScope(viewController: viewController)
   }
 #endif
@@ -114,7 +114,7 @@ final class AuthenticationViewModel: ObservableObject {
   /// - parameter window: An `NSWindow` to use while presenting the flow.
   /// - returns: A `GIDGoogleUser` with the authorized scope.
   /// - throws: Any error that may arise while adding the read birthday scope.
-  func addBirthdayReadScope(window: NSWindow) async throws -> GIDGoogleUser {
+  func addBirthdayReadScope(window: NSWindow) async throws -> GIDUserAuth {
     return try await authenticator.addBirthdayReadScope(window: window)
   }
 #endif

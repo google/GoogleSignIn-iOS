@@ -25,6 +25,7 @@
 
 @class GIDConfiguration;
 @class GIDGoogleUser;
+@class GIDUserAuth;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,18 +45,11 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   kGIDSignInErrorCodeCanceled = -5,
   /// Indicates an Enterprise Mobility Management related error has occurred.
   kGIDSignInErrorCodeEMM = -6,
-  /// Indicates there is no `currentUser`.
-  kGIDSignInErrorCodeNoCurrentUser = -7,
   /// Indicates the requested scopes have already been granted to the `currentUser`.
   kGIDSignInErrorCodeScopesAlreadyGranted = -8,
+  /// Indicates there is an operation on a previous user.
+  kGIDSignInErrorCodeMismatchWithCurrentUser = -9,
 };
-
-/// Represents a completion block that takes a `GIDGoogleUser` on success or an error if the operation
-/// was unsuccessful.
-typedef void (^GIDSignInCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
-
-/// Represents a completion block that takes an error if the operation was unsuccessful.
-typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
 /// This class signs the user in with Google.
 ///
@@ -94,9 +88,10 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
 /// Attempts to restore a previously authenticated user without interaction.
 ///
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
-///     be called asynchronously on the main queue.
-- (void)restorePreviousSignInWithCompletion:(nullable GIDSignInCompletion)completion;
+/// @param completion The block that is called on completion.  This block will be called asynchronously
+///     on the main queue.
+- (void)restorePreviousSignInWithCompletion:(nullable void (^)(GIDGoogleUser *_Nullable user,
+                                                               NSError *_Nullable error))completion;
 
 /// Marks current user as being in the signed out state.
 - (void)signOut;
@@ -104,9 +99,9 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// Disconnects the current user from the app and revokes previous authentication. If the operation
 /// succeeds, the OAuth 2.0 token is also removed from keychain.
 ///
-/// @param completion The optional `GIDDisconnectCompletion` block that is called on completion.
+/// @param completion The optional block that is called on completion.
 ///     This block will be called asynchronously on the main queue.
-- (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion;
+- (void)disconnectWithCompletion:(nullable void (^)(NSError *_Nullable error))completion;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 /// Starts an interactive sign-in flow on iOS.
@@ -122,7 +117,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                                completion:(nullable GIDSignInCompletion)completion
+                                completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                              NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint.
@@ -141,7 +137,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                                completion:(nullable GIDSignInCompletion)completion
+                                completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                              NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint and additional scopes.
@@ -162,23 +159,9 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                                completion:(nullable GIDSignInCompletion)completion;
-
-/// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
-///
-/// The completion will be called at the end of this process.  If successful, a new `GIDGoogleUser`
-/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
-///
-/// @param scopes The scopes to ask the user to consent to.
-/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
-///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
-///     iOS 13+.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
-///     be called asynchronously on the main queue.
-- (void)addScopes:(NSArray<NSString *> *)scopes
-    presentingViewController:(UIViewController *)presentingViewController
-                  completion:(nullable GIDSignInCompletion)completion
-    NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions."); 
+                                completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                              NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
 /// Starts an interactive sign-in flow on macOS.
@@ -192,7 +175,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
-                        completion:(nullable GIDSignInCompletion)completion;
+                        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                      NSError *_Nullable error))completion;
 
 /// Starts an interactive sign-in flow on macOS using the provided hint.
 ///
@@ -208,7 +192,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
-                        completion:(nullable GIDSignInCompletion)completion;
+                        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                      NSError *_Nullable error))completion;
 
 /// Starts an interactive sign-in flow on macOS using the provided hint.
 ///
@@ -223,24 +208,11 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
 /// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
-
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                        completion:(nullable GIDSignInCompletion)completion;
-
-/// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
-///
-/// The completion will be called at the end of this process.  If successful, a new `GIDGoogleUser`
-/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
-///
-/// @param scopes An array of scopes to ask the user to consent to.
-/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
-/// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
-///     be called asynchronously on the main queue.
-- (void)addScopes:(NSArray<NSString *> *)scopes
- presentingWindow:(NSWindow *)presentingWindow
-       completion:(nullable GIDSignInCompletion)completion;
+                        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                                                      NSError *_Nullable error))completion;
 
 #endif
 

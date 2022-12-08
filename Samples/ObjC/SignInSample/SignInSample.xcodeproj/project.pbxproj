@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C1D4BC8A2926EF61001BCB24 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C1D4BC892926EF61001BCB24 /* GoogleSignIn */; };
 		C1E69232264315E7004CE2BC /* SignInViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C1E69226264315E7004CE2BC /* SignInViewController.m */; };
 		C1E69233264315E7004CE2BC /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = C1E69228264315E7004CE2BC /* LaunchScreen.xib */; };
 		C1E69234264315E7004CE2BC /* DataPickerState.m in Sources */ = {isa = PBXBuildFile; fileRef = C1E6922A264315E7004CE2BC /* DataPickerState.m */; };
@@ -15,7 +16,6 @@
 		C1E69237264315E7004CE2BC /* SignInViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C1E6922D264315E7004CE2BC /* SignInViewController.xib */; };
 		C1E69238264315E7004CE2BC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C1E6922F264315E7004CE2BC /* AppDelegate.m */; };
 		C1E69239264315E7004CE2BC /* AuthInspectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C1E69231264315E7004CE2BC /* AuthInspectorViewController.m */; };
-		C1E6924426431A6D004CE2BC /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C1E6924326431A6D004CE2BC /* GoogleSignIn */; };
 		C1E6927C26431E13004CE2BC /* Dummy.strings in Resources */ = {isa = PBXBuildFile; fileRef = C1E6925326431E12004CE2BC /* Dummy.strings */; };
 		C1E6927D26431E13004CE2BC /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C1E6926E26431E13004CE2BC /* Images.xcassets */; };
 		C1E6927E26431E13004CE2BC /* DataPickerDictionary.plist in Resources */ = {isa = PBXBuildFile; fileRef = C1E6927026431E13004CE2BC /* DataPickerDictionary.plist */; };
@@ -92,7 +92,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C1E6924426431A6D004CE2BC /* GoogleSignIn in Frameworks */,
+				C1D4BC8A2926EF61001BCB24 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,7 +188,7 @@
 			);
 			name = SignInSample;
 			packageProductDependencies = (
-				C1E6924326431A6D004CE2BC /* GoogleSignIn */,
+				C1D4BC892926EF61001BCB24 /* GoogleSignIn */,
 			);
 			productName = SignInSample;
 			productReference = D99924CA1A92B3C7008CC226 /* SignInSample.app */;
@@ -253,7 +253,6 @@
 			);
 			mainGroup = D99924C11A92B3C7008CC226;
 			packageReferences = (
-				C1E6924226431A6D004CE2BC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = D99924CB1A92B3C7008CC226 /* Products */;
 			projectDirPath = "";
@@ -392,7 +391,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -442,7 +441,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
@@ -510,21 +509,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		C1E6924226431A6D004CE2BC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		C1E6924326431A6D004CE2BC /* GoogleSignIn */ = {
+		C1D4BC892926EF61001BCB24 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C1E6924226431A6D004CE2BC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */

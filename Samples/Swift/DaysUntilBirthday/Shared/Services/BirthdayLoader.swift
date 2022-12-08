@@ -42,8 +42,8 @@ final class BirthdayLoader {
     guard let accessToken = GIDSignIn
             .sharedInstance
             .currentUser?
-            .authentication
-            .accessToken else { return nil }
+            .accessToken
+            .tokenString else { return nil }
     let configuration = URLSessionConfiguration.default
     configuration.httpAdditionalHeaders = [
       "Authorization": "Bearer \(accessToken)"
@@ -52,14 +52,13 @@ final class BirthdayLoader {
   }()
 
   private func sessionWithFreshToken() async throws -> URLSession {
-    guard let authentication = GIDSignIn.sharedInstance.currentUser?.authentication else {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
       throw Error.noCurrentUserForSessionWithFreshToken
     }
-
-    let freshAuth = try await authentication.doWithFreshTokens()
+    try await user.refreshTokensIfNeeded()
     let configuration = URLSessionConfiguration.default
     configuration.httpAdditionalHeaders = [
-      "Authorization": "Bearer \(freshAuth.accessToken)"
+      "Authorization": "Bearer \(user.accessToken.tokenString)"
     ]
     let session = URLSession(configuration: configuration)
     return session
