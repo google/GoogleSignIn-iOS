@@ -35,6 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// was unsuccessful.
 typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
 
+/// Represents a completion block that takes an error if the operation was unsuccessful.
+typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
+
 // Private |GIDSignIn| methods that are used internally in this SDK and other Google SDKs.
 @interface GIDSignIn ()
 
