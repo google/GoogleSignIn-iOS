@@ -76,9 +76,7 @@ Creating a 'Sign in with Google' button in SwiftUI can be as simple as this:
 
 ```
 GoogleSignInButton {
-  GIDSignIn.sharedInstance.signIn(
-    with: configuration, 
-    presenting: yourViewController) { user, error in
+  GIDSignIn.sharedInstance.signIn(withPresenting: yourViewController) { user, error in
       // check `error`; do something with `user`
   }
 }
@@ -111,9 +109,7 @@ that it will be available for use in AppKit.
 
 ```
 let signInButton = GoogleSignInButton {
-  GIDSignIn.sharedInstance.signIn(
-    with: configuration, 
-    presenting: yourViewController) { user, error in
+  GIDSignIn.sharedInstance.signIn(withPresenting: yourViewController) { user, error in
       // check `error`; do something with `user`
   }
 }
