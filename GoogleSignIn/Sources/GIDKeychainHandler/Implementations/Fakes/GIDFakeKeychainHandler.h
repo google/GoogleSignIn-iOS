@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDFakeKeychainHandler : NSObject<GIDKeychainHandler>
 
+/// If YES, the method `saveAuthState:` returns NO and cleans the saved authState in the keychain.
+/// The default value is NO.
 @property(nonatomic) BOOL failToSave;
 
 @end
