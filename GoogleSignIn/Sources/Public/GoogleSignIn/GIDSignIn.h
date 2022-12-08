@@ -155,12 +155,12 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
 /// @param completion The `GIDSignInCompletion` block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
-
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                 completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                                                              NSError *_Nullable error))completion;
+                                                              NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
 /// Starts an interactive sign-in flow on macOS.
