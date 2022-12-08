@@ -160,7 +160,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                 completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                              NSError *_Nullable error))completion;
+                                                              NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
 /// Starts an interactive sign-in flow on macOS.
@@ -175,7 +176,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                         completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                      NSError *_Nullable error))completion;
+                                                      NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on macOS using the provided hint.
 ///
@@ -192,7 +194,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
                         completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                      NSError *_Nullable error))completion;
+                                                      NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on macOS using the provided hint.
 ///
@@ -211,7 +214,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                         completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                      NSError *_Nullable error))completion;
+                                                      NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #endif
 
