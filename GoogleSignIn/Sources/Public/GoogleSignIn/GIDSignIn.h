@@ -103,6 +103,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)disconnectWithCompletion:(nullable void (^)(NSError *_Nullable error))completion;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
 /// Starts an interactive sign-in flow on iOS.
 ///
 /// The completion will be called at the end of this process.  Any saved sign-in state will be
@@ -163,6 +164,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
+
 /// Starts an interactive sign-in flow on macOS.
 ///
 /// The completion will be called at the end of this process.  Any saved sign-in state will be
