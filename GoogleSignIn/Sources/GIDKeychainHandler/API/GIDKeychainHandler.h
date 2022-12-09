@@ -22,10 +22,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDKeychainHandler <NSObject>
 
+/// Loads the AuthState object from the keychain.
 - (nullable OIDAuthState *)loadAuthState;
 
+/// Saves the AuthState object to the keychain.
 - (BOOL)saveAuthState:(OIDAuthState *)authState;
 
+/// Removes the authState object saved in the keychain.
 - (void)removeAllKeychainEntries;
 
 @end
