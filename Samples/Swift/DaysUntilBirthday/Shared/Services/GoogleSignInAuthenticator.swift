@@ -23,7 +23,6 @@ import AppKit
 #endif
 
 /// An observable class for authenticating via Google.
-@MainActor
 final class GoogleSignInAuthenticator {
   private var authViewModel: AuthenticationViewModel
 
@@ -38,6 +37,7 @@ final class GoogleSignInAuthenticator {
   /// - parameter rootViewController: The `UIViewController` to use during the sign in flow.
   /// - returns: The `GIDSignInResult`.
   /// - throws: Any error that may arise during the sign in process.
+  @MainActor
   func signIn(with rootViewController: UIViewController) async throws -> GIDSignInResult {
     return try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
   }
@@ -48,6 +48,7 @@ final class GoogleSignInAuthenticator {
   /// - parameter window: The `NSWindow` to use during the sign in flow.
   /// - returns: The `GIDSignInResult`.
   /// - throws: Any error that may arise during the sign in process.
+  @MainActor
   func signIn(with window: NSWindow) async throws -> GIDSignInResult {
     return try await GIDSignIn.sharedInstance.signIn(withPresenting: window)
   }
@@ -60,6 +61,7 @@ final class GoogleSignInAuthenticator {
   }
 
   /// Disconnects the previously granted scope and signs the user out.
+  @MainActor
   func disconnect() async throws {
     try await GIDSignIn.sharedInstance.disconnect()
   }
@@ -69,6 +71,7 @@ final class GoogleSignInAuthenticator {
   /// - parameter viewController: The `UIViewController` to use while authorizing the scope.
   /// - returns: The `GIDSignInResult`.
   /// - throws: Any error that may arise while authorizing the scope.
+  @MainActor
   func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDSignInResult {
     guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
       fatalError("No currentUser!")
@@ -85,6 +88,7 @@ final class GoogleSignInAuthenticator {
   /// - parameter window: The `NSWindow` to use while authorizing the scope.
   /// - returns: The `GIDSignInResult`.
   /// - throws: Any error that may arise while authorizing the scope.
+  @MainActor
   func addBirthdayReadScope(window: NSWindow) async throws -> GIDSignInResult {
     guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
       fatalError("No currentUser!")
