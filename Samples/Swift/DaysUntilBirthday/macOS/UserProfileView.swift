@@ -49,8 +49,9 @@ struct UserProfileView: View {
                     }
                     Task { @MainActor in
                       do {
-                        let userAuth = try await authViewModel.addBirthdayReadScope(window: window)
-                        self.authViewModel.state = .signedIn(userAuth.user)
+                        let signInResult =
+                            try await authViewModel.addBirthdayReadScope(window: window)
+                        self.authViewModel.state = .signedIn(signInResult.user)
                         self.birthdayViewModel.fetchBirthday()
                       } catch {
                         print("Failed to fetch birthday: \(error)")

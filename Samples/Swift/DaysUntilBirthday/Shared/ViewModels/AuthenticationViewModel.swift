@@ -63,11 +63,11 @@ final class AuthenticationViewModel: ObservableObject {
       do {
 
 #if os(iOS)
-        let userAuth = try await authenticator.signIn(with: rootViewController)
+        let signInResult = try await authenticator.signIn(with: rootViewController)
 #elseif os(macOS)
-        let userAuth = try await authenticator.signIn(with: presentingWindow)
+        let signInResult = try await authenticator.signIn(with: presentingWindow)
 #endif
-        self.state = .signedIn(userAuth.user)
+        self.state = .signedIn(signInResult.user)
       } catch {
         print("Error signing in: \(error)")
       }
@@ -98,9 +98,9 @@ final class AuthenticationViewModel: ObservableObject {
 #if os(iOS)
   /// Adds the requested birthday read scope.
   /// - parameter viewController: A `UIViewController` to use while presenting the flow.
-  /// - returns: The resulting`GIDUserAuth`.
+  /// - returns: The `GIDSignInResult`.
   /// - throws: Any error that may arise while adding the read birthday scope.
-  func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDUserAuth {
+  func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDSignInResult {
     return try await authenticator.addBirthdayReadScope(viewController: viewController)
   }
 #endif
@@ -109,9 +109,9 @@ final class AuthenticationViewModel: ObservableObject {
 #if os(macOS)
   /// adds the requested birthday read scope.
   /// - parameter window: An `NSWindow` to use while presenting the flow.
-  /// - returns: The resulting `GIDUserAuth`.
+  /// - returns: The `GIDSignInResult`.
   /// - throws: Any error that may arise while adding the read birthday scope.
-  func addBirthdayReadScope(window: NSWindow) async throws -> GIDUserAuth {
+  func addBirthdayReadScope(window: NSWindow) async throws -> GIDSignInResult {
     return try await authenticator.addBirthdayReadScope(window: window)
   }
 #endif
