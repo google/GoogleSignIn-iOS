@@ -36,12 +36,12 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { userAuth, error in
-      guard let userAuth = userAuth else {
+    GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
+      guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
         return
       }
-      self.authViewModel.state = .signedIn(userAuth.user)
+      self.authViewModel.state = .signedIn(signInResult.user)
     }
 
 #elseif os(macOS)
@@ -50,12 +50,12 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) { userAuth, error in
-      guard let userAuth = userAuth else {
+    GIDSignIn.sharedInstance.signIn(withPresenting: presentingWindow) { signInResult, error in
+      guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
         return
       }
-      self.authViewModel.state = .signedIn(userAuth.user)
+      self.authViewModel.state = .signedIn(signInResult.user)
     }
 #endif
   }
@@ -93,14 +93,14 @@ final class GoogleSignInAuthenticator: ObservableObject {
     }
 
     currentUser.addScopes([BirthdayLoader.birthdayReadScope],
-                          presenting: rootViewController) { userAuth, error in
+                          presenting: rootViewController) { signInResult, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
       }
 
-      guard let userAuth = userAuth else { return }
-      self.authViewModel.state = .signedIn(userAuth.user)
+      guard let signInResult = signInResult else { return }
+      self.authViewModel.state = .signedIn(signInResult.user)
       completion()
     }
 
@@ -110,14 +110,14 @@ final class GoogleSignInAuthenticator: ObservableObject {
     }
 
     currentUser.addScopes([BirthdayLoader.birthdayReadScope],
-                          presenting: presentingWindow) { userAuth, error in
+                          presenting: presentingWindow) { signInResult, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
       }
 
-      guard let userAuth = userAuth else { return }
-      self.authViewModel.state = .signedIn(userAuth.user)
+      guard let signInResult = signInResult else { return }
+      self.authViewModel.state = .signedIn(signInResult.user)
       completion()
     }
 

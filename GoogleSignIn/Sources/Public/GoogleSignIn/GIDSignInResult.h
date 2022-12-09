@@ -20,8 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A helper object that contains the outcome of a successful signIn or addScopes flow.
-@interface GIDUserAuth : NSObject
+/// A helper object that contains the result of a successful signIn or addScopes flow.
+@interface GIDSignInResult : NSObject
 
 /// The updated `GIDGoogleUser` instance for the user who just completed the flow.
 @property(nonatomic, readonly) GIDGoogleUser *user;

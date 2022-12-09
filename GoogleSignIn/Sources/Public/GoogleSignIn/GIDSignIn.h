@@ -25,7 +25,7 @@
 
 @class GIDConfiguration;
 @class GIDGoogleUser;
-@class GIDUserAuth;
+@class GIDSignInResult;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -117,8 +117,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                                completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                              NSError *_Nullable error))completion
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint.
@@ -137,8 +138,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                                completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                              NSError *_Nullable error))completion
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint and additional scopes.
@@ -155,12 +157,12 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
 /// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
-
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                                completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                              NSError *_Nullable error))completion
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
@@ -176,7 +178,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
-                        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
 /// Starts an interactive sign-in flow on macOS using the provided hint.
@@ -193,7 +195,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
-                        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
 /// Starts an interactive sign-in flow on macOS using the provided hint.
@@ -212,7 +214,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                        completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
 #endif

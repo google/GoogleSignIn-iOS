@@ -20,7 +20,7 @@
 #import "GIDProfileData.h"
 #import "GIDSignIn.h"
 #import "GIDToken.h"
-#import "GIDUserAuth.h"
+#import "GIDSignInResult.h"
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GIDSignInButton.h"
 #endif

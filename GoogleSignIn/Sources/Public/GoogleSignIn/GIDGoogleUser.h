@@ -32,7 +32,7 @@
 #endif
 
 @class GIDConfiguration;
-@class GIDUserAuth;
+@class GIDSignInResult;
 @class GIDToken;
 @class GIDProfileData;
 
@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Starts an interactive consent flow on iOS to add new scopes to the user's `grantedScopes`.
 ///
-/// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
+/// The completion will be called at the end of this process.  If successful, a `GIDSignInResult`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes The scopes to ask the user to consent to.
@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///     asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                  completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                  completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                 NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions.");
 
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Starts an interactive consent flow on macOS to add new scopes to the user's `grantedScopes`.
 ///
-/// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
+/// The completion will be called at the end of this process.  If successful, a `GIDSignInResult`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes An array of scopes to ask the user to consent to.
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///     asynchronously on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingWindow:(NSWindow *)presentingWindow
-          completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+          completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                         NSError *_Nullable error))completion;
 
 #endif
