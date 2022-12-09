@@ -22,8 +22,10 @@
 #import <AppKit/AppKit.h>
 #endif
 
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+
 @class GIDConfiguration;
-@class GIDUserAuth;
+@class GIDSignInResult;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -54,8 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// The completion block to be called at the completion of the flow.
-@property(nonatomic, readonly, nullable) void (^completion)(GIDUserAuth *_Nullable userAuth,
-                                                            NSError *_Nullable error);
+@property(nonatomic, readonly, nullable) GIDSignInCompletion completion;
 
 /// The scopes to be used during the flow.
 @property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
@@ -69,37 +70,32 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                                   NSError *_Nullable error))completion;
+                                     completion:(nullable GIDSignInCompletion)completion;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                                   NSError *_Nullable error))completion;
+                                     completion:(nullable GIDSignInCompletion)completion;
 
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                                   NSError *_Nullable error))completion;
+                                     completion:(nullable GIDSignInCompletion)completion;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                     completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                                   NSError *_Nullable error))completion;
+                                     completion:(nullable GIDSignInCompletion)completion;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// Creates the options to sign in silently.
-+ (instancetype)silentOptionsWithCompletion:(void (^)(GIDUserAuth *_Nullable userAuth,
-                                                      NSError *_Nullable error))completion;
++ (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion;
 
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.
