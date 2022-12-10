@@ -78,12 +78,11 @@ final class AuthenticationViewModel: ObservableObject {
     authenticator.signOut()
   }
 
-  /// Disconnects the previously granted scope and logs the user out.
+  /// Disconnects the previously granted scope and signs the user out.
   func disconnect() {
     Task {
       do {
         try await authenticator.disconnect()
-        authenticator.signOut()
       } catch {
         print("Error disconnecting: \(error)")
       }

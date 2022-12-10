@@ -64,6 +64,7 @@ final class GoogleSignInAuthenticator {
   @MainActor
   func disconnect() async throws {
     try await GIDSignIn.sharedInstance.disconnect()
+    authViewModel.state = .signedOut
   }
 
 #if os(iOS)
