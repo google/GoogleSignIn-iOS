@@ -59,7 +59,7 @@ final class AuthenticationViewModel: ObservableObject {
     }
 #endif
 
-    Task {
+    Task { @MainActor in
       do {
 #if os(iOS)
         let signInResult = try await authenticator.signIn(with: rootViewController)
@@ -80,7 +80,7 @@ final class AuthenticationViewModel: ObservableObject {
 
   /// Disconnects the previously granted scope and signs the user out.
   func disconnect() {
-    Task {
+    Task { @MainActor in
       do {
         try await authenticator.disconnect()
       } catch {
