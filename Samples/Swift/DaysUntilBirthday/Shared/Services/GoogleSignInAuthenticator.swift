@@ -22,7 +22,7 @@ import UIKit
 import AppKit
 #endif
 
-/// An observable class for authenticating via Google.
+/// A class for authenticating via Google.
 final class GoogleSignInAuthenticator {
   private var authViewModel: AuthenticationViewModel
 
