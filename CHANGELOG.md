@@ -22,7 +22,7 @@
       - New `fetcherAuthorizer` property.
       - New `refreshTokensIfNeededWithCompletion:` method.
   - New `GIDToken` class to represent access, refresh, and ID tokens in `GIDGoogleUser`.
-  - New `GIDSignInResult` class to represent the result of a successful signIn or addScopes flow in completetion blocks.
+  - New `GIDSignInResult` class to represent the result of a successful signIn or addScopes flow.
   - Removed `GIDSignInCallback`, `GIDDisconnectCallback`, and `GIDAuthenticationAction` block type definitions.
 
 # 6.2.4
