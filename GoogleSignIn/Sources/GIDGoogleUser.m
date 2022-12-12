@@ -189,7 +189,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 #elif TARGET_OS_OSX
             presentingWindow:(NSWindow *)presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                  completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
+                  completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                 NSError *_Nullable error))completion {
   if (self != GIDSignIn.sharedInstance.currentUser) {
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
