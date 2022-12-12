@@ -23,6 +23,7 @@
       - New `refreshTokensIfNeededWithCompletion:` method.
   - New `GIDToken` class introduced to represent access, refresh, and ID tokens in `GIDGoogleUser`.
   - New `GIDUserAuth` class introduced to represent the result of a successful auth flow in completetion blocks.
+  - Removed `GIDSignInCallback`, `GIDDisconnectCallback`, and `GIDAuthenticationAction` block type definitions.
 
 # 6.2.4
 - Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207))
