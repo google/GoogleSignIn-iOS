@@ -499,9 +499,9 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
               presentingWindow:[[NSWindow alloc] init]
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                    completion:^(GIDUserAuth *userAuth, NSError *error) {
+                    completion:^(GIDSignInResult *signInResult, NSError *error) {
     [expectation fulfill];
-    XCTAssertNil(userAuth);
+    XCTAssertNil(signInResult);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
   
@@ -527,9 +527,9 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
               presentingWindow:[[NSWindow alloc] init]
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                    completion:^(GIDUserAuth *userAuth, NSError *error) {
+                    completion:^(GIDSignInResult *signInResult, NSError *error) {
     [expectation fulfill];
-    XCTAssertNil(userAuth);
+    XCTAssertNil(signInResult);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
   
