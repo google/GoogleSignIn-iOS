@@ -232,7 +232,7 @@ static NSString *const kNewScope = @"newScope";
   NSString *_hint;
 
   // The completion to be used when testing |GIDSignIn|.
-  GIDUserAuthCompletion _completion;
+  GIDSignInCompletion _completion;
 
   // The saved authorization request.
   OIDAuthorizationRequest *_savedAuthorizationRequest;
@@ -312,10 +312,10 @@ static NSString *const kNewScope = @"newScope";
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
-  _completion = ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
+  _completion = ^(GIDSignInResult *_Nullable signInResult, NSError * _Nullable error) {
     GIDSignInTest *strongSelf = weakSelf;
-    if (!userAuth) {
-      XCTAssertNotNil(error, @"should have an error if the userAuth is nil");
+    if (!signInResult) {
+      XCTAssertNotNil(error, @"should have an error if the signInResult is nil");
     }
     XCTAssertFalse(strongSelf->_completionCalled, @"callback already called");
     strongSelf->_completionCalled = YES;
@@ -1215,13 +1215,13 @@ static NSString *const kNewScope = @"newScope";
     }
   } else {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
-    GIDUserAuthCompletion completion =
-        ^(GIDUserAuth *_Nullable userAuth, NSError * _Nullable error) {
+    GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                       NSError * _Nullable error) {
       [expectation fulfill];
-      if (userAuth) {
-        XCTAssertEqualObjects(userAuth.serverAuthCode, kServerAuthCode);
+      if (signInResult) {
+        XCTAssertEqualObjects(signInResult.serverAuthCode, kServerAuthCode);
       } else {
-        XCTAssertNotNil(error, @"Should have an error if the userAuth is nil");
+        XCTAssertNotNil(error, @"Should have an error if the signInResult is nil");
       }
       XCTAssertFalse(self->_completionCalled, @"callback already called");
       self->_completionCalled = YES;

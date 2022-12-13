@@ -35,6 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// was unsuccessful.
 typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
 
+/// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
+/// operation was unsuccessful.
+typedef void (^GIDSignInCompletion)(GIDSignInResult *_Nullable signInResult,
+                                    NSError *_Nullable error);
+
 /// Represents a completion block that takes an error if the operation was unsuccessful.
 typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
@@ -66,7 +71,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
 /// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
 ///
-/// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
+/// The completion will be called at the end of this process.  If successful, a `GIDSignInResult`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes The scopes to ask the user to consent to.
@@ -77,15 +82,14 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 ///     on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
-                  completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                                NSError *_Nullable error))completion
+                  completion:(nullable GIDSignInCompletion)completion
     NS_EXTENSION_UNAVAILABLE("The add scopes flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
 
 /// Starts an interactive consent flow on macOS to add scopes to the current user's grants.
 ///
-/// The completion will be called at the end of this process.  If successful, a `GIDUserAuth`
+/// The completion will be called at the end of this process.  If successful, a `GIDSignInResult`
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes An array of scopes to ask the user to consent to.
@@ -95,8 +99,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 ///     on the main queue.
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingWindow:(NSWindow *)presentingWindow
-          completion:(nullable void (^)(GIDUserAuth *_Nullable userAuth,
-                                        NSError *_Nullable error))completion;
+          completion:(nullable GIDSignInCompletion)completion;
 
 #endif
 
