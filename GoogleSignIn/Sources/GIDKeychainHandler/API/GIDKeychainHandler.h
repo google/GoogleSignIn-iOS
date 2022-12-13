@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Saves the OIDAuthState object to the keychain.
 ///
-/// @return Yes if the operation successes.
+/// @return A `BOOL` indicating if the save succeeded.
 - (BOOL)saveAuthState:(OIDAuthState *)authState;
 
 /// Removes the OIDAuthState object saved in the keychain.
