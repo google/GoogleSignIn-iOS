@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 
+@protocol GIDKeychainHandler;
+
 /// Represents a completion block that takes a `GIDUserAuth` on success or an error if the operation
 /// was unsuccessful.
 typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
@@ -44,6 +46,10 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
 /// Private initializer for |GIDSignIn|.
 - (instancetype)initPrivate;
+
+/// The designated initializer.
+- (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
+    NS_DESIGNATED_INITIALIZER;
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;
