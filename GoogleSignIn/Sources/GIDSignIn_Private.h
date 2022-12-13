@@ -31,10 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDKeychainHandler;
 
-/// Represents a completion block that takes a `GIDUserAuth` on success or an error if the operation
-/// was unsuccessful.
-typedef void (^GIDUserAuthCompletion)(GIDUserAuth *_Nullable userAuth, NSError *_Nullable error);
-
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.
 typedef void (^GIDSignInCompletion)(GIDSignInResult *_Nullable signInResult,
