@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDUserAuth.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
-#import "GoogleSignIn/Sources/GIDUserAuth_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
-@implementation GIDUserAuth
+@implementation GIDSignInResult
 
 - (instancetype)initWithGoogleUser:(GIDGoogleUser *)user
                     serverAuthCode:(nullable NSString *)serverAuthCode {
