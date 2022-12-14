@@ -24,6 +24,8 @@
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/API/GIDKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
@@ -170,6 +172,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   
   id<GIDKeychainHandler> _keychainHandler;
+  
+  id<GIDProfileDataFetcher> _profileDataFetcher;
 }
 
 #pragma mark - Public methods
@@ -491,6 +495,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     
     _keychainHandler = keychainHandler;
+    
+    _profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
   }
   return self;
 }
@@ -807,45 +813,61 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (!authState || handlerAuthFlow.error) {
       return;
     }
-    OIDIDToken *idToken =
-        [[OIDIDToken alloc] initWithIDTokenString: authState.lastTokenResponse.idToken];
-    // If the profile data are present in the ID token, use them.
-    if (idToken) {
-      handlerAuthFlow.profileData = [self profileDataWithIDToken:idToken];
-    }
-
-    // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
-    if (!handlerAuthFlow.profileData) {
-      [handlerAuthFlow wait];
-      NSURL *infoURL = [NSURL URLWithString:
-          [NSString stringWithFormat:kUserInfoURLTemplate,
-              [GIDSignInPreferences googleUserInfoServer],
-              authState.lastTokenResponse.accessToken]];
-      [self startFetchURL:infoURL
-                  fromAuthState:authState
-                    withComment:@"GIDSignIn: fetch basic profile info"
-          withCompletionHandler:^(NSData *data, NSError *error) {
-        if (data && !error) {
-          NSError *jsonDeserializationError;
-          NSDictionary<NSString *, NSString *> *profileDict =
-              [NSJSONSerialization JSONObjectWithData:data
-                                              options:NSJSONReadingMutableContainers
-                                                error:&jsonDeserializationError];
-          if (profileDict) {
-            handlerAuthFlow.profileData = [[GIDProfileData alloc]
-                initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                          name:profileDict[kBasicProfileNameKey]
-                    givenName:profileDict[kBasicProfileGivenNameKey]
-                    familyName:profileDict[kBasicProfileFamilyNameKey]
-                      imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
-          }
-        }
-        if (error) {
-          handlerAuthFlow.error = error;
-        }
-        [handlerAuthFlow next];
-      }];
-    }
+    
+    [handlerAuthFlow wait];
+    
+    [_profileDataFetcher
+        fetchProfileDataWithAuthState:(OIDAuthState *)authState
+                           completion:^(GIDProfileData *_Nullable profileData,
+                                        NSError *_Nullable error) {
+      if (error) {
+        handlerAuthFlow.error = error;
+      } else {
+        handlerAuthFlow.profileData = profileData;
+      }
+      [handlerAuthFlow next];
+    }];
+    
+    
+//    OIDIDToken *idToken =
+//        [[OIDIDToken alloc] initWithIDTokenString: authState.lastTokenResponse.idToken];
+//    // If the profile data are present in the ID token, use them.
+//    if (idToken) {
+//      handlerAuthFlow.profileData = [self profileDataWithIDToken:idToken];
+//    }
+//
+//    // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
+//    if (!handlerAuthFlow.profileData) {
+//      [handlerAuthFlow wait];
+//      NSURL *infoURL = [NSURL URLWithString:
+//          [NSString stringWithFormat:kUserInfoURLTemplate,
+//              [GIDSignInPreferences googleUserInfoServer],
+//              authState.lastTokenResponse.accessToken]];
+//      [self startFetchURL:infoURL
+//                  fromAuthState:authState
+//                    withComment:@"GIDSignIn: fetch basic profile info"
+//          withCompletionHandler:^(NSData *data, NSError *error) {
+//        if (data && !error) {
+//          NSError *jsonDeserializationError;
+//          NSDictionary<NSString *, NSString *> *profileDict =
+//              [NSJSONSerialization JSONObjectWithData:data
+//                                              options:NSJSONReadingMutableContainers
+//                                                error:&jsonDeserializationError];
+//          if (profileDict) {
+//            handlerAuthFlow.profileData = [[GIDProfileData alloc]
+//                initWithEmail:idToken.claims[kBasicProfileEmailKey]
+//                          name:profileDict[kBasicProfileNameKey]
+//                    givenName:profileDict[kBasicProfileGivenNameKey]
+//                    familyName:profileDict[kBasicProfileFamilyNameKey]
+//                      imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
+//          }
+//        }
+//        if (error) {
+//          handlerAuthFlow.error = error;
+//        }
+//        [handlerAuthFlow next];
+//      }];
+//    }
   }];
 }
 
