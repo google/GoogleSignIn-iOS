@@ -123,9 +123,6 @@ static NSString *const kUserCanceledError = @"The user canceled the sign-in flow
 // User preference key to detect fresh install of the app.
 static NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
 
-// Maximum retry interval in seconds for the fetcher.
-static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
-
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
@@ -831,10 +828,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
               [GIDSignInPreferences googleUserInfoServer],
               authState.lastTokenResponse.accessToken]];
       
-      [_dataFetcher startFetchURL:infoURL
-                    fromAuthState:authState
-                      withComment:@"GIDSignIn: fetch basic profile info"
-                       completion:^(NSData *data, NSError *error) {
+      [self->_dataFetcher startFetchURL:infoURL
+                          fromAuthState:authState
+                            withComment:@"GIDSignIn: fetch basic profile info"
+                             completion:^(NSData *data, NSError *error) {
         if (data && !error) {
           NSError *jsonDeserializationError;
           NSDictionary<NSString *, NSString *> *profileDict =
