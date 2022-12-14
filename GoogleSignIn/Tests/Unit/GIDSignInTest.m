@@ -31,6 +31,7 @@
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -194,6 +195,7 @@ static NSString *const kNewScope = @"newScope";
   // Mock |GTMAppAuthFetcherAuthorization|.
   id _authorization;
   
+  // Fake for |GIDKeychainHandler|
   GIDFakeKeychainHandler *_keychainHandler;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -308,7 +310,11 @@ static NSString *const kNewScope = @"newScope";
                                           forKey:kAppHasRunBeforeKey];
 
   _keychainHandler = [[GIDFakeKeychainHandler alloc] init];
-  _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler];
+  
+  // TODO:Add the GIDFakeDataFetcher class and replace the real one.
+  GIDDataFetcher* dataFetcher = [[GIDDataFetcher alloc] init];
+  _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
+                                           dataFetcher:dataFetcher];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;

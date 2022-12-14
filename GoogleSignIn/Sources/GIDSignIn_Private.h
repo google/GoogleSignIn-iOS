@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 
+@protocol GIDDataFetcher;
 @protocol GIDKeychainHandler;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
@@ -50,6 +51,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
 /// The designated initializer.
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
+                            dataFetcher:(id<GIDDataFetcher>)dataFetcher
     NS_DESIGNATED_INITIALIZER;
 
 /// Authenticates with extra options.
