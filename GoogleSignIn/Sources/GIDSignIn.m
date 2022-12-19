@@ -423,10 +423,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                      kEnvironmentLoggingParameter,
                      GIDEnvironment()];
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [_dataFetcher startFetchURL:revokeURL
-                fromAuthState:authState
-                  withComment:@"GIDSignIn: revoke tokens"
-                   completion:^(NSData *data, NSError *error) {
+  [_dataFetcher fetchURL:revokeURL
+             withComment:@"GIDSignIn: revoke tokens"
+              completion:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
     if (!error) {
       [self signOut];
@@ -453,8 +452,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Private methods
 
 - (id)initPrivate {
-  GIDKeychainHandler *keychainHandler = [[GIDKeychainHandler alloc] init];
-  GIDDataFetcher *dataFetcher = [[GIDDataFetcher alloc] init];
+  id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
+  id<GIDDataFetcher> dataFetcher = [[GIDDataFetcher alloc] init];
   return [self initWithKeychainHandler:keychainHandler
                            dataFetcher:dataFetcher];
 }
@@ -828,10 +827,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
               [GIDSignInPreferences googleUserInfoServer],
               authState.lastTokenResponse.accessToken]];
       
-      [self->_dataFetcher startFetchURL:infoURL
-                          fromAuthState:authState
-                            withComment:@"GIDSignIn: fetch basic profile info"
-                             completion:^(NSData *data, NSError *error) {
+      [self->_dataFetcher fetchURL:infoURL
+                       withComment:@"GIDSignIn: fetch basic profile info"
+                        completion:^(NSData *data, NSError *error) {
         if (data && !error) {
           NSError *jsonDeserializationError;
           NSDictionary<NSString *, NSString *> *profileDict =
