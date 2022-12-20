@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-#ifdef SWIFT_PACKAGE
-@import GTMSessionFetcherCore;
-#else
-#import <GTMSessionFetcher/GTMSessionFetcher.h>
-#endif
+#import <Foundation/Foundation.h>
 
-// A fake |GTMHTTPFetcher| for testing.
-@interface GIDFakeFetcher : GTMSessionFetcher
+NS_ASSUME_NONNULL_BEGIN
 
-// The URL of the fetching request.
-- (NSURL *)requestURL;
+@protocol GIDDataFetcher <NSObject>
 
-// Emulates server returning with data and/or error.
-- (void)didFinishWithData:(NSData *)data error:(NSError *)error;
+/// Fetches the data from an URL.
+///
+/// @param URL The endpoint to fetch data.
+/// @param comment The comment for logging purpose.
+/// @param completion The block that is called on completion asynchronously.
+- (void)fetchURL:(NSURL *)URL
+     withComment:(NSString *)comment
+      completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion;
 
-- (instancetype)initWithRequest:(NSURLRequest *)request;
 @end
+
+NS_ASSUME_NONNULL_END
