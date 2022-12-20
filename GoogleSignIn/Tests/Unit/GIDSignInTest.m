@@ -759,7 +759,7 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [_dataFetcher requestURL];
+    NSURL *url = [self->_dataFetcher requestURL];
     [self verifyURL:url withToken:kAccessToken];
     [expectation fulfill];
   }];
@@ -804,7 +804,7 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [_dataFetcher requestURL];
+    NSURL *url = [self->_dataFetcher requestURL];
     [self verifyURL:url withToken:kRefreshToken];
     [expectation fulfill];
   }];
@@ -861,7 +861,7 @@ static NSString *const kNewScope = @"newScope";
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
     // Since _dataFetcher is not invoked so there is no request url saved.
-    XCTAssertNil([_dataFetcher requestURL]);
+    XCTAssertNil([self->_dataFetcher requestURL]);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
