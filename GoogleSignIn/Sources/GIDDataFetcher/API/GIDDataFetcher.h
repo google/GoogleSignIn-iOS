@@ -16,8 +16,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class OIDAuthState;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDDataFetcher <NSObject>

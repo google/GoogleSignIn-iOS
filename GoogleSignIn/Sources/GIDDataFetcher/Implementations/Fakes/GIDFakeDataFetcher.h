@@ -24,12 +24,12 @@ typedef void(^GIDDataFetcherFakeResponse)(NSData *_Nullable data, NSError *_Null
 
 typedef void (^GIDDataFetcherTestBlock)(GIDDataFetcherFakeResponse response);
 
-@interface GIDFakeDataFetcher : NSObject<GIDDataFetcher>
+@interface GIDFakeDataFetcher : NSObject <GIDDataFetcher>
 
 /// Set the test block which provides the response value.
 - (void)setTestBlock:(GIDDataFetcherTestBlock)block;
 
-/// The url to fetch data.
+/// The saved url when `fetchURL:withComment:completion:` is invoked.
 - (nullable NSURL *)requestURL;
 
 @end

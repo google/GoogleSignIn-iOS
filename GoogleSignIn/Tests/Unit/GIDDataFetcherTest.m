@@ -17,13 +17,9 @@
 #import <XCTest/XCTest.h>
 
 #ifdef SWIFT_PACKAGE
-@import AppAuth;
 @import GTMAppAuth;
-@import OCMock;
 #else
-#import <AppAuth/AppAuth.h>
 #import <GTMAppAuth/GTMAppAuth.h>
-#import <OCMock/OCMock.h>
 #endif
 
 static NSString *const kTestURL = @"https://testURL.com";

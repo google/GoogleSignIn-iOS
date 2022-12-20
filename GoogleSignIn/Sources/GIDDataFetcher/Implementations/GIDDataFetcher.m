@@ -1,10 +1,8 @@
 #import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
 
 #ifdef SWIFT_PACKAGE
-@import AppAuth;
 @import GTMAppAuth;
 #else
-#import <AppAuth/AppAuth.h>
 #import <GTMAppAuth/GTMAppAuth.h>
 #endif
 

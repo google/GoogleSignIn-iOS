@@ -10,10 +10,6 @@
 
 @implementation GIDFakeDataFetcher
 
-- (void)setTestBlock:(GIDDataFetcherTestBlock)block {
-  _testBlock = block;
-}
-
 - (void)fetchURL:(NSURL *)URL
      withComment:(NSString *)comment
       completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion {
