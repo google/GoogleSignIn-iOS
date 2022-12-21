@@ -52,7 +52,6 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     unit_tests.source_files = [
       'GoogleSignIn/Tests/Unit/**/*.[mh]',
     ]
-    unit_tests.requires_app_host = true
     unit_tests.dependency 'OCMock'
     unit_tests.dependency 'GoogleUtilities/MethodSwizzler', '~> 7.2'
     unit_tests.dependency 'GoogleUtilities/SwizzlerTestHelpers', '~> 7.2'
