@@ -18,9 +18,16 @@
 
 #import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
 
+@protocol GIDDataFetcher;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDProfileDataFetcher : NSObject<GIDProfileDataFetcher>
+
+- (instancetype)init;
+
+- (instancetype)initWithDataFetcher: (id<GIDDataFetcher>)dataFetcher NS_DESIGNATED_INITIALIZER;
+
 @end
 
 NS_ASSUME_NONNULL_END

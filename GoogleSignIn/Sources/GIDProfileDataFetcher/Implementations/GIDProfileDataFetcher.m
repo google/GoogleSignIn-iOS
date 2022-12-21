@@ -1,8 +1,9 @@
 #import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
 
-#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-
+#import "GoogleSignIn/Sources/GIDDataFetcher/API/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -27,7 +28,22 @@ static NSString *const kBasicProfileNameKey = @"name";
 static NSString *const kBasicProfileGivenNameKey = @"given_name";
 static NSString *const kBasicProfileFamilyNameKey = @"family_name";
 
-@implementation GIDProfileDataFetcher
+@implementation GIDProfileDataFetcher {
+  id<GIDDataFetcher> _dataFetcher;
+}
+
+- (instancetype)init {
+  GIDDataFetcher *dataFetcher = [[GIDDataFetcher alloc] init];
+  return [self initWithDataFetcher:dataFetcher];
+}
+
+- (instancetype)initWithDataFetcher: (id<GIDDataFetcher>)dataFetcher {
+  self = [super init];
+  if (self) {
+    _dataFetcher = dataFetcher;
+  }
+  return self;
+}
 
 - (void)fetchProfileDataWithAuthState:(OIDAuthState *)authState
                            completion:(void (^)(GIDProfileData *_Nullable profileData,
@@ -45,10 +61,9 @@ static NSString *const kBasicProfileFamilyNameKey = @"family_name";
       [NSString stringWithFormat:kUserInfoURLTemplate,
           [GIDSignInPreferences googleUserInfoServer],
           authState.lastTokenResponse.accessToken]];
-  [self startFetchURL:infoURL
-              fromAuthState:authState
-                withComment:@"GIDSignIn: fetch basic profile info"
-      withCompletionHandler:^(NSData *data, NSError *error) {
+  [_dataFetcher fetchURL:infoURL
+             withComment:@"GIDSignIn: fetch basic profile info"
+              completion:^(NSData *data, NSError *error) {
     if (error) {
       completion(nil, error);
     } else {
@@ -67,7 +82,7 @@ static NSString *const kBasicProfileFamilyNameKey = @"family_name";
         completion(profileData, nil);
       }
       else {
-        completion(nil, error);
+        completion(nil, jsonDeserializationError);
       }
     }
   }];
@@ -89,26 +104,6 @@ static NSString *const kBasicProfileFamilyNameKey = @"family_name";
           givenName:idToken.claims[kBasicProfileGivenNameKey]
           familyName:idToken.claims[kBasicProfileFamilyNameKey]
             imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
-}
-   
-- (void)startFetchURL:(NSURL *)URL
-            fromAuthState:(OIDAuthState *)authState
-              withComment:(NSString *)comment
-    withCompletionHandler:(void (^)(NSData *, NSError *))handler {
-  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
-  GTMSessionFetcher *fetcher;
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
-  id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
-  if (fetcherService) {
-    fetcher = [fetcherService fetcherWithRequest:request];
-  } else {
-    fetcher = [GTMSessionFetcher fetcherWithRequest:request];
-  }
-  fetcher.retryEnabled = YES;
-  fetcher.maxRetryInterval = kFetcherMaxRetryInterval;
-  fetcher.comment = comment;
-  [fetcher beginFetchWithCompletionHandler:handler];
 }
 
 @end
