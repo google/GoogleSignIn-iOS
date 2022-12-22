@@ -39,6 +39,7 @@
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
+#import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
@@ -132,14 +133,6 @@ static NSString * const kHostedDomainKey = @"hostedDomain";
 static NSString * const kIDTokenExpirationKey = @"idTokenExp";
 static NSString * const kScopeKey = @"scope";
 
-// Basic profile (Fat ID Token / userinfo endpoint) keys
-static NSString *const kBasicProfilePictureKey = @"picture";
-static NSString *const kBasicProfileNameKey = @"name";
-static NSString *const kBasicProfileGivenNameKey = @"given_name";
-static NSString *const kBasicProfileFamilyNameKey = @"family_name";
-
-static NSString * const kCustomKeychainName = @"CUSTOM_KEYCHAIN_NAME";
-static NSString * const kAddActivity = @"http://schemas.google.com/AddActivity";
 static NSString * const kErrorDomain = @"ERROR_DOMAIN";
 static NSInteger const kErrorCode = 212;
 
@@ -1181,7 +1174,15 @@ static NSString *const kNewScope = @"newScope";
                refreshToken:kRefreshToken
                codeVerifier:nil
        additionalParameters:tokenResponse.request.additionalParameters];
-
+  
+  // Set the response for GIDProfileDataFetcher.
+  GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponse response) {
+    GIDProfileData *profileData = [GIDProfileData testInstance];
+    response(profileData, nil);
+  };
+  
+  [_profileDataFetcher setTestBlock:testBlock];
+  
   if (restoredSignIn) {
     // maybeFetchToken
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
@@ -1307,9 +1308,6 @@ static NSString *const kNewScope = @"newScope";
     return;
   }
 
-  // DecodeIdTokenCallback
-  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
-
   // SaveAuthCallback
   __block OIDAuthState *authState;
   __block OIDTokenResponse *updatedTokenResponse;
@@ -1363,10 +1361,7 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNotNil(authState);
   }
   // Check fat ID token decoding
-  XCTAssertEqualObjects(profileData.name, kFatName);
-  XCTAssertEqualObjects(profileData.givenName, kFatGivenName);
-  XCTAssertEqualObjects(profileData.familyName, kFatFamilyName);
-  XCTAssertTrue(profileData.hasImage);
+  XCTAssertEqualObjects(profileData, [GIDProfileData testInstance]);
 
   // If attempt to authenticate again, will reuse existing auth object.
   _completionCalled = NO;
