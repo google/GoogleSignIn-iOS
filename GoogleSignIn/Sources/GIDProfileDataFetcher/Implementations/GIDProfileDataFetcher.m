@@ -18,9 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The URL template for the URL to get user info.
 static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
 
-// Maximum retry interval in seconds for the fetcher.
-static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
-
 // Basic profile (Fat ID Token / userinfo endpoint) keys
 static NSString *const kBasicProfileEmailKey = @"email";
 static NSString *const kBasicProfilePictureKey = @"picture";

@@ -825,7 +825,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     
     [handlerAuthFlow wait];
     
-    [_profileDataFetcher
+    [self->_profileDataFetcher
         fetchProfileDataWithAuthState:(OIDAuthState *)authState
                            completion:^(GIDProfileData *_Nullable profileData,
                                         NSError *_Nullable error) {
