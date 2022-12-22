@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDDataFetcher;
 @protocol GIDKeychainHandler;
+@protocol GIDProfileDataFetcher;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.
@@ -52,6 +53,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// The designated initializer.
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
                             dataFetcher:(id<GIDDataFetcher>)dataFetcher
+                     profileDataFetcher:(id<GIDProfileDataFetcher>)profoleDataFetcher
     NS_DESIGNATED_INITIALIZER;
 
 /// Authenticates with extra options.

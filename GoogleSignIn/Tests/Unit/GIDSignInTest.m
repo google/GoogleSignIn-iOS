@@ -32,7 +32,7 @@
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/Fakes/GIDFakeDataFetcher.h"
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/Fakes/GIDFakeProfileDataFetcher.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -200,6 +200,9 @@ static NSString *const kNewScope = @"newScope";
   // Fake for |GIDDataFetcher|.
   GIDFakeDataFetcher *_dataFetcher;
   
+  // Fake for |GIDProfileDataFetcher|.
+  GIDFakeProfileDataFetcher *_profileDataFetcher;
+  
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
   id _presentingViewController;
@@ -311,8 +314,11 @@ static NSString *const kNewScope = @"newScope";
   
   _dataFetcher = [[GIDFakeDataFetcher alloc] init];
   
+  _profileDataFetcher = [[GIDFakeProfileDataFetcher alloc] init];
+  
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
-                                           dataFetcher:_dataFetcher]; 
+                                           dataFetcher:_dataFetcher
+                                    profileDataFetcher:_profileDataFetcher]; 
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;

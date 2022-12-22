@@ -458,12 +458,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDDataFetcher> dataFetcher = [[GIDDataFetcher alloc] init];
+  id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
   return [self initWithKeychainHandler:keychainHandler
-                           dataFetcher:dataFetcher];
+                           dataFetcher:dataFetcher
+                    profileDataFetcher:profileDataFetcher];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
-                            dataFetcher:(id<GIDDataFetcher>)dataFetcher{
+                            dataFetcher:(id<GIDDataFetcher>)dataFetcher
+                     profileDataFetcher:(id<GIDProfileDataFetcher>)profoleDataFetcher{
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -500,7 +503,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     
     _keychainHandler = keychainHandler;
     
-    _profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
+    _profileDataFetcher = profoleDataFetcher;
 
     _dataFetcher = dataFetcher;
   }
