@@ -1,14 +1,14 @@
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/Fakes/GIDFakeDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
 
-@interface GIDFakeDataFetcher ()
+@interface GIDFakeHTTPFetcher ()
 
-@property(nonatomic) GIDDataFetcherTestBlock testBlock;
+@property(nonatomic) GIDHTTPFetcherTestBlock testBlock;
 
 @property(nonatomic) NSURL *requestURL;
 
 @end
 
-@implementation GIDFakeDataFetcher
+@implementation GIDFakeHTTPFetcher
 
 - (void)fetchURL:(NSURL *)URL
      withComment:(NSString *)comment

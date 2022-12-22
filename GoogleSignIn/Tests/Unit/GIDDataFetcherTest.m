@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 
 #import <XCTest/XCTest.h>
 
@@ -26,17 +26,17 @@ static NSString *const kTestURL = @"https://testURL.com";
 static NSString *const kErrorDomain = @"ERROR_DOMAIN";
 static NSInteger const kErrorCode = 400;
 
-@interface GIDDataFetcherTest : XCTestCase {
-  GIDDataFetcher *_dataFetcher;
+@interface GIDHTTPFetcherTest : XCTestCase {
+  GIDHTTPFetcher *_httpFetcher;
 }
 
 @end
 
-@implementation GIDDataFetcherTest
+@implementation GIDHTTPFetcherTest
 
 - (void)setUp {
   [super setUp];
-  _dataFetcher = [[GIDDataFetcher alloc] init];
+  _httpFetcher = [[GIDHTTPFetcher alloc] init];
 }
 
 - (void)testFetchData_success {
@@ -52,7 +52,7 @@ static NSInteger const kErrorCode = 400;
       };
   [GTMSessionFetcher setGlobalTestBlock:block];
   
-  [_dataFetcher fetchURL:url
+  [_httpFetcher fetchURL:url
              withComment:@"Test data fetcher."
               completion:^(NSData *data, NSError *error) {
     XCTAssertNil(error);
@@ -76,7 +76,7 @@ static NSInteger const kErrorCode = 400;
   [GTMSessionFetcher setGlobalTestBlock:block];
   
   
-  [_dataFetcher fetchURL:url
+  [_httpFetcher fetchURL:url
              withComment:@"Test data fetcher."
               completion:^(NSData *data, NSError *error) {
     XCTAssertNotNil(error);

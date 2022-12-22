@@ -16,19 +16,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol GIDDataFetcher <NSObject>
-
-/// Fetches the data from an URL.
-///
-/// @param URL The endpoint to fetch data.
-/// @param comment The comment for logging purpose.
-/// @param completion The block that is called on completion asynchronously.
-- (void)fetchURL:(NSURL *)URL
-     withComment:(NSString *)comment
-      completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion;
-
+@interface GIDHTTPFetcher : NSObject<GIDHTTPFetcher>
 @end
 
 NS_ASSUME_NONNULL_END

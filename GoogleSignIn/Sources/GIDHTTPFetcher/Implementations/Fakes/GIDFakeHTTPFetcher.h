@@ -16,11 +16,22 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/GIDDataFetcher/API/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDDataFetcher : NSObject<GIDDataFetcher>
+typedef void(^GIDHTTPFetcherFakeResponse)(NSData *_Nullable data, NSError *_Nullable error);
+
+typedef void (^GIDHTTPFetcherTestBlock)(GIDHTTPFetcherFakeResponse response);
+
+@interface GIDFakeHTTPFetcher : NSObject <GIDHTTPFetcher>
+
+/// Set the test block which provides the response value.
+- (void)setTestBlock:(GIDHTTPFetcherTestBlock)block;
+
+/// The saved url when `fetchURL:withComment:completion:` is invoked.
+- (nullable NSURL *)requestURL;
+
 @end
 
 NS_ASSUME_NONNULL_END

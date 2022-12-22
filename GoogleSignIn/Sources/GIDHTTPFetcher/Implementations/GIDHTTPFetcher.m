@@ -1,4 +1,4 @@
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 
 #ifdef SWIFT_PACKAGE
 @import GTMAppAuth;
@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Maximum retry interval in seconds for the fetcher.
 static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 
-@implementation GIDDataFetcher
+@implementation GIDHTTPFetcher
 
 - (void)fetchURL:(NSURL *)URL
      withComment:(NSString *)comment

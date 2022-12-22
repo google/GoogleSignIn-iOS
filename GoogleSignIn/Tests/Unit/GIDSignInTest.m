@@ -31,8 +31,8 @@
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/Fakes/GIDFakeDataFetcher.h"
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -197,8 +197,8 @@ static NSString *const kNewScope = @"newScope";
   // Fake for |GIDKeychainHandler|.
   GIDFakeKeychainHandler *_keychainHandler;
 
-  // Fake for |GIDDataFetcher|.
-  GIDFakeDataFetcher *_dataFetcher;
+  // Fake for |GIDHTTPFetcher|.
+  GIDFakeHTTPFetcher *_httpFetcher;
   
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
@@ -309,10 +309,10 @@ static NSString *const kNewScope = @"newScope";
 
   _keychainHandler = [[GIDFakeKeychainHandler alloc] init];
   
-  _dataFetcher = [[GIDFakeDataFetcher alloc] init];
+  _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
   
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
-                                           dataFetcher:_dataFetcher]; 
+                                           httpFetcher:_httpFetcher];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -748,18 +748,18 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
-  GIDDataFetcherTestBlock testBlock =
-      ^(GIDDataFetcherFakeResponse response) {
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(GIDHTTPFetcherFakeResponse response) {
         NSData *data = [[NSData alloc] init];
         response(data, nil);
      };
-  [_dataFetcher setTestBlock:testBlock];
+  [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [self->_dataFetcher requestURL];
+    NSURL *url = [self->_httpFetcher requestURL];
     [self verifyURL:url withToken:kAccessToken];
     [expectation fulfill];
   }];
@@ -773,15 +773,15 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
-  GIDDataFetcherTestBlock testBlock =
-      ^(GIDDataFetcherFakeResponse response) {
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(GIDHTTPFetcherFakeResponse response) {
         NSData *data = [[NSData alloc] init];
         response(data, nil);
      };
-  [_dataFetcher setTestBlock:testBlock];
+  [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
-  NSURL *url = [_dataFetcher requestURL];
+  NSURL *url = [_httpFetcher requestURL];
   [self verifyURL:url withToken:kAccessToken];
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
@@ -793,18 +793,18 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(kRefreshToken);
   
-  GIDDataFetcherTestBlock testBlock =
-      ^(GIDDataFetcherFakeResponse response) {
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(GIDHTTPFetcherFakeResponse response) {
         NSData *data = [[NSData alloc] init];
         response(data, nil);
      };
-  [_dataFetcher setTestBlock:testBlock];
+  [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [self->_dataFetcher requestURL];
+    NSURL *url = [self->_httpFetcher requestURL];
     [self verifyURL:url withToken:kRefreshToken];
     [expectation fulfill];
   }];
@@ -817,12 +817,12 @@ static NSString *const kNewScope = @"newScope";
   [_keychainHandler saveAuthState:_authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
-  GIDDataFetcherTestBlock testBlock =
-      ^(GIDDataFetcherFakeResponse response) {
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(GIDHTTPFetcherFakeResponse response) {
         NSError *error = [self error];
         response(nil, error);
      };
-  [_dataFetcher setTestBlock:testBlock];
+  [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with an error"];
@@ -839,12 +839,12 @@ static NSString *const kNewScope = @"newScope";
   [_keychainHandler saveAuthState:_authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
-  GIDDataFetcherTestBlock testBlock =
-      ^(GIDDataFetcherFakeResponse response) {
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(GIDHTTPFetcherFakeResponse response) {
         NSError *error = [self error];
         response(nil, error);
      };
-  [_dataFetcher setTestBlock:testBlock];
+  [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
   XCTAssertNotNil([_keychainHandler loadAuthState]);
@@ -860,8 +860,8 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    // Since _dataFetcher is not invoked so there is no request url saved.
-    XCTAssertNil([self->_dataFetcher requestURL]);
+    // Since _httpFetcher is not invoked so there is no request url saved.
+    XCTAssertNil([self->_httpFetcher requestURL]);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -875,8 +875,8 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
   [_signIn disconnectWithCompletion:nil];
-  // Since _dataFetcher is not invoked so there is no request url saved.
-  XCTAssertNil([_dataFetcher requestURL]);
+  // Since _httpFetcher is not invoked so there is no request url saved.
+  XCTAssertNil([_httpFetcher requestURL]);
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
 

@@ -21,8 +21,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
-#import "GoogleSignIn/Sources/GIDDataFetcher/API/GIDDataFetcher.h"
-#import "GoogleSignIn/Sources/GIDDataFetcher/Implementations/GIDDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/API/GIDKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDKeychainHandler.h"
@@ -171,7 +171,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   id<GIDKeychainHandler> _keychainHandler;
   
   // The class to fetches data from an url end point.
-  id<GIDDataFetcher> _dataFetcher;
+  id<GIDHTTPFetcher> _httpFetcher;
 }
 
 #pragma mark - Public methods
@@ -423,7 +423,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                      kEnvironmentLoggingParameter,
                      GIDEnvironment()];
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [_dataFetcher fetchURL:revokeURL
+  [_httpFetcher fetchURL:revokeURL
              withComment:@"GIDSignIn: revoke tokens"
               completion:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
@@ -453,13 +453,13 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
-  id<GIDDataFetcher> dataFetcher = [[GIDDataFetcher alloc] init];
+  id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
   return [self initWithKeychainHandler:keychainHandler
-                           dataFetcher:dataFetcher];
+                           httpFetcher:httpFetcher];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
-                            dataFetcher:(id<GIDDataFetcher>)dataFetcher{
+                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher{
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -495,7 +495,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     
     _keychainHandler = keychainHandler;
-    _dataFetcher = dataFetcher;
+    _httpFetcher = httpFetcher;
   }
   return self;
 }
@@ -827,7 +827,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
               [GIDSignInPreferences googleUserInfoServer],
               authState.lastTokenResponse.accessToken]];
       
-      [self->_dataFetcher fetchURL:infoURL
+      [self->_httpFetcher fetchURL:infoURL
                        withComment:@"GIDSignIn: fetch basic profile info"
                         completion:^(NSData *data, NSError *error) {
         if (data && !error) {
