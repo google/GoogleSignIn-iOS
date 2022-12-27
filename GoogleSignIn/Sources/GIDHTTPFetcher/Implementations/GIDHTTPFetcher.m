@@ -13,11 +13,14 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 
 @implementation GIDHTTPFetcher
 
-- (void)fetchURL:(NSURL *)URL
-     withComment:(NSString *)comment
-      completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion {
-  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
-  GTMSessionFetcher *fetcher = [GTMSessionFetcher fetcherWithRequest:request];
+- (void)fetchURLrequest:(NSURLRequest *)urlRequest
+          fromAuthState:(OIDAuthState *)authState
+            withComment:(NSString *)comment
+             completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion {
+  GTMAppAuthFetcherAuthorization *authorization =
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+  GTMSessionFetcher *fetcher = [GTMSessionFetcher fetcherWithRequest:urlRequest];
+  fetcher.authorizer = authorization;
   fetcher.retryEnabled = YES;
   fetcher.maxRetryInterval = kFetcherMaxRetryInterval;
   fetcher.comment = comment;

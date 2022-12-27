@@ -742,6 +742,39 @@ static NSString *const kNewScope = @"newScope";
 
 #pragma mark - Tests - disconnectWithCallback:
 
+// Verifies the request url when disconnect succeeds.
+- (void)testDisconnect_verifyURL_succeed {
+  [_keychainHandler saveAuthState:_authState];
+  OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
+  OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
+  
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(GIDHTTPFetcherFakeResponse response) {
+        NSData *data = [[NSData alloc] init];
+        response(data, nil);
+     };
+  [_httpFetcher setTestBlock:testBlock];
+  
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with nil error"];
+  [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
+    XCTAssertNil(error);
+    NSURL *url = [self->_httpFetcher requestURL];
+    XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
+    XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
+    XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
+    OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
+    NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
+    XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+                          @"SDK version logging parameter should match");
+    XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+                          @"Environment logging parameter should match");
+    [expectation fulfill];
+  }];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertNil([_keychainHandler loadAuthState]);
+}
+
 // Verifies disconnect calls callback with no errors if access token is present.
 - (void)testDisconnect_accessTokenIsPresent {
   [_keychainHandler saveAuthState:_authState];
@@ -760,7 +793,6 @@ static NSString *const kNewScope = @"newScope";
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
     NSURL *url = [self->_httpFetcher requestURL];
-    [self verifyURL:url withToken:kAccessToken];
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -782,7 +814,6 @@ static NSString *const kNewScope = @"newScope";
   
   [_signIn disconnectWithCompletion:nil];
   NSURL *url = [_httpFetcher requestURL];
-  [self verifyURL:url withToken:kAccessToken];
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
@@ -805,7 +836,6 @@ static NSString *const kNewScope = @"newScope";
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
     NSURL *url = [self->_httpFetcher requestURL];
-    [self verifyURL:url withToken:kRefreshToken];
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -1096,21 +1126,6 @@ static NSString *const kNewScope = @"newScope";
 
 - (NSError *)error {
   return [NSError errorWithDomain:kErrorDomain code:kErrorCode userInfo:nil];
-}
-
-// Verifies the url to fetch the data.
-- (void)verifyURL:(NSURL *)url withToken:(NSString *)token {
-  XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
-  XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
-  XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
-  OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
-  NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
-  XCTAssertEqualObjects([params valueForKey:@"token"], token,
-                        @"token parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
-                        @"SDK version logging parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
-                        @"Environment logging parameter should match");
 }
 
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow

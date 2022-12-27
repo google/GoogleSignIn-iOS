@@ -81,10 +81,10 @@ static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth
 static NSString *const kTokenURLTemplate = @"https://%@/token";
 
 // The URL template for the URL to get user info.
-static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
+static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
 
 // The URL template for the URL to revoke the token.
-static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke?token=%@";
+static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke";
 
 // Expected path in the URL scheme to be handled.
 static NSString *const kBrowserCallbackPath = @"/oauth2callback";
@@ -414,18 +414,24 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     return;
   }
   NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
-      [GIDSignInPreferences googleAuthorizationServer], token];
+      [GIDSignInPreferences googleAuthorizationServer]];
   // Append logging parameter
-  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@&%@=%@",
+  revokeURLString = [NSString stringWithFormat:@"%@?%@=%@&%@=%@",
                      revokeURLString,
                      kSDKVersionLoggingParameter,
                      GIDVersion(),
                      kEnvironmentLoggingParameter,
                      GIDEnvironment()];
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [_httpFetcher fetchURL:revokeURL
-             withComment:@"GIDSignIn: revoke tokens"
-              completion:^(NSData *data, NSError *error) {
+  NSMutableURLRequest *revokeRequest = [NSMutableURLRequest requestWithURL:revokeURL];
+  [revokeRequest setHTTPMethod:@"POST"];
+  NSString *postString = [NSString stringWithFormat:@"token=%@", token];
+  [revokeRequest setHTTPBody:[postString dataUsingEncoding:NSUTF8StringEncoding]];
+
+  [_httpFetcher fetchURLrequest:revokeRequest
+                  fromAuthState:authState
+                    withComment:@"GIDSignIn: revoke tokens"
+                     completion:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
     if (!error) {
       [self signOut];
@@ -822,14 +828,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
     if (!handlerAuthFlow.profileData) {
       [handlerAuthFlow wait];
-      NSURL *infoURL = [NSURL URLWithString:
-          [NSString stringWithFormat:kUserInfoURLTemplate,
-              [GIDSignInPreferences googleUserInfoServer],
-              authState.lastTokenResponse.accessToken]];
-      
-      [self->_httpFetcher fetchURL:infoURL
-                       withComment:@"GIDSignIn: fetch basic profile info"
-                        completion:^(NSData *data, NSError *error) {
+      NSString *infoString = [NSString stringWithFormat:kUserInfoURLTemplate,
+                                 [GIDSignInPreferences googleUserInfoServer]];
+      NSURL *infoURL = [NSURL URLWithString:infoString];
+      NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:infoURL];
+      [self->_httpFetcher fetchURLrequest:infoRequest
+                            fromAuthState:authState
+                              withComment:@"GIDSignIn: fetch basic profile info"
+                               completion:^(NSData *data, NSError *error) {
         if (data && !error) {
           NSError *jsonDeserializationError;
           NSDictionary<NSString *, NSString *> *profileDict =

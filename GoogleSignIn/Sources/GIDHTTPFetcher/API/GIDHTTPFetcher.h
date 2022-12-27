@@ -16,18 +16,22 @@
 
 #import <Foundation/Foundation.h>
 
+@class OIDAuthState;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDHTTPFetcher <NSObject>
 
-/// Fetches the data from an URL.
+/// Fetches the data from an URL request.
 ///
-/// @param URL The endpoint to fetch data.
+/// @param urlRequest The url request to fetch data.
+/// @param authState The current OAuth session to authorize request.
 /// @param comment The comment for logging purpose.
 /// @param completion The block that is called on completion asynchronously.
-- (void)fetchURL:(NSURL *)URL
-     withComment:(NSString *)comment
-      completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion;
+- (void)fetchURLrequest:(NSURLRequest *)urlRequest
+          fromAuthState:(OIDAuthState *)authState
+            withComment:(NSString *)comment
+             completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion;
 
 @end
 

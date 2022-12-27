@@ -14,6 +14,8 @@
 
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
+
 #import <XCTest/XCTest.h>
 
 #ifdef SWIFT_PACKAGE
@@ -41,6 +43,8 @@ static NSInteger const kErrorCode = 400;
 
 - (void)testFetchData_success {
   NSURL *url = [NSURL URLWithString:kTestURL];
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+  OIDAuthState *authState = [OIDAuthState testInstance];
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with no error"];
   
@@ -52,9 +56,10 @@ static NSInteger const kErrorCode = 400;
       };
   [GTMSessionFetcher setGlobalTestBlock:block];
   
-  [_httpFetcher fetchURL:url
-             withComment:@"Test data fetcher."
-              completion:^(NSData *data, NSError *error) {
+  [_httpFetcher fetchURLrequest:request
+                  fromAuthState:authState
+                    withComment:@"Test data fetcher."
+                     completion:^(NSData *data, NSError *error) {
     XCTAssertNil(error);
     [expectation fulfill];
   }];
@@ -64,6 +69,8 @@ static NSInteger const kErrorCode = 400;
 
 - (void)testFetchData_error {
   NSURL *url = [NSURL URLWithString:kTestURL];
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+  OIDAuthState *authState = [OIDAuthState testInstance];
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with an error"];
   
@@ -75,10 +82,10 @@ static NSInteger const kErrorCode = 400;
       };
   [GTMSessionFetcher setGlobalTestBlock:block];
   
-  
-  [_httpFetcher fetchURL:url
-             withComment:@"Test data fetcher."
-              completion:^(NSData *data, NSError *error) {
+  [_httpFetcher fetchURLrequest:request
+                  fromAuthState:authState
+                    withComment:@"Test data fetcher."
+                     completion:^(NSData *data, NSError *error) {
     XCTAssertNotNil(error);
     XCTAssertEqual(error.code, kErrorCode);
     [expectation fulfill];
