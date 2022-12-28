@@ -170,7 +170,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   
   id<GIDKeychainHandler> _keychainHandler;
   
-  // The class to fetches data from an url end point.
+  // The class to fetches data from a url end point.
   id<GIDHTTPFetcher> _httpFetcher;
 }
 
@@ -427,9 +427,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   [revokeRequest setHTTPMethod:@"POST"];
   NSString *postString = [NSString stringWithFormat:@"token=%@", token];
   [revokeRequest setHTTPBody:[postString dataUsingEncoding:NSUTF8StringEncoding]];
-
-  [_httpFetcher fetchURLrequest:revokeRequest
-                  fromAuthState:authState
+  GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+  
+  [_httpFetcher fetchURLRequest:revokeRequest
+                 withAuthorizer:authorization
                     withComment:@"GIDSignIn: revoke tokens"
                      completion:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
@@ -832,8 +834,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                  [GIDSignInPreferences googleUserInfoServer]];
       NSURL *infoURL = [NSURL URLWithString:infoString];
       NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:infoURL];
-      [self->_httpFetcher fetchURLrequest:infoRequest
-                            fromAuthState:authState
+      GTMAppAuthFetcherAuthorization *authorization =
+            [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+
+      [self->_httpFetcher fetchURLRequest:infoRequest
+                           withAuthorizer:authorization
                               withComment:@"GIDSignIn: fetch basic profile info"
                                completion:^(NSData *data, NSError *error) {
         if (data && !error) {

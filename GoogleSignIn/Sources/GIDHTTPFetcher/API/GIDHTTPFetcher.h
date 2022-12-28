@@ -18,6 +18,8 @@
 
 @class OIDAuthState;
 
+@protocol GTMFetcherAuthorizationProtocol;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDHTTPFetcher <NSObject>
@@ -28,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param authState The current OAuth session to authorize request.
 /// @param comment The comment for logging purpose.
 /// @param completion The block that is called on completion asynchronously.
-- (void)fetchURLrequest:(NSURLRequest *)urlRequest
-          fromAuthState:(OIDAuthState *)authState
+- (void)fetchURLRequest:(NSURLRequest *)urlRequest
+         withAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
             withComment:(NSString *)comment
              completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion;
 

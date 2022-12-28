@@ -45,10 +45,8 @@ static NSInteger const kErrorCode = 400;
   NSURL *url = [NSURL URLWithString:kTestURL];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   OIDAuthState *authState = [OIDAuthState testInstance];
-  XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with no error"];
-  
-  
+  GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   GTMSessionFetcherTestBlock block =
       ^(GTMSessionFetcher *fetcherToTest, GTMSessionFetcherTestResponse testResponse) {
         NSData *data = [[NSData alloc] init];
@@ -56,14 +54,16 @@ static NSInteger const kErrorCode = 400;
       };
   [GTMSessionFetcher setGlobalTestBlock:block];
   
-  [_httpFetcher fetchURLrequest:request
-                  fromAuthState:authState
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with no error"];
+  
+  [_httpFetcher fetchURLRequest:request
+                 withAuthorizer:authorization
                     withComment:@"Test data fetcher."
                      completion:^(NSData *data, NSError *error) {
     XCTAssertNil(error);
     [expectation fulfill];
   }];
-
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -71,9 +71,8 @@ static NSInteger const kErrorCode = 400;
   NSURL *url = [NSURL URLWithString:kTestURL];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   OIDAuthState *authState = [OIDAuthState testInstance];
-  XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with an error"];
-  
+  GTMAppAuthFetcherAuthorization *authorization =
+        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   GTMSessionFetcherTestBlock block =
       ^(GTMSessionFetcher *fetcherToTest, GTMSessionFetcherTestResponse testResponse) {
         NSData *data = [[NSData alloc] init];
@@ -82,8 +81,11 @@ static NSInteger const kErrorCode = 400;
       };
   [GTMSessionFetcher setGlobalTestBlock:block];
   
-  [_httpFetcher fetchURLrequest:request
-                  fromAuthState:authState
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Callback called with an error"];
+  
+  [_httpFetcher fetchURLRequest:request
+                 withAuthorizer:authorization
                     withComment:@"Test data fetcher."
                      completion:^(NSData *data, NSError *error) {
     XCTAssertNotNil(error);

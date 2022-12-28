@@ -748,10 +748,29 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
+  XCTestExpectation *expectation1 =
+      [self expectationWithDescription:@"test block is called"];
   GIDHTTPFetcherTestBlock testBlock =
-      ^(GIDHTTPFetcherFakeResponse response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
+        NSURL *url = request.URL;
+        XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
+        XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
+        XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
+        OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
+        NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
+        XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+                              @"SDK version logging parameter should match");
+        XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+                              @"Environment logging parameter should match");
+        
+        NSData *body = request.HTTPBody;
+        NSString* bodyString = [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding];
+        NSArray<NSString *> *strings = [bodyString componentsSeparatedByString:@"="];
+        XCTAssertEqualObjects(strings[1], kAccessToken);
+
         NSData *data = [[NSData alloc] init];
         response(data, nil);
+        [expectation1 fulfill];
      };
   [_httpFetcher setTestBlock:testBlock];
   
@@ -759,16 +778,6 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [self->_httpFetcher requestURL];
-    XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
-    XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
-    XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
-    OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
-    NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
-    XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
-                          @"SDK version logging parameter should match");
-    XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
-                          @"Environment logging parameter should match");
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -782,7 +791,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(GIDHTTPFetcherFakeResponse response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
         NSData *data = [[NSData alloc] init];
         response(data, nil);
      };
@@ -792,7 +801,6 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [self->_httpFetcher requestURL];
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -806,14 +814,13 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(GIDHTTPFetcherFakeResponse response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
         NSData *data = [[NSData alloc] init];
         response(data, nil);
      };
   [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
-  NSURL *url = [_httpFetcher requestURL];
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
@@ -825,7 +832,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse refreshToken]).andReturn(kRefreshToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(GIDHTTPFetcherFakeResponse response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
         NSData *data = [[NSData alloc] init];
         response(data, nil);
      };
@@ -835,7 +842,6 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    NSURL *url = [self->_httpFetcher requestURL];
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -848,7 +854,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(GIDHTTPFetcherFakeResponse response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
         NSError *error = [self error];
         response(nil, error);
      };
@@ -870,7 +876,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(GIDHTTPFetcherFakeResponse response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
         NSError *error = [self error];
         response(nil, error);
      };
@@ -886,12 +892,16 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
+        XCTFail(@"_httpFetcher should not be invoked.");
+     };
+  [_httpFetcher setTestBlock:testBlock];
+  
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    // Since _httpFetcher is not invoked so there is no request url saved.
-    XCTAssertNil([self->_httpFetcher requestURL]);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -904,9 +914,13 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
+        XCTFail(@"_httpFetcher should not be invoked.");
+     };
+  [_httpFetcher setTestBlock:testBlock];
+  
   [_signIn disconnectWithCompletion:nil];
-  // Since _httpFetcher is not invoked so there is no request url saved.
-  XCTAssertNil([_httpFetcher requestURL]);
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
