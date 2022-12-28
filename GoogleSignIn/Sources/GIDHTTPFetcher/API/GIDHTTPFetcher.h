@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Fetches the data from an URL request.
 ///
 /// @param urlRequest The url request to fetch data.
-/// @param authState The current OAuth session to authorize request.
+/// @param authorizer The object to add authorization to the request.
 /// @param comment The comment for logging purpose.
 /// @param completion The block that is called on completion asynchronously.
 - (void)fetchURLRequest:(NSURLRequest *)urlRequest

@@ -21,7 +21,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// The block which provides the response for the method
-/// fetchURLRequest:fromAuthState:withComment:completion:`.
+/// fetchURLRequest:withAuthorizer:withComment:completion:`.
 ///
 /// @param data The NSData returned if succeed,
 /// @param error The error returned if failed.
@@ -29,10 +29,10 @@ typedef void(^GIDHTTPFetcherFakeResponseHandlerBlock)(NSData *_Nullable data,
                                                       NSError *_Nullable error);
 
 /// The block to set up data based on the input request for the method
-/// fetchURLRequest:fromAuthState:withComment:completion:`.
+/// fetchURLRequest:withAuthorizer:withComment:completion:`.
 ///
 /// @param request The request from input.
-/// @param response The block which provides the response.
+/// @param response The block which handles the response.
 typedef void (^GIDHTTPFetcherTestBlock)(NSURLRequest *request,
                                         GIDHTTPFetcherFakeResponseHandlerBlock response);
 
