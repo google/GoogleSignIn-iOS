@@ -9,7 +9,7 @@
 @implementation GIDFakeHTTPFetcher
 
 - (void)fetchURLRequest:(NSURLRequest *)urlRequest
-         withAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
+         withAuthorizer:(id<GTMSessionFetcherAuthorizer>)authorizer
             withComment:(NSString *)comment
              completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion {
   NSAssert(self.testBlock != nil, @"Set the test block before invoking this method.");

@@ -18,7 +18,7 @@
 
 @class OIDAuthState;
 
-@protocol GTMFetcherAuthorizationProtocol;
+@protocol GTMSessionFetcherAuthorizer;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param comment The comment for logging purpose.
 /// @param completion The block that is called on completion asynchronously.
 - (void)fetchURLRequest:(NSURLRequest *)urlRequest
-         withAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
+         withAuthorizer:(id<GTMSessionFetcherAuthorizer>)authorizer
             withComment:(NSString *)comment
              completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion;
 
