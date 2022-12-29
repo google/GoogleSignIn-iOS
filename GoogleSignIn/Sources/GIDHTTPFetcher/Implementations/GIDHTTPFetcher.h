@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-#ifdef SWIFT_PACKAGE
-@import GTMSessionFetcherCore;
-#else
-#import <GTMSessionFetcher/GTMSessionFetcher.h>
-#endif
+#import <Foundation/Foundation.h>
 
-// A fake |GTMHTTPFetcher| for testing.
-@interface GIDFakeFetcher : GTMSessionFetcher
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
 
-// The URL of the fetching request.
-- (NSURL *)requestURL;
+NS_ASSUME_NONNULL_BEGIN
 
-// Emulates server returning with data and/or error.
-- (void)didFinishWithData:(NSData *)data error:(NSError *)error;
-
-- (instancetype)initWithRequest:(NSURLRequest *)request;
+@interface GIDHTTPFetcher : NSObject<GIDHTTPFetcher>
 @end
+
+NS_ASSUME_NONNULL_END
