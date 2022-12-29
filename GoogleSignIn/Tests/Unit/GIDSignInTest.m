@@ -748,7 +748,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
-  XCTestExpectation *expectation1 =
+  XCTestExpectation *fetcherExpectation =
       [self expectationWithDescription:@"test block is called"];
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock response) {
@@ -770,15 +770,15 @@ static NSString *const kNewScope = @"newScope";
 
         NSData *data = [[NSData alloc] init];
         response(data, nil);
-        [expectation1 fulfill];
-     };
+        [fetcherExpectation fulfill];
+      };
   [_httpFetcher setTestBlock:testBlock];
   
-  XCTestExpectation *expectation =
+  XCTestExpectation *completionExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    [expectation fulfill];
+    [completionExpectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertNil([_keychainHandler loadAuthState]);
@@ -791,10 +791,10 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         NSData *data = [[NSData alloc] init];
-        responseHandler(data, nil);
-     };
+        responseProvider(data, nil);
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
@@ -814,10 +814,10 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         NSData *data = [[NSData alloc] init];
-        responseHandler(data, nil);
-     };
+        responseProvider(data, nil);
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
@@ -832,10 +832,10 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse refreshToken]).andReturn(kRefreshToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         NSData *data = [[NSData alloc] init];
-        responseHandler(data, nil);
-     };
+        responseProvider(data, nil);
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
@@ -854,10 +854,10 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         NSError *error = [self error];
-        responseHandler(nil, error);
-     };
+        responseProvider(nil, error);
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
@@ -876,10 +876,10 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         NSError *error = [self error];
-        responseHandler(nil, error);
-     };
+        responseProvider(nil, error);
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
@@ -893,9 +893,9 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         XCTFail(@"_httpFetcher should not be invoked.");
-     };
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
@@ -915,9 +915,9 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         XCTFail(@"_httpFetcher should not be invoked.");
-     };
+      };
   [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
