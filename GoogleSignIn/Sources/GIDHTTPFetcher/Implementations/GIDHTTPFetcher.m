@@ -14,10 +14,11 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 @implementation GIDHTTPFetcher
 
 - (void)fetchURLRequest:(NSURLRequest *)urlRequest
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
          withAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
+#pragma clang diagnostic pop
             withComment:(NSString *)comment
              completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion {
-  
   GTMSessionFetcher *fetcher = [GTMSessionFetcher fetcherWithRequest:urlRequest];
   fetcher.authorizer = authorizer;
   fetcher.retryEnabled = YES;

@@ -32,7 +32,7 @@ typedef void(^GIDHTTPFetcherFakeResponseHandlerBlock)(NSData *_Nullable data,
 /// fetchURLRequest:withAuthorizer:withComment:completion:`.
 ///
 /// @param request The request from input.
-/// @param response The block which handles the response.
+/// @param responseHandler The block which handles the response.
 typedef void (^GIDHTTPFetcherTestBlock)(NSURLRequest *request,
                                         GIDHTTPFetcherFakeResponseHandlerBlock responseHandler);
 

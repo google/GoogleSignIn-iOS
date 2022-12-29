@@ -9,7 +9,9 @@
 @implementation GIDFakeHTTPFetcher
 
 - (void)fetchURLRequest:(NSURLRequest *)urlRequest
-         withAuthorizer:(id<GTMSessionFetcherAuthorizer>)authorizer
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+         withAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
+#pragma clang diagnostic pop
             withComment:(NSString *)comment
              completion:(void (^)(NSData *_Nullable, NSError *_Nullable))completion {
   NSAssert(self.testBlock != nil, @"Set the test block before invoking this method.");
