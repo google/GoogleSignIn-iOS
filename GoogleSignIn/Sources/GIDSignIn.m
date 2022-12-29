@@ -428,7 +428,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSString *postString = [NSString stringWithFormat:@"token=%@", token];
   [revokeRequest setHTTPBody:[postString dataUsingEncoding:NSUTF8StringEncoding]];
   GTMAppAuthFetcherAuthorization *authorization =
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   
   [_httpFetcher fetchURLRequest:revokeRequest
                  withAuthorizer:authorization
@@ -835,7 +835,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       NSURL *infoURL = [NSURL URLWithString:infoString];
       NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:infoURL];
       GTMAppAuthFetcherAuthorization *authorization =
-            [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+          [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
 
       [self->_httpFetcher fetchURLRequest:infoRequest
                            withAuthorizer:authorization

@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param data The NSData returned if succeed,
 /// @param error The error returned if failed.
-typedef void(^GIDHTTPFetcherFakeResponseHandlerBlock)(NSData *_Nullable data,
+typedef void(^GIDHTTPFetcherFakeResponseProviderBlock)(NSData *_Nullable data,
                                                       NSError *_Nullable error);
 
 /// The block to set up data based on the input request for the method
@@ -34,7 +34,7 @@ typedef void(^GIDHTTPFetcherFakeResponseHandlerBlock)(NSData *_Nullable data,
 /// @param request The request from input.
 /// @param responseHandler The block which handles the response.
 typedef void (^GIDHTTPFetcherTestBlock)(NSURLRequest *request,
-                                        GIDHTTPFetcherFakeResponseHandlerBlock responseHandler);
+                                        GIDHTTPFetcherFakeResponseProviderBlock responseHandler);
 
 @interface GIDFakeHTTPFetcher : NSObject <GIDHTTPFetcher>
 

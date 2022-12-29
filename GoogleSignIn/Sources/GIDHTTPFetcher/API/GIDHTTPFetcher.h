@@ -16,8 +16,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class OIDAuthState;
-
 @protocol GTMFetcherAuthorizationProtocol;
 
 NS_ASSUME_NONNULL_BEGIN

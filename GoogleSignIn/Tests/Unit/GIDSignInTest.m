@@ -751,7 +751,7 @@ static NSString *const kNewScope = @"newScope";
   XCTestExpectation *expectation1 =
       [self expectationWithDescription:@"test block is called"];
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock response) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock response) {
         NSURL *url = request.URL;
         XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
         XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
@@ -791,7 +791,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         NSData *data = [[NSData alloc] init];
         responseHandler(data, nil);
      };
@@ -814,7 +814,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         NSData *data = [[NSData alloc] init];
         responseHandler(data, nil);
      };
@@ -832,7 +832,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse refreshToken]).andReturn(kRefreshToken);
   
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         NSData *data = [[NSData alloc] init];
         responseHandler(data, nil);
      };
@@ -854,7 +854,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         NSError *error = [self error];
         responseHandler(nil, error);
      };
@@ -876,7 +876,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         NSError *error = [self error];
         responseHandler(nil, error);
      };
@@ -893,7 +893,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         XCTFail(@"_httpFetcher should not be invoked.");
      };
   [_httpFetcher setTestBlock:testBlock];
@@ -915,7 +915,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(nil);
   GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseHandlerBlock responseHandler) {
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseHandler) {
         XCTFail(@"_httpFetcher should not be invoked.");
      };
   [_httpFetcher setTestBlock:testBlock];

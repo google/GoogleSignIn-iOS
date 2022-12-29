@@ -46,7 +46,7 @@ static NSInteger const kErrorCode = 400;
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   OIDAuthState *authState = [OIDAuthState testInstance];
   GTMAppAuthFetcherAuthorization *authorization =
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   GTMSessionFetcherTestBlock block =
       ^(GTMSessionFetcher *fetcherToTest, GTMSessionFetcherTestResponse testResponse) {
         NSData *data = [[NSData alloc] init];
@@ -72,7 +72,7 @@ static NSInteger const kErrorCode = 400;
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   OIDAuthState *authState = [OIDAuthState testInstance];
   GTMAppAuthFetcherAuthorization *authorization =
-        [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
   GTMSessionFetcherTestBlock block =
       ^(GTMSessionFetcher *fetcherToTest, GTMSessionFetcherTestResponse testResponse) {
         NSData *data = [[NSData alloc] init];
