@@ -33,6 +33,8 @@
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
+
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -311,8 +313,10 @@ static NSString *const kNewScope = @"newScope";
   
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
   
+  id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
-                                           httpFetcher:_httpFetcher];
+                                           httpFetcher:_httpFetcher
+                                    profileDataFetcher:profileDataFetcher];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;

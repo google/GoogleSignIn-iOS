@@ -26,6 +26,8 @@
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/API/GIDKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/GIDKeychainHandler.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
@@ -80,9 +82,6 @@ static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth
 // The URL template for the token endpoint.
 static NSString *const kTokenURLTemplate = @"https://%@/token";
 
-// The URL template for the URL to get user info.
-static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
-
 // The URL template for the URL to revoke the token.
 static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke";
 
@@ -100,13 +99,6 @@ NSErrorDomain const kGIDSignInErrorDomain = @"com.google.GIDSignIn";
 
 // Keychain constants for saving state in the authentication flow.
 static NSString *const kGTMAppAuthKeychainName = @"auth";
-
-// Basic profile (Fat ID Token / userinfo endpoint) keys
-static NSString *const kBasicProfileEmailKey = @"email";
-static NSString *const kBasicProfilePictureKey = @"picture";
-static NSString *const kBasicProfileNameKey = @"name";
-static NSString *const kBasicProfileGivenNameKey = @"given_name";
-static NSString *const kBasicProfileFamilyNameKey = @"family_name";
 
 // Parameters in the callback URL coming back from browser.
 static NSString *const kAuthorizationCodeKeyName = @"code";
@@ -168,7 +160,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
   
+  // The class to execute keychain operations.
   id<GIDKeychainHandler> _keychainHandler;
+  
+  // The class to fetch GIDProfileData object.
+  id<GIDProfileDataFetcher> _profileDataFetcher;
   
   // The class to fetches data from a url end point.
   id<GIDHTTPFetcher> _httpFetcher;
@@ -230,7 +226,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // Restore current user without refreshing the access token.
   OIDIDToken *idToken =
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
-  GIDProfileData *profileData = [self profileDataWithIDToken:idToken];
+  GIDProfileData *profileData = [[GIDProfileData alloc] initWithIDToken:idToken];
 
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
   self.currentUser = user;
@@ -462,12 +458,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
+  id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
   return [self initWithKeychainHandler:keychainHandler
-                           httpFetcher:httpFetcher];
+                           httpFetcher:httpFetcher
+                    profileDataFetcher:profileDataFetcher];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
-                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher{
+                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
+                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher{
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -504,6 +503,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     
     _keychainHandler = keychainHandler;
     _httpFetcher = httpFetcher;
+    _profileDataFetcher = profileDataFetcher;
   }
   return self;
 }
@@ -820,48 +820,20 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (!authState || handlerAuthFlow.error) {
       return;
     }
-    OIDIDToken *idToken =
-        [[OIDIDToken alloc] initWithIDTokenString: authState.lastTokenResponse.idToken];
-    // If the profile data are present in the ID token, use them.
-    if (idToken) {
-      handlerAuthFlow.profileData = [self profileDataWithIDToken:idToken];
-    }
-
-    // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
-    if (!handlerAuthFlow.profileData) {
-      [handlerAuthFlow wait];
-      NSString *infoString = [NSString stringWithFormat:kUserInfoURLTemplate,
-                                 [GIDSignInPreferences googleUserInfoServer]];
-      NSURL *infoURL = [NSURL URLWithString:infoString];
-      NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:infoURL];
-      GTMAppAuthFetcherAuthorization *authorization =
-          [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
-
-      [self->_httpFetcher fetchURLRequest:infoRequest
-                           withAuthorizer:authorization
-                              withComment:@"GIDSignIn: fetch basic profile info"
-                               completion:^(NSData *data, NSError *error) {
-        if (data && !error) {
-          NSError *jsonDeserializationError;
-          NSDictionary<NSString *, NSString *> *profileDict =
-              [NSJSONSerialization JSONObjectWithData:data
-                                              options:NSJSONReadingMutableContainers
-                                                error:&jsonDeserializationError];
-          if (profileDict) {
-            handlerAuthFlow.profileData = [[GIDProfileData alloc]
-                initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                          name:profileDict[kBasicProfileNameKey]
-                    givenName:profileDict[kBasicProfileGivenNameKey]
-                    familyName:profileDict[kBasicProfileFamilyNameKey]
-                      imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
-          }
-        }
-        if (error) {
-          handlerAuthFlow.error = error;
-        }
-        [handlerAuthFlow next];
-      }];
-    }
+    
+    [handlerAuthFlow wait];
+    
+    [self->_profileDataFetcher
+            fetchProfileDataWithAuthState:(OIDAuthState *)authState
+                               completion:^(GIDProfileData *_Nullable profileData,
+                                            NSError *_Nullable error) {
+      if (error) {
+        handlerAuthFlow.error = error;
+      } else {
+        handlerAuthFlow.profileData = profileData;
+      }
+      [handlerAuthFlow next];
+    }];
   }];
 }
 
@@ -978,24 +950,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
   [defaults setBool:YES forKey:kAppHasRunBeforeKey];
   return YES;
-}
-
-// Generates user profile from OIDIDToken.
-- (GIDProfileData *)profileDataWithIDToken:(OIDIDToken *)idToken {
-  if (!idToken ||
-      !idToken.claims[kBasicProfilePictureKey] ||
-      !idToken.claims[kBasicProfileNameKey] ||
-      !idToken.claims[kBasicProfileGivenNameKey] ||
-      !idToken.claims[kBasicProfileFamilyNameKey]) {
-    return nil;
-  }
-
-  return [[GIDProfileData alloc]
-      initWithEmail:idToken.claims[kBasicProfileEmailKey]
-               name:idToken.claims[kBasicProfileNameKey]
-          givenName:idToken.claims[kBasicProfileGivenNameKey]
-          familyName:idToken.claims[kBasicProfileFamilyNameKey]
-            imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
 // Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.

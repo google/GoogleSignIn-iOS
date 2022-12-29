@@ -16,6 +16,12 @@
 
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
+#import <AppAuth/AppAuth.h>
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 // Key constants used for encode and decode.
@@ -25,6 +31,13 @@ static NSString *const kGivenNameKey = @"given_name";
 static NSString *const kFamilyNameKey = @"family_name";
 static NSString *const kImageURLKey = @"image_url";
 static NSString *const kOldImageURLStringKey = @"picture";
+
+// Basic profile (Fat ID Token / userinfo endpoint) keys
+NSString *const kBasicProfileEmailKey = @"email";
+NSString *const kBasicProfilePictureKey = @"picture";
+NSString *const kBasicProfileNameKey = @"name";
+NSString *const kBasicProfileGivenNameKey = @"given_name";
+NSString *const kBasicProfileFamilyNameKey = @"family_name";
 
 @implementation GIDProfileData {
   NSURL *_imageURL;
@@ -44,6 +57,23 @@ static NSString *const kOldImageURLStringKey = @"picture";
     _imageURL = [imageURL copy];
   }
   return self;
+}
+
+- (instancetype)initWithIDToken:(OIDIDToken *)idToken {
+  if (!idToken ||
+      !idToken.claims[kBasicProfilePictureKey] ||
+      !idToken.claims[kBasicProfileNameKey] ||
+      !idToken.claims[kBasicProfileGivenNameKey] ||
+      !idToken.claims[kBasicProfileFamilyNameKey]) {
+    return nil;
+  }
+
+  return [[GIDProfileData alloc]
+      initWithEmail:idToken.claims[kBasicProfileEmailKey]
+               name:idToken.claims[kBasicProfileNameKey]
+          givenName:idToken.claims[kBasicProfileGivenNameKey]
+         familyName:idToken.claims[kBasicProfileFamilyNameKey]
+           imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
 - (BOOL)hasImage {
