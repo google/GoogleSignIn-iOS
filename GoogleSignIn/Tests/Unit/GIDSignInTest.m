@@ -742,48 +742,6 @@ static NSString *const kNewScope = @"newScope";
 
 #pragma mark - Tests - disconnectWithCallback:
 
-// Verifies the request url when disconnect succeeds.
-- (void)testDisconnect_verifyURL_succeed {
-  [_keychainHandler saveAuthState:_authState];
-  OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
-  OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
-  
-  XCTestExpectation *fetcherExpectation =
-      [self expectationWithDescription:@"test block is called"];
-  GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock response) {
-        NSURL *url = request.URL;
-        XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
-        XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
-        XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
-        OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
-        NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
-        XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
-                              @"SDK version logging parameter should match");
-        XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
-                              @"Environment logging parameter should match");
-        
-        NSData *body = request.HTTPBody;
-        NSString* bodyString = [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding];
-        NSArray<NSString *> *strings = [bodyString componentsSeparatedByString:@"="];
-        XCTAssertEqualObjects(strings[1], kAccessToken);
-
-        NSData *data = [[NSData alloc] init];
-        response(data, nil);
-        [fetcherExpectation fulfill];
-      };
-  [_httpFetcher setTestBlock:testBlock];
-  
-  XCTestExpectation *completionExpectation =
-      [self expectationWithDescription:@"Callback called with nil error"];
-  [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
-    XCTAssertNil(error);
-    [completionExpectation fulfill];
-  }];
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertNil([_keychainHandler loadAuthState]);
-}
-
 // Verifies disconnect calls callback with no errors if access token is present.
 - (void)testDisconnect_accessTokenIsPresent {
   [_keychainHandler saveAuthState:_authState];
@@ -792,6 +750,7 @@ static NSString *const kNewScope = @"newScope";
   
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+        [self verifyRevokeRequest:request withToken:kAccessToken];
         NSData *data = [[NSData alloc] init];
         responseProvider(data, nil);
       };
@@ -815,6 +774,7 @@ static NSString *const kNewScope = @"newScope";
   
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+        [self verifyRevokeRequest:request withToken:kAccessToken];
         NSData *data = [[NSData alloc] init];
         responseProvider(data, nil);
       };
@@ -833,6 +793,7 @@ static NSString *const kNewScope = @"newScope";
   
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+        [self verifyRevokeRequest:request withToken:kRefreshToken];
         NSData *data = [[NSData alloc] init];
         responseProvider(data, nil);
       };
@@ -855,6 +816,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+        [self verifyRevokeRequest:request withToken:kAccessToken];
         NSError *error = [self error];
         responseProvider(nil, error);
       };
@@ -877,6 +839,7 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+        [self verifyRevokeRequest:request withToken:kAccessToken];
         NSError *error = [self error];
         responseProvider(nil, error);
       };
@@ -1140,6 +1103,24 @@ static NSString *const kNewScope = @"newScope";
 
 - (NSError *)error {
   return [NSError errorWithDomain:kErrorDomain code:kErrorCode userInfo:nil];
+}
+
+- (void)verifyRevokeRequest:(NSURLRequest *)request withToken:(NSString *)token {
+  NSURL *url = request.URL;
+  XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
+  XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
+  XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
+  OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
+  NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
+  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+                        @"SDK version logging parameter should match");
+  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+                        @"Environment logging parameter should match");
+
+  NSData *body = request.HTTPBody;
+  NSString* bodyString = [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding];
+  NSArray<NSString *> *strings = [bodyString componentsSeparatedByString:@"="];
+  XCTAssertEqualObjects(strings[1], token);
 }
 
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
