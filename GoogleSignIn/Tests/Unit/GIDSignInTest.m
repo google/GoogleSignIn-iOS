@@ -748,19 +748,22 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
+  XCTestExpectation *fetcherExpectation =
+      [self expectationWithDescription:@"testBlock is invoked."];
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         [self verifyRevokeRequest:request withToken:kAccessToken];
         NSData *data = [[NSData alloc] init];
         responseProvider(data, nil);
+        [fetcherExpectation fulfill];
       };
   [_httpFetcher setTestBlock:testBlock];
   
-  XCTestExpectation *expectation =
+  XCTestExpectation *completionExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    [expectation fulfill];
+    [completionExpectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertNil([_keychainHandler loadAuthState]);
@@ -772,11 +775,14 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   
+  XCTestExpectation *fetcherExpectation =
+      [self expectationWithDescription:@"testBlock is invoked."];
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         [self verifyRevokeRequest:request withToken:kAccessToken];
         NSData *data = [[NSData alloc] init];
         responseProvider(data, nil);
+        [fetcherExpectation fulfill];
       };
   [_httpFetcher setTestBlock:testBlock];
   
@@ -784,26 +790,29 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
-//// Verifies disconnect calls callback with no errors if refresh token is present.
+// Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshTokenIsPresent {
   [_keychainHandler saveAuthState:_authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(nil);
   OCMStub([_tokenResponse refreshToken]).andReturn(kRefreshToken);
   
+  XCTestExpectation *fetcherExpectation =
+      [self expectationWithDescription:@"testBlock is invoked."];
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         [self verifyRevokeRequest:request withToken:kRefreshToken];
         NSData *data = [[NSData alloc] init];
         responseProvider(data, nil);
+        [fetcherExpectation fulfill];
       };
   [_httpFetcher setTestBlock:testBlock];
   
-  XCTestExpectation *expectation =
+  XCTestExpectation *completionExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
-    [expectation fulfill];
+    [completionExpectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertNil([_keychainHandler loadAuthState]);
@@ -814,19 +823,23 @@ static NSString *const kNewScope = @"newScope";
   [_keychainHandler saveAuthState:_authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
+  
+  XCTestExpectation *fetcherExpectation =
+      [self expectationWithDescription:@"testBlock is invoked."];
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         [self verifyRevokeRequest:request withToken:kAccessToken];
         NSError *error = [self error];
         responseProvider(nil, error);
+        [fetcherExpectation fulfill];
       };
   [_httpFetcher setTestBlock:testBlock];
   
-  XCTestExpectation *expectation =
+  XCTestExpectation *completionExpectation =
       [self expectationWithDescription:@"Callback called with an error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
-    [expectation fulfill];
+    [completionExpectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertNotNil([_keychainHandler loadAuthState]);
@@ -837,11 +850,15 @@ static NSString *const kNewScope = @"newScope";
   [_keychainHandler saveAuthState:_authState];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
+  
+  XCTestExpectation *fetcherExpectation =
+      [self expectationWithDescription:@"testBlock is invoked."];
   GIDHTTPFetcherTestBlock testBlock =
       ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
         [self verifyRevokeRequest:request withToken:kAccessToken];
         NSError *error = [self error];
         responseProvider(nil, error);
+        [fetcherExpectation fulfill];
       };
   [_httpFetcher setTestBlock:testBlock];
   
