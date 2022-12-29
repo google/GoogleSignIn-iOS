@@ -787,6 +787,7 @@ static NSString *const kNewScope = @"newScope";
   [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertNil([_keychainHandler loadAuthState]);
 }
 
@@ -863,6 +864,7 @@ static NSString *const kNewScope = @"newScope";
   [_httpFetcher setTestBlock:testBlock];
   
   [_signIn disconnectWithCompletion:nil];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertNotNil([_keychainHandler loadAuthState]);
 }
 
