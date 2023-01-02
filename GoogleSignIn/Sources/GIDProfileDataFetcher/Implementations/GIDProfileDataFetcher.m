@@ -27,7 +27,7 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
   return [self initWithDataFetcher:httpFetcher];
 }
 
-- (instancetype)initWithDataFetcher: (id<GIDHTTPFetcher>)httpFetcher {
+- (instancetype)initWithDataFetcher:(id<GIDHTTPFetcher>)httpFetcher {
   self = [super init];
   if (self) {
     _httpFetcher = httpFetcher;
@@ -42,10 +42,11 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
   // If the profile data are present in the ID token, use them.
   if (idToken) {
-    GIDProfileData *profileData = [[GIDProfileData alloc]initWithIDToken:idToken];
+    GIDProfileData *profileData = [[GIDProfileData alloc] initWithIDToken:idToken];
     completion(profileData, nil);
     return;
   }
+  
   // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
   NSString *infoString = [NSString stringWithFormat:kUserInfoURLTemplate,
                              [GIDSignInPreferences googleUserInfoServer]];
@@ -60,25 +61,24 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
                      completion:^(NSData *data, NSError *error) {
     if (error) {
       completion(nil, error);
-    } else {
-      NSError *jsonDeserializationError;
-      NSDictionary<NSString *, NSString *> *profileDict =
+      return;
+    }
+    NSError *jsonDeserializationError;
+    NSDictionary<NSString *, NSString *> *profileDict =
         [NSJSONSerialization JSONObjectWithData:data
                                         options:NSJSONReadingMutableContainers
                                           error:&jsonDeserializationError];
-      if (profileDict) {
-        GIDProfileData *profileData = [[GIDProfileData alloc]
-            initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                     name:profileDict[kBasicProfileNameKey]
-                givenName:profileDict[kBasicProfileGivenNameKey]
-               familyName:profileDict[kBasicProfileFamilyNameKey]
-                 imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
-        completion(profileData, nil);
-      }
-      else {
-        completion(nil, jsonDeserializationError);
-      }
+    if (jsonDeserializationError) {
+      completion(nil, jsonDeserializationError);
+      return;
     }
+    GIDProfileData *profileData = [[GIDProfileData alloc]
+        initWithEmail:idToken.claims[kBasicProfileEmailKey]
+                 name:profileDict[kBasicProfileNameKey]
+            givenName:profileDict[kBasicProfileGivenNameKey]
+           familyName:profileDict[kBasicProfileFamilyNameKey]
+             imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
+    completion(profileData, nil);
   }];
 }
 

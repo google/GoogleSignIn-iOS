@@ -18,8 +18,6 @@
 
 #import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
 
-@class OIDIDToken;
-
 @protocol GIDHTTPFetcher;
 
 NS_ASSUME_NONNULL_BEGIN

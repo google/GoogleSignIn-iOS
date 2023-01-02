@@ -59,7 +59,7 @@ NSString *const kBasicProfileFamilyNameKey = @"family_name";
   return self;
 }
 
-- (instancetype)initWithIDToken:(OIDIDToken *)idToken {
+- (nullable instancetype)initWithIDToken:(OIDIDToken *)idToken {
   if (!idToken ||
       !idToken.claims[kBasicProfilePictureKey] ||
       !idToken.claims[kBasicProfileNameKey] ||
@@ -68,12 +68,11 @@ NSString *const kBasicProfileFamilyNameKey = @"family_name";
     return nil;
   }
 
-  return [[GIDProfileData alloc]
-      initWithEmail:idToken.claims[kBasicProfileEmailKey]
-               name:idToken.claims[kBasicProfileNameKey]
-          givenName:idToken.claims[kBasicProfileGivenNameKey]
-         familyName:idToken.claims[kBasicProfileFamilyNameKey]
-           imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
+  return [self initWithEmail:idToken.claims[kBasicProfileEmailKey]
+                        name:idToken.claims[kBasicProfileNameKey]
+                   givenName:idToken.claims[kBasicProfileGivenNameKey]
+                  familyName:idToken.claims[kBasicProfileFamilyNameKey]
+                    imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
 - (BOOL)hasImage {
