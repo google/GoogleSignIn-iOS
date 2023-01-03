@@ -39,6 +39,8 @@ extern NSString *const kBasicProfileFamilyNameKey;
 /// Initialize with id token.
 - (nullable instancetype)initWithIDToken:(OIDIDToken *)idToken;
 
+- (instancetype)init NS_UNAVAILABLE; 
+
 @end
 
 NS_ASSUME_NONNULL_END

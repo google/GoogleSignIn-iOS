@@ -138,21 +138,22 @@ NSString *const kBasicProfileFamilyNameKey = @"family_name";
 }
 
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
-  self = [super init];
-  if (self) {
-    _email = [decoder decodeObjectOfClass:[NSString class] forKey:kEmailKey];
-    _name = [decoder decodeObjectOfClass:[NSString class] forKey:kNameKey];
-    _givenName = [decoder decodeObjectOfClass:[NSString class] forKey:kGivenNameKey];
-    _familyName = [decoder decodeObjectOfClass:[NSString class] forKey:kFamilyNameKey];
-    _imageURL = [decoder decodeObjectOfClass:[NSURL class] forKey:kImageURLKey];
+  NSString *email = [decoder decodeObjectOfClass:[NSString class] forKey:kEmailKey];
+  NSString *name = [decoder decodeObjectOfClass:[NSString class] forKey:kNameKey];
+  NSString *givenName = [decoder decodeObjectOfClass:[NSString class] forKey:kGivenNameKey];
+  NSString *familyName = [decoder decodeObjectOfClass:[NSString class] forKey:kFamilyNameKey];
+  NSURL *imageURL = [decoder decodeObjectOfClass:[NSURL class] forKey:kImageURLKey];
 
-    // Check to see if this is an old archive, if so, try decoding the old image URL string key.
-    if ([decoder containsValueForKey:kOldImageURLStringKey]) {
-      _imageURL = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]
-                                                             forKey:kOldImageURLStringKey]];
-    }
+  // Check to see if this is an old archive, if so, try decoding the old image URL string key.
+  if ([decoder containsValueForKey:kOldImageURLStringKey]) {
+    imageURL = [NSURL URLWithString:[decoder decodeObjectOfClass:[NSString class]
+                                                           forKey:kOldImageURLStringKey]];
   }
-  return self;
+  
+  return [self initWithEmail:email
+                        name:name givenName:givenName
+                  familyName:familyName
+                    imageURL:imageURL];
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
