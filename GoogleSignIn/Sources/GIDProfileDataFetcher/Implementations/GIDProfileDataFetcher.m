@@ -24,10 +24,10 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
 
 - (instancetype)init {
   GIDHTTPFetcher *httpFetcher = [[GIDHTTPFetcher alloc] init];
-  return [self initWithDataFetcher:httpFetcher];
+  return [self initWithHTTPFetcher:httpFetcher];
 }
 
-- (instancetype)initWithDataFetcher:(id<GIDHTTPFetcher>)httpFetcher {
+- (instancetype)initWithHTTPFetcher:(id<GIDHTTPFetcher>)httpFetcher {
   self = [super init];
   if (self) {
     _httpFetcher = httpFetcher;

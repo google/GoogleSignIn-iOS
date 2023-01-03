@@ -36,7 +36,7 @@ static NSInteger const kErrorCode = 400;
 - (void)setUp {
   [super setUp];
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
-  _profileDataFetcher = [[GIDProfileDataFetcher alloc] initWithDataFetcher:_httpFetcher];
+  _profileDataFetcher = [[GIDProfileDataFetcher alloc] initWithHTTPFetcher:_httpFetcher];
 }
 
 - (void)testFetchProfileData_outOfAuthState_success {

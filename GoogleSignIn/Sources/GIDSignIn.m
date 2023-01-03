@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -466,7 +466,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
                             httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
-                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher{
+                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
