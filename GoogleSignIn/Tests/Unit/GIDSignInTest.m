@@ -33,14 +33,14 @@
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
-#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
-
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/Fakes/GIDFakeProfileDataFetcher.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
+#import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
@@ -202,6 +202,9 @@ static NSString *const kNewScope = @"newScope";
   // Fake for |GIDHTTPFetcher|.
   GIDFakeHTTPFetcher *_httpFetcher;
   
+  // Fake for |GIDProfileDataFetcher|.
+  GIDFakeProfileDataFetcher *_profileDataFetcher;
+  
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
   id _presentingViewController;
@@ -313,10 +316,11 @@ static NSString *const kNewScope = @"newScope";
   
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
   
-  id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
+  _profileDataFetcher = [[GIDFakeProfileDataFetcher alloc] init];
+  
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
                                            httpFetcher:_httpFetcher
-                                    profileDataFetcher:profileDataFetcher];
+                                    profileDataFetcher:_profileDataFetcher];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -1208,6 +1212,15 @@ static NSString *const kNewScope = @"newScope";
                refreshToken:kRefreshToken
                codeVerifier:nil
        additionalParameters:tokenResponse.request.additionalParameters];
+  
+  // Set the response for GIDProfileDataFetcher.
+    GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
+                                                 responseProvider) {
+      GIDProfileData *profileData = [GIDProfileData testInstance];
+      responseProvider(profileData, nil);
+    };
+    
+    [_profileDataFetcher setTestBlock:testBlock];
 
   if (restoredSignIn) {
     // maybeFetchToken
@@ -1334,9 +1347,6 @@ static NSString *const kNewScope = @"newScope";
     return;
   }
 
-  // DecodeIdTokenCallback
-  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
-
   // SaveAuthCallback
   __block OIDAuthState *authState;
   __block OIDTokenResponse *updatedTokenResponse;
@@ -1390,10 +1400,7 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNotNil(authState);
   }
   // Check fat ID token decoding
-  XCTAssertEqualObjects(profileData.name, kFatName);
-  XCTAssertEqualObjects(profileData.givenName, kFatGivenName);
-  XCTAssertEqualObjects(profileData.familyName, kFatFamilyName);
-  XCTAssertTrue(profileData.hasImage);
+  XCTAssertEqualObjects(profileData, [GIDProfileData testInstance]);
 
   // If attempt to authenticate again, will reuse existing auth object.
   _completionCalled = NO;
