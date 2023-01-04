@@ -462,12 +462,22 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
+  
+  NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
+      [GIDSignInPreferences googleAuthorizationServer]];
+  NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
+      [GIDSignInPreferences googleTokenServer]];
+  OIDServiceConfiguration *appAuthConfiguration = [[OIDServiceConfiguration alloc]
+      initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
+                      tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
   return [self initWithKeychainHandler:keychainHandler
-                           httpFetcher:httpFetcher];
+                            httpFetcher:httpFetcher
+                   appAuthConfiguration:appAuthConfiguration];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
-                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher{
+                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
+                   appAuthConfiguration:(nullable OIDServiceConfiguration *)appAuthConfiguration {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -485,14 +495,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (isFreshInstall) {
       [_keychainHandler removeAllKeychainEntries];
     }
-
-    NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
-    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
-    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+    _appAuthConfiguration = appAuthConfiguration;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.

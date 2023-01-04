@@ -312,7 +312,8 @@ static NSString *const kNewScope = @"newScope";
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
   
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
-                                           httpFetcher:_httpFetcher];
+                                           httpFetcher:_httpFetcher
+                                  appAuthConfiguration:nil];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
