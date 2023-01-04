@@ -55,7 +55,7 @@ static NSInteger const kErrorCode = 400;
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with no error"];
+      [self expectationWithDescription:@"completion is invoked"];
   
   [_profileDataFetcher
       fetchProfileDataWithAuthState:authState
@@ -91,7 +91,7 @@ static NSInteger const kErrorCode = 400;
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *completionExpectation =
-      [self expectationWithDescription:@"Callback called with error"];
+      [self expectationWithDescription:@"completion is invoked"];
   
   [_profileDataFetcher
       fetchProfileDataWithAuthState:authState
@@ -127,7 +127,7 @@ static NSInteger const kErrorCode = 400;
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *completionExpectation =
-      [self expectationWithDescription:@"Callback called with error"];
+      [self expectationWithDescription:@"completion is invoked"];
   
   [_profileDataFetcher
       fetchProfileDataWithAuthState:authState
