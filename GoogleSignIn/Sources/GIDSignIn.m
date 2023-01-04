@@ -74,12 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The name of the query parameter used for logging the restart of auth from EMM callback.
 static NSString *const kEMMRestartAuthParameter = @"emmres";
 
-// The URL template for the authorization endpoint.
-static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
-
-// The URL template for the token endpoint.
-static NSString *const kTokenURLTemplate = @"https://%@/token";
-
 // The URL template for the URL to get user info.
 static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
 
@@ -161,8 +155,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
-  // AppAuth configuration object.
-  OIDServiceConfiguration *_appAuthConfiguration;
+  
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
@@ -462,22 +455,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
-  
-  NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-      [GIDSignInPreferences googleAuthorizationServer]];
-  NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-      [GIDSignInPreferences googleTokenServer]];
-  OIDServiceConfiguration *appAuthConfiguration = [[OIDServiceConfiguration alloc]
-      initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                      tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
   return [self initWithKeychainHandler:keychainHandler
-                           httpFetcher:httpFetcher
-                  appAuthConfiguration:appAuthConfiguration];
+                           httpFetcher:httpFetcher];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
-                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
-                   appAuthConfiguration:(nullable OIDServiceConfiguration *)appAuthConfiguration {
+                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -495,11 +478,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (isFreshInstall) {
       [_keychainHandler removeAllKeychainEntries];
     }
-    _appAuthConfiguration = appAuthConfiguration;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
-    [GIDAuthStateMigration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
+    NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
+    [GIDAuthStateMigration migrateIfNeededWithTokenURL:tokenEndpointURL
                                           callbackPath:kBrowserCallbackPath
                                           keychainName:kGTMAppAuthKeychainName
                                         isFreshInstall:isFreshInstall];
@@ -605,9 +588,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+  
+  NSURL *authorizationEndpointURL = [GIDSignInPreferences authorizationEndpointURL];
+  NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
+  OIDServiceConfiguration *appAuthConfiguration =
+      [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authorizationEndpointURL
+                                                       tokenEndpoint:tokenEndpointURL];
 
   OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
                                                     clientId:options.configuration.clientID
                                                       scopes:options.scopes
                                                  redirectURL:redirectURL

@@ -34,6 +34,12 @@ static NSString *const kAppleEnvironmentMacOS = @"macos";
 static NSString *const kAppleEnvironmentMacOSIOSOnMac = @"macos-ios";
 static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 
+// The URL template for the authorization endpoint.
+static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
+
+// The URL template for the token endpoint.
+static NSString *const kTokenURLTemplate = @"https://%@/token";
+
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
 #endif
@@ -92,6 +98,18 @@ NSString* GIDEnvironment(void) {
 
 + (NSString *)googleUserInfoServer {
   return kUserInfoServer;
+}
+
++ (NSURL *)authorizationEndpointURL {
+  NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
+      [GIDSignInPreferences googleAuthorizationServer]];
+  return [NSURL URLWithString:authorizationEnpointURL];
+}
+
++ (NSURL *)tokenEndpointURL {
+  NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
+      [GIDSignInPreferences googleTokenServer]];
+  return [NSURL URLWithString:tokenEndpointURL];
 }
 
 @end

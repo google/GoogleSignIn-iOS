@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
-@class OIDServiceConfiguration;
 
 @protocol GIDHTTPFetcher;
 @protocol GIDKeychainHandler;
@@ -53,7 +52,6 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// The designated initializer.
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
                             httpFetcher:(id<GIDHTTPFetcher>)HTTPFetcher
-                   appAuthConfiguration:(nullable OIDServiceConfiguration *)appAuthConfiguration
     NS_DESIGNATED_INITIALIZER;
 
 /// Authenticates with extra options.
