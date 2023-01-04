@@ -471,8 +471,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                       tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
   return [self initWithKeychainHandler:keychainHandler
-                            httpFetcher:httpFetcher
-                   appAuthConfiguration:appAuthConfiguration];
+                           httpFetcher:httpFetcher
+                  appAuthConfiguration:appAuthConfiguration];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
