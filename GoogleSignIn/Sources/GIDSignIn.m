@@ -21,6 +21,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
+#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/API/GIDAuthorizationFlowProcessor.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
@@ -462,12 +464,19 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
+  
+  
+  // Start from here after taking GIDAppAuthConfiguration out of GIDSignIn.m.
+  id<GIDAuthorizationFlowProcessor> authorizationFlowProcessor =
+      [[GIDAuthorizationFlowProcessor alloc] init];
   return [self initWithKeychainHandler:keychainHandler
-                           httpFetcher:httpFetcher];
+                           httpFetcher:httpFetcher
+            authorizationFlowProcessor:authorizationFlowProcessor];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
-                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher{
+                            httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
+             authorizationFlowProcessor:(id<GIDAuthorizationFlowProcessor>)authorizationFlowProcessor {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
