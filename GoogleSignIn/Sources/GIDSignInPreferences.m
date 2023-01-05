@@ -102,13 +102,13 @@ NSString* GIDEnvironment(void) {
 
 + (NSURL *)authorizationEndpointURL {
   NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-      [GIDSignInPreferences googleAuthorizationServer]];
+      [self googleAuthorizationServer]];
   return [NSURL URLWithString:authorizationEnpointURL];
 }
 
 + (NSURL *)tokenEndpointURL {
   NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-      [GIDSignInPreferences googleTokenServer]];
+      [self googleTokenServer]];
   return [NSURL URLWithString:tokenEndpointURL];
 }
 
