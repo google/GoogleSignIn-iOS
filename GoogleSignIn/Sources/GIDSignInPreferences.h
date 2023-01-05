@@ -28,8 +28,14 @@ NSString* GIDEnvironment(void);
 @interface GIDSignInPreferences : NSObject
 
 + (NSString *)googleAuthorizationServer;
+
 + (NSString *)googleTokenServer;
+
 + (NSString *)googleUserInfoServer;
+
++ (NSURL *)authorizationEndpointURL;
+
++ (NSURL *)tokenEndpointURL;
 
 @end
 
