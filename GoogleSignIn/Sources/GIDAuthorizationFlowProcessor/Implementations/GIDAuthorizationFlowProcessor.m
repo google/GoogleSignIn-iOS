@@ -15,12 +15,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Expected path in the URL scheme to be handled.
-static NSString *const kBrowserCallbackPath = @"/oauth2callback";
-
-// The EMM support version
-static NSString *const kEMMVersion = @"1";
-
 // Parameters for the auth and token exchange endpoints.
 static NSString *const kAudienceParameter = @"audience";
 
@@ -43,15 +37,8 @@ static NSString *const kHostedDomainParameter = @"hd";
   return _currentAuthorizationFlow != nil;
 }
 
-- (instancetype)initWithAppAuthConfiguration:(OIDServiceConfiguration *)appAuthConfiguration {
-  self = [super self];
-  if (self) {
-    _appAuthConfiguration = appAuthConfiguration;
-  }
-  return self;
-}
-
 - (void)startWithOptions:(GIDSignInInternalOptions *)options
+              emmSupport:(NSString *)emmSupport
               completion:(void (^)(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error))completion {
   GIDSignInCallbackSchemes *schemes =
@@ -59,12 +46,6 @@ static NSString *const kHostedDomainParameter = @"hd";
   NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
-  NSString *emmSupport;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
-  emmSupport = nil;
-#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
   additionalParameters[kIncludeGrantedScopesParameter] = @"true";
@@ -88,9 +69,15 @@ static NSString *const kHostedDomainParameter = @"hd";
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+  
+  NSURL *authorizationEndpointURL = [GIDSignInPreferences authorizationEndpointURL];
+  NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
+  OIDServiceConfiguration *appAuthConfiguration =
+      [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authorizationEndpointURL
+                                                       tokenEndpoint:tokenEndpointURL];
 
   OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
                                                     clientId:options.configuration.clientID
                                                       scopes:options.scopes
                                                  redirectURL:redirectURL
@@ -110,19 +97,17 @@ static NSString *const kHostedDomainParameter = @"hd";
 }
 
 - (BOOL)resumeExternalUserAgentFlowWithURL:(NSURL *)url {
-  return [_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url];
+  if ([_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url]) {
+    _currentAuthorizationFlow = nil;
+    return YES;
+  } else {
+    return NO;
+  }
 }
 
 - (void)cancelAuthenticationFlow {
   [_currentAuthorizationFlow cancel];
-}
-
-# pragma mark - Helpers
-
-- (BOOL)isOperatingSystemAtLeast9 {
-  NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-  return [processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] &&
-      [processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){.majorVersion = 9}];
+  _currentAuthorizationFlow = nil;
 }
 
 @end

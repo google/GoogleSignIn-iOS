@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///     clientID, scopes, loginHint and extraParams.
 /// @param completion The block that is called on completion asynchronously.
 - (void)startWithOptions:(GIDSignInInternalOptions *)options
+              emmSupport:(NSString *)emmSupport
               completion:(void (^)(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error))completion;
 
@@ -47,4 +48,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-

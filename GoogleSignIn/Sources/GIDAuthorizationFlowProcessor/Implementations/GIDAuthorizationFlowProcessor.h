@@ -24,8 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDAuthorizationFlowProcessor : NSObject <GIDAuthorizationFlowProcessor>
 
-- (instancetype)initWithAppAuthConfiguration:(OIDServiceConfiguration *)appAuthConfiguration;
-
 @end
 
 NS_ASSUME_NONNULL_END

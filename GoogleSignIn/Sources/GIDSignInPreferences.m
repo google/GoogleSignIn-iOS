@@ -16,15 +16,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSString *const kSDKVersionLoggingParameter = @"gpsdk";
+NSString *const kEnvironmentLoggingParameter = @"gidenv";
+NSString *const kBrowserCallbackPath = @"/oauth2callback";
+
 static NSString *const kLSOServer = @"accounts.google.com";
 static NSString *const kTokenServer = @"oauth2.googleapis.com";
 static NSString *const kUserInfoServer = @"www.googleapis.com";
-
-// The name of the query parameter used for logging the SDK version.
-NSString *const kSDKVersionLoggingParameter = @"gpsdk";
-
-// The name of the query parameter used for logging the Apple execution environment.
-NSString *const kEnvironmentLoggingParameter = @"gidenv";
 
 // Supported Apple execution environments
 static NSString *const kAppleEnvironmentUnknown = @"unknown";
