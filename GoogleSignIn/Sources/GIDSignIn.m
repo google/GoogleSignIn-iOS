@@ -76,9 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The name of the query parameter used for logging the restart of auth from EMM callback.
 static NSString *const kEMMRestartAuthParameter = @"emmres";
 
-// The URL template for the URL to get user info.
-static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
-
 // The URL template for the URL to revoke the token.
 static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke";
 
