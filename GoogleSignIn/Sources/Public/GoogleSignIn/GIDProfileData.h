@@ -42,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// @return The URL of the user's profile image.
 - (nullable NSURL *)imageURLWithDimension:(NSUInteger)dimension;
 
+- (instancetype)init NS_UNAVAILABLE;
+
++ (instancetype)new NS_UNAVAILABLE;
+
 @end
 
 NS_ASSUME_NONNULL_END

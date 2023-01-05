@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Fetches the latest @GIDProfileData object.
 ///
-/// This method either extracts the profile data out of the OIDAuthState object or fetches it
-/// from the Google user info server.
+/// "This method either extracts profile data from `OIDIDToken` in `OIDAuthState` or fetches it
+/// from the UserInfo endpoint."
 ///
 /// @param authState The state of the current OAuth session.
 /// @param completion The block that is called on completion asynchronously.

@@ -36,10 +36,8 @@ extern NSString *const kBasicProfileFamilyNameKey;
                    familyName:(nullable NSString *)familyName
                      imageURL:(nullable NSURL *)imageURL NS_DESIGNATED_INITIALIZER;
 
-/// Initialize with id token.
+/// Initialize with ID token.
 - (nullable instancetype)initWithIDToken:(OIDIDToken *)idToken;
-
-- (instancetype)init NS_UNAVAILABLE; 
 
 @end
 
