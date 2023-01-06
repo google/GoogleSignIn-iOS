@@ -60,7 +60,7 @@ static NSInteger const kErrorCode = 400;
           ]).andReturn(_externalUserAgentSession);
 }
 
-- (void)testStartAndCancelAuthorizationFlow {
+- (void)testStartAndCancelAuthorizationFlow_success {
   XCTestExpectation *expectation = [self expectationWithDescription:@"completion is invoked."];
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   [_authorizationFlowProcessor startWithOptions:options
@@ -77,8 +77,6 @@ static NSInteger const kErrorCode = 400;
 }
 
 - (void)testStartAndResumeAuthorizationFlow_success {
-  OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])
-    .andReturn(YES);
   XCTestExpectation *expectation = [self expectationWithDescription:@"completion is invoked."];
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   [_authorizationFlowProcessor startWithOptions:options
@@ -90,14 +88,14 @@ static NSInteger const kErrorCode = 400;
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
   
+  OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])
+      .andReturn(YES);
   NSURL *url = [[NSURL alloc] initWithString:kFakeURL];
   [_authorizationFlowProcessor resumeExternalUserAgentFlowWithURL:url];
   XCTAssertFalse(_authorizationFlowProcessor.isStarted);
 }
 
-- (void)testStartAndResumeAuthorizationFlow_fail {
-  OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])
-    .andReturn(NO);
+- (void)testStartAndFailToResumeAuthorizationFlow {
   XCTestExpectation *expectation = [self expectationWithDescription:@"completion is invoked."];
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   [_authorizationFlowProcessor startWithOptions:options
@@ -108,7 +106,9 @@ static NSInteger const kErrorCode = 400;
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
-  
+ 
+  OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])
+      .andReturn(NO);
   NSURL *url = [[NSURL alloc] initWithString:kFakeURL];
   [_authorizationFlowProcessor resumeExternalUserAgentFlowWithURL:url];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);

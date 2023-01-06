@@ -452,7 +452,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
   id<GIDAuthorizationFlowProcessor> authorizationFlowProcessor =
-  [[GIDAuthorizationFlowProcessor alloc] init];
+      [[GIDAuthorizationFlowProcessor alloc] init];
   return [self initWithKeychainHandler:keychainHandler
                            httpFetcher:httpFetcher
             authorizationFlowProcessor:authorizationFlowProcessor];

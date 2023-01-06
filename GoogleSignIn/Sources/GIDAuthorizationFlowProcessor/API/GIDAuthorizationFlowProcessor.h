@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param options The @GIDSignInInternalOptions object to provide serverClientID, hostedDomain,
 ///     clientID, scopes, loginHint and extraParams.
+/// @param emmSupport The EMM support info string.
 /// @param completion The block that is called on completion asynchronously.
 - (void)startWithOptions:(GIDSignInInternalOptions *)options
               emmSupport:(nullable NSString *)emmSupport

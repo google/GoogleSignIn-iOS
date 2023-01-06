@@ -45,8 +45,6 @@ static NSString *const kHostedDomainParameter = @"hd";
   OIDServiceConfiguration *_appAuthConfiguration;
 }
 
-@synthesize start;
-
 # pragma mark - Public API
 
 - (BOOL)isStarted {
@@ -74,7 +72,6 @@ static NSString *const kHostedDomainParameter = @"hd";
   if (options.configuration.hostedDomain) {
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
-
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDEMMSupport parametersWithParameters:options.extraParams
@@ -91,7 +88,6 @@ static NSString *const kHostedDomainParameter = @"hd";
   OIDServiceConfiguration *appAuthConfiguration =
       [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authorizationEndpointURL
                                                        tokenEndpoint:tokenEndpointURL];
-
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -99,6 +95,7 @@ static NSString *const kHostedDomainParameter = @"hd";
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
+  
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
