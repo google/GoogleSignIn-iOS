@@ -32,13 +32,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///     clientID, scopes, loginHint and extraParams.
 /// @param completion The block that is called on completion asynchronously.
 - (void)startWithOptions:(GIDSignInInternalOptions *)options
-              emmSupport:(NSString *)emmSupport
+              emmSupport:(nullable NSString *)emmSupport
               completion:(void (^)(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error))completion;
 
 /// Handles the custom scheme URL opened by SFSafariViewController to cleanup UI on iOS 10.
 ///
-/// @param URL The redirect URL invoked by the server.
+/// @param url The redirect URL invoked by the server.
 /// @return YES if the passed URL matches the expected redirect URL and was consumed, NO otherwise.
 - (BOOL)resumeExternalUserAgentFlowWithURL:(NSURL *)url;
 
