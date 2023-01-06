@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol GIDProfileDataFetcher <NSObject>
 
 /// Fetches the latest @GIDProfileData object.
+///
+/// "This method either extracts profile data from `OIDIDToken` in `OIDAuthState` or fetches it
+/// from the UserInfo endpoint."
 ///
 /// @param authState The state of the current OAuth session.
 /// @param completion The block that is called on completion asynchronously.

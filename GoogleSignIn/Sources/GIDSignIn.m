@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -76,12 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The name of the query parameter used for logging the restart of auth from EMM callback.
 static NSString *const kEMMRestartAuthParameter = @"emmres";
 
-// The URL template for the authorization endpoint.
-static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
-
-// The URL template for the token endpoint.
-static NSString *const kTokenURLTemplate = @"https://%@/token";
-
 // The URL template for the URL to revoke the token.
 static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke";
 
@@ -153,8 +147,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
-  // AppAuth configuration object.
-  OIDServiceConfiguration *_appAuthConfiguration;
+  
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
@@ -466,7 +459,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
                             httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
-                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher{
+                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -485,17 +478,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [_keychainHandler removeAllKeychainEntries];
     }
 
-    NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
-    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
-    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
-
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
-    [GIDAuthStateMigration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
+    NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
+    [GIDAuthStateMigration migrateIfNeededWithTokenURL:tokenEndpointURL
                                           callbackPath:kBrowserCallbackPath
                                           keychainName:kGTMAppAuthKeychainName
                                         isFreshInstall:isFreshInstall];
@@ -602,9 +588,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+  
+  NSURL *authorizationEndpointURL = [GIDSignInPreferences authorizationEndpointURL];
+  NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
+  OIDServiceConfiguration *appAuthConfiguration =
+      [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authorizationEndpointURL
+                                                       tokenEndpoint:tokenEndpointURL];
 
   OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
                                                     clientId:options.configuration.clientID
                                                       scopes:options.scopes
                                                  redirectURL:redirectURL

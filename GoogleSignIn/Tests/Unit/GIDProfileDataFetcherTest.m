@@ -36,7 +36,7 @@ static NSInteger const kErrorCode = 400;
 - (void)setUp {
   [super setUp];
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
-  _profileDataFetcher = [[GIDProfileDataFetcher alloc] initWithDataFetcher:_httpFetcher];
+  _profileDataFetcher = [[GIDProfileDataFetcher alloc] initWithHTTPFetcher:_httpFetcher];
 }
 
 - (void)testFetchProfileData_outOfAuthState_success {
@@ -55,7 +55,7 @@ static NSInteger const kErrorCode = 400;
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *expectation =
-      [self expectationWithDescription:@"Callback called with no error"];
+      [self expectationWithDescription:@"completion is invoked"];
   
   [_profileDataFetcher
       fetchProfileDataWithAuthState:authState
@@ -91,7 +91,7 @@ static NSInteger const kErrorCode = 400;
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *completionExpectation =
-      [self expectationWithDescription:@"Callback called with error"];
+      [self expectationWithDescription:@"completion is invoked"];
   
   [_profileDataFetcher
       fetchProfileDataWithAuthState:authState
@@ -127,7 +127,7 @@ static NSInteger const kErrorCode = 400;
   [_httpFetcher setTestBlock:testBlock];
   
   XCTestExpectation *completionExpectation =
-      [self expectationWithDescription:@"Callback called with error"];
+      [self expectationWithDescription:@"completion is invoked"];
   
   [_profileDataFetcher
       fetchProfileDataWithAuthState:authState

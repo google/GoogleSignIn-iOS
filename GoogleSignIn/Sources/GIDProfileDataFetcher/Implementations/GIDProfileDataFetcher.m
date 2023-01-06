@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
 
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
@@ -24,10 +40,10 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
 
 - (instancetype)init {
   GIDHTTPFetcher *httpFetcher = [[GIDHTTPFetcher alloc] init];
-  return [self initWithDataFetcher:httpFetcher];
+  return [self initWithHTTPFetcher:httpFetcher];
 }
 
-- (instancetype)initWithDataFetcher:(id<GIDHTTPFetcher>)httpFetcher {
+- (instancetype)initWithHTTPFetcher:(id<GIDHTTPFetcher>)httpFetcher {
   self = [super init];
   if (self) {
     _httpFetcher = httpFetcher;
@@ -40,14 +56,15 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
                                                 NSError *_Nullable error))completion {
   OIDIDToken *idToken =
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
-  // If the profile data are present in the ID token, use them.
+  // If profile data is present in the ID token, use it.
   if (idToken) {
     GIDProfileData *profileData = [[GIDProfileData alloc] initWithIDToken:idToken];
     completion(profileData, nil);
     return;
   }
   
-  // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
+  // If we can't retrieve profile data from the ID token, make a UserInfo endpoint request to
+  // fetch it.
   NSString *infoString = [NSString stringWithFormat:kUserInfoURLTemplate,
                              [GIDSignInPreferences googleUserInfoServer]];
   NSURL *infoURL = [NSURL URLWithString:infoString];

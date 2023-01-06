@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDProfileDataFetcher : NSObject<GIDProfileDataFetcher>
+@interface GIDProfileDataFetcher : NSObject <GIDProfileDataFetcher>
 
 /// The convenience initializer.
 - (instancetype)init;
 
 /// The initializer for unit test.
-- (instancetype)initWithDataFetcher:(id<GIDHTTPFetcher>)httpFetcher NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithHTTPFetcher:(id<GIDHTTPFetcher>)httpFetcher NS_DESIGNATED_INITIALIZER;
 
 @end
 
