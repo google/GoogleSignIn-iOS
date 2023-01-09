@@ -32,13 +32,6 @@ static NSString *const kFamilyNameKey = @"family_name";
 static NSString *const kImageURLKey = @"image_url";
 static NSString *const kOldImageURLStringKey = @"picture";
 
-// Basic profile (Fat ID Token / userinfo endpoint) keys
-NSString *const kBasicProfileEmailKey = @"email";
-NSString *const kBasicProfilePictureKey = @"picture";
-NSString *const kBasicProfileNameKey = @"name";
-NSString *const kBasicProfileGivenNameKey = @"given_name";
-NSString *const kBasicProfileFamilyNameKey = @"family_name";
-
 @implementation GIDProfileData {
   NSURL *_imageURL;
 }
@@ -57,22 +50,6 @@ NSString *const kBasicProfileFamilyNameKey = @"family_name";
     _imageURL = [imageURL copy];
   }
   return self;
-}
-
-- (nullable instancetype)initWithIDToken:(OIDIDToken *)idToken {
-  if (!idToken ||
-      !idToken.claims[kBasicProfilePictureKey] ||
-      !idToken.claims[kBasicProfileNameKey] ||
-      !idToken.claims[kBasicProfileGivenNameKey] ||
-      !idToken.claims[kBasicProfileFamilyNameKey]) {
-    return nil;
-  }
-
-  return [self initWithEmail:idToken.claims[kBasicProfileEmailKey]
-                        name:idToken.claims[kBasicProfileNameKey]
-                   givenName:idToken.claims[kBasicProfileGivenNameKey]
-                  familyName:idToken.claims[kBasicProfileFamilyNameKey]
-                    imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
 - (BOOL)hasImage {

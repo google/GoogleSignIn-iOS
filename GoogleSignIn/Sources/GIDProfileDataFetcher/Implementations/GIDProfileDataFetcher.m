@@ -34,6 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 // The URL template for the URL to get user info.
 static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
 
+// Basic profile (Fat ID Token / userinfo endpoint) keys
+static NSString *const kBasicProfileEmailKey = @"email";
+static NSString *const kBasicProfilePictureKey = @"picture";
+static NSString *const kBasicProfileNameKey = @"name";
+static NSString *const kBasicProfileGivenNameKey = @"given_name";
+static NSString *const kBasicProfileFamilyNameKey = @"family_name";
+
 @implementation GIDProfileDataFetcher {
   id<GIDHTTPFetcher> _httpFetcher;
 }
@@ -58,7 +65,7 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
   // If profile data is present in the ID token, use it.
   if (idToken) {
-    GIDProfileData *profileData = [[GIDProfileData alloc] initWithIDToken:idToken];
+    GIDProfileData *profileData = [self fetchProfileDataWithIDToken:idToken];
     completion(profileData, nil);
     return;
   }
@@ -97,6 +104,23 @@ static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo";
              imageURL:[NSURL URLWithString:profileDict[kBasicProfilePictureKey]]];
     completion(profileData, nil);
   }];
+}
+
+- (nullable GIDProfileData*)fetchProfileDataWithIDToken:(OIDIDToken *)idToken {
+  if (!idToken ||
+      !idToken.claims[kBasicProfilePictureKey] ||
+      !idToken.claims[kBasicProfileNameKey] ||
+      !idToken.claims[kBasicProfileGivenNameKey] ||
+      !idToken.claims[kBasicProfileFamilyNameKey]) {
+    return nil;
+  }
+
+  return [[GIDProfileData alloc]
+      initWithEmail:idToken.claims[kBasicProfileEmailKey]
+               name:idToken.claims[kBasicProfileNameKey]
+          givenName:idToken.claims[kBasicProfileGivenNameKey]
+         familyName:idToken.claims[kBasicProfileFamilyNameKey]
+           imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
 @end

@@ -219,7 +219,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // Restore current user without refreshing the access token.
   OIDIDToken *idToken =
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
-  GIDProfileData *profileData = [[GIDProfileData alloc] initWithIDToken:idToken];
+  GIDProfileData *profileData = [_profileDataFetcher fetchProfileDataWithIDToken:idToken];
 
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
   self.currentUser = user;

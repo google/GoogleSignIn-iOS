@@ -17,13 +17,14 @@
 #import <Foundation/Foundation.h>
 
 @class OIDAuthState;
+@class OIDIDToken;
 @class GIDProfileData;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol GIDProfileDataFetcher <NSObject>
 
-/// Fetches the latest @GIDProfileData object.
+/// Fetches the latest `GIDProfileData` object.
 ///
 /// "This method either extracts profile data from `OIDIDToken` in `OIDAuthState` or fetches it
 /// from the UserInfo endpoint."
@@ -33,6 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)fetchProfileDataWithAuthState:(OIDAuthState *)authState
                            completion:(void (^)(GIDProfileData *_Nullable profileData,
                                                 NSError *_Nullable error))completion;
+
+/// Fetches the latest `GIDProfileData` object.
+///
+/// @param idToken The ID token.
+- (nullable GIDProfileData*)fetchProfileDataWithIDToken:(OIDIDToken *)idToken;
 
 @end
 

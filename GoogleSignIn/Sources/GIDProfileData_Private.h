@@ -16,15 +16,7 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 
-@class OIDIDToken;
-
 NS_ASSUME_NONNULL_BEGIN
-
-extern NSString *const kBasicProfileEmailKey;
-extern NSString *const kBasicProfilePictureKey;
-extern NSString *const kBasicProfileNameKey;
-extern NSString *const kBasicProfileGivenNameKey;
-extern NSString *const kBasicProfileFamilyNameKey;
 
 // Private |GIDProfileData| methods that are used in this SDK.
 @interface GIDProfileData ()
@@ -35,9 +27,6 @@ extern NSString *const kBasicProfileFamilyNameKey;
                     givenName:(nullable NSString *)givenName
                    familyName:(nullable NSString *)familyName
                      imageURL:(nullable NSURL *)imageURL NS_DESIGNATED_INITIALIZER;
-
-/// Initialize with ID token.
-- (nullable instancetype)initWithIDToken:(OIDIDToken *)idToken;
 
 @end
 
