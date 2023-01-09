@@ -21,12 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDSignInInternalOptions;
 @class OIDAuthorizationResponse;
 
+/// The protocol to control the authorization flow.
 @protocol GIDAuthorizationFlowProcessor <NSObject>
 
 /// The state of the authorization flow.
 @property(nonatomic, readonly, getter=isStarted) BOOL start;
 
 /// Starts the authorization flow.
+/// This method sends authorization request to AppAuth OIDAuthorizationService and gets back the response or an error.
 ///
 /// @param options The @GIDSignInInternalOptions object to provide serverClientID, hostedDomain,
 ///     clientID, scopes, loginHint and extraParams.

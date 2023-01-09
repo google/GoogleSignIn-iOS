@@ -18,13 +18,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// The name of the query parameter used for logging the SDK version.
+/// The name of the query parameter used for logging the SDK version.
 extern NSString *const kSDKVersionLoggingParameter;
 
-// The name of the query parameter used for logging the Apple execution environment.
+/// The name of the query parameter used for logging the Apple execution environment.
 extern NSString *const kEnvironmentLoggingParameter;
 
-// Expected path in the URL scheme to be handled.
+/// Expected path in the URL scheme to be handled.
 extern NSString *const kBrowserCallbackPath;
 
 NSString* GIDVersion(void);

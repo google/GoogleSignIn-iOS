@@ -30,6 +30,7 @@
 static NSString *const kFakeURL = @"www.fakeURL.com";
 static NSString *const kErrorDomain = @"ERROR_DOMAIN";
 static NSInteger const kErrorCode = 400;
+static NSInteger const kTimeout = 1;
 
 @interface GIDAuthorizationFlowProcessorTest : XCTestCase {
   GIDAuthorizationFlowProcessor *_authorizationFlowProcessor;
@@ -69,7 +70,7 @@ static NSInteger const kErrorCode = 400;
                                                   NSError *error) {
     [expectation fulfill];
   }];
-  [self waitForExpectationsWithTimeout:1 handler:nil];
+  [self waitForExpectationsWithTimeout:kTimeout handler:nil];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
   
   [_authorizationFlowProcessor cancelAuthenticationFlow];
@@ -104,7 +105,7 @@ static NSInteger const kErrorCode = 400;
                                                   NSError *error) {
     [expectation fulfill];
   }];
-  [self waitForExpectationsWithTimeout:1 handler:nil];
+  [self waitForExpectationsWithTimeout:kTimeout handler:nil];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
  
   OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])

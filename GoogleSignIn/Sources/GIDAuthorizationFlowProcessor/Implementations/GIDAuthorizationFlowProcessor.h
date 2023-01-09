@@ -22,6 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Concrete implementation of the protocol GIDAuthorizationFlowProcessor.
 @interface GIDAuthorizationFlowProcessor : NSObject <GIDAuthorizationFlowProcessor>
 
 @end
