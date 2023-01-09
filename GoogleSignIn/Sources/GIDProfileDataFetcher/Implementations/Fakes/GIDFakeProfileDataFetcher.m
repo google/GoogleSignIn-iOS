@@ -27,6 +27,15 @@ NS_ASSUME_NONNULL_BEGIN
   });
 }
 
+- (nullable GIDProfileData*)fetchProfileDataWithIDToken:(OIDIDToken *)idToken {
+  NSAssert(self.testBlock != nil, @"Set the test block before invoking this method.");
+  __block GIDProfileData *profileDataToReturn;
+  self.testBlock(^(GIDProfileData *_Nullable profileData, NSError *_Nullable error){
+    profileDataToReturn = profileData;
+  });
+  return profileDataToReturn;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

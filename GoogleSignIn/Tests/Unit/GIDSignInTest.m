@@ -420,20 +420,21 @@ static NSString *const kNewScope = @"newScope";
   
   OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
   OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
-  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
-  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
   
+  GIDProfileData *fakeProfileData = [GIDProfileData testInstance];
+  GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
+                                               responseProvider) {
+    responseProvider(fakeProfileData, nil);
+  };
+  
+  [_profileDataFetcher setTestBlock:testBlock];
   [_signIn restorePreviousSignInNoRefresh];
 
-  [_authState verify];
-  [_authorization verify];
-  [_tokenResponse verify];
-  [_tokenRequest verify];
-  [idTokenDecoded verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
-
+  
+  XCTAssertEqualObjects(_signIn.currentUser.profile, fakeProfileData);
   [idTokenDecoded stopMocking];
 }
 
