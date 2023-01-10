@@ -36,15 +36,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// Whether or not the user has profile image.
 @property(nonatomic, readonly) BOOL hasImage;
 
++ (instancetype)new NS_UNAVAILABLE;
+
+- (instancetype)init NS_UNAVAILABLE;
+
 /// Gets the user's profile image URL for the given dimension in pixels for each side of the square.
 ///
 /// @param dimension The desired height (and width) of the profile image.
 /// @return The URL of the user's profile image.
 - (nullable NSURL *)imageURLWithDimension:(NSUInteger)dimension;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-+ (instancetype)new NS_UNAVAILABLE;
 
 @end
 
