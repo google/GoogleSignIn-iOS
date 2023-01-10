@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,9 +39,11 @@ static NSInteger const kErrorCode = 400;
   _profileDataFetcher = [[GIDProfileDataFetcher alloc] initWithHTTPFetcher:_httpFetcher];
 }
 
-- (void)testFetchProfileData_outOfAuthState_success {
+// Extracts the `GIDProfileData` out of a fat ID token.
+- (void)testFetchProfileData_fatIDToken_success {
+  NSString *fatIDToken = [OIDTokenResponse fatIDToken];
   OIDTokenResponse *tokenResponse =
-      [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
+      [OIDTokenResponse testInstanceWithIDToken:fatIDToken
                                     accessToken:kAccessToken
                                       expiresIn:@(300)
                                    refreshToken:kRefreshToken
@@ -71,24 +73,20 @@ static NSInteger const kErrorCode = 400;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testFetchProfileData_fromInfoURL_fetchingError {
+// Can not extracts the `GIDProfileData` out of a non-fat ID token. Try to fetch it from the
+// UserInfo endpoint and get an error.
+- (void)testFetchProfileData_nonFatIDToken_fetchingError {
+  NSString *nonFatIDToken = [OIDTokenResponse idToken];
   OIDTokenResponse *tokenResponse =
-      [OIDTokenResponse testInstanceWithIDToken:nil
+      [OIDTokenResponse testInstanceWithIDToken:nonFatIDToken
                                     accessToken:kAccessToken
                                       expiresIn:@(300)
                                    refreshToken:kRefreshToken
                                    tokenRequest:nil];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
   
-  XCTestExpectation *fetcherExpectation =
-      [self expectationWithDescription:@"_httpFetcher is invoked"];
-  GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
-        NSError *fetchingError = [self error];
-        responseProvider(nil, fetchingError);
-        [fetcherExpectation fulfill];
-      };
-  [_httpFetcher setTestBlock:testBlock];
+  NSError *fetchingError = [self error];
+  [self setGIDHTTPFetcherTestBlockWithData:nil error:fetchingError];
   
   XCTestExpectation *completionExpectation =
       [self expectationWithDescription:@"completion is invoked"];
@@ -106,8 +104,8 @@ static NSInteger const kErrorCode = 400;
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-// Fetch the NSData successfully but can not parse it.
-- (void)testFetchProfileData_fromInfoURL_parsingError {
+// There is no ID token. Try to fetch it from the UserInfo endpoint and get an error.
+- (void)testFetchProfileData_noIDToken_fetchingError {
   OIDTokenResponse *tokenResponse =
       [OIDTokenResponse testInstanceWithIDToken:nil
                                     accessToken:kAccessToken
@@ -116,15 +114,37 @@ static NSInteger const kErrorCode = 400;
                                    tokenRequest:nil];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
   
-  XCTestExpectation *fetcherExpectation =
-      [self expectationWithDescription:@"_httpFetcher is invoked"];
-  GIDHTTPFetcherTestBlock testBlock =
-      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
-        NSData *data = [[NSData alloc] init];
-        responseProvider(data, nil);
-        [fetcherExpectation fulfill];
-      };
-  [_httpFetcher setTestBlock:testBlock];
+  NSError *fetchingError = [self error];
+  [self setGIDHTTPFetcherTestBlockWithData:nil error:fetchingError];
+  
+  XCTestExpectation *completionExpectation =
+      [self expectationWithDescription:@"completion is invoked"];
+  
+  [_profileDataFetcher
+      fetchProfileDataWithAuthState:authState
+                         completion:^(GIDProfileData *profileData, NSError *error) {
+    XCTAssertNil(profileData);
+    XCTAssertNotNil(error);
+    XCTAssertEqualObjects(error.domain, kErrorDomain);
+    XCTAssertEqual(error.code, kErrorCode);
+    [completionExpectation fulfill];
+  }];
+  
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+// Fetch the NSData from the UserInfo endpoint successfully but can not parse it.
+- (void)testFetchProfileData_noIDToken_parsingError {
+  OIDTokenResponse *tokenResponse =
+      [OIDTokenResponse testInstanceWithIDToken:nil
+                                    accessToken:kAccessToken
+                                      expiresIn:@(300)
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:nil];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
+  
+  NSData *data = [[NSData alloc] init];
+  [self setGIDHTTPFetcherTestBlockWithData:data error:nil];
   
   XCTestExpectation *completionExpectation =
       [self expectationWithDescription:@"completion is invoked"];
@@ -145,6 +165,19 @@ static NSInteger const kErrorCode = 400;
 
 - (NSError *)error {
   return [NSError errorWithDomain:kErrorDomain code:kErrorCode userInfo:nil];
+}
+
+/// Set the return value from the UserInfo endpoint.
+- (void)setGIDHTTPFetcherTestBlockWithData:(NSData *)data
+                                     error:(NSError *)error {
+  XCTestExpectation *fetcherExpectation =
+      [self expectationWithDescription:@"_httpFetcher is invoked"];
+  GIDHTTPFetcherTestBlock testBlock =
+      ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+        responseProvider(data, error);
+        [fetcherExpectation fulfill];
+      };
+  [_httpFetcher setTestBlock:testBlock];
 }
 
 @end
