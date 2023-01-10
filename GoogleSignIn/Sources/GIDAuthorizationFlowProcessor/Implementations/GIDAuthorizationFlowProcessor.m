@@ -40,10 +40,10 @@ static NSString *const kHostedDomainParameter = @"hd";
 
 @interface GIDAuthorizationFlowProcessor ()
 
-// AppAuth external user-agent session state.
+/// AppAuth external user-agent session state.
 @property(nonatomic, nullable)id<OIDExternalUserAgentSession> currentAuthorizationFlow;
 
-// AppAuth configuration object.
+/// AppAuth configuration object.
 @property(nonatomic)OIDServiceConfiguration *appAuthConfiguration;
 
 @end

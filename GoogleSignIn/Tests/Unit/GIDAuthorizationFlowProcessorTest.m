@@ -15,7 +15,9 @@
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDFakeExternalUserAgentSession.h"
 
 #import <XCTest/XCTest.h>
 
@@ -34,8 +36,8 @@ static NSInteger const kTimeout = 1;
 
 @interface GIDAuthorizationFlowProcessorTest : XCTestCase {
   GIDAuthorizationFlowProcessor *_authorizationFlowProcessor;
+  OIDFakeExternalUserAgentSession *_fakeExternalUserAgentSession;
   id _authorizationServiceMock;
-  id _externalUserAgentSession;
 }
 
 @end
@@ -46,7 +48,8 @@ static NSInteger const kTimeout = 1;
   [super setUp];
   
   _authorizationFlowProcessor = [[GIDAuthorizationFlowProcessor alloc] init];
-  _externalUserAgentSession = OCMProtocolMock(@protocol(OIDExternalUserAgentSession));
+  _fakeExternalUserAgentSession= [[OIDFakeExternalUserAgentSession alloc] init];
+
   _authorizationServiceMock = OCMClassMock([OIDAuthorizationService class]);
   OIDAuthorizationResponse *response = [OIDAuthorizationResponse testInstance];
   NSError *error = [self error];
@@ -58,7 +61,7 @@ static NSInteger const kTimeout = 1;
                  presentingWindow:[OCMArg any]
 #endif // TARGET_OS_OSX
                          callback:([OCMArg invokeBlockWithArgs:response, error, nil])
-          ]).andReturn(_externalUserAgentSession);
+          ]).andReturn(_fakeExternalUserAgentSession);
 }
 
 - (void)testStartAndCancelAuthorizationFlow_success {
@@ -68,6 +71,8 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
+    XCTAssertEqualObjects(authorizationResponse.request.clientID,
+                          OIDAuthorizationRequestTestingClientID);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:kTimeout handler:nil];
@@ -84,13 +89,15 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
+    XCTAssertEqualObjects(authorizationResponse.request.clientID,
+                          OIDAuthorizationRequestTestingClientID);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
   
-  OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])
-      .andReturn(YES);
+  _fakeExternalUserAgentSession.resumeExternalUserAgentFlow = YES;
+  
   NSURL *url = [[NSURL alloc] initWithString:kFakeURL];
   [_authorizationFlowProcessor resumeExternalUserAgentFlowWithURL:url];
   XCTAssertFalse(_authorizationFlowProcessor.isStarted);
@@ -103,13 +110,14 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
+    XCTAssertEqualObjects(authorizationResponse.request.clientID,
+                          OIDAuthorizationRequestTestingClientID);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:kTimeout handler:nil];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
  
-  OCMStub([_externalUserAgentSession resumeExternalUserAgentFlowWithURL:[OCMArg any]])
-      .andReturn(NO);
+  _fakeExternalUserAgentSession.resumeExternalUserAgentFlow = NO;
   NSURL *url = [[NSURL alloc] initWithString:kFakeURL];
   [_authorizationFlowProcessor resumeExternalUserAgentFlowWithURL:url];
   XCTAssertTrue(_authorizationFlowProcessor.isStarted);
