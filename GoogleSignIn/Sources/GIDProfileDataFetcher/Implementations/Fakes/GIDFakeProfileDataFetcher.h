@@ -22,9 +22,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// The block which provides the response for user info request.
+///
+/// @param profileData The `GIDProfileData` object returned if succeeded.
+/// @param error The error returned if failed.
 typedef void (^GIDProfileDataFetcherFakeResponseProvider)(GIDProfileData *_Nullable profileData,
                                                           NSError *_Nullable error);
 
+/// The block to set up the response value.
+///
+/// @param responseProvider The block which provides the response.
 typedef void (^GIDProfileDataFetcherTestBlock)(GIDProfileDataFetcherFakeResponseProvider
                                                responseProvider);
 
