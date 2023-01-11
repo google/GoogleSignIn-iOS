@@ -38,6 +38,7 @@ static NSInteger const kTimeout = 1;
   GIDAuthorizationFlowProcessor *_authorizationFlowProcessor;
   OIDFakeExternalUserAgentSession *_fakeExternalUserAgentSession;
   id _authorizationServiceMock;
+  OIDAuthorizationResponse *_fakeResponse;
 }
 
 @end
@@ -51,7 +52,7 @@ static NSInteger const kTimeout = 1;
   _fakeExternalUserAgentSession= [[OIDFakeExternalUserAgentSession alloc] init];
 
   _authorizationServiceMock = OCMClassMock([OIDAuthorizationService class]);
-  OIDAuthorizationResponse *response = [OIDAuthorizationResponse testInstance];
+  _fakeResponse = [OIDAuthorizationResponse testInstance];
   NSError *error = [self error];
   OCMStub([_authorizationServiceMock
       presentAuthorizationRequest:[OCMArg any]
@@ -60,7 +61,7 @@ static NSInteger const kTimeout = 1;
 #elif TARGET_OS_OSX
                  presentingWindow:[OCMArg any]
 #endif // TARGET_OS_OSX
-                         callback:([OCMArg invokeBlockWithArgs:response, error, nil])
+                         callback:([OCMArg invokeBlockWithArgs:_fakeResponse, error, nil])
           ]).andReturn(_fakeExternalUserAgentSession);
 }
 
@@ -71,8 +72,10 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
-    XCTAssertEqualObjects(authorizationResponse.request.clientID,
-                          OIDAuthorizationRequestTestingClientID);
+    XCTAssertEqualObjects(authorizationResponse.accessToken,
+                          _fakeResponse.accessToken);
+    XCTAssertEqualObjects(authorizationResponse.authorizationCode,
+                          _fakeResponse.authorizationCode);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:kTimeout handler:nil];
@@ -89,8 +92,10 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
-    XCTAssertEqualObjects(authorizationResponse.request.clientID,
-                          OIDAuthorizationRequestTestingClientID);
+    XCTAssertEqualObjects(authorizationResponse.accessToken,
+                          _fakeResponse.accessToken);
+    XCTAssertEqualObjects(authorizationResponse.authorizationCode,
+                          _fakeResponse.authorizationCode);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -110,8 +115,10 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
-    XCTAssertEqualObjects(authorizationResponse.request.clientID,
-                          OIDAuthorizationRequestTestingClientID);
+    XCTAssertEqualObjects(authorizationResponse.accessToken,
+                          _fakeResponse.accessToken);
+    XCTAssertEqualObjects(authorizationResponse.authorizationCode,
+                          _fakeResponse.authorizationCode);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:kTimeout handler:nil];

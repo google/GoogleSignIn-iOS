@@ -16,10 +16,10 @@
 
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 @class GIDSignInInternalOptions;
 @class OIDAuthorizationResponse;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// The protocol to control the authorization flow.
 @protocol GIDAuthorizationFlowProcessor <NSObject>
@@ -28,18 +28,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, getter=isStarted) BOOL start;
 
 /// Starts the authorization flow.
-/// This method sends authorization request to AppAuth OIDAuthorizationService and gets back the response or an error.
+/// This method sends authorization request to AppAuth `OIDAuthorizationService` and gets back the
+/// response or an error.
 ///
-/// @param options The @GIDSignInInternalOptions object to provide serverClientID, hostedDomain,
+/// @param options The `GIDSignInInternalOptions` object to provide serverClientID, hostedDomain,
 ///     clientID, scopes, loginHint and extraParams.
 /// @param emmSupport The EMM support info string.
 /// @param completion The block that is called on completion asynchronously.
+///      authorizationResponse The response from `OIDAuthorizationService`.
+///      error The error from `OIDAuthorizationService`.
 - (void)startWithOptions:(GIDSignInInternalOptions *)options
               emmSupport:(nullable NSString *)emmSupport
               completion:(void (^)(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error))completion;
 
-/// Handles the custom scheme URL opened by SFSafariViewController to cleanup UI on iOS 10.
+/// Handles the custom URL scheme opened by SFSafariViewController and returns control to the
+/// client on iOS 10.
 ///
 /// @param url The redirect URL invoked by the server.
 /// @return YES if the passed URL matches the expected redirect URL and was consumed, NO otherwise.
