@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, getter=isStarted) BOOL start;
 
 /// Starts the authorization flow.
+///
 /// This method sends authorization request to AppAuth `OIDAuthorizationService` and gets back the
 /// response or an error.
 ///
