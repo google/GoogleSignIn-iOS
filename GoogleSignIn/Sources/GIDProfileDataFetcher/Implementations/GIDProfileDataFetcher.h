@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+#import <Foundation/Foundation.h>
+
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
+
+@protocol GIDHTTPFetcher;
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Private |GIDProfileData| methods that are used in this SDK.
-@interface GIDProfileData ()
+@interface GIDProfileDataFetcher : NSObject <GIDProfileDataFetcher>
 
-// Initialize with profile attributes.
-- (instancetype)initWithEmail:(NSString *)email
-                         name:(NSString *)name
-                    givenName:(nullable NSString *)givenName
-                   familyName:(nullable NSString *)familyName
-                     imageURL:(nullable NSURL *)imageURL NS_DESIGNATED_INITIALIZER;
+/// The convenience initializer.
+- (instancetype)init;
+
+/// The initializer for unit test.
+- (instancetype)initWithHTTPFetcher:(id<GIDHTTPFetcher>)httpFetcher NS_DESIGNATED_INITIALIZER;
 
 @end
 
