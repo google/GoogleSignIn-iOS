@@ -73,9 +73,9 @@ static NSInteger const kTimeout = 1;
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
     XCTAssertEqualObjects(authorizationResponse.accessToken,
-                          _fakeResponse.accessToken);
+                          self->_fakeResponse.accessToken);
     XCTAssertEqualObjects(authorizationResponse.authorizationCode,
-                          _fakeResponse.authorizationCode);
+                          self->_fakeResponse.authorizationCode);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:kTimeout handler:nil];
@@ -93,9 +93,9 @@ static NSInteger const kTimeout = 1;
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
     XCTAssertEqualObjects(authorizationResponse.accessToken,
-                          _fakeResponse.accessToken);
+                          self->_fakeResponse.accessToken);
     XCTAssertEqualObjects(authorizationResponse.authorizationCode,
-                          _fakeResponse.authorizationCode);
+                          self->_fakeResponse.authorizationCode);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -116,9 +116,9 @@ static NSInteger const kTimeout = 1;
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
     XCTAssertEqualObjects(authorizationResponse.accessToken,
-                          _fakeResponse.accessToken);
+                          self->_fakeResponse.accessToken);
     XCTAssertEqualObjects(authorizationResponse.authorizationCode,
-                          _fakeResponse.authorizationCode);
+                          self->_fakeResponse.authorizationCode);
     [expectation fulfill];
   }];
   [self waitForExpectationsWithTimeout:kTimeout handler:nil];
