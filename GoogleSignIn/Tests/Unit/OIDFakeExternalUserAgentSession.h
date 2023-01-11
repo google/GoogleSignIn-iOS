@@ -16,16 +16,17 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/API/GIDAuthorizationFlowProcessor.h"
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
+#import <AppAuth/AppAuth.h>
+#endif
 
-@class OIDServiceConfiguration;
+/// The fake OIDExternalUserAgentSession.
+@interface OIDFakeExternalUserAgentSession : NSObject <OIDExternalUserAgentSession>
 
-NS_ASSUME_NONNULL_BEGIN
-
-/// Concrete implementation of the protocol `GIDAuthorizationFlowProcessor`.
-@interface GIDAuthorizationFlowProcessor : NSObject <GIDAuthorizationFlowProcessor>
+/// Set the return value for the method `resumeExternalUserAgentFlowWithURL:`.
+/// The defualt value is YES.
+@property(nonatomic) BOOL resumeExternalUserAgentFlow;
 
 @end
-
-NS_ASSUME_NONNULL_END
-

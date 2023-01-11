@@ -38,17 +38,22 @@ static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes
 static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
 
-@implementation GIDAuthorizationFlowProcessor {
-  // AppAuth external user-agent session state.
-  id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
-  // AppAuth configuration object.
-  OIDServiceConfiguration *_appAuthConfiguration;
-}
+@interface GIDAuthorizationFlowProcessor ()
+
+/// AppAuth external user-agent session state.
+@property(nonatomic, nullable)id<OIDExternalUserAgentSession> currentAuthorizationFlow;
+
+/// AppAuth configuration object.
+@property(nonatomic)OIDServiceConfiguration *appAuthConfiguration;
+
+@end
+
+@implementation GIDAuthorizationFlowProcessor
 
 # pragma mark - Public API
 
 - (BOOL)isStarted {
-  return _currentAuthorizationFlow != nil;
+  return self.currentAuthorizationFlow != nil;
 }
 
 - (void)startWithOptions:(GIDSignInInternalOptions *)options
@@ -72,6 +77,7 @@ static NSString *const kHostedDomainParameter = @"hd";
   if (options.configuration.hostedDomain) {
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDEMMSupport parametersWithParameters:options.extraParams
@@ -110,8 +116,8 @@ static NSString *const kHostedDomainParameter = @"hd";
 }
 
 - (BOOL)resumeExternalUserAgentFlowWithURL:(NSURL *)url {
-  if ([_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url]) {
-    _currentAuthorizationFlow = nil;
+  if ([self.currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url]) {
+    self.currentAuthorizationFlow = nil;
     return YES;
   } else {
     return NO;
@@ -119,8 +125,8 @@ static NSString *const kHostedDomainParameter = @"hd";
 }
 
 - (void)cancelAuthenticationFlow {
-  [_currentAuthorizationFlow cancel];
-  _currentAuthorizationFlow = nil;
+  [self.currentAuthorizationFlow cancel];
+  self.currentAuthorizationFlow = nil;
 }
 
 @end
