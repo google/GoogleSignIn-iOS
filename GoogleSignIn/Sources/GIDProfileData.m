@@ -128,7 +128,8 @@ static NSString *const kOldImageURLStringKey = @"picture";
   }
   
   return [self initWithEmail:email
-                        name:name givenName:givenName
+                        name:name
+                   givenName:givenName
                   familyName:familyName
                     imageURL:imageURL];
 }

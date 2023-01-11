@@ -26,8 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Fetches the latest `GIDProfileData` object.
 ///
-/// "This method either extracts profile data from `OIDIDToken` in `OIDAuthState` or fetches it
-/// from the UserInfo endpoint."
+/// This method either extracts profile data from `OIDIDToken` in `OIDAuthState` or fetches it
+/// from the UserInfo endpoint.
 ///
 /// @param authState The state of the current OAuth session.
 /// @param completion The block that is called on completion asynchronously.
@@ -35,10 +35,13 @@ NS_ASSUME_NONNULL_BEGIN
                            completion:(void (^)(GIDProfileData *_Nullable profileData,
                                                 NSError *_Nullable error))completion;
 
-/// Fetches the latest `GIDProfileData` object.
+/// Fetches a `GIDProfileData` object from an ID token.
+///
+/// This method returns  a `GIDProfileData` object if the ID token is a fat one. Otherwise, returns
+/// nil.
 ///
 /// @param idToken The ID token.
-- (nullable GIDProfileData*)fetchProfileDataWithIDToken:(OIDIDToken *)idToken;
+- (nullable GIDProfileData *)fetchProfileDataWithIDToken:(OIDIDToken *)idToken;
 
 @end
 

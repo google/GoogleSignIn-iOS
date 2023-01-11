@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 
+@protocol GIDAuthorizationFlowProcessor;
 @protocol GIDHTTPFetcher;
 @protocol GIDKeychainHandler;
 @protocol GIDProfileDataFetcher;
@@ -54,6 +55,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
                             httpFetcher:(id<GIDHTTPFetcher>)HTTPFetcher
                      profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher
+             authorizationFlowProcessor:
+    (id<GIDAuthorizationFlowProcessor>)authorizationFlowProcessor
     NS_DESIGNATED_INITIALIZER;
 
 /// Authenticates with extra options.

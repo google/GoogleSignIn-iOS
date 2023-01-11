@@ -21,6 +21,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
+#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/API/GIDAuthorizationFlowProcessor.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
@@ -79,9 +81,6 @@ static NSString *const kEMMRestartAuthParameter = @"emmres";
 // The URL template for the URL to revoke the token.
 static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke";
 
-// Expected path in the URL scheme to be handled.
-static NSString *const kBrowserCallbackPath = @"/oauth2callback";
-
 // Expected path for EMM callback.
 static NSString *const kEMMCallbackPath = @"/emmcallback";
 
@@ -116,9 +115,6 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 static NSString *const kAudienceParameter = @"audience";
 // See b/11669751 .
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
-static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
-static NSString *const kLoginHintParameter = @"login_hint";
-static NSString *const kHostedDomainParameter = @"hd";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -148,8 +144,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
   
-  // AppAuth external user-agent session state.
-  id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
   
@@ -161,6 +155,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   
   // The class to fetches data from a url end point.
   id<GIDHTTPFetcher> _httpFetcher;
+  
+  // The class to control the authorization flow.
+  id<GIDAuthorizationFlowProcessor> _authorizationFlowProcessor;
 }
 
 #pragma mark - Public methods
@@ -172,8 +169,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (BOOL)handleURL:(NSURL *)url {
   // Check if the callback path matches the expected one for a URL from Safari/Chrome/SafariVC.
   if ([url.path isEqual:kBrowserCallbackPath]) {
-    if ([_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url]) {
-      _currentAuthorizationFlow = nil;
+    if ([_authorizationFlowProcessor resumeExternalUserAgentFlowWithURL:url]) {
       return YES;
     }
     return NO;
@@ -245,12 +241,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                 completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
-    [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
-                                     presentingViewController:presentingViewController
-                                                    loginHint:hint
-                                                addScopesFlow:NO
-                                                       scopes:additionalScopes
-                                                   completion:completion];
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+                                       presentingViewController:presentingViewController
+                                                      loginHint:hint
+                                                  addScopesFlow:NO
+                                                         scopes:additionalScopes
+                                                     completion:completion];
   [self signInWithOptions:options];
 }
 
@@ -323,12 +319,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                         completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
-    [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
-                                             presentingWindow:presentingWindow
-                                                    loginHint:hint
-                                                addScopesFlow:NO
-                                                       scopes:additionalScopes
-                                                   completion:completion];
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+                                               presentingWindow:presentingWindow
+                                                      loginHint:hint
+                                                  addScopesFlow:NO
+                                                         scopes:additionalScopes
+                                                     completion:completion];
   [self signInWithOptions:options];
 }
 
@@ -451,15 +447,20 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (id)initPrivate {
   id<GIDKeychainHandler> keychainHandler = [[GIDKeychainHandler alloc] init];
   id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
+  id<GIDAuthorizationFlowProcessor> authorizationFlowProcessor =
+      [[GIDAuthorizationFlowProcessor alloc] init];
   id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
   return [self initWithKeychainHandler:keychainHandler
                            httpFetcher:httpFetcher
-                    profileDataFetcher:profileDataFetcher];
+                    profileDataFetcher:profileDataFetcher
+            authorizationFlowProcessor:authorizationFlowProcessor];
 }
 
 - (instancetype)initWithKeychainHandler:(id<GIDKeychainHandler>)keychainHandler
                             httpFetcher:(id<GIDHTTPFetcher>)httpFetcher
-                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher {
+                     profileDataFetcher:(id<GIDProfileDataFetcher>)profileDataFetcher
+             authorizationFlowProcessor:
+    (id<GIDAuthorizationFlowProcessor>)authorizationFlowProcessor {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -489,6 +490,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     
     _keychainHandler = keychainHandler;
     _httpFetcher = httpFetcher;
+    _authorizationFlowProcessor = authorizationFlowProcessor;
     _profileDataFetcher = profileDataFetcher;
   }
   return self;
@@ -515,7 +517,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // Explicitly throw exception for missing client ID here. This must come before
     // scheme check because schemes rely on reverse client IDs.
     [self assertValidParameters];
-
     [self assertValidPresentingViewController];
 
     // If the application does not support the required URL schemes tell the developer so.
@@ -554,64 +555,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Authentication flow
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
-  GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
   NSString *emmSupport;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
 #elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
   emmSupport = nil;
 #endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
-
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
-  if (options.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
-  }
-  if (options.loginHint) {
-    additionalParameters[kLoginHintParameter] = options.loginHint;
-  }
-  if (options.configuration.hostedDomain) {
-    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
-  }
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:options.extraParams];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
   
-  NSURL *authorizationEndpointURL = [GIDSignInPreferences authorizationEndpointURL];
-  NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
-  OIDServiceConfiguration *appAuthConfiguration =
-      [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authorizationEndpointURL
-                                                       tokenEndpoint:tokenEndpointURL];
-
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
-
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-         presentingViewController:options.presentingViewController
-#elif TARGET_OS_OSX
-                 presentingWindow:options.presentingWindow
-#endif // TARGET_OS_OSX
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                   NSError *_Nullable error) {
+  [_authorizationFlowProcessor startWithOptions:options
+                                     emmSupport:(NSString *)emmSupport
+                                     completion:^(OIDAuthorizationResponse *authorizationResponse,
+                                                  NSError *error) {
     [self processAuthorizationResponse:authorizationResponse
                                  error:error
                             emmSupport:emmSupport];
@@ -680,7 +634,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 // Perform authentication with the provided options.
 - (void)authenticateWithOptions:(GIDSignInInternalOptions *)options {
-
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {
     [self authenticateInteractivelyWithOptions:options];
@@ -873,12 +826,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     return NO;
   }
 #endif // TARGET_OS_OSX
-  if (!_currentAuthorizationFlow) {
+  if (!_authorizationFlowProcessor.isStarted) {
     return NO;
   }
   _restarting = YES;
-  [_currentAuthorizationFlow cancel];
-  _currentAuthorizationFlow = nil;
+  [_authorizationFlowProcessor cancelAuthenticationFlow];
   _restarting = NO;
   NSDictionary<NSString *, NSString *> *extraParameters = @{ kEMMRestartAuthParameter : @"1" };
   // In iOS 13 the presentation of ASWebAuthenticationSession needs an anchor window,

@@ -63,11 +63,13 @@ static NSString *const kBasicProfileFamilyNameKey = @"family_name";
                                                 NSError *_Nullable error))completion {
   OIDIDToken *idToken =
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
-  // If profile data is present in the ID token, use it.
   if (idToken) {
+    // If we have an ID token, try to extract profile data from it.
     GIDProfileData *profileData = [self fetchProfileDataWithIDToken:idToken];
-    completion(profileData, nil);
-    return;
+    if (profileData) {
+      completion(profileData, nil);
+      return;
+    }
   }
   
   // If we can't retrieve profile data from the ID token, make a UserInfo endpoint request to
