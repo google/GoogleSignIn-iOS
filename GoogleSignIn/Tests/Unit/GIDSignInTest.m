@@ -26,6 +26,7 @@
 // Test module imports
 @import GoogleSignIn;
 
+#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
@@ -313,10 +314,16 @@ static NSString *const kNewScope = @"newScope";
   
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
   
+  GIDAuthorizationFlowProcessor * authorizationFlowProcessor =
+      [[GIDAuthorizationFlowProcessor alloc] init];
+  
   id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
+
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
                                            httpFetcher:_httpFetcher
-                                    profileDataFetcher:profileDataFetcher];
+                                    profileDataFetcher:profileDataFetcher
+                            authorizationFlowProcessor:authorizationFlowProcessor];
+
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
