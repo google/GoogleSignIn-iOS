@@ -18,16 +18,22 @@
 
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/API/GIDAuthorizationFlowProcessor.h"
 
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
+#import <AppAuth/AppAuth.h>
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// The block which provides the response for the method `startWithOptions:emmSupport:completion:`.
 ///
-/// @param data The OIDAuthorizationResponse object returned if succeed,
+/// @param authorizationResponse The OIDAuthorizationResponse object returned if succeeded.
 /// @param error The error returned if failed.
 typedef void(^GIDAuthorizationFlowProcessorFakeResponseProviderBlock)
     (OIDAuthorizationResponse *_Nullable authorizationResponse, NSError *_Nullable error);
 
-/// The block to set up data based on the input request for the method
+/// The block to set up response value for the method
 /// `startWithOptions:emmSupport:completion:`.
 ///
 /// @param responseProvider The block which provides the response.
@@ -36,8 +42,9 @@ typedef void (^GIDAuthorizationFlowProcessorTestBlock)
 
 @interface GIDFakeAuthorizationFlowProcessor : NSObject <GIDAuthorizationFlowProcessor>
 
-/// Set the test block which provides the response value.
-- (void)setTestBlock:(GIDAuthorizationFlowProcessorTestBlock)block;
+/// The test block which provides the response value.
+@property(nonatomic) GIDAuthorizationFlowProcessorTestBlock testBlock;
+
 
 @end
 

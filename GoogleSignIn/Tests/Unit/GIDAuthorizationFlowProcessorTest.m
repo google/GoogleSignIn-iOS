@@ -92,7 +92,6 @@ static NSInteger const kTimeout = 1;
                                      emmSupport:nil
                                      completion:^(OIDAuthorizationResponse *authorizationResponse,
                                                   NSError *error) {
-<
     XCTAssertEqualObjects(authorizationResponse.accessToken,
                           self->_fakeResponse.accessToken);
     XCTAssertEqualObjects(authorizationResponse.authorizationCode,
