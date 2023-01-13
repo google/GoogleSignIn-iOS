@@ -47,10 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
               emmSupport:(nullable NSString *)emmSupport
               completion:(void (^)(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error))completion {
-  
   OIDAuthorizationRequest *request =
-      [GIDAuthorizationUtil createAuthorizationRequestWithOptions:options
-                                                       emmSupport:emmSupport];
+      [GIDAuthorizationUtil authorizationRequestWithOptions:options
+                                                 emmSupport:emmSupport];
   
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request

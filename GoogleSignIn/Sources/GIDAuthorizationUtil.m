@@ -34,8 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDAuthorizationUtil
 
 + (OIDAuthorizationRequest *)
-    createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-                               emmSupport:(nullable NSString *)emmSupport {
+    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+                         emmSupport:(nullable NSString *)emmSupport {
   GIDSignInCallbackSchemes *schemes =
       [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
   NSString *urlString = [NSString stringWithFormat:@"%@:%@",
@@ -84,11 +84,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSArray<NSString *> *)unionScopes:(NSArray<NSString *> *)scopes
                                 withNewScopes:(NSArray<NSString *> *)newScopes
                                         error:(NSError * __autoreleasing *)error {
-  NSSet<NSString *> *requestedScopes = [NSSet setWithArray:newScopes];
   NSMutableSet<NSString *> *grantedScopes = [NSMutableSet setWithArray:scopes];
+  NSSet<NSString *> *requestedScopes = [NSSet setWithArray:newScopes];
   
   if ([requestedScopes isSubsetOfSet:grantedScopes]) {
-    // All requested scopes have already been granted, notify callback of failure.
+    // All requested scopes have already been granted, generate an error.
     *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                  code:kGIDSignInErrorCodeScopesAlreadyGranted
                              userInfo:nil];

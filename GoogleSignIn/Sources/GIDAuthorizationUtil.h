@@ -30,15 +30,15 @@ NS_ASSUME_NONNULL_BEGIN
 ///     clientID, scopes, loginHint and extraParams.
 /// @param emmSupport The EMM support info string.
 + (OIDAuthorizationRequest *)
-    createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-                               emmSupport:(nullable NSString *)emmSupport;
+    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+                         emmSupport:(nullable NSString *)emmSupport;
 
-/// Unions two scopes or returns error if the new scopes are the subset of the existing scopes.
+/// Unions two scopes or returns an error if the new scopes are the subset of the existing scopes.
 ///
 /// @param scopes The existing scopes.
 /// @param newScopes The new scopes to add.
 /// @param error The reference to the error.
-/// @return The array of all scopes or nil if there ia an error.
+/// @return The array of all scopes or nil if there is an error.
 + (nullable NSArray<NSString *> *)unionScopes:(NSArray<NSString *> *)scopes
                                 withNewScopes:(NSArray<NSString *> *)newScopes
                                         error:(NSError * __autoreleasing *)error;

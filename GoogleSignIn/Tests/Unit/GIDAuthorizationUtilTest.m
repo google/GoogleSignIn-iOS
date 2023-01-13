@@ -68,8 +68,8 @@ static NSString * const kScopeProfile = @"profile";
                                                   addScopesFlow:NO
                                                      completion:nil];
   OIDAuthorizationRequest *request =
-      [GIDAuthorizationUtil createAuthorizationRequestWithOptions:options
-                                                       emmSupport:nil];
+      [GIDAuthorizationUtil authorizationRequestWithOptions:options
+                                                 emmSupport:nil];
   
   NSDictionary<NSString *, NSObject *> *params = request.additionalParameters;
   XCTAssertEqualObjects(params[kIncludeGrantedScopesParameter], @"true");
@@ -99,8 +99,8 @@ static NSString * const kScopeProfile = @"profile";
                                                          scopes:addtionalScopes
                                                      completion:nil];
   OIDAuthorizationRequest *request =
-      [GIDAuthorizationUtil createAuthorizationRequestWithOptions:options
-                                                       emmSupport:nil];
+      [GIDAuthorizationUtil authorizationRequestWithOptions:options
+                                                 emmSupport:nil];
   
   NSArray<NSString *> *expectedScopes = @[kScopeBirthday, kScopeEmail, kScopeProfile];
   NSString *expectedScopeString = [expectedScopes componentsJoinedByString:@" "];
@@ -122,8 +122,8 @@ static NSString * const kScopeProfile = @"profile";
                                                      completion:nil];
   
   OIDAuthorizationRequest *request =
-      [GIDAuthorizationUtil createAuthorizationRequestWithOptions:options
-                                                       emmSupport:nil];
+      [GIDAuthorizationUtil authorizationRequestWithOptions:options
+                                                 emmSupport:nil];
   
   NSString *expectedScopeString = [scopes componentsJoinedByString:@" "];
   XCTAssertEqualObjects(request.scope, expectedScopeString);
@@ -143,8 +143,8 @@ static NSString * const kScopeProfile = @"profile";
                                                   addScopesFlow:NO
                                                      completion:nil];
   OIDAuthorizationRequest *request =
-      [GIDAuthorizationUtil createAuthorizationRequestWithOptions:options
-                                                       emmSupport:kEMMVersion];
+      [GIDAuthorizationUtil authorizationRequestWithOptions:options
+                                                 emmSupport:kEMMVersion];
   
   NSString *systemName = [UIDevice currentDevice].systemName;
   if ([systemName isEqualToString:@"iPhone OS"]) {
