@@ -18,11 +18,11 @@
 
 #import "GoogleSignIn/Sources/GIDAuthorizationUtil.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
-
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -108,6 +108,7 @@ static NSString * const kScopeProfile = @"profile";
                                                   addScopesFlow:YES
                                                          scopes:scopes
                                                      completion:nil];
+  
   OIDAuthorizationRequest *request =
       [GIDAuthorizationUtil createAuthorizationRequestWithOptions:options
                                                        emmSupport:nil];
