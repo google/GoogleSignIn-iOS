@@ -24,6 +24,15 @@ extern NSString *const kSDKVersionLoggingParameter;
 /// The name of the query parameter used for logging the Apple execution environment.
 extern NSString *const kEnvironmentLoggingParameter;
 
+/// The name of the query parameter for the token exchange endpoint.
+extern NSString *const kAudienceParameter;
+
+extern NSString *const kIncludeGrantedScopesParameter;
+
+extern NSString *const kLoginHintParameter;
+
+extern NSString *const kHostedDomainParameter;
+
 /// Expected path in the URL scheme to be handled.
 extern NSString *const kBrowserCallbackPath;
 

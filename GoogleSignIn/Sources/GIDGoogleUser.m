@@ -42,8 +42,6 @@ static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
 static NSString *const kProfileDataKey = @"profileData";
 static NSString *const kAuthStateKey = @"authState";
 
-// Parameters for the token exchange endpoint.
-static NSString *const kAudienceParameter = @"audience";
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 // Additional parameter names for EMM.

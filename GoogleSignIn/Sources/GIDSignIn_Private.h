@@ -24,8 +24,6 @@
 #import <AppKit/AppKit.h>
 #endif
 
-NS_ASSUME_NONNULL_BEGIN
-
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 
@@ -33,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol GIDHTTPFetcher;
 @protocol GIDKeychainHandler;
 @protocol GIDProfileDataFetcher;
+
+NS_ASSUME_NONNULL_BEGIN
+
+extern NSString *const kEMMVersion;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.

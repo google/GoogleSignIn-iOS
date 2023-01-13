@@ -23,6 +23,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/API/GIDAuthorizationFlowProcessor.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationUtil.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
@@ -75,6 +76,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// The EMM support version
+NSString *const kEMMVersion = @"1";
+
 // The name of the query parameter used for logging the restart of auth from EMM callback.
 static NSString *const kEMMRestartAuthParameter = @"emmres";
 
@@ -83,9 +87,6 @@ static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke";
 
 // Expected path for EMM callback.
 static NSString *const kEMMCallbackPath = @"/emmcallback";
-
-// The EMM support version
-static NSString *const kEMMVersion = @"1";
 
 // The error code for Google Identity.
 NSErrorDomain const kGIDSignInErrorDomain = @"com.google.GIDSignIn";
@@ -111,8 +112,6 @@ static NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
-// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
 // See b/11669751 .
 static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
@@ -260,24 +259,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable GIDSignInCompletion)completion {
-  GIDConfiguration *configuration = self.currentUser.configuration;
-  GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
-                                       presentingViewController:presentingViewController
-                                                      loginHint:self.currentUser.profile.email
-                                                  addScopesFlow:YES
-                                                     completion:completion];
-
-  NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
-  NSMutableSet<NSString *> *grantedScopes =
-      [NSMutableSet setWithArray:self.currentUser.grantedScopes];
-
-  // Check to see if all requested scopes have already been granted.
-  if ([requestedScopes isSubsetOfSet:grantedScopes]) {
-    // All requested scopes have already been granted, notify callback of failure.
-    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodeScopesAlreadyGranted
-                                     userInfo:nil];
+  NSError *error;
+  NSArray<NSString *> *allScopes = [GIDAuthorizationUtil unionScopes:self.currentUser.grantedScopes
+                                                       withNewScopes:scopes
+                                                               error:&error];
+  if (error) {
     if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{
         completion(nil, error);
@@ -285,10 +271,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
     return;
   }
-
-  // Use the union of granted and requested scopes.
-  [grantedScopes unionSet:requestedScopes];
-  options.scopes = [grantedScopes allObjects];
+  
+  GIDConfiguration *configuration = self.currentUser.configuration;
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                       presentingViewController:presentingViewController
+                                                      loginHint:self.currentUser.profile.email
+                                                  addScopesFlow:YES
+                                                     completion:completion];
+  options.scopes = allScopes;
 
   [self signInWithOptions:options];
 }
