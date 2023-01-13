@@ -40,11 +40,11 @@ static NSString * const kScopeBirthday = @"birthday";
 static NSString * const kScopeEmail = @"email";
 static NSString * const kScopeProfile = @"profile";
 
-@interface GIDAuthorizationFlowUtilTest : XCTestCase
+@interface GIDAuthorizationUtilTest : XCTestCase
 
 @end
 
-@implementation GIDAuthorizationFlowUtilTest {
+@implementation GIDAuthorizationUtilTest {
   GIDConfiguration *_configuration;
 }
 
@@ -59,7 +59,11 @@ static NSString * const kScopeProfile = @"profile";
 - (void)testCreateAuthorizationRequest_signInFlow {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        presentingViewController:nil
+#elif TARGET_OS_OSX
+                                               presentingWindow:nil
+#endif // TARGET_OS_OSX
                                                       loginHint:kUserEmail
                                                   addScopesFlow:NO
                                                      completion:nil];
@@ -85,7 +89,11 @@ static NSString * const kScopeProfile = @"profile";
   NSArray<NSString *> *addtionalScopes = @[kScopeBirthday];
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        presentingViewController:nil
+#elif TARGET_OS_OSX
+                                               presentingWindow:nil
+#endif // TARGET_OS_OSX
                                                       loginHint:kUserEmail
                                                   addScopesFlow:NO
                                                          scopes:addtionalScopes
@@ -103,7 +111,11 @@ static NSString * const kScopeProfile = @"profile";
   NSArray<NSString *> *scopes = @[kScopeEmail, kScopeProfile, kScopeBirthday];
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        presentingViewController:nil
+#elif TARGET_OS_OSX
+                                               presentingWindow:nil
+#endif // TARGET_OS_OSX
                                                       loginHint:kUserEmail
                                                   addScopesFlow:YES
                                                          scopes:scopes
@@ -122,7 +134,11 @@ static NSString * const kScopeProfile = @"profile";
 - (void)testCreateAuthorizationRequest_signInFlow_EMM {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        presentingViewController:nil
+#elif TARGET_OS_OSX
+                                               presentingWindow:nil
+#endif // TARGET_OS_OSX
                                                       loginHint:kUserEmail
                                                   addScopesFlow:NO
                                                      completion:nil];
