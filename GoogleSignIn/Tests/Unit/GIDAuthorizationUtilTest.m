@@ -175,23 +175,25 @@ static NSString * const kScopeProfile = @"profile";
   NSArray<NSString *> *newScopes = @[kScopeBirthday];
   
   NSError *error;
-  NSArray<NSString *> *allScopes = [GIDAuthorizationUtil unionScopes:scopes
-                                                       withNewScopes:newScopes
-                                                               error:&error];
+  NSArray<NSString *> *allScopes =
+      [GIDAuthorizationUtil resolvedScopesFromGrantedScoped:scopes
+                                              withNewScopes:newScopes
+                                                      error:&error];
   
   NSArray<NSString *> *expectedScopes = @[kScopeEmail, kScopeProfile, kScopeBirthday];
   XCTAssertEqualObjects(allScopes, expectedScopes);
   XCTAssertNil(error);
 }
 
-- (void)testUnitScopes_addExistingScopes_error {
+- (void)testUnionScopes_addExistingScopes_error {
   NSArray<NSString *> *scopes = @[kScopeEmail, kScopeProfile, kScopeBirthday];
   NSArray<NSString *> *newScopes = @[kScopeBirthday];
   
   NSError *error;
-  NSArray<NSString *> *allScopes = [GIDAuthorizationUtil unionScopes:scopes
-                                                       withNewScopes:newScopes
-                                                               error:&error];
+  NSArray<NSString *> *allScopes =
+      [GIDAuthorizationUtil resolvedScopesFromGrantedScoped:scopes
+                                              withNewScopes:newScopes
+                                                      error:&error];
   
   XCTAssertNil(allScopes);
   XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);

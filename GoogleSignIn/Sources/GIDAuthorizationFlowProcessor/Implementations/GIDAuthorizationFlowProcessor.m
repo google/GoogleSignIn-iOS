@@ -17,7 +17,6 @@
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
 
 #import "GoogleSignIn/Sources/GIDAuthorizationUtil.h"
-
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
 #ifdef SWIFT_PACKAGE
@@ -31,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GIDAuthorizationFlowProcessor ()
 
 /// AppAuth external user-agent session state.
-@property(nonatomic, nullable)id<OIDExternalUserAgentSession> currentAuthorizationFlow;
+@property(nonatomic, nullable) id<OIDExternalUserAgentSession> currentAuthorizationFlow;
 
 @end
 

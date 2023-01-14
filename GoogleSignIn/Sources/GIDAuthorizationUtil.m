@@ -81,9 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
   return request;
 }
 
-+ (nullable NSArray<NSString *> *)unionScopes:(NSArray<NSString *> *)scopes
-                                withNewScopes:(NSArray<NSString *> *)newScopes
-                                        error:(NSError * __autoreleasing *)error {
++ (nullable NSArray<NSString *> *)
+    resolvedScopesFromGrantedScoped:(NSArray<NSString *> *)scopes
+                      withNewScopes:(NSArray<NSString *> *)newScopes
+                              error:(NSError * __autoreleasing *)error {
   NSMutableSet<NSString *> *grantedScopes = [NSMutableSet setWithArray:scopes];
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:newScopes];
   

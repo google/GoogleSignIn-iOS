@@ -260,9 +260,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable GIDSignInCompletion)completion {
   NSError *error;
-  NSArray<NSString *> *allScopes = [GIDAuthorizationUtil unionScopes:self.currentUser.grantedScopes
-                                                       withNewScopes:scopes
-                                                               error:&error];
+  NSArray<NSString *> *allScopes =
+      [GIDAuthorizationUtil resolvedScopesFromGrantedScoped:self.currentUser.grantedScopes
+                                              withNewScopes:scopes
+                                                      error:&error];
   if (error) {
     if (completion) {
       dispatch_async(dispatch_get_main_queue(), ^{

@@ -34,6 +34,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// The EMM support version.
 extern NSString *const kEMMVersion;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the

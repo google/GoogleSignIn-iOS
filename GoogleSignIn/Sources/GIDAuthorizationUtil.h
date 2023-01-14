@@ -33,15 +33,17 @@ NS_ASSUME_NONNULL_BEGIN
     authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
                          emmSupport:(nullable NSString *)emmSupport;
 
-/// Unions two scopes or returns an error if the new scopes are the subset of the existing scopes.
+/// Unions granted scopes with new scopes or returns an error if the new scopes are the subset of
+/// the granted scopes.
 ///
 /// @param scopes The existing scopes.
 /// @param newScopes The new scopes to add.
 /// @param error The reference to the error.
 /// @return The array of all scopes or nil if there is an error.
-+ (nullable NSArray<NSString *> *)unionScopes:(NSArray<NSString *> *)scopes
-                                withNewScopes:(NSArray<NSString *> *)newScopes
-                                        error:(NSError * __autoreleasing *)error;
++ (nullable NSArray<NSString *> *)
+    resolvedScopesFromGrantedScoped:(NSArray<NSString *> *)scopes
+                      withNewScopes:(NSArray<NSString *> *)newScopes
+                              error:(NSError * __autoreleasing *)error;
 
 @end
 

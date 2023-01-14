@@ -1073,10 +1073,10 @@ static NSString *const kNewScope = @"newScope";
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-              [_signIn signInWithPresentingWindow:_presentingWindow
+      [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                             hint:_hint
-                                       completion:completion];
+                                     hint:_hint
+                               completion:completion];
     }
 
     [_authState verify];
