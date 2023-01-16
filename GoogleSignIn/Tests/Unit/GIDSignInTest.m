@@ -34,6 +34,7 @@
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
 #import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/Fakes/GIDFakeProfileDataFetcher.h"
 
 
@@ -186,39 +187,39 @@ static NSString *const kNewScope = @"newScope";
   // Whether or not the OS version is eligible for EMM.
   BOOL _isEligibleForEMM;
 
-  // Mock |OIDAuthState|.
+  // Mock `OIDAuthState`.
   id _authState;
 
-  // Mock |OIDTokenResponse|.
+  // Mock `OIDTokenResponse`.
   id _tokenResponse;
 
-  // Mock |OIDTokenRequest|.
+  // Mock `OIDTokenRequest`.
   id _tokenRequest;
 
-  // Mock |GTMAppAuthFetcherAuthorization|.
+  // Mock `GTMAppAuthFetcherAuthorization`.
   id _authorization;
   
-  // Fake for |GIDKeychainHandler|.
+  // Fake for `GIDKeychainHandler`.
   GIDFakeKeychainHandler *_keychainHandler;
 
-  // Fake for |GIDHTTPFetcher|.
+  // Fake for `GIDHTTPFetcher`.
   GIDFakeHTTPFetcher *_httpFetcher;
   
-  // Fake for |GIDProfileDataFetcher|.
+  // Fake for `GIDProfileDataFetcher`.
   GIDFakeProfileDataFetcher *_profileDataFetcher;
   
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // Mock |UIViewController|.
+  // Mock `UIViewController`.
   id _presentingViewController;
 #elif TARGET_OS_OSX
-  // Mock |NSWindow|.
+  // Mock `NSWindow`.
   id _presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-  // Mock for |GIDGoogleUser|.
+  // Mock for `GIDGoogleUser`.
   id _user;
 
-  // Mock for |OIDAuthorizationService|
+  // Mock for `OIDAuthorizationService`.
   id _oidAuthorizationService;
 
   // Parameter saved from delegate call.
@@ -230,16 +231,16 @@ static NSString *const kNewScope = @"newScope";
   // Fake [NSBundle mainBundle];
   GIDFakeMainBundle *_fakeMainBundle;
 
-  // The |GIDSignIn| object being tested.
+  // The `GIDSignIn` object being tested.
   GIDSignIn *_signIn;
 
-  // The configuration to be used when testing |GIDSignIn|.
+  // The configuration to be used when testing `GIDSignIn`.
   GIDConfiguration *_configuration;
 
-  // The login hint to be used when testing |GIDSignIn|.
+  // The login hint to be used when testing `GIDSignIn`.
   NSString *_hint;
 
-  // The completion to be used when testing |GIDSignIn|.
+  // The completion to be used when testing `GIDSignIn`.
   GIDSignInCompletion _completion;
 
   // The saved authorization request.
@@ -436,7 +437,7 @@ static NSString *const kNewScope = @"newScope";
     responseProvider(fakeProfileData, nil);
   };
   
-  [_profileDataFetcher setTestBlock:testBlock];
+  _profileDataFetcher.testBlock = testBlock;
   [_signIn restorePreviousSignInNoRefresh];
 
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
@@ -1070,7 +1071,6 @@ static NSString *const kNewScope = @"newScope";
   [[[mockEMMErrorHandler expect] andReturnValue:@YES]
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
 
-
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:callbackParams[@"error"]
                          tokenError:nil
@@ -1221,14 +1221,14 @@ static NSString *const kNewScope = @"newScope";
                codeVerifier:nil
        additionalParameters:tokenResponse.request.additionalParameters];
   
-  // Set the response for GIDProfileDataFetcher.
+  // Set the response for `GIDProfileDataFetcher`.
     GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
                                                  responseProvider) {
       GIDProfileData *profileData = [GIDProfileData testInstance];
       responseProvider(profileData, nil);
     };
     
-    [_profileDataFetcher setTestBlock:testBlock];
+    _profileDataFetcher.testBlock = testBlock;
 
   if (restoredSignIn) {
     // maybeFetchToken

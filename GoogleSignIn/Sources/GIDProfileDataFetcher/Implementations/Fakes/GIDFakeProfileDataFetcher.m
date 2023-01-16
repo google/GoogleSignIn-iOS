@@ -10,12 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDFakeProfileDataFetcher ()
-
-@property(nonatomic) GIDProfileDataFetcherTestBlock testBlock;
-
-@end
-
 @implementation GIDFakeProfileDataFetcher
 
 - (void)fetchProfileDataWithAuthState:(OIDAuthState *)authState
@@ -27,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
   });
 }
 
-- (nullable GIDProfileData*)fetchProfileDataWithIDToken:(OIDIDToken *)idToken {
+- (nullable GIDProfileData *)fetchProfileDataWithIDToken:(OIDIDToken *)idToken {
   NSAssert(self.testBlock != nil, @"Set the test block before invoking this method.");
   __block GIDProfileData *profileDataToReturn;
   self.testBlock(^(GIDProfileData *_Nullable profileData, NSError *_Nullable error) {
