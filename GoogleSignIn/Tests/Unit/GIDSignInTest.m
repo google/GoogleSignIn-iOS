@@ -34,13 +34,15 @@
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
-#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/Fakes/GIDFakeProfileDataFetcher.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
+#import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
@@ -90,8 +92,6 @@ static NSString * const kDotReversedClientId = @"FakeClientID";
 static NSString * const kClientId2 = @"FakeClientID2";
 static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kLanguage = @"FakeLanguage";
-static NSString * const kScope = @"FakeScope";
-static NSString * const kScope2 = @"FakeScope2";
 static NSString * const kAuthCode = @"FakeAuthCode";
 static NSString * const kKeychainName = @"auth";
 static NSString * const kUserEmail = @"FakeUserEmail";
@@ -132,13 +132,6 @@ static NSString * const kAppName = @"UnitTests";
 static NSString * const kUserIDKey = @"userID";
 static NSString * const kHostedDomainKey = @"hostedDomain";
 static NSString * const kIDTokenExpirationKey = @"idTokenExp";
-static NSString * const kScopeKey = @"scope";
-
-// Basic profile (Fat ID Token / userinfo endpoint) keys
-static NSString *const kBasicProfilePictureKey = @"picture";
-static NSString *const kBasicProfileNameKey = @"name";
-static NSString *const kBasicProfileGivenNameKey = @"given_name";
-static NSString *const kBasicProfileFamilyNameKey = @"family_name";
 
 static NSString * const kCustomKeychainName = @"CUSTOM_KEYCHAIN_NAME";
 static NSString * const kAddActivity = @"http://schemas.google.com/AddActivity";
@@ -151,9 +144,6 @@ static NSString *const kTokenURL = @"https://oauth2.googleapis.com/token";
 
 static NSString *const kFakeURL = @"http://foo.com";
 
-static NSString *const kEMMSupport = @"1";
-
-static NSString *const kGrantedScope = @"grantedScope";
 static NSString *const kNewScope = @"newScope";
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -184,39 +174,42 @@ static NSString *const kNewScope = @"newScope";
   // Whether or not the OS version is eligible for EMM.
   BOOL _isEligibleForEMM;
 
-  // Mock |OIDAuthState|.
+  // Mock `OIDAuthState`.
   id _authState;
 
-  // Mock |OIDTokenResponse|.
+  // Mock `OIDTokenResponse`.
   id _tokenResponse;
 
-  // Mock |OIDTokenRequest|.
+  // Mock `OIDTokenRequest`.
   id _tokenRequest;
 
-  // Mock |GTMAppAuthFetcherAuthorization|.
+  // Mock `GTMAppAuthFetcherAuthorization`.
   id _authorization;
   
-  // Fake for |GIDKeychainHandler|.
+  // Fake for `GIDKeychainHandler`.
   GIDFakeKeychainHandler *_keychainHandler;
 
-  // Fake for |GIDHTTPFetcher|.
+  // Fake for `GIDHTTPFetcher`.
   GIDFakeHTTPFetcher *_httpFetcher;
   
-  // Fake for |GIDAuthorizationFlowProcessor|
+  // Fake for `GIDAuthorizationFlowProcessor`
   GIDFakeAuthorizationFlowProcessor *_authorizationFlowProcessor;
+
+  // Fake for `GIDProfileDataFetcher`.
+  GIDFakeProfileDataFetcher *_profileDataFetcher;
   
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // Mock |UIViewController|.
+  // Mock `UIViewController`.
   id _presentingViewController;
 #elif TARGET_OS_OSX
-  // Mock |NSWindow|.
+  // Mock `NSWindow`.
   id _presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-  // Mock for |GIDGoogleUser|.
+  // Mock for `GIDGoogleUser`.
   id _user;
 
-  // Mock for |OIDAuthorizationService|
+  // Mock for `OIDAuthorizationService`.
   id _oidAuthorizationService;
 
   // Parameter saved from delegate call.
@@ -228,20 +221,17 @@ static NSString *const kNewScope = @"newScope";
   // Fake [NSBundle mainBundle];
   GIDFakeMainBundle *_fakeMainBundle;
 
-  // The |GIDSignIn| object being tested.
+  // The `GIDSignIn` object being tested.
   GIDSignIn *_signIn;
 
-  // The configuration to be used when testing |GIDSignIn|.
+  // The configuration to be used when testing `GIDSignIn`.
   GIDConfiguration *_configuration;
 
-  // The login hint to be used when testing |GIDSignIn|.
+  // The login hint to be used when testing `GIDSignIn`.
   NSString *_hint;
 
-  // The completion to be used when testing |GIDSignIn|.
+  // The completion to be used when testing `GIDSignIn`.
   GIDSignInCompletion _completion;
-
-  // The saved authorization request.
-  OIDAuthorizationRequest *_savedAuthorizationRequest;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // The saved presentingViewController from the authorization request.
@@ -291,14 +281,14 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
-//  OCMStub([_oidAuthorizationService
-//      presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
-//#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-//           presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
-//#elif TARGET_OS_OSX
-//           presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
-//#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-//                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
+  OCMStub([_oidAuthorizationService
+      presentAuthorizationRequest:OCMOCK_ANY
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+         presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
+#elif TARGET_OS_OSX
+                 presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
                  callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
@@ -318,11 +308,11 @@ static NSString *const kNewScope = @"newScope";
   
   _authorizationFlowProcessor = [[GIDFakeAuthorizationFlowProcessor alloc] init];
   
-  id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
-
+  _profileDataFetcher = [[GIDFakeProfileDataFetcher alloc] init];
+  
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
                                            httpFetcher:_httpFetcher
-                                    profileDataFetcher:profileDataFetcher
+                                    profileDataFetcher:_profileDataFetcher
                             authorizationFlowProcessor:_authorizationFlowProcessor];
 
   _hint = nil;
@@ -424,20 +414,21 @@ static NSString *const kNewScope = @"newScope";
   
   OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
   OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
-  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
-  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
   
+  GIDProfileData *fakeProfileData = [GIDProfileData testInstance];
+  GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
+                                               responseProvider) {
+    responseProvider(fakeProfileData, nil);
+  };
+  
+  _profileDataFetcher.testBlock = testBlock;
   [_signIn restorePreviousSignInNoRefresh];
 
-  [_authState verify];
-  [_authorization verify];
-  [_tokenResponse verify];
-  [_tokenRequest verify];
-  [idTokenDecoded verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
-
+  
+  XCTAssertEqualObjects(_signIn.currentUser.profile, fakeProfileData);
   [idTokenDecoded stopMocking];
 }
 
@@ -522,108 +513,6 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:NO];
 }
 
-- (void)testOAuthLogin_AdditionalScopes {
-  NSString *expectedScopeString;
-  
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO
-                useAdditionalScopes:YES
-                   additionalScopes:nil];
-
-  expectedScopeString = [@[ @"email", @"profile" ] componentsJoinedByString:@" "];
-  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO
-                useAdditionalScopes:YES
-                   additionalScopes:@[ kScope ]];
-
-  expectedScopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
-  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO
-                useAdditionalScopes:YES
-                   additionalScopes:@[ kScope, kScope2 ]];
-
-  expectedScopeString = [@[ kScope, kScope2, @"email", @"profile" ] componentsJoinedByString:@" "];
-  XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
-}
-
-- (void)testAddScopes {
-  // Restore the previous sign-in account. This is the preparation for adding scopes.
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:YES
-                     oldAccessToken:NO
-                        modalCancel:NO];
-
-  XCTAssertNotNil(_signIn.currentUser);
-
-  id profile = OCMStrictClassMock([GIDProfileData class]);
-  OCMStub([profile email]).andReturn(kUserEmail);
-  
-  // Mock for the method `addScopes`.
-  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                                serverClientID:nil
-                                                                  hostedDomain:nil
-                                                                   openIDRealm:kOpenIDRealm];
-  OCMStub([_user configuration]).andReturn(configuration);
-  OCMStub([_user profile]).andReturn(profile);
-  OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
-
-  [self OAuthLoginWithAddScopesFlow:YES
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO];
-
-  NSArray<NSString *> *grantedScopes;
-  NSString *grantedScopeString = _savedAuthorizationRequest.scope;
-
-  if (grantedScopeString) {
-    grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
-        [NSCharacterSet whitespaceCharacterSet]];
-    // Tokenize with space as a delimiter.
-    NSMutableArray<NSString *> *parsedScopes =
-        [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
-    // Remove empty strings.
-    [parsedScopes removeObject:@""];
-    grantedScopes = [parsedScopes copy];
-  }
-  
-  NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
-  XCTAssertEqualObjects(grantedScopes, expectedScopes);
-
-  [_user verify];
-  [profile verify];
-  [profile stopMocking];
-}
-
 - (void)testOpenIDRealm {
   _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                       serverClientID:nil
@@ -641,41 +530,6 @@ static NSString *const kNewScope = @"newScope";
 
   NSDictionary<NSString *, NSString *> *params = _savedTokenRequest.additionalParameters;
   XCTAssertEqual(params[kOpenIDRealmKey], kOpenIDRealm, @"OpenID Realm should match.");
-}
-
-- (void)testOAuthLogin_LoginHint {
-  _hint = kUserEmail;
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO];
-
-  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
-  XCTAssertEqualObjects(params[@"login_hint"], kUserEmail, @"login hint should match");
-}
-
-- (void)testOAuthLogin_HostedDomain {
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                      serverClientID:nil
-                                                        hostedDomain:kHostedDomain
-                                                         openIDRealm:nil];
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO];
-
-  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
-  XCTAssertEqualObjects(params[@"hd"], kHostedDomain, @"hosted domain should match");
 }
 
 - (void)testOAuthLogin_ConsentCanceled {
@@ -1006,15 +860,10 @@ static NSString *const kNewScope = @"newScope";
   }
   NSString *expectedOSVersion = [NSString stringWithFormat:@"%@ %@",
       systemName, [UIDevice currentDevice].systemVersion];
-  NSDictionary<NSString *, NSObject *> *authParams =
-      _savedAuthorizationRequest.additionalParameters;
+
   NSDictionary<NSString *, NSString *> *tokenParams = _savedTokenRequest.additionalParameters;
   if (_isEligibleForEMM) {
-    XCTAssertEqualObjects(authParams[@"emm_support"], kEMMSupport,
-                          @"EMM support should match in auth request");
-    XCTAssertEqualObjects(authParams[@"device_os"], expectedOSVersion,
-                          @"OS version should match in auth request");
-    XCTAssertEqualObjects(tokenParams[@"emm_support"], kEMMSupport,
+    XCTAssertEqualObjects(tokenParams[@"emm_support"], kEMMVersion,
                           @"EMM support should match in token request");
     XCTAssertEqualObjects(tokenParams[@"device_os"],
                           expectedOSVersion,
@@ -1022,10 +871,6 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNil(tokenParams[@"emm_passcode_info"],
                  @"no passcode info should be in token request");
   } else {
-    XCTAssertNil(authParams[@"emm_support"],
-                 @"EMM support should not be in auth request for unsupported OS");
-    XCTAssertNil(authParams[@"device_os"],
-                 @"OS version should not be in auth request for unsupported OS");
     XCTAssertNil(tokenParams[@"emm_support"],
                  @"EMM support should not be in token request for unsupported OS");
     XCTAssertNil(tokenParams[@"device_os"],
@@ -1065,7 +910,6 @@ static NSString *const kNewScope = @"newScope";
   NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"EMM Specific Error" };
   [[[mockEMMErrorHandler expect] andReturnValue:@YES]
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
-
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:callbackParams[@"error"]
@@ -1154,26 +998,6 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqualObjects(strings[1], token);
 }
 
-- (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
-                          authError:(NSString *)authError
-                         tokenError:(NSError *)tokenError
-            emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
-                      keychainError:(BOOL)keychainError
-                     restoredSignIn:(BOOL)restoredSignIn
-                     oldAccessToken:(BOOL)oldAccessToken
-                        modalCancel:(BOOL)modalCancel {
-  [self OAuthLoginWithAddScopesFlow:addScopesFlow
-                          authError:authError
-                         tokenError:tokenError
-            emmPasscodeInfoRequired:emmPasscodeInfoRequired
-                      keychainError:keychainError
-                     restoredSignIn:restoredSignIn
-                     oldAccessToken:oldAccessToken
-                        modalCancel:modalCancel
-                useAdditionalScopes:NO
-                   additionalScopes:nil];
-}
-
 // The authorization flow with parameters to control which branches to take.
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
                           authError:(NSString *)authError
@@ -1182,9 +1006,7 @@ static NSString *const kNewScope = @"newScope";
                       keychainError:(BOOL)keychainError
                      restoredSignIn:(BOOL)restoredSignIn
                      oldAccessToken:(BOOL)oldAccessToken
-                        modalCancel:(BOOL)modalCancel
-                useAdditionalScopes:(BOOL)useAdditionalScopes
-                   additionalScopes:(NSArray *)additionalScopes {
+                        modalCancel:(BOOL)modalCancel {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [_keychainHandler saveAuthState:_authState];
@@ -1216,22 +1038,24 @@ static NSString *const kNewScope = @"newScope";
                refreshToken:kRefreshToken
                codeVerifier:nil
        additionalParameters:tokenResponse.request.additionalParameters];
-  
+
   // Simulate auth endpoint response
-  GIDAuthorizationFlowProcessorTestBlock testBlock;
+  GIDAuthorizationFlowProcessorTestBlock authorizationFlowTestBlock;
   if (modalCancel) {
     NSError *error = [NSError errorWithDomain:OIDGeneralErrorDomain
                                          code:OIDErrorCodeUserCanceledAuthorizationFlow
                                      userInfo:nil];
-    testBlock = ^(GIDAuthorizationFlowProcessorFakeResponseProviderBlock responseProvider) {
+    authorizationFlowTestBlock =
+        ^(GIDAuthorizationFlowProcessorFakeResponseProviderBlock responseProvider) {
       responseProvider(nil, error);
     };
   } else {
-    testBlock = ^(GIDAuthorizationFlowProcessorFakeResponseProviderBlock responseProvider) {
+    authorizationFlowTestBlock =
+        ^(GIDAuthorizationFlowProcessorFakeResponseProviderBlock responseProvider) {
       responseProvider(authResponse, nil);
     };
   }
-  _authorizationFlowProcessor.testBlock = testBlock;
+  _authorizationFlowProcessor.testBlock = authorizationFlowTestBlock;
   
   // maybeFetchToken
   if (!(authError || modalCancel)) {
@@ -1244,6 +1068,15 @@ static NSString *const kNewScope = @"newScope";
     [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
     [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
   }
+  
+  // Set the response for `GIDProfileDataFetcher`.
+    GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
+                                                 responseProvider) {
+      GIDProfileData *profileData = [GIDProfileData testInstance];
+      responseProvider(profileData, nil);
+    };
+    
+    _profileDataFetcher.testBlock = testBlock;
 
   if (restoredSignIn) {
     // maybeFetchToken
@@ -1282,41 +1115,26 @@ static NSString *const kNewScope = @"newScope";
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
               completion:completion];
     } else {
-      if (useAdditionalScopes) {
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-        [_signIn signInWithPresentingViewController:_presentingViewController
+      [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
-        [_signIn signInWithPresentingWindow:_presentingWindow
+      [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                       hint:_hint
-                           additionalScopes:additionalScopes
-                                 completion:completion];
-      } else {
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-        [_signIn signInWithPresentingViewController:_presentingViewController
-#elif TARGET_OS_OSX
-        [_signIn signInWithPresentingWindow:_presentingWindow
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                       hint:_hint
-                                 completion:completion];
-      }
+                                     hint:_hint
+                               completion:completion];
     }
 
     [_authState verify];
-
-    XCTAssertNotNil(_savedAuthorizationRequest);
-    NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
-    XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
-    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], GIDVersion());
-    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], GIDEnvironment());
-//    XCTAssertNotNil(_savedAuthorizationCallback);
+    
+    XCTAssertNotNil(_savedAuthorizationCallback);
+    
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
 #elif TARGET_OS_OSX
     XCTAssertEqual(_savedPresentingWindow, _presentingWindow);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-
+    
     if (authError || modalCancel) {
       return;
     }
@@ -1348,9 +1166,6 @@ static NSString *const kNewScope = @"newScope";
     _savedTokenCallback(nil, tokenError);
     return;
   }
-
-  // DecodeIdTokenCallback
-  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
 
   // SaveAuthCallback
   __block OIDAuthState *authState;
@@ -1405,10 +1220,7 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNotNil(authState);
   }
   // Check fat ID token decoding
-  XCTAssertEqualObjects(profileData.name, kFatName);
-  XCTAssertEqualObjects(profileData.givenName, kFatGivenName);
-  XCTAssertEqualObjects(profileData.familyName, kFatFamilyName);
-  XCTAssertTrue(profileData.hasImage);
+  XCTAssertEqualObjects(profileData, [GIDProfileData testInstance]);
 
   // If attempt to authenticate again, will reuse existing auth object.
   _completionCalled = NO;

@@ -16,12 +16,8 @@
 
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/GIDAuthorizationFlowProcessor.h"
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-
-#import "GoogleSignIn/Sources/GIDEMMSupport.h"
-#import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationUtil.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
-#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -31,20 +27,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
-
-static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
-static NSString *const kLoginHintParameter = @"login_hint";
-static NSString *const kHostedDomainParameter = @"hd";
-
 @interface GIDAuthorizationFlowProcessor ()
 
 /// AppAuth external user-agent session state.
-@property(nonatomic, nullable)id<OIDExternalUserAgentSession> currentAuthorizationFlow;
-
-/// AppAuth configuration object.
-@property(nonatomic)OIDServiceConfiguration *appAuthConfiguration;
+@property(nonatomic, nullable) id<OIDExternalUserAgentSession> currentAuthorizationFlow;
 
 @end
 
@@ -60,47 +46,9 @@ static NSString *const kHostedDomainParameter = @"hd";
               emmSupport:(nullable NSString *)emmSupport
               completion:(void (^)(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                    NSError *_Nullable error))completion {
-  GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
-  NSString *urlString = [NSString stringWithFormat:@"%@:%@",
-      [schemes clientIdentifierScheme], kBrowserCallbackPath];
-  NSURL *redirectURL = [NSURL URLWithString:urlString];
-
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
-  if (options.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
-  }
-  if (options.loginHint) {
-    additionalParameters[kLoginHintParameter] = options.loginHint;
-  }
-  if (options.configuration.hostedDomain) {
-    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
-  }
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:options.extraParams];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-  
-  NSURL *authorizationEndpointURL = [GIDSignInPreferences authorizationEndpointURL];
-  NSURL *tokenEndpointURL = [GIDSignInPreferences tokenEndpointURL];
-  OIDServiceConfiguration *appAuthConfiguration =
-      [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authorizationEndpointURL
-                                                       tokenEndpoint:tokenEndpointURL];
   OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
+      [GIDAuthorizationUtil authorizationRequestWithOptions:options
+                                                 emmSupport:emmSupport];
   
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request

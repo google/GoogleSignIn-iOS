@@ -16,8 +16,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Parameters for the auth and token exchange endpoints.
+NSString *const kAudienceParameter = @"audience";
+NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
+NSString *const kLoginHintParameter = @"login_hint";
+NSString *const kHostedDomainParameter = @"hd";
 NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 NSString *const kEnvironmentLoggingParameter = @"gidenv";
+
 NSString *const kBrowserCallbackPath = @"/oauth2callback";
 
 static NSString *const kLSOServer = @"accounts.google.com";
