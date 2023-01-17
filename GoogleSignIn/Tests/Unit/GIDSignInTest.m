@@ -34,7 +34,8 @@
 #import "GoogleSignIn/Sources/GIDKeychainHandler/Implementations/Fakes/GIDFakeKeychainHandler.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
-#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/GIDProfileDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/API/GIDProfileDataFetcher.h"
+#import "GoogleSignIn/Sources/GIDProfileDataFetcher/Implementations/Fakes/GIDFakeProfileDataFetcher.h"
 
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -42,6 +43,7 @@
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
+#import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
@@ -185,36 +187,39 @@ static NSString *const kNewScope = @"newScope";
   // Whether or not the OS version is eligible for EMM.
   BOOL _isEligibleForEMM;
 
-  // Mock |OIDAuthState|.
+  // Mock `OIDAuthState`.
   id _authState;
 
-  // Mock |OIDTokenResponse|.
+  // Mock `OIDTokenResponse`.
   id _tokenResponse;
 
-  // Mock |OIDTokenRequest|.
+  // Mock `OIDTokenRequest`.
   id _tokenRequest;
 
-  // Mock |GTMAppAuthFetcherAuthorization|.
+  // Mock `GTMAppAuthFetcherAuthorization`.
   id _authorization;
   
-  // Fake for |GIDKeychainHandler|.
+  // Fake for `GIDKeychainHandler`.
   GIDFakeKeychainHandler *_keychainHandler;
 
-  // Fake for |GIDHTTPFetcher|.
+  // Fake for `GIDHTTPFetcher`.
   GIDFakeHTTPFetcher *_httpFetcher;
   
+  // Fake for `GIDProfileDataFetcher`.
+  GIDFakeProfileDataFetcher *_profileDataFetcher;
+  
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // Mock |UIViewController|.
+  // Mock `UIViewController`.
   id _presentingViewController;
 #elif TARGET_OS_OSX
-  // Mock |NSWindow|.
+  // Mock `NSWindow`.
   id _presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-  // Mock for |GIDGoogleUser|.
+  // Mock for `GIDGoogleUser`.
   id _user;
 
-  // Mock for |OIDAuthorizationService|
+  // Mock for `OIDAuthorizationService`.
   id _oidAuthorizationService;
 
   // Parameter saved from delegate call.
@@ -226,16 +231,16 @@ static NSString *const kNewScope = @"newScope";
   // Fake [NSBundle mainBundle];
   GIDFakeMainBundle *_fakeMainBundle;
 
-  // The |GIDSignIn| object being tested.
+  // The `GIDSignIn` object being tested.
   GIDSignIn *_signIn;
 
-  // The configuration to be used when testing |GIDSignIn|.
+  // The configuration to be used when testing `GIDSignIn`.
   GIDConfiguration *_configuration;
 
-  // The login hint to be used when testing |GIDSignIn|.
+  // The login hint to be used when testing `GIDSignIn`.
   NSString *_hint;
 
-  // The completion to be used when testing |GIDSignIn|.
+  // The completion to be used when testing `GIDSignIn`.
   GIDSignInCompletion _completion;
 
   // The saved authorization request.
@@ -314,14 +319,14 @@ static NSString *const kNewScope = @"newScope";
   
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
   
+  _profileDataFetcher = [[GIDFakeProfileDataFetcher alloc] init];
+  
   GIDAuthorizationFlowProcessor * authorizationFlowProcessor =
       [[GIDAuthorizationFlowProcessor alloc] init];
   
-  id<GIDProfileDataFetcher> profileDataFetcher = [[GIDProfileDataFetcher alloc] init];
-
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
                                            httpFetcher:_httpFetcher
-                                    profileDataFetcher:profileDataFetcher
+                                    profileDataFetcher:_profileDataFetcher
                             authorizationFlowProcessor:authorizationFlowProcessor];
 
   _hint = nil;
@@ -423,20 +428,21 @@ static NSString *const kNewScope = @"newScope";
   
   OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
   OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
-  OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
-  OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
   
+  GIDProfileData *fakeProfileData = [GIDProfileData testInstance];
+  GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
+                                               responseProvider) {
+    responseProvider(fakeProfileData, nil);
+  };
+  
+  _profileDataFetcher.testBlock = testBlock;
   [_signIn restorePreviousSignInNoRefresh];
 
-  [_authState verify];
-  [_authorization verify];
-  [_tokenResponse verify];
-  [_tokenRequest verify];
-  [idTokenDecoded verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
-
+  
+  XCTAssertEqualObjects(_signIn.currentUser.profile, fakeProfileData);
   [idTokenDecoded stopMocking];
 }
 
@@ -1065,7 +1071,6 @@ static NSString *const kNewScope = @"newScope";
   [[[mockEMMErrorHandler expect] andReturnValue:@YES]
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
 
-
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:callbackParams[@"error"]
                          tokenError:nil
@@ -1215,6 +1220,15 @@ static NSString *const kNewScope = @"newScope";
                refreshToken:kRefreshToken
                codeVerifier:nil
        additionalParameters:tokenResponse.request.additionalParameters];
+  
+  // Set the response for `GIDProfileDataFetcher`.
+    GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
+                                                 responseProvider) {
+      GIDProfileData *profileData = [GIDProfileData testInstance];
+      responseProvider(profileData, nil);
+    };
+    
+    _profileDataFetcher.testBlock = testBlock;
 
   if (restoredSignIn) {
     // maybeFetchToken
@@ -1341,9 +1355,6 @@ static NSString *const kNewScope = @"newScope";
     return;
   }
 
-  // DecodeIdTokenCallback
-  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
-
   // SaveAuthCallback
   __block OIDAuthState *authState;
   __block OIDTokenResponse *updatedTokenResponse;
@@ -1397,10 +1408,7 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNotNil(authState);
   }
   // Check fat ID token decoding
-  XCTAssertEqualObjects(profileData.name, kFatName);
-  XCTAssertEqualObjects(profileData.givenName, kFatGivenName);
-  XCTAssertEqualObjects(profileData.familyName, kFatFamilyName);
-  XCTAssertTrue(profileData.hasImage);
+  XCTAssertEqualObjects(profileData, [GIDProfileData testInstance]);
 
   // If attempt to authenticate again, will reuse existing auth object.
   _completionCalled = NO;
