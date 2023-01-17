@@ -65,7 +65,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
 ///
 /// @param scopes The scopes to ask the user to consent to.
-/// @param presentingViewController The view controller used to present `SFSafariViewContoller` on
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
 ///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
 ///     iOS 13+.
 /// @param completion The block that is called on completion.  This block will be called asynchronously
