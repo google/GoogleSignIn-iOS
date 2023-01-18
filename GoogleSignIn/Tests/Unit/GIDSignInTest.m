@@ -26,6 +26,7 @@
 // Test module imports
 @import GoogleSignIn;
 
+#import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/API/GIDAuthorizationFlowProcessor.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationFlowProcessor/Implementations/Fakes/GIDFakeAuthorizationFlowProcessor.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
@@ -192,7 +193,7 @@ static NSString *const kNewScope = @"newScope";
   // Fake for `GIDHTTPFetcher`.
   GIDFakeHTTPFetcher *_httpFetcher;
   
-  // Fake for `GIDAuthorizationFlowProcessor`
+  // Fake for `GIDAuthorizationFlowProcessor`.
   GIDFakeAuthorizationFlowProcessor *_authorizationFlowProcessor;
 
   // Fake for `GIDProfileDataFetcher`.
@@ -281,14 +282,6 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
-//  OCMStub([_oidAuthorizationService
-//      presentAuthorizationRequest:OCMOCK_ANY
-//#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-//         presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
-//#elif TARGET_OS_OSX
-//                 presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
-//#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-//                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
                  callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
@@ -1054,9 +1047,9 @@ static NSString *const kNewScope = @"newScope";
   // Set the response for `GIDProfileDataFetcher`.
   GIDProfileDataFetcherTestBlock profileDataFetcherTestBlock =
       ^(GIDProfileDataFetcherFakeResponseProvider responseProvider) {
-        GIDProfileData *profileData = [GIDProfileData testInstance];
-        responseProvider(profileData, nil);
-    };
+    GIDProfileData *profileData = [GIDProfileData testInstance];
+    responseProvider(profileData, nil);
+  };
     
   _profileDataFetcher.testBlock = profileDataFetcherTestBlock;
 
