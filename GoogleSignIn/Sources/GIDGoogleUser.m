@@ -42,8 +42,6 @@ static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
 static NSString *const kProfileDataKey = @"profileData";
 static NSString *const kAuthStateKey = @"authState";
 
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
-
 // Additional parameter names for EMM.
 static NSString *const kEMMSupportParameterName = @"emm_support";
 

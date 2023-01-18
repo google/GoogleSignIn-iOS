@@ -17,7 +17,9 @@
 #import <Foundation/Foundation.h>
 
 @class OIDAuthorizationRequest;
+@class OIDAuthState;
 @class GIDSignInInternalOptions;
+@class OIDTokenRequest;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,9 +31,19 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param options The `GIDSignInInternalOptions` object to provide serverClientID, hostedDomain,
 ///     clientID, scopes, loginHint and extraParams.
 /// @param emmSupport The EMM support info string.
-+ (OIDAuthorizationRequest *)
-    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-                         emmSupport:(nullable NSString *)emmSupport;
++ (OIDAuthorizationRequest *)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+                                                  emmSupport:(nullable NSString *)emmSupport;
+
+/// Creates the request to AppAuth to exchange auth code for access token.
+///
+/// @param authState The current State of authorization session.
+/// @param serverClientID The server client ID.
+/// @param openIDRealm The open ID realm.
+/// @param emmSupport The EMM support string.
++ (OIDTokenRequest *)accessTokenRequestWithAuthState:(OIDAuthState *)authState
+                                      serverClientID:(nullable NSString *)serverClientID
+                                         openIDRealm:(nullable NSString *)openIDRealm
+                                          emmSupport:(nullable NSString *)emmSupport;
 
 /// Unions granted scopes with new scopes or returns an error if the new scopes are the subset of
 /// the granted scopes.

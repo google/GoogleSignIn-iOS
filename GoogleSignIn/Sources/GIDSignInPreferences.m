@@ -23,8 +23,14 @@ NSString *const kLoginHintParameter = @"login_hint";
 NSString *const kHostedDomainParameter = @"hd";
 NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 NSString *const kEnvironmentLoggingParameter = @"gidenv";
+NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 NSString *const kBrowserCallbackPath = @"/oauth2callback";
+
+// Parameters in the callback URL coming back from browser.
+NSString *const kOAuth2ErrorKeyName = @"error";
+NSString *const kOAuth2AccessDenied = @"access_denied";
+NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
 
 static NSString *const kLSOServer = @"accounts.google.com";
 static NSString *const kTokenServer = @"oauth2.googleapis.com";

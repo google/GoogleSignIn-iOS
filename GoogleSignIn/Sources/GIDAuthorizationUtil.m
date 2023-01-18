@@ -33,9 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDAuthorizationUtil
 
-+ (OIDAuthorizationRequest *)
-    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-                         emmSupport:(nullable NSString *)emmSupport {
++ (OIDAuthorizationRequest *)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+                                                  emmSupport:(nullable NSString *)emmSupport {
   GIDSignInCallbackSchemes *schemes =
       [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
   NSString *urlString = [NSString stringWithFormat:@"%@:%@",
@@ -79,6 +78,42 @@ NS_ASSUME_NONNULL_BEGIN
                                         additionalParameters:additionalParameters];
   
   return request;
+}
+
++ (OIDTokenRequest *)accessTokenRequestWithAuthState:(OIDAuthState *)authState
+                                      serverClientID:(nullable NSString *)serverClientID
+                                         openIDRealm:(nullable NSString *)openIDRealm
+                                          emmSupport:(nullable NSString *)emmSupport {
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  if (serverClientID) {
+    additionalParameters[kAudienceParameter] = serverClientID;
+  }
+  if (openIDRealm) {
+    additionalParameters[kOpenIDRealmParameter] = openIDRealm;
+  }
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  NSDictionary<NSString *, NSObject *> *params =
+      authState.lastAuthorizationResponse.additionalParameters;
+  NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport parametersWithParameters:@{}
+                                   emmSupport:emmSupport
+                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  OIDTokenRequest *tokenRequest;
+  if (!authState.lastTokenResponse.accessToken &&
+      authState.lastAuthorizationResponse.authorizationCode) {
+    tokenRequest = [authState.lastAuthorizationResponse
+        tokenExchangeRequestWithAdditionalParameters:additionalParameters];
+  } else {
+    [additionalParameters
+        addEntriesFromDictionary:authState.lastTokenResponse.request.additionalParameters];
+    tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  }
+  return tokenRequest;
 }
 
 + (nullable NSArray<NSString *> *)

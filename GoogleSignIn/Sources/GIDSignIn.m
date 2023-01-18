@@ -94,12 +94,6 @@ NSErrorDomain const kGIDSignInErrorDomain = @"com.google.GIDSignIn";
 // Keychain constants for saving state in the authentication flow.
 static NSString *const kGTMAppAuthKeychainName = @"auth";
 
-// Parameters in the callback URL coming back from browser.
-static NSString *const kAuthorizationCodeKeyName = @"code";
-static NSString *const kOAuth2ErrorKeyName = @"error";
-static NSString *const kOAuth2AccessDenied = @"access_denied";
-static NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
-
 // Error string for unavailable keychain.
 static NSString *const kKeychainError = @"keychain error";
 
@@ -111,9 +105,6 @@ static NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
 
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
-
-// See b/11669751 .
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -668,35 +659,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         kMinimumRestoredAccessTokenTimeToExpire)) {
     return;
   }
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  if (_currentOptions.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = _currentOptions.configuration.serverClientID;
-  }
-  if (_currentOptions.configuration.openIDRealm) {
-    additionalParameters[kOpenIDRealmParameter] = _currentOptions.configuration.openIDRealm;
-  }
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  NSDictionary<NSString *, NSObject *> *params =
-      authState.lastAuthorizationResponse.additionalParameters;
-  NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:@{}
-                                   emmSupport:authFlow.emmSupport
-                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  OIDTokenRequest *tokenRequest;
-  if (!authState.lastTokenResponse.accessToken &&
-      authState.lastAuthorizationResponse.authorizationCode) {
-    tokenRequest = [authState.lastAuthorizationResponse
-        tokenExchangeRequestWithAdditionalParameters:additionalParameters];
-  } else {
-    [additionalParameters
-        addEntriesFromDictionary:authState.lastTokenResponse.request.additionalParameters];
-    tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
-  }
+  
+  NSString *serverClientID = _currentOptions.configuration.serverClientID;
+  NSString *openIDRealm = _currentOptions.configuration.openIDRealm;
+  OIDTokenRequest *tokenRequest =
+      [GIDAuthorizationUtil accessTokenRequestWithAuthState:authState
+                                             serverClientID:serverClientID
+                                                openIDRealm:openIDRealm
+                                                 emmSupport:authFlow.emmSupport];
 
   [authFlow wait];
   [OIDAuthorizationService
