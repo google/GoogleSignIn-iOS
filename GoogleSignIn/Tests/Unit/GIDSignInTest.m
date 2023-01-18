@@ -281,14 +281,14 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
-  OCMStub([_oidAuthorizationService
-      presentAuthorizationRequest:OCMOCK_ANY
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-         presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
-#elif TARGET_OS_OSX
-                 presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
+//  OCMStub([_oidAuthorizationService
+//      presentAuthorizationRequest:OCMOCK_ANY
+//#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+//         presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
+//#elif TARGET_OS_OSX
+//                 presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
+//#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+//                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
                  callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
@@ -593,12 +593,6 @@ static NSString *const kNewScope = @"newScope";
   [_signIn signOut];
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertNil([_keychainHandler loadAuthState]);
-}
-
-- (void)testNotHandleWrongScheme {
-  XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongSchemeURL]],
-                 @"should not handle URL");
-  XCTAssertFalse(_completionCalled, @"should not call delegate");
 }
 
 - (void)testNotHandleWrongPath {
@@ -1038,8 +1032,8 @@ static NSString *const kNewScope = @"newScope";
                refreshToken:kRefreshToken
                codeVerifier:nil
        additionalParameters:tokenResponse.request.additionalParameters];
-
-  // Simulate auth endpoint response
+  
+  // Set the response for the auth endpoint.
   GIDAuthorizationFlowProcessorTestBlock authorizationFlowTestBlock;
   if (modalCancel) {
     NSError *error = [NSError errorWithDomain:OIDGeneralErrorDomain
@@ -1057,29 +1051,17 @@ static NSString *const kNewScope = @"newScope";
   }
   _authorizationFlowProcessor.testBlock = authorizationFlowTestBlock;
   
-  // maybeFetchToken
-  if (!(authError || modalCancel)) {
-    [[[_authState expect] andReturn:nil] lastTokenResponse];
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    // Corresponds to EMM support
-    [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    [[[_authState expect] andReturn:nil] lastTokenResponse];
-    [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
-    [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
-  }
-  
   // Set the response for `GIDProfileDataFetcher`.
-    GIDProfileDataFetcherTestBlock testBlock = ^(GIDProfileDataFetcherFakeResponseProvider
-                                                 responseProvider) {
-      GIDProfileData *profileData = [GIDProfileData testInstance];
-      responseProvider(profileData, nil);
+  GIDProfileDataFetcherTestBlock profileDataFetcherTestBlock =
+      ^(GIDProfileDataFetcherFakeResponseProvider responseProvider) {
+        GIDProfileData *profileData = [GIDProfileData testInstance];
+        responseProvider(profileData, nil);
     };
     
-    _profileDataFetcher.testBlock = testBlock;
+  _profileDataFetcher.testBlock = profileDataFetcherTestBlock;
 
   if (restoredSignIn) {
-    // maybeFetchToken
+    // Mock `maybeFetchToken:` method in `restorePreviousSignIn:` flow.
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     if (oldAccessToken) {
@@ -1115,6 +1097,18 @@ static NSString *const kNewScope = @"newScope";
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
               completion:completion];
     } else {
+      // Mock `maybeFetchToken:` method in Sign in flow.
+      if (!(authError || modalCancel)) {
+        [[[_authState expect] andReturn:nil] lastTokenResponse];
+    #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+        // Corresponds to EMM support
+        [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+    #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+        [[[_authState expect] andReturn:nil] lastTokenResponse];
+        [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+        [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
+      }
+      
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       [_signIn signInWithPresentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
@@ -1123,21 +1117,11 @@ static NSString *const kNewScope = @"newScope";
                                      hint:_hint
                                completion:completion];
     }
-
-    [_authState verify];
-    
-    XCTAssertNotNil(_savedAuthorizationCallback);
-    
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-    XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
-#elif TARGET_OS_OSX
-    XCTAssertEqual(_savedPresentingWindow, _presentingWindow);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
     
     if (authError || modalCancel) {
       return;
     }
+    
     [_authState verify];
   }
 

@@ -26,14 +26,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// The block which provides the response for the method `startWithOptions:emmSupport:completion:`.
+/// The block type providing the response for the method `startWithOptions:emmSupport:completion:`.
 ///
 /// @param authorizationResponse The OIDAuthorizationResponse object returned if succeeded.
 /// @param error The error returned if failed.
 typedef void(^GIDAuthorizationFlowProcessorFakeResponseProviderBlock)
     (OIDAuthorizationResponse *_Nullable authorizationResponse, NSError *_Nullable error);
 
-/// The block to set up response value for the method
+/// The block type setting up response value for the method
 /// `startWithOptions:emmSupport:completion:`.
 ///
 /// @param responseProvider The block which provides the response.
