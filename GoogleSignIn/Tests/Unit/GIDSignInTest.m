@@ -228,22 +228,8 @@ static NSString *const kNewScope = @"newScope";
   // The configuration to be used when testing `GIDSignIn`.
   GIDConfiguration *_configuration;
 
-  // The login hint to be used when testing `GIDSignIn`.
-  NSString *_hint;
-
   // The completion to be used when testing `GIDSignIn`.
   GIDSignInCompletion _completion;
-
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // The saved presentingViewController from the authorization request.
-  UIViewController *_savedPresentingViewController;
-#elif TARGET_OS_OSX
-  // The saved presentingWindow from the authorization request.
-  NSWindow *_savedPresentingWindow;
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
-  // The saved authorization callback.
-  OIDAuthorizationCallback _savedAuthorizationCallback;
 
   // The saved token request.
   OIDTokenRequest *_savedTokenRequest;
@@ -307,8 +293,6 @@ static NSString *const kNewScope = @"newScope";
                                            httpFetcher:_httpFetcher
                                     profileDataFetcher:_profileDataFetcher
                             authorizationFlowProcessor:_authorizationFlowProcessor];
-
-  _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
   _completion = ^(GIDSignInResult *_Nullable signInResult, NSError * _Nullable error) {
@@ -772,7 +756,7 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
   XCTAssertThrows([_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                                 hint:_hint
+                                                 hint:nil
                                            completion:_completion]);
 }
 
@@ -807,7 +791,7 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
     [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                   hint:_hint
+                                   hint:nil
                              completion:_completion];
   } @catch (NSException *exception) {
     threw = YES;
@@ -1107,7 +1091,7 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
       [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                     hint:_hint
+                                     hint:nil
                                completion:completion];
     }
     
