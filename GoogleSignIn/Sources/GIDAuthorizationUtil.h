@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param error The reference to the error.
 /// @return The array of all scopes or nil if there is an error.
 + (nullable NSArray<NSString *> *)
-    resolvedScopesFromGrantedScoped:(NSArray<NSString *> *)scopes
+    resolvedScopesFromGrantedScopes:(NSArray<NSString *> *)scopes
                       withNewScopes:(NSArray<NSString *> *)newScopes
                               error:(NSError * __autoreleasing *)error;
 

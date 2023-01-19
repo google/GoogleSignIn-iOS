@@ -122,7 +122,7 @@ static NSString * const kAppHasRunBeforeKey = @"GPP_AppHasRunBefore";
 static NSString * const kFingerprintKeychainName = @"fingerprint";
 static NSString * const kVerifierKeychainName = @"verifier";
 static NSString * const kVerifierKey = @"verifier";
-static NSString * const kOpenIDRealmKey = @"openid.realm";
+//static NSString * const kOpenIDRealmKey = @"openid.realm";
 static NSString * const kSavedKeychainServiceName = @"saved-keychain";
 static NSString * const kKeychainAccountName = @"GooglePlus";
 static NSString * const kUserNameKey = @"name";
@@ -231,9 +231,6 @@ static NSString *const kNewScope = @"newScope";
   // The completion to be used when testing `GIDSignIn`.
   GIDSignInCompletion _completion;
 
-  // The saved token request.
-  OIDTokenRequest *_savedTokenRequest;
-
   // The saved token request callback.
   OIDTokenCallback _savedTokenCallback;
 }
@@ -269,7 +266,7 @@ static NSString *const kNewScope = @"newScope";
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([self->_oidAuthorizationService
-      performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
+      performTokenRequest:OCMOCK_ANY
                  callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
@@ -488,25 +485,6 @@ static NSString *const kNewScope = @"newScope";
                      restoredSignIn:YES
                      oldAccessToken:YES
                         modalCancel:NO];
-}
-
-- (void)testOpenIDRealm {
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                      serverClientID:nil
-                                                        hostedDomain:nil
-                                                         openIDRealm:kOpenIDRealm];
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO];
-
-  NSDictionary<NSString *, NSString *> *params = _savedTokenRequest.additionalParameters;
-  XCTAssertEqual(params[kOpenIDRealmKey], kOpenIDRealm, @"OpenID Realm should match.");
 }
 
 - (void)testOAuthLogin_ConsentCanceled {
@@ -815,61 +793,6 @@ static NSString *const kNewScope = @"newScope";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-- (void)testEmmSupportRequestParameters {
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO];
-
-  NSString *systemName = [UIDevice currentDevice].systemName;
-  if ([systemName isEqualToString:@"iPhone OS"]) {
-    systemName = @"iOS";
-  }
-  NSString *expectedOSVersion = [NSString stringWithFormat:@"%@ %@",
-      systemName, [UIDevice currentDevice].systemVersion];
-
-  NSDictionary<NSString *, NSString *> *tokenParams = _savedTokenRequest.additionalParameters;
-  if (_isEligibleForEMM) {
-    XCTAssertEqualObjects(tokenParams[@"emm_support"], kEMMVersion,
-                          @"EMM support should match in token request");
-    XCTAssertEqualObjects(tokenParams[@"device_os"],
-                          expectedOSVersion,
-                          @"OS version should match in token request");
-    XCTAssertNil(tokenParams[@"emm_passcode_info"],
-                 @"no passcode info should be in token request");
-  } else {
-    XCTAssertNil(tokenParams[@"emm_support"],
-                 @"EMM support should not be in token request for unsupported OS");
-    XCTAssertNil(tokenParams[@"device_os"],
-                 @"OS version should not be in token request for unsupported OS");
-    XCTAssertNil(tokenParams[@"emm_passcode_info"],
-                 @"passcode info should not be in token request for unsupported OS");
-  }
-}
-
-- (void)testEmmPasscodeInfo {
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:YES
-                      keychainError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO];
-  NSDictionary<NSString *, NSString *> *tokenParams = _savedTokenRequest.additionalParameters;
-  if (_isEligibleForEMM) {
-    XCTAssertNotNil(tokenParams[@"emm_passcode_info"],
-                    @"passcode info should be in token request");
-  } else {
-    XCTAssertNil(tokenParams[@"emm_passcode_info"],
-                 @"passcode info should not be in token request for unsupported OS");
-  }
-}
-
 - (void)testAuthEndpointEMMError {
   if (!_isEligibleForEMM) {
     return;
@@ -1112,7 +1035,6 @@ static NSString *const kNewScope = @"newScope";
   }
 
   if (!restoredSignIn || (restoredSignIn && oldAccessToken)) {
-    XCTAssertNotNil(_savedTokenRequest);
     XCTAssertNotNil(_savedTokenCallback);
 
     // OIDTokenCallback

@@ -252,7 +252,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                   completion:(nullable GIDSignInCompletion)completion {
   NSError *error;
   NSArray<NSString *> *allScopes =
-      [GIDAuthorizationUtil resolvedScopesFromGrantedScoped:self.currentUser.grantedScopes
+      [GIDAuthorizationUtil resolvedScopesFromGrantedScopes:self.currentUser.grantedScopes
                                               withNewScopes:scopes
                                                       error:&error];
   if (error) {

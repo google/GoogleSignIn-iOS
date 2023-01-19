@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (nullable NSArray<NSString *> *)
-    resolvedScopesFromGrantedScoped:(NSArray<NSString *> *)scopes
+    resolvedScopesFromGrantedScopes:(NSArray<NSString *> *)scopes
                       withNewScopes:(NSArray<NSString *> *)newScopes
                               error:(NSError * __autoreleasing *)error {
   NSMutableSet<NSString *> *grantedScopes = [NSMutableSet setWithArray:scopes];
