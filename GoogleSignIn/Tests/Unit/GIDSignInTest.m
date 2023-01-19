@@ -104,9 +104,7 @@ static NSString * const kFakeUserGivenName = @"fake";
 static NSString * const kFakeUserFamilyName = @"username";
 static NSString * const kFakeUserPictureURL = @"fake_user_picture_url";
 
-static NSString * const kContinueURL = @"com.google.UnitTests:/oauth2callback";
-static NSString * const kContinueURLWithClientID = @"FakeClientID:/oauth2callback";
-static NSString * const kWrongSchemeURL = @"wrong.app:/oauth2callback";
+static NSString * const kRightPathURL = @"com.google.UnitTests:/oauth2callback";
 static NSString * const kWrongPathURL = @"com.google.UnitTests:/wrong_path";
 
 static NSString * const kEMMRestartAuthURL =
@@ -570,6 +568,11 @@ static NSString *const kNewScope = @"newScope";
   [_signIn signOut];
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertNil([_keychainHandler loadAuthState]);
+}
+
+- (void)testHandleRightPath {
+  XCTAssertTrue([_signIn handleURL:[NSURL URLWithString:kRightPathURL]]);
+  XCTAssertFalse(_completionCalled, @"should not call delegate");
 }
 
 - (void)testNotHandleWrongPath {
@@ -1077,10 +1080,10 @@ static NSString *const kNewScope = @"newScope";
       // Mock `maybeFetchToken:` method in Sign in flow.
       if (!(authError || modalCancel)) {
         [[[_authState expect] andReturn:nil] lastTokenResponse];
-    #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
         // Corresponds to EMM support
         [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
-    #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
         [[[_authState expect] andReturn:nil] lastTokenResponse];
         [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
         [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];

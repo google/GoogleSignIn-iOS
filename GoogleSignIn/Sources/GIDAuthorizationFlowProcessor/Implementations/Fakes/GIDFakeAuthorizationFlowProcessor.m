@@ -41,7 +41,6 @@
 }
 
 - (BOOL)resumeExternalUserAgentFlowWithURL:(NSURL *)url {
-  NSAssert(NO, @"Not implemented.");
   return YES;
 }
 
