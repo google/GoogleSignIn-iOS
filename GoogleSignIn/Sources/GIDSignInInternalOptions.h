@@ -22,9 +22,10 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 @class GIDConfiguration;
+@class GIDSignInResult;
 
 NS_ASSUME_NONNULL_BEGIN
 

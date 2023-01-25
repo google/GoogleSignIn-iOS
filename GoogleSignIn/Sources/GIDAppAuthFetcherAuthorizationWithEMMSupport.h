@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
+#import <TargetConditionals.h>
 
-@interface GIDGoogleUser (Testing)
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-- (BOOL)isEqual:(id)object;
-- (BOOL)isEqualToGoogleUser:(GIDGoogleUser *)other;
-- (NSUInteger)hash;
+#ifdef SWIFT_PACKAGE
+@import GTMAppAuth;
+#else
+#import <GTMAppAuth/GTMAppAuth.h>
+#endif
 
-@end
+NS_ASSUME_NONNULL_BEGIN
 
-// The old format GIDGoogleUser contains a GIDAuthentication.
-// Note: remove this class when GIDGoogleUser no longer support old encoding.
-@interface GIDGoogleUserOldFormat : GIDGoogleUser
-
-- (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(GIDProfileData *)profileData;
+// A specialized GTMAppAuthFetcherAuthorization subclass with EMM support.
+@interface GIDAppAuthFetcherAuthorizationWithEMMSupport : GTMAppAuthFetcherAuthorization
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
+
+#import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
-@interface GIDGoogleUser (Testing)
+@implementation GIDSignInResult
 
-- (BOOL)isEqual:(id)object;
-- (BOOL)isEqualToGoogleUser:(GIDGoogleUser *)other;
-- (NSUInteger)hash;
-
-@end
-
-// The old format GIDGoogleUser contains a GIDAuthentication.
-// Note: remove this class when GIDGoogleUser no longer support old encoding.
-@interface GIDGoogleUserOldFormat : GIDGoogleUser
-
-- (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(GIDProfileData *)profileData;
+- (instancetype)initWithGoogleUser:(GIDGoogleUser *)user
+                    serverAuthCode:(nullable NSString *)serverAuthCode {
+  self = [super init];
+  if (self) {
+    _user = user;
+    _serverAuthCode = serverAuthCode;
+  }
+  
+  return self;
+}
 
 @end

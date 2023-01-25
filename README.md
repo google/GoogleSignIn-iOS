@@ -1,7 +1,8 @@
 [![Version](https://img.shields.io/cocoapods/v/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
 [![Platform](https://img.shields.io/cocoapods/p/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
 [![License](https://img.shields.io/cocoapods/l/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
-[![tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/tests.yml/badge.svg?event=push)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/tests.yml)
+[![unit_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml)
+[![integration_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml)
 
 # Google Sign-In for iOS and macOS
 
@@ -75,10 +76,8 @@ Creating a 'Sign in with Google' button in SwiftUI can be as simple as this:
 
 ```
 GoogleSignInButton {
-  GIDSignIn.sharedInstance.signIn(
-    with: configuration, 
-    presenting: yourViewController) { user, error in
-      // check `error`; do something with `user`
+  GIDSignIn.sharedInstance.signIn(withPresenting: yourViewController) { signInResult, error in
+      // check `error`; do something with `signInResult`
   }
 }
 ```
@@ -110,10 +109,8 @@ that it will be available for use in AppKit.
 
 ```
 let signInButton = GoogleSignInButton {
-  GIDSignIn.sharedInstance.signIn(
-    with: configuration, 
-    presenting: yourViewController) { user, error in
-      // check `error`; do something with `user`
+  GIDSignIn.sharedInstance.signIn(withPresenting: yourViewController) { signInResult, error in
+      // check `error`; do something with `signInResult`
   }
 }
 let hostedButton = NSHostingView(rootView: signInButton)
