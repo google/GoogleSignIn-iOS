@@ -102,7 +102,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
       _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:clientID
                                                          serverClientID:serverClientID
                                                            hostedDomain:[self hostedDomain]
-                                                            openIDRealm:openIDRealm];
+                                                            openIDRealm:openIDRealm
+                                                                  nonce:nil];
     };
   }
   return _cachedConfiguration;

@@ -269,30 +269,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable GIDSignInCompletion)completion {
-<<<<<<< HEAD
-  // A currentUser must be available in order to complete this flow.
-  if (!self.currentUser) {
-    // No currentUser is set, notify callback of failure.
-    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                         code:kGIDSignInErrorCodeNoCurrentUser
-                                     userInfo:nil];
-    if (completion) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        completion(nil, error);
-      });
-    }
-    return;
-  }
 
-  GIDConfiguration *configuration =
-      [[GIDConfiguration alloc] initWithClientID:self.currentUser.authentication.clientID
-                                  serverClientID:self.currentUser.serverClientID
-                                    hostedDomain:self.currentUser.hostedDomain
-                                     openIDRealm:self.currentUser.openIDRealm
-                                           nonce:nil];
-=======
   GIDConfiguration *configuration = self.currentUser.configuration;
->>>>>>> upstream/main
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
                                        presentingViewController:presentingViewController
@@ -593,16 +571,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-<<<<<<< HEAD
-      [GIDAuthentication parametersWithParameters:options.extraParams
-                                       emmSupport:emmSupport
-                           isPasscodeInfoRequired:NO]];
-
-=======
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
->>>>>>> upstream/main
+  [GIDEMMSupport parametersWithParameters:options.extraParams
+                               emmSupport:emmSupport
+                   isPasscodeInfoRequired:NO]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
