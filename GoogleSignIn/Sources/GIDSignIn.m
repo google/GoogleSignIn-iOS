@@ -885,6 +885,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   fetcher.retryEnabled = YES;
   fetcher.maxRetryInterval = kFetcherMaxRetryInterval;
   fetcher.comment = comment;
+  fetcher.authorizer = authorization;
   [fetcher beginFetchWithCompletionHandler:handler];
 }
 
