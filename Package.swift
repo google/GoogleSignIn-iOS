@@ -48,7 +48,7 @@ let package = Package(
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
-      "1.3.0" ..< "3.0.0"),
+      .branch("mdmathias/no-longer-open")),
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",

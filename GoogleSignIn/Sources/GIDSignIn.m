@@ -166,6 +166,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
+  // Keychain manager for GTMAppAuth
+  GTMKeychainStore *_keychainStore;
 }
 
 #pragma mark - Public methods
@@ -475,6 +477,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+    _keychainStore = [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
@@ -872,8 +875,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     withCompletionHandler:(void (^)(NSData *, NSError *))handler {
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
   GTMSessionFetcher *fetcher;
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
   id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
   if (fetcherService) {
     fetcher = [fetcherService fetcherWithRequest:request];
@@ -977,22 +979,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)removeAllKeychainEntries {
-  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName
-                                               useDataProtectionKeychain:YES];
+  [_keychainStore removeAuthSessionWithError:nil];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
-  return [GTMAppAuthFetcherAuthorization saveAuthorization:authorization
-                                         toKeychainForName:kGTMAppAuthKeychainName
-                                 useDataProtectionKeychain:YES];
+  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+  [_keychainStore saveAuthSession:authorization error:nil];
+  return YES;
 }
 
 - (OIDAuthState *)loadAuthState {
-  GTMAppAuthFetcherAuthorization *authorization =
-      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName
-                                             useDataProtectionKeychain:YES];
+  GTMAuthSession *authorization = [_keychainStore retrieveAuthSessionWithError:nil];
   return authorization.authState;
 }
 

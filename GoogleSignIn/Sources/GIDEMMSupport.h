@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 // A class to support EMM (Enterprise Mobility Management).
 @interface GIDEMMSupport : NSObject
 
++ (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error;
+
 // Handles potential EMM error from token fetch response.
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion;

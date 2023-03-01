@@ -216,7 +216,7 @@ static NSString *const kNewScope = @"newScope";
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
 #pragma clang diagnostic pop
-  XCTAssertTrue([fetcherAuthorizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
+  XCTAssertTrue([fetcherAuthorizer isKindOfClass:[GTMAuthSession class]]);
   XCTAssertTrue([fetcherAuthorizer canAuthorize]);
 }
 

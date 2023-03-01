@@ -20,7 +20,7 @@
 @import AppAuth;
 @import GTMAppAuth;
 #else
-#import <AppAuth/AppAuth.h>
+//#import <AppAuth/AppAuth.h>
 #import <GTMAppAuth/GTMAppAuth.h>
 #endif
 
@@ -32,8 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
 // Internal methods for the class that are not part of the public API.
-@interface GIDGoogleUser () <GTMAppAuthFetcherAuthorizationTokenRefreshDelegate,
-                             OIDAuthStateChangeDelegate>
+@interface GIDGoogleUser () <GTMAuthSessionDelegate, OIDAuthStateChangeDelegate>
 
 @property(nonatomic, readwrite) GIDToken *accessToken;
 

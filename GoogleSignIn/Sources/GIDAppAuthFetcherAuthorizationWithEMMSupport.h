@@ -27,7 +27,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 // A specialized GTMAppAuthFetcherAuthorization subclass with EMM support.
-@interface GIDAppAuthFetcherAuthorizationWithEMMSupport : GTMAppAuthFetcherAuthorization
+@interface GIDAppAuthFetcherAuthorizationWithEMMSupport : NSObject<GTMAuthSessionDelegate>
 
 @end
 

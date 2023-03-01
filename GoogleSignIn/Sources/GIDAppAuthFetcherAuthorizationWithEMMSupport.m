@@ -39,8 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Initializes with chained delegate and selector.
 - (instancetype)initWithDelegate:(id)delegate selector:(SEL)selector;
 
-// The callback method for GTMAppAuthFetcherAuthorization to invoke.
-- (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
+// The callback method for GTMAuthSession to invoke.
+- (void)authentication:(GTMAuthSession *)auth
                request:(NSMutableURLRequest *)request
      finishedWithError:(nullable NSError *)error;
 
@@ -50,8 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
   // We use a weak reference here to match GTMAppAuthFetcherAuthorization.
   __weak id _delegate;
   SEL _selector;
-  // We need to maintain a reference to the chained delegate because GTMAppAuthFetcherAuthorization
-  // only keeps a weak reference.
+  // We need to maintain a reference to the chained delegate because GTMAuthSession only keeps a
+  // weak reference.
   GIDAppAuthFetcherAuthorizationEMMChainedDelegate *_retained_self;
 }
 
@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
   return self;
 }
 
-- (void)authentication:(GTMAppAuthFetcherAuthorization *)auth
+- (void)authentication:(GTMAuthSession *)auth
                request:(NSMutableURLRequest *)request
      finishedWithError:(nullable NSError *)error {
   [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
@@ -96,30 +96,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDAppAuthFetcherAuthorizationWithEMMSupport
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)authorizeRequest:(nullable NSMutableURLRequest *)request
-                delegate:(id)delegate
-       didFinishSelector:(SEL)sel {
-#pragma clang diagnostic pop
-  GIDAppAuthFetcherAuthorizationEMMChainedDelegate *chainedDelegate =
-      [[GIDAppAuthFetcherAuthorizationEMMChainedDelegate alloc] initWithDelegate:delegate
-                                                                        selector:sel];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  [super authorizeRequest:request
-                 delegate:chainedDelegate
-        didFinishSelector:@selector(authentication:request:finishedWithError:)];
-#pragma clang diagnostic pop
-}
-
-- (void)authorizeRequest:(nullable NSMutableURLRequest *)request
-       completionHandler:(GTMAppAuthFetcherAuthorizationCompletion)handler {
-  [super authorizeRequest:request completionHandler:^(NSError *_Nullable error) {
-    [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
-      handler(error);
-    }];
-  }];
+- (nullable NSError *)updatedErrorForAuthSession:(GTMAuthSession *)authSession
+                                   originalError:(NSError *)originalError {
+  return [GIDEMMSupport handleTokenFetchEMMError:originalError];
 }
 
 @end

@@ -26,9 +26,12 @@
 // We have to import GTMAppAuth because forward declaring the protocol does
 // not generate the `fetcherAuthorizer` property below for Swift.
 #ifdef SWIFT_PACKAGE
-@import GTMAppAuth;
+//@import GTMAppAuth;
+//@import AppAuthCore;
+@import GTMSessionFetcherCore;
 #else
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
+#import <GTMSessionFetcher/GTMSessionFetcher.h>
+//#import <AppAuth/AppAuthCore.h>
 #endif
 
 @class GIDConfiguration;

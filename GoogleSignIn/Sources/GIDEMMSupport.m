@@ -46,6 +46,12 @@ static NSString *const kNewIOSSystemName = @"iOS";
 
 @implementation GIDEMMSupport
 
++ (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error {
+  return [NSError errorWithDomain:kGIDSignInErrorDomain
+                             code:kGIDSignInErrorCodeEMM
+                         userInfo:error.userInfo];
+}
+
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
