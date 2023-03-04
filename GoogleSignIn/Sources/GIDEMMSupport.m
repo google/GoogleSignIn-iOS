@@ -100,6 +100,19 @@ static NSString *const kNewIOSSystemName = @"iOS";
   return allParameters;
 }
 
+#pragma mark - GTMAuthSessionDelegate
+
+- (nullable NSDictionary<NSString *,NSString *> *)
+additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
+  return [GIDEMMSupport updatedEMMParametersWithParameters:
+          authSession.authState.lastTokenResponse.additionalParameters];
+}
+
+- (nullable NSError *)updatedErrorForAuthSession:(GTMAuthSession *)authSession
+                                   originalError:(NSError *)originalError {
+  return [GIDEMMSupport handleTokenFetchEMMError:originalError];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

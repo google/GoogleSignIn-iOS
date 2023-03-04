@@ -27,7 +27,6 @@
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
-#import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -169,8 +168,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
   GTMKeychainStore *_keychainStore;
-
-  GIDAppAuthFetcherAuthorizationWithEMMSupport *_authorizationDelegate;
 }
 
 #pragma mark - Public methods
@@ -472,7 +469,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (isFreshInstall) {
       [self removeAllKeychainEntries];
     }
-    _authorizationDelegate = [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] init];
 
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
         [GIDSignInPreferences googleAuthorizationServer]];
@@ -880,7 +876,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
   GTMSessionFetcher *fetcher;
   GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
-  authorization.delegate = _authorizationDelegate;
   id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
   if (fetcherService) {
     fetcher = [fetcherService fetcherWithRequest:request];
@@ -890,7 +885,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   fetcher.retryEnabled = YES;
   fetcher.maxRetryInterval = kFetcherMaxRetryInterval;
   fetcher.comment = comment;
-  fetcher.authorizer = authorization;
   [fetcher beginFetchWithCompletionHandler:handler];
 }
 

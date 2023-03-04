@@ -26,6 +26,11 @@
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
+#import "GoogleSignIn/Tests/Unit/GIDFailingOIDAuthState.h"
+#import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
+#import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
+#import "GoogleSignIn/Tests/Unit/GIDTestWorker.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -56,6 +61,39 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 @end
 
 @implementation GIDEMMSupportTest
+
+- (void)testEMMSupportDelegate {
+  GIDEMMSupport *emmSupport = [[GIDEMMSupport alloc] init];
+  OIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
+  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
+  authSession.delegate = emmSupport;
+  GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
+                                                initWithAuthorizer:authSession];
+  NSDictionary<NSString *, id> *userInfo = @{
+    @"OIDOAuthErrorResponseErrorKey": @[@"foo", @"bar"],
+    NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
+  };
+  NSError *expectedError = [NSError errorWithDomain:@"org.openid.appauth.resourceserver"
+                                               code:0
+                                           userInfo:userInfo];
+  NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@""]];
+  GTMSessionFetcher *fakeFetcher = [fakeFetcherService fetcherWithRequest:request
+                                                                    error:expectedError];
+  fakeFetcher.authorizer = authSession;
+
+  id mockGoogleUser = OCMStrictClassMock([GIDGoogleUser class]);
+  [[[mockGoogleUser expect] andReturn:authState] authorizer];
+
+  GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithGoogleUser:mockGoogleUser
+                                                                fetcher:fakeFetcher];
+  XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
+  [testWorker failWorkWithCompletion:^(NSError * _Nullable error) {
+    XCTAssertNotNil(error);
+    XCTAssertEqualObjects(expectedError, error);
+    [emmErrorExpectation fulfill];
+  }];
+  [self waitForExpectations:@[emmErrorExpectation] timeout:1];
+}
 
 - (void)testUpdatedEMMParametersWithParameters_NoEMMKey {
   NSDictionary *originalParameters = @{

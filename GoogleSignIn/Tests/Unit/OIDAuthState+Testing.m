@@ -46,4 +46,5 @@
   return [self testInstanceWithTokenResponse:newResponse];
 }
 
+
 @end

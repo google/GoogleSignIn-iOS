@@ -29,8 +29,10 @@
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
+@import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
+#import <GTMAppAuth/GTMAuthState.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -52,7 +54,9 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
 // Minimal time interval before expiration for the access token or it needs to be refreshed.
 static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
-@interface GIDGoogleUser () <GTMAuthSessionDelegate>
+@interface GIDGoogleUser ()
+
+@property (nonatomic, strong) id<GTMAuthSessionDelegate> authSessionDelegate;
 
 @end
 
@@ -240,7 +244,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     GTMAuthSession *authorization =
         [[GTMAuthSession alloc] initWithAuthState:authState];
 //#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    authorization.delegate = self;
+    self.authSessionDelegate = [[GIDEMMSupport alloc] init];
+    authorization.delegate = self.authSessionDelegate;
     authorization.authState.stateChangeDelegate = self;
     self.fetcherAuthorizer = authorization;
     
@@ -306,32 +311,6 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     }
   }
   return nil;
-}
-
-#pragma mark - GTMAuthSessionDelegate
-
-- (nullable NSDictionary *)additionalRefreshParameters:
-    (GTMAuthSession *)authorization {
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  return [GIDEMMSupport updatedEMMParametersWithParameters:
-      authorization.authState.lastTokenResponse.request.additionalParameters];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  return authorization.authState.lastTokenResponse.request.additionalParameters;
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-}
-
-- (nullable NSDictionary<NSString *,NSString *> *)additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  return [GIDEMMSupport updatedEMMParametersWithParameters:
-      authSession.authState.lastTokenResponse.request.additionalParameters];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  return authorization.authState.lastTokenResponse.request.additionalParameters;
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-}
-
-- (nullable NSError *)updatedErrorForAuthSession:(GTMAuthSession *)authSession
-                                   originalError:(NSError *)originalError {
-  return [GIDEMMSupport handleTokenFetchEMMError:originalError];
 }
 
 #pragma mark - OIDAuthStateChangeDelegate

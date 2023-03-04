@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,16 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
-
 #ifdef SWIFT_PACKAGE
-@import AppAuthCore;
+@import AppAuth;
 #else
-#import <AppAuth/AppAuthCore.h>
+#import <AppAuth/OIDAuthState.h>
 #endif
 
-@interface GIDGoogleUser (Testing)
+NS_ASSUME_NONNULL_BEGIN
 
-- (BOOL)isEqual:(id)object;
-- (BOOL)isEqualToGoogleUser:(GIDGoogleUser *)other;
-- (NSUInteger)hash;
+@interface GIDFailingOIDAuthState : OIDAuthState
 
 @end
 
-// The old format GIDGoogleUser contains a GIDAuthentication.
-// Note: remove this class when GIDGoogleUser no longer support old encoding.
-@interface GIDGoogleUserOldFormat : GIDGoogleUser
-
-- (instancetype)initWithAuthState:(OIDAuthState *)authState
-                      profileData:(GIDProfileData *)profileData;
-
-@end
+NS_ASSUME_NONNULL_END
