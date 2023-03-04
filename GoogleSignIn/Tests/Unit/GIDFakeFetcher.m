@@ -23,7 +23,7 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 
 @interface GIDFakeFetcher ()
 
-@property(nonatomic, strong) NSError *fetcherError;
+@property(nonatomic, strong, nullable) NSError *fetcherError;
 
 @end
 
@@ -43,13 +43,11 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 - (instancetype)initWithRequest:(NSURLRequest *)request
-                     authorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
-                          error:(nullable NSError *)error {
+                     authorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer {
 #pragma clang diagnostic pop
   self = [self initWithRequest:request];
   if (self) {
     self.authorizer = authorizer;
-    self.fetcherError = error;
   }
   return self;
 }

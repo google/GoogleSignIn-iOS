@@ -34,7 +34,6 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 - (instancetype)initWithRequest:(NSURLRequest *)request
-                     authorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer
-                          error:(nullable NSError *)error;
+                     authorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer;
 #pragma clang diagnostic pop
 @end

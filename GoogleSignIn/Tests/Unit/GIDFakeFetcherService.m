@@ -59,18 +59,9 @@
   return NO;
 }
 
-- (GTMSessionFetcher *)fetcherWithRequest:(NSURLRequest *)request error:(NSError *)error {
-  GIDFakeFetcher *fetcher = [[GIDFakeFetcher alloc] initWithRequest:request
-                                                         authorizer:self.authorizer
-                                                              error:error];
-  [_fetchers addObject:fetcher];
-  return fetcher;
-}
-
 - (GTMSessionFetcher *)fetcherWithRequest:(NSURLRequest *)request {
   GIDFakeFetcher *fetcher = [[GIDFakeFetcher alloc] initWithRequest:request
-                                                         authorizer:self.authorizer
-                                                              error:nil];
+                                                         authorizer:self.authorizer];
   [_fetchers addObject:fetcher];
   return fetcher;
 }

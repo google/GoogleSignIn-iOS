@@ -63,12 +63,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 @implementation GIDEMMSupportTest
 
 - (void)testEMMSupportDelegate {
-  GIDEMMSupport *emmSupport = [[GIDEMMSupport alloc] init];
-  OIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
-  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
-  authSession.delegate = emmSupport;
-  GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
-                                                initWithAuthorizer:authSession];
+  XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
   NSDictionary<NSString *, id> *userInfo = @{
     @"OIDOAuthErrorResponseErrorKey": @[@"foo", @"bar"],
     NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
@@ -76,9 +71,16 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   NSError *expectedError = [NSError errorWithDomain:@"org.openid.appauth.resourceserver"
                                                code:0
                                            userInfo:userInfo];
+
+  GIDEMMSupport *emmSupport = [[GIDEMMSupport alloc] init];
+  OIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
+  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
+  authSession.delegate = emmSupport;
+  GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
+                                                initWithAuthorizer:authSession];
+
   NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@""]];
-  GTMSessionFetcher *fakeFetcher = [fakeFetcherService fetcherWithRequest:request
-                                                                    error:expectedError];
+  GTMSessionFetcher *fakeFetcher = [fakeFetcherService fetcherWithRequest:request];
   fakeFetcher.authorizer = authSession;
 
   id mockGoogleUser = OCMStrictClassMock([GIDGoogleUser class]);
@@ -86,12 +88,13 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithGoogleUser:mockGoogleUser
                                                                 fetcher:fakeFetcher];
-  XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
+
   [testWorker failWorkWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
     XCTAssertEqualObjects(expectedError, error);
     [emmErrorExpectation fulfill];
   }];
+
   [self waitForExpectations:@[emmErrorExpectation] timeout:1];
 }
 

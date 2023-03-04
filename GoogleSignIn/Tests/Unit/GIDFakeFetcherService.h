@@ -29,11 +29,6 @@
 /// Returns the list of |GPPFakeFetcher| objects that have been created.
 - (NSArray *)fetchers;
 
-/// Creates a `GTMSessionFetcher` with the provided request and error.
-///
-/// The error is passed to the returned `GIDFakeFetcher` to simulate failing fetches.
-- (GTMSessionFetcher *)fetcherWithRequest:(NSURLRequest *)request error:(NSError *)error;
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 /// The instance to use for authorizing requeests.
