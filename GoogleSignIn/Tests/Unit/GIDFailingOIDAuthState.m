@@ -40,7 +40,6 @@
          additionalRefreshParameters:(NSDictionary<NSString *,NSString *> *)additionalParameters
                        dispatchQueue:(dispatch_queue_t)dispatchQueue {
   NSDictionary<NSString *, id> *userInfo = @{
-    // FIXME: (mdmathias) Reuse values listed in `GIDEMMSupport.m`
     @"OIDOAuthErrorResponseErrorKey": @{@"error": @"emm_passcode_required"},
     NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
   };

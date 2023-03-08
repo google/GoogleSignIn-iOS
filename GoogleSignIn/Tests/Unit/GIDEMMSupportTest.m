@@ -83,7 +83,6 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   [testWorker failWorkWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
     NSDictionary<NSString *, id> *userInfo = @{
-      // FIXME: (mdmathias) Reuse values listed in `GIDEMMSupport.m`
       @"OIDOAuthErrorResponseErrorKey": @{@"error": @"emm_passcode_required"},
       NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
     };
