@@ -64,16 +64,10 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 - (void)testEMMSupportDelegate {
   XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
-  NSDictionary<NSString *, id> *userInfo = @{
-    @"OIDOAuthErrorResponseErrorKey": @[@"foo", @"bar"],
-    NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
-  };
-  NSError *expectedError = [NSError errorWithDomain:@"org.openid.appauth.resourceserver"
-                                               code:0
-                                           userInfo:userInfo];
+
 
   GIDEMMSupport *emmSupport = [[GIDEMMSupport alloc] init];
-  OIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
+  GIDFailingOIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
   GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
   authSession.delegate = emmSupport;
   GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
@@ -81,16 +75,21 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@""]];
   GTMSessionFetcher *fakeFetcher = [fakeFetcherService fetcherWithRequest:request];
-  fakeFetcher.authorizer = authSession;
 
-  id mockGoogleUser = OCMStrictClassMock([GIDGoogleUser class]);
-  [[[mockGoogleUser expect] andReturn:authState] authorizer];
-
-  GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithGoogleUser:mockGoogleUser
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] init];
+  GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithGoogleUser:user
                                                                 fetcher:fakeFetcher];
 
   [testWorker failWorkWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
+    NSDictionary<NSString *, id> *userInfo = @{
+      // FIXME: (mdmathias) Reuse values listed in `GIDEMMSupport.m`
+      @"OIDOAuthErrorResponseErrorKey": @{@"error": @"emm_passcode_required"},
+      NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
+    };
+    NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                                 code:kGIDSignInErrorCodeEMM
+                                             userInfo:userInfo];
     XCTAssertEqualObjects(expectedError, error);
     [emmErrorExpectation fulfill];
   }];

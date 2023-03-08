@@ -34,7 +34,6 @@
   if (self) {
     self.googleUser = googleUser;
     self.fetcher = fetcher;
-    self.fetcher.authorizer = self.googleUser.fetcherAuthorizer;
   }
   return self;
 }

@@ -61,14 +61,14 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
     [NSException raise:NSInvalidArgumentException format:@"Attempted start fetch again"];
   }
   _handler = [handler copy];
-  [self authorizeRequest];
-  handler(nil, self.fetcherError);
+  [self authorizeRequestWithCompletion:handler];
 }
 
-- (void)authorizeRequest {
+- (void)authorizeRequestWithCompletion:(FetchCompletionHandler)completion {
   NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:self.request.URL];
   [self.authorizer authorizeRequest:mutableRequest completionHandler:^(NSError * _Nullable error) {
     self.fetcherError = error;
+    completion(nil, error);
   }];
 }
 

@@ -44,12 +44,49 @@ static NSString *const kOldIOSSystemName = @"iPhone OS";
 // New UIDevice system name for iOS.
 static NSString *const kNewIOSSystemName = @"iOS";
 
+// The error key in the server response.
+static NSString *const kErrorKey = @"error";
+
+// Error strings in the server response.
+static NSString *const kGeneralErrorPrefix = @"emm_";
+static NSString *const kScreenlockRequiredError = @"emm_passcode_required";
+static NSString *const kAppVerificationRequiredErrorPrefix = @"emm_app_verification_required";
+
+// Optional separator between error prefix and the payload.
+static NSString *const kErrorPayloadSeparator = @":";
+
+// A list for recognized error codes.
+typedef enum {
+  ErrorCodeNone = 0,
+  ErrorCodeDeviceNotCompliant,
+  ErrorCodeScreenlockRequired,
+  ErrorCodeAppVerificationRequired,
+} ErrorCode;
+
 @implementation GIDEMMSupport
 
 + (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error {
-  return [NSError errorWithDomain:kGIDSignInErrorDomain
-                             code:kGIDSignInErrorCodeEMM
-                         userInfo:error.userInfo];
+  NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
+  ErrorCode errorCode = ErrorCodeNone;
+
+  if (errorJSON) {
+    id errorValue = errorJSON[kErrorKey];
+    if ([errorValue isEqual:kScreenlockRequiredError]) {
+      errorCode = ErrorCodeScreenlockRequired;
+    } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
+      errorCode = ErrorCodeAppVerificationRequired;
+    } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
+      errorCode = ErrorCodeDeviceNotCompliant;
+    }
+  }
+
+  if (errorCode) {
+    return [NSError errorWithDomain:kGIDSignInErrorDomain
+                               code:kGIDSignInErrorCodeEMM
+                           userInfo:error.userInfo];
+  } else {
+    return error;
+  }
 }
 
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
