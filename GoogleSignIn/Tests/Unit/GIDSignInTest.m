@@ -63,8 +63,8 @@
 #import <AppAuth/OIDAuthorizationService+Mac.h>
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
+#import <GTMAppAuth/GTMKeychainStore.h>
+#import <GTMAppAuth/GTMAuthSession.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #import <OCMock/OCMock.h>
 #endif
@@ -190,8 +190,11 @@ static NSString *const kNewScope = @"newScope";
   // Mock |OIDTokenRequest|.
   id _tokenRequest;
 
-  // Mock |GTMAppAuthFetcherAuthorization|.
+  // Mock |GTMAuthSession|.
   id _authorization;
+
+  // Mock |GTMKeychainStore|.
+  id _keychainStore;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
@@ -290,22 +293,21 @@ static NSString *const kNewScope = @"newScope";
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAuthSession class]);
-//  OCMStub([_authorization authorizationFromKeychainForName:OCMOCK_ANY
-//                                 useDataProtectionKeychain:YES]).andReturn(_authorization);
+  _keychainStore = OCMStrictClassMock([GTMKeychainStore class]);
+  OCMStub([_keychainStore retrieveAuthSessionWithItemName:OCMOCK_ANY
+                                                    error:nil]).andReturn(_authorization);
   OCMStub([_authorization alloc]).andReturn(_authorization);
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
-//  OCMStub([_authorization saveAuthorization:OCMOCK_ANY
-//                          toKeychainForName:OCMOCK_ANY
-//                  useDataProtectionKeychain:YES])
-//      .andDo(^(NSInvocation *invocation) {
-//        self->_keychainSaved = self->_saveAuthorizationReturnValue;
-//        [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
-//      });
-//  OCMStub([_authorization removeAuthorizationFromKeychainForName:OCMOCK_ANY
-//                                       useDataProtectionKeychain:YES])
-//      .andDo(^(NSInvocation *invocation) {
-//        self->_keychainRemoved = YES;
-//      });
+  OCMStub([_authorization saveAuthSession:OCMOCK_ANY
+                             withItemName:OCMOCK_ANY
+                                    error:nil]).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+    [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
+  });
+  OCMStub([_keychainStore removeAuthSessionWithItemName:OCMOCK_ANY
+                                                  error:nil]).andDo(^(NSInvocation *invocation) {
+    self->_keychainRemoved = YES;
+  });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
   OCMStub([_oidAuthorizationService
@@ -786,8 +788,8 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertTrue(_keychainRemoved, @"should remove keychain");
 
-//  OCMVerify([_authorization removeAuthorizationFromKeychainForName:kKeychainName
-//                                         useDataProtectionKeychain:YES]);
+  OCMVerify([_keychainStore removeAuthSessionWithItemName:kKeychainName
+                                                    error:nil]);
 }
 
 - (void)testNotHandleWrongScheme {
@@ -1477,13 +1479,13 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain again");
   
-//  if (restoredSignIn) {
-//    OCMVerify([_authorization authorizationFromKeychainForName:kKeychainName
-//                                     useDataProtectionKeychain:YES]);
-//    OCMVerify([_authorization saveAuthorization:OCMOCK_ANY
-//                              toKeychainForName:kKeychainName
-//                      useDataProtectionKeychain:YES]);
-//  }
+  if (restoredSignIn) {
+    // Ignore the return value
+    OCMVerify((void)[_keychainStore retrieveAuthSessionWithItemName:kKeychainName error:nil]);
+    OCMVerify([_keychainStore saveAuthSession:OCMOCK_ANY
+                                 withItemName:kKeychainName
+                                        error:nil]);
+  }
 }
 
 @end

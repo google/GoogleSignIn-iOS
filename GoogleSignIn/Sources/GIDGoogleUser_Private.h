@@ -20,7 +20,7 @@
 @import AppAuth;
 @import GTMAppAuth;
 #else
-//#import <AppAuth/AppAuth.h>
+#import <AppAuth/AppAuth.h>
 #import <GTMAppAuth/GTMAppAuth.h>
 #endif
 

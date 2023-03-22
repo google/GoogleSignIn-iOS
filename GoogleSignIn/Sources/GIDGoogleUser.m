@@ -19,7 +19,6 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
-#import "GoogleSignIn/Sources/GIDAppAuthFetcherAuthorizationWithEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDAuthentication.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
@@ -236,14 +235,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
     _profile = profileData;
     
-//#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-//    GTMAppAuthFetcherAuthorization *authorization = self.emmSupport ?
-//        [[GIDAppAuthFetcherAuthorizationWithEMMSupport alloc] initWithAuthState:authState] :
-//        [[GTMAuthSession alloc] initWithAuthState:authState];
-//#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    GTMAuthSession *authorization =
-        [[GTMAuthSession alloc] initWithAuthState:authState];
-//#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
     self.authSessionDelegate = [[GIDEMMSupport alloc] init];
     authorization.delegate = self.authSessionDelegate;
     authorization.authState.stateChangeDelegate = self;

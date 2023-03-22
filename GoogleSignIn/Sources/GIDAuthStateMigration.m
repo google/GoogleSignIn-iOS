@@ -21,8 +21,8 @@
 @import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAppAuth.h>
-#import <GTMAppAuth/GTMKeychain.h>
+#import <GTMAppAuth/GTMKeychainStore.h>
+#import <GTMAppAuth/GTMKeychainHelper.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,9 +39,28 @@ static NSString *const kGenericAttribute = @"OAuth";
 // Keychain service name used to store the last used fingerprint value.
 static NSString *const kFingerprintService = @"fingerprint";
 
+@interface GIDAuthStateMigration ()
+
+@property (nonatomic, strong) GTMKeychainStore *keychainStore;
+
+@end
+
 @implementation GIDAuthStateMigration
 
-+ (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
+  self = [super init];
+  if (self) {
+    self.keychainStore = keychainStore;
+  }
+  return self;
+}
+
+- (instancetype)init {
+  GTMKeychainStore *keychainStore = [[GTMKeychainStore alloc] initWithItemName:@"auth"];
+  return [self initWithKeychainStore:keychainStore];
+}
+
+- (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
                        keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall {
@@ -60,11 +79,10 @@ static NSString *const kFingerprintService = @"fingerprint";
 
     // If migration was successful, save our migrated state to the keychain.
     if (authorization) {
-      // If we're unable to save to the keychain, return without marking migration performed.
       NSError *err;
-      GTMKeychainStore *keychainStore = [[GTMKeychainStore alloc] initWithItemName:@"auth"];
-      [keychainStore saveAuthSession:authorization error:&err];
-      if (!err) {
+      [self.keychainStore saveAuthSession:authorization error:&err];
+      // If we're unable to save to the keychain, return without marking migration performed.
+      if (err) {
         return;
       };
     }
@@ -76,7 +94,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 
 // Returns a |GTMAuthSession| object containing any old auth state or |nil| if none
 // was found or the migration failed.
-+ (nullable GTMAuthSession *)
+- (nullable GTMAuthSession *)
     extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath {
   // Retrieve the last used fingerprint.
   NSString *fingerprint = [GIDAuthStateMigration passwordForService:kFingerprintService];
@@ -85,9 +103,10 @@ static NSString *const kFingerprintService = @"fingerprint";
   }
 
   // Retrieve the GTMOAuth2 persistence string.
-  GTMKeychainStore *ks = [[GTMKeychainStore alloc] initWithItemName:@"auth"];
-  NSString *GTMOAuth2PersistenceString = nil; // [GTMKeychain passwordFromKeychainForName:fingerprint];
-  if (!GTMOAuth2PersistenceString) {
+  NSError *passwordError;
+  NSString *GTMOAuth2PersistenceString =
+      [self.keychainStore.keychainHelper passwordForService:fingerprint error:&passwordError];
+  if (passwordError) {
     return nil;
   }
 
@@ -129,14 +148,15 @@ static NSString *const kFingerprintService = @"fingerprint";
                          additionalTokenRequestParameters];
   }
 
-  // Use |GTMOAuth2KeychainCompatibility| to generate a |GTMAuthSession| from the
+  // Use |GTMOAuth2Compatibility| to generate a |GTMAuthSession| from the
   // persistence string, redirect URI, client ID, and token endpoint URL.
-  GTMAuthSession *authorization = [GTMOAuth2Compatibility authSessionForPersistenceString:persistenceString
-                                                                                 tokenURL:tokenURL
-                                                                              redirectURI:redirectURI
-                                                                                 clientID:clientID
-                                                                             clientSecret:nil
-                                                                                    error:nil];
+  GTMAuthSession *authorization =
+      [GTMOAuth2Compatibility authSessionForPersistenceString:persistenceString
+                                                     tokenURL:tokenURL
+                                                  redirectURI:redirectURI
+                                                     clientID:clientID
+                                                 clientSecret:nil
+                                                        error:nil];
 
   return authorization;
 }
