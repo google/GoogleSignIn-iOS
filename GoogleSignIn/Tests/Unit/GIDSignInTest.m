@@ -294,18 +294,21 @@ static NSString *const kNewScope = @"newScope";
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAuthSession class]);
   _keychainStore = OCMStrictClassMock([GTMKeychainStore class]);
-  OCMStub([_keychainStore retrieveAuthSessionWithItemName:OCMOCK_ANY
-                                                    error:nil]).andReturn(_authorization);
+  OCMStub(
+    [_keychainStore retrieveAuthSessionWithItemName:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andReturn(_authorization);
+  OCMStub([_keychainStore retrieveAuthSessionWithError:nil]).andReturn(_authorization);
   OCMStub([_authorization alloc]).andReturn(_authorization);
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
-  OCMStub([_authorization saveAuthSession:OCMOCK_ANY
-                             withItemName:OCMOCK_ANY
-                                    error:nil]).andDo(^(NSInvocation *invocation) {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
     self->_keychainSaved = self->_saveAuthorizationReturnValue;
     [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
   });
-  OCMStub([_keychainStore removeAuthSessionWithItemName:OCMOCK_ANY
-                                                  error:nil]).andDo(^(NSInvocation *invocation) {
+  OCMStub(
+    [_keychainStore removeAuthSessionWithError:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
     self->_keychainRemoved = YES;
   });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
@@ -332,7 +335,7 @@ static NSString *const kNewScope = @"newScope";
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initPrivate];
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -416,7 +419,7 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization stub] andReturn:_authState] authState];
-//  [[_authorization expect] setTokenRefreshDelegate:OCMOCK_ANY];
+  [[_authorization expect] setDelegate:OCMOCK_ANY];
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
   [[_authState expect] setStateChangeDelegate:OCMOCK_ANY];
@@ -788,8 +791,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(_signIn.currentUser, @"should not have a current user");
   XCTAssertTrue(_keychainRemoved, @"should remove keychain");
 
-  OCMVerify([_keychainStore removeAuthSessionWithItemName:kKeychainName
-                                                    error:nil]);
+  OCMVerify([_keychainStore removeAuthSessionWithError:OCMArg.anyObjectRef]);
 }
 
 - (void)testNotHandleWrongScheme {
@@ -813,14 +815,16 @@ static NSString *const kNewScope = @"newScope";
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  XCTestExpectation *expectation =
+  XCTestExpectation *accessTokenExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     if (error == nil) {
-      [expectation fulfill];
+      [accessTokenExpectation fulfill];
     }
   }];
-  [self verifyAndRevokeToken:kAccessToken hasCallback:YES];
+  [self verifyAndRevokeToken:kAccessToken
+                 hasCallback:YES
+      waitingForExpectations:@[accessTokenExpectation]];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -833,7 +837,7 @@ static NSString *const kNewScope = @"newScope";
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
-  [self verifyAndRevokeToken:kAccessToken hasCallback:NO];
+  [self verifyAndRevokeToken:kAccessToken hasCallback:NO waitingForExpectations:@[]];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -847,14 +851,16 @@ static NSString *const kNewScope = @"newScope";
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kRefreshToken] refreshToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  XCTestExpectation *expectation =
+  XCTestExpectation *refreshTokenExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     if (error == nil) {
-      [expectation fulfill];
+      [refreshTokenExpectation fulfill];
     }
   }];
-  [self verifyAndRevokeToken:kRefreshToken hasCallback:YES];
+  [self verifyAndRevokeToken:kRefreshToken
+                 hasCallback:YES
+      waitingForExpectations:@[refreshTokenExpectation]];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -866,18 +872,18 @@ static NSString *const kNewScope = @"newScope";
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  XCTestExpectation *expectation =
+  XCTestExpectation *errorExpectation =
       [self expectationWithDescription:@"Callback called with an error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     if (error != nil) {
-      [expectation fulfill];
+      [errorExpectation fulfill];
     }
   }];
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   // Emulate result back from server.
   NSError *error = [self error];
   [self didFetch:nil error:error];
-  [self waitForExpectationsWithTimeout:1 handler:nil];
+  [self waitForExpectations:@[errorExpectation] timeout:1];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -907,14 +913,14 @@ static NSString *const kNewScope = @"newScope";
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
-  XCTestExpectation *expectation =
+  XCTestExpectation *noTokensExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
     if (error == nil) {
-      [expectation fulfill];
+      [noTokensExpectation fulfill];
     }
   }];
-  [self waitForExpectationsWithTimeout:1 handler:nil];
+  [self waitForExpectations:@[noTokensExpectation] timeout:1];
   XCTAssertFalse([self isFetcherStarted], @"should not fetch");
   XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
   [_authorization verify];
@@ -1183,7 +1189,9 @@ static NSString *const kNewScope = @"newScope";
 }
 
 // Verifies a fetcher has started for revoking token and emulates a server response.
-- (void)verifyAndRevokeToken:(NSString *)token hasCallback:(BOOL)hasCallback {
+- (void)verifyAndRevokeToken:(NSString *)token
+                 hasCallback:(BOOL)hasCallback
+      waitingForExpectations:(NSArray<XCTestExpectation *> *)expectations {
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   NSURL *url = [self fetchedURL];
   XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
@@ -1199,10 +1207,10 @@ static NSString *const kNewScope = @"newScope";
                         @"Environment logging parameter should match");
   // Emulate result back from server.
   [self didFetch:nil error:nil];
-  if (hasCallback) {
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-  }
   XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+  if (hasCallback) {
+    [self waitForExpectations:expectations timeout:1];
+  }
 }
 
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
@@ -1283,10 +1291,11 @@ static NSString *const kNewScope = @"newScope";
           tokenRefreshRequestWithAdditionalParameters:[OCMArg any]];
     }
   } else {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback called"];
+    XCTestExpectation *newAccessTokenExpectation =
+        [self expectationWithDescription:@"Callback called"];
     GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
                                        NSError * _Nullable error) {
-      [expectation fulfill];
+      [newAccessTokenExpectation fulfill];
       if (signInResult) {
         XCTAssertEqualObjects(signInResult.serverAuthCode, kServerAuthCode);
       } else {
@@ -1369,10 +1378,11 @@ static NSString *const kNewScope = @"newScope";
   }
 
   if (restoredSignIn && oldAccessToken) {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
+    XCTestExpectation *callbackShouldBeCalledExpectation =
+        [self expectationWithDescription:@"Callback should be called"];
     [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
                                                    NSError * _Nullable error) {
-      [expectation fulfill];
+      [callbackShouldBeCalledExpectation fulfill];
       XCTAssertNil(error, @"should have no error");
     }];
   }
@@ -1425,10 +1435,10 @@ static NSString *const kNewScope = @"newScope";
   }
 
   if (restoredSignIn && !oldAccessToken) {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
+    XCTestExpectation *restoredSignInExpectation = [self expectationWithDescription:@"Callback should be called"];
     [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
                                                    NSError * _Nullable error) {
-      [expectation fulfill];
+      [restoredSignInExpectation fulfill];
       XCTAssertNil(error, @"should have no error");
     }];
   } else {
@@ -1465,11 +1475,12 @@ static NSString *const kNewScope = @"newScope";
   __block GIDGoogleUserCompletion completion;
   [[_user expect] refreshTokensIfNeededWithCompletion:SAVE_TO_ARG_BLOCK(completion)];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called"];
+  XCTestExpectation *restorePreviousSignInExpectation =
+      [self expectationWithDescription:@"Callback should be called"];
 
   [_signIn restorePreviousSignInWithCompletion:^(GIDGoogleUser * _Nullable user,
                                                  NSError * _Nullable error) {
-    [expectation fulfill];
+    [restorePreviousSignInExpectation fulfill];
     XCTAssertNil(error, @"should have no error");
   }];
 
@@ -1481,10 +1492,8 @@ static NSString *const kNewScope = @"newScope";
   
   if (restoredSignIn) {
     // Ignore the return value
-    OCMVerify((void)[_keychainStore retrieveAuthSessionWithItemName:kKeychainName error:nil]);
-    OCMVerify([_keychainStore saveAuthSession:OCMOCK_ANY
-                                 withItemName:kKeychainName
-                                        error:nil]);
+    OCMVerify((void)[_keychainStore retrieveAuthSessionWithError:OCMArg.anyObjectRef]);
+    OCMVerify([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]);
   }
 }
 
