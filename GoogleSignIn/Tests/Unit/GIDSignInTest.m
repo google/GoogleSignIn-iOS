@@ -301,12 +301,6 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_authorization alloc]).andReturn(_authorization);
   OCMStub([_authorization initWithAuthState:OCMOCK_ANY]).andReturn(_authorization);
   OCMStub(
-    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
-  ).andDo(^(NSInvocation *invocation) {
-    self->_keychainSaved = self->_saveAuthorizationReturnValue;
-    [invocation setReturnValue:&self->_saveAuthorizationReturnValue];
-  });
-  OCMStub(
     [_keychainStore removeAuthSessionWithError:OCMArg.anyObjectRef]
   ).andDo(^(NSInvocation *invocation) {
     self->_keychainRemoved = YES;
@@ -542,6 +536,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOAuthLogin {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -553,6 +553,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOAuthLogin_RestoredSignIn {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -564,6 +570,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOAuthLogin_RestoredSignInOldAccessToken {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -576,7 +588,13 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testOAuthLogin_AdditionalScopes {
   NSString *expectedScopeString;
-  
+
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -622,6 +640,11 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testAddScopes {
   // Restore the previous sign-in account. This is the preparation for adding scopes.
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -682,6 +705,12 @@ static NSString *const kNewScope = @"newScope";
                                                         hostedDomain:nil
                                                          openIDRealm:kOpenIDRealm];
 
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -697,6 +726,12 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testOAuthLogin_LoginHint {
   _hint = kUserEmail;
+
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -716,6 +751,12 @@ static NSString *const kNewScope = @"newScope";
                                                       serverClientID:nil
                                                         hostedDomain:kHostedDomain
                                                          openIDRealm:nil];
+
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -759,6 +800,16 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOAuthLogin_KeychainError {
+  // This error is going be overidden by `-[GIDSignIn errorWithString:code:]`
+  // We just need to fill in the error so that happens.
+  NSError *keychainError = [NSError errorWithDomain:@"com.googleSignIn.throwAway"
+                                               code:1
+                                           userInfo:nil];
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:[OCMArg setTo:keychainError]]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -775,6 +826,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testSignOut {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   // Sign in a user so that we can then sign them out.
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -1016,6 +1073,12 @@ static NSString *const kNewScope = @"newScope";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testEmmSupportRequestParameters {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
@@ -1061,6 +1124,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testEmmPasscodeInfo {
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil

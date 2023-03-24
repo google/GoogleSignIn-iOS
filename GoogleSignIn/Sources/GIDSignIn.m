@@ -992,8 +992,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {
   GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
-  [_keychainStore saveAuthSession:authorization error:nil];
-  return YES;
+  NSError *error;
+  [_keychainStore saveAuthSession:authorization error:&error];
+  return error == nil;
 }
 
 - (OIDAuthState *)loadAuthState {
