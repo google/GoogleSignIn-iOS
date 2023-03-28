@@ -53,8 +53,8 @@
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
+#import <GTMAppAuth/GTMKeychainStore.h>
+#import <GTMAppAuth/GTMAuthSession.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST

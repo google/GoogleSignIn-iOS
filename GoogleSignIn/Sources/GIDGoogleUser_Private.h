@@ -21,10 +21,10 @@
 @import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAppAuth.h>
 #endif
 
 @class OIDAuthState;
+@protocol GTMAuthSessionDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -31,7 +31,8 @@
 @import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAuthState.h>
+#import <GTMAppAuth/GTMAuthSession.h>
+#import <GTMAppAuth/GTMAuthSessionDelegate.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
