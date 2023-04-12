@@ -31,6 +31,7 @@
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
 @import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 @import GoogleUtilities_MethodSwizzler;

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1D721EFBF29E4B5D3EA5BE4D /* Pods_SampleForPod.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2675052AF6D7076DCBF751BB /* Pods_SampleForPod.framework */; };
+		7314214E29E7348800D35433 /* Empty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7314214D29E7348800D35433 /* Empty.swift */; };
 		D926A5701BC3236100ADECE6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D926A5381BC3236100ADECE6 /* AppDelegate.m */; };
 		D926A5711BC3236100ADECE6 /* AuthInspectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D926A53A1BC3236100ADECE6 /* AuthInspectorViewController.m */; };
 		D926A5721BC3236100ADECE6 /* DataPickerState.m in Sources */ = {isa = PBXBuildFile; fileRef = D926A53C1BC3236100ADECE6 /* DataPickerState.m */; };
@@ -25,6 +26,7 @@
 
 /* Begin PBXFileReference section */
 		2675052AF6D7076DCBF751BB /* Pods_SampleForPod.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SampleForPod.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7314214D29E7348800D35433 /* Empty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Empty.swift; sourceTree = "<group>"; };
 		C1B5D38B282AFE460068D12B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D926A51D1BC31FE000ADECE6 /* SignInSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignInSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D926A5371BC3236100ADECE6 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Source/AppDelegate.h; sourceTree = SOURCE_ROOT; };
@@ -130,6 +132,7 @@
 				D926A56D1BC3236100ADECE6 /* SignInViewController.h */,
 				D926A56E1BC3236100ADECE6 /* SignInViewController.m */,
 				D926A56F1BC3236100ADECE6 /* SignInViewController.xib */,
+				7314214D29E7348800D35433 /* Empty.swift */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -200,6 +203,7 @@
 				TargetAttributes = {
 					D926A51C1BC31FE000ADECE6 = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 1420;
 					};
 				};
 			};
@@ -332,6 +336,7 @@
 				D926A5721BC3236100ADECE6 /* DataPickerState.m in Sources */,
 				D926A5711BC3236100ADECE6 /* AuthInspectorViewController.m in Sources */,
 				D926A57D1BC3236100ADECE6 /* SignInViewController.m in Sources */,
+				7314214E29E7348800D35433 /* Empty.swift in Sources */,
 				D926A5701BC3236100ADECE6 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -496,12 +501,15 @@
 			baseConfigurationReference = FE1798D23522F57E24875676 /* Pods-SampleForPod.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/SignInSample-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.SignInSample;
 				PRODUCT_NAME = SignInSample;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -510,12 +518,14 @@
 			baseConfigurationReference = DAD21F7A41C90200270A7376 /* Pods-SampleForPod.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/SignInSample-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.SignInSample;
 				PRODUCT_NAME = SignInSample;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

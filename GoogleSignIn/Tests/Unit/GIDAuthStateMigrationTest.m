@@ -18,15 +18,12 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 @import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 @import OCMock;
 #else
 #import <AppAuth/AppAuth.h>
-//#import <GTMAppAuth/GTMKeychainStore.h>
-//#import <GTMAppAuth/GTMKeychainHelper.h>
-//#import <GTMAppAuth/GTMOAuth2Compatibility.h>
 #import <OCMock/OCMock.h>
 #endif
 

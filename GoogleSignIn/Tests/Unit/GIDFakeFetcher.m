@@ -14,11 +14,6 @@
 
 @import GTMAppAuth;
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
-#ifdef SWIFT_PACKAGE
-@import GTMAppAuth;
-#else
-//#import <GTMAppAuth/GTMAAppAuth-Swift.h>
-#endif
 
 typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 
