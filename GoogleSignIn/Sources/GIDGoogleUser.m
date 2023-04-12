@@ -26,12 +26,12 @@
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAuthSession.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,11 +53,13 @@ static NSString *const kEMMSupportParameterName = @"emm_support";
 // Minimal time interval before expiration for the access token or it needs to be refreshed.
 static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 @interface GIDGoogleUser ()
 
 @property (nonatomic, strong) id<GTMAuthSessionDelegate> authSessionDelegate;
 
 @end
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 @implementation GIDGoogleUser {
   GIDConfiguration *_cachedConfiguration;
@@ -236,8 +238,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     _profile = profileData;
     
     GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     self.authSessionDelegate = [[GIDEMMSupport alloc] init];
     authorization.delegate = self.authSessionDelegate;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     authorization.authState.stateChangeDelegate = self;
     self.fetcherAuthorizer = authorization;
     

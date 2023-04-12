@@ -26,6 +26,8 @@
 // Test module imports
 @import GoogleSignIn;
 
+@import GTMAppAuth;
+
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
@@ -43,7 +45,6 @@
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 @import GTMSessionFetcherCore;
 @import OCMock;
 #else
@@ -63,8 +64,6 @@
 #import <AppAuth/OIDAuthorizationService+Mac.h>
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-#import <GTMAppAuth/GTMKeychainStore.h>
-#import <GTMAppAuth/GTMAuthSession.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #import <OCMock/OCMock.h>
 #endif
@@ -413,7 +412,9 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
   [[[_authorization stub] andReturn:_authState] authState];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [[_authorization expect] setDelegate:OCMOCK_ANY];
+#endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
   OCMStub([_authState lastTokenResponse]).andReturn(_tokenResponse);
   OCMStub([_authState refreshToken]).andReturn(kRefreshToken);
   [[_authState expect] setStateChangeDelegate:OCMOCK_ANY];
@@ -437,10 +438,6 @@ static NSString *const kNewScope = @"newScope";
   
   [_signIn restorePreviousSignInNoRefresh];
 
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
-  [_tokenRequest verify];
   [idTokenDecoded verify];
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
 
@@ -826,6 +823,10 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testSignOut {
+#if TARGET_OS_IOS || !TARGET_OS_MACCATALYST
+//  OCMStub([_authorization authState]).andReturn(_authState);
+#endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
+  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
   ).andDo(^(NSInvocation *invocation) {

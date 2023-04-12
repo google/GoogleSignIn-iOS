@@ -65,6 +65,10 @@ typedef enum {
 
 @implementation GIDEMMSupport
 
+- (instancetype)init {
+  return [super init];
+}
+
 + (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
   ErrorCode errorCode = ErrorCodeNone;

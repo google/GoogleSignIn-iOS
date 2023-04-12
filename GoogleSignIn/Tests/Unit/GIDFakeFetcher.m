@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@import GTMAppAuth;
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #ifdef SWIFT_PACKAGE
 @import GTMAppAuth;
 #else
-#import <GTMAppAuth/GTMAuthState.h>
+//#import <GTMAppAuth/GTMAAppAuth-Swift.h>
 #endif
 
 typedef void (^FetchCompletionHandler)(NSData *, NSError *);

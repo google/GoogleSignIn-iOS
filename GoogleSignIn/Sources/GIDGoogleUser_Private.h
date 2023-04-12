@@ -16,12 +16,12 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAuthSessionDelegate.h>
 #endif
 
 @class OIDAuthState;
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
-// Internal methods for the class that are not part of the public API.
+/// Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser () <GTMAuthSessionDelegate, OIDAuthStateChangeDelegate>
 
 @property(nonatomic, readwrite) GIDToken *accessToken;
@@ -40,7 +40,7 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 
 @property(nonatomic, readwrite, nullable) GIDToken *idToken;
 
-// A representation of the state of the OAuth session for this instance.
+/// A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
 
 #pragma clang diagnostic push

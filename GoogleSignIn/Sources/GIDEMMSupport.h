@@ -20,16 +20,14 @@
 
 #import <Foundation/Foundation.h>
 
-#ifdef SWIFT_PACKAGE
 @import GTMAppAuth;
-#else
-#import <GTMAppAuth/GTMAuthSessionDelegate.h>
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// A class to support EMM (Enterprise Mobility Management).
 @interface GIDEMMSupport : NSObject<GTMAuthSessionDelegate>
+
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 + (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error;
 

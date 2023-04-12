@@ -16,13 +16,12 @@
 
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMKeychainStore.h>
-#import <GTMAppAuth/GTMKeychainHelper.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN

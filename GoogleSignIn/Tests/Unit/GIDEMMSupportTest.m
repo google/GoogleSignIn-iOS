@@ -22,6 +22,7 @@
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"

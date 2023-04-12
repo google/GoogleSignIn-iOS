@@ -36,9 +36,10 @@
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 @import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthState.h>
@@ -53,8 +54,6 @@
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
-#import <GTMAppAuth/GTMKeychainStore.h>
-#import <GTMAppAuth/GTMAuthSession.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
