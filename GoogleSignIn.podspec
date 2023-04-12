@@ -12,6 +12,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     :git => 'https://github.com/google/GoogleSignIn-iOS.git',
     :tag => s.version.to_s
   }
+  s.swift_version = '4.0'
   ios_deployment_target = '10.0'
   osx_deployment_target = '10.15'
   s.ios.deployment_target = ios_deployment_target

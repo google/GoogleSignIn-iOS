@@ -23,8 +23,11 @@
 // A fake |GTMHTTPFetcherService| for testing.
 @interface GIDFakeFetcherService : NSObject<GTMSessionFetcherServiceProtocol>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 /// Creates an instance of this fake with an authorizer.
 - initWithAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer;
+#pragma clang diagnostic pop
 
 /// Returns the list of |GPPFakeFetcher| objects that have been created.
 - (NSArray *)fetchers;
