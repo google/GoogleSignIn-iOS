@@ -16,6 +16,10 @@ jobs:
       matrix:
         os: [macos-12]
         podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
+        flag: [
+          "",
+          "--use-static-frameworks"
+        ]
         include:
           - podspec: GoogleSignInSwiftSupport.podspec
             includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
@@ -28,7 +32,7 @@ jobs:
     - name: Lint podspec using local source
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
-           ${{ matrix.includePodspecFlag }}
+           ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
 
   spm-build-test:
     runs-on: ${{ matrix.os }}
