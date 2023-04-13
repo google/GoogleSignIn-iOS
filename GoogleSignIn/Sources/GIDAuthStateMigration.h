@@ -34,10 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
                        keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall;
 
-/// Returns a `GTMAuthSession` given the provided token URL.
-- (nullable GTMAuthSession *)
-    extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
-
 @end
 
 NS_ASSUME_NONNULL_END

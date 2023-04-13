@@ -61,6 +61,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable NSString *)passwordForService:(NSString *)service;
 
+/// Returns a `GTMAuthSession` given the provided token URL.
+///
+/// This method enables using an instance of `GIDAuthStateMigration` that is created with a fake
+/// `GTMKeychainStore` and thereby minimizes mocking.
+- (nullable GTMAuthSession *)
+    extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
+
 @end
 
 @interface GIDAuthStateMigrationTest : XCTestCase
