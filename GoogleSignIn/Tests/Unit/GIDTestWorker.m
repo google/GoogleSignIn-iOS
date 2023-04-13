@@ -15,25 +15,21 @@
  */
 
 #import "GIDTestWorker.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 
 @interface GIDTestWorker ()
 
-@property(nonatomic, strong) GIDGoogleUser *googleUser;
 @property(nonatomic, strong) GTMSessionFetcher *fetcher;
 
 @end
 
 @implementation GIDTestWorker
 
-- (instancetype)initWithGoogleUser:(nonnull GIDGoogleUser *)googleUser
-                           fetcher:(nonnull GTMSessionFetcher *)fetcher {
+- (instancetype)initWithFetcher:(nonnull GTMSessionFetcher *)fetcher {
   self = [super init];
   if (self) {
-    self.googleUser = googleUser;
-    self.fetcher = fetcher;
+    _fetcher = fetcher;
   }
   return self;
 }

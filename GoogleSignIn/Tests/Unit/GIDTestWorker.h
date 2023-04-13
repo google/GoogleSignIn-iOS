@@ -16,7 +16,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class GIDGoogleUser;
 @class GTMSessionFetcher;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -24,12 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Class used in testing EMM error handling in `GIDEMMSupportTest`.
 @interface GIDTestWorker : NSObject
 
-/// Creates an instance with a Google user.
-///
-/// Ensure that the `GIDGoogleUser` has some way to return an `authorizer` of time `GTMAuthSession`
-/// with its delegate set to `GIDEMMSupport`.
-- (instancetype)initWithGoogleUser:(nonnull GIDGoogleUser *)googleUser
-                           fetcher:(nonnull GTMSessionFetcher *)fetcher;
+/// Creates a fake "worker" instance with a `GTMSessionFetcher`.
+- (instancetype)initWithFetcher:(nonnull GTMSessionFetcher *)fetcher;
 
 /// Fails the work encapsulated by this type with the given error.
 - (void)failWorkWithCompletion:(void (^)(NSError *_Nullable error))completion;

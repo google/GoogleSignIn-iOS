@@ -22,7 +22,7 @@
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
+#import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -66,19 +66,15 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testEMMSupportDelegate {
   XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
 
-  GIDEMMSupport *emmSupport = [[GIDEMMSupport alloc] init];
   GIDFailingOIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
-  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
-  authSession.delegate = emmSupport;
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
   GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
-                                                initWithAuthorizer:authSession];
+                                                initWithAuthorizer:user.fetcherAuthorizer];
 
   NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@""]];
   GTMSessionFetcher *fakeFetcher = [fakeFetcherService fetcherWithRequest:request];
 
-  GIDGoogleUser *user = [[GIDGoogleUser alloc] init];
-  GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithGoogleUser:user
-                                                                fetcher:fakeFetcher];
+  GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithFetcher:fakeFetcher];
 
   [testWorker failWorkWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
