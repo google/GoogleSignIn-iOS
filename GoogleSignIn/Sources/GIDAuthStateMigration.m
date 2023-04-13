@@ -54,11 +54,6 @@ static NSString *const kFingerprintService = @"fingerprint";
   return self;
 }
 
-- (instancetype)init {
-  GTMKeychainStore *keychainStore = [[GTMKeychainStore alloc] initWithItemName:@"auth"];
-  return [self initWithKeychainStore:keychainStore];
-}
-
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
                        keychainName:(NSString *)keychainName

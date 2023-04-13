@@ -24,12 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// A class providing migration support for auth state saved by older versions of the SDK.
 @interface GIDAuthStateMigration : NSObject
 
-/// Creates an instance of this migration type.
-///
-/// - Note: Uses `"auth"` as the keychain item name for the `GTMKeychainStore`, which is created
-/// within the initializer.
-- (instancetype)init;
-
 /// Creates an instance of this migration type with the keychain storage wrapper it will use.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore NS_DESIGNATED_INITIALIZER;
 
