@@ -29,8 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
-+ (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error;
-
 /// Handles potential EMM error from token fetch response.
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion;

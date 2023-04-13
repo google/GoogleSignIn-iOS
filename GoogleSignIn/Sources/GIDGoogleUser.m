@@ -188,7 +188,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   }];
 }
 
-- (OIDAuthState *) authState {
+- (OIDAuthState *)authState {
   return ((GTMAuthSession *)self.fetcherAuthorizer).authState;
 }
 
@@ -239,11 +239,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     
     GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    self.authSessionDelegate = [[GIDEMMSupport alloc] init];
+    _authSessionDelegate = [[GIDEMMSupport alloc] init];
     authorization.delegate = self.authSessionDelegate;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     authorization.authState.stateChangeDelegate = self;
-    self.fetcherAuthorizer = authorization;
+    _fetcherAuthorizer = authorization;
     
     [self updateTokensWithAuthState:authState];
   }

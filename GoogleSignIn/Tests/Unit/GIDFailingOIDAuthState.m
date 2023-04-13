@@ -22,9 +22,11 @@
 @implementation GIDFailingOIDAuthState
 
 + (instancetype)testInstance {
-  return [[GIDFailingOIDAuthState alloc]
-            initWithAuthorizationResponse:[OIDAuthorizationResponse testInstance]
-            tokenResponse:[OIDTokenResponse testInstance]];
+  OIDAuthorizationResponse *testAuthResponse = [OIDAuthorizationResponse testInstance];
+  OIDTokenResponse *testTokenResponse = [OIDTokenResponse testInstance];
+
+  return [[GIDFailingOIDAuthState alloc] initWithAuthorizationResponse:testAuthResponse
+                                                         tokenResponse:testTokenResponse];
 }
 
 - (void)performActionWithFreshTokens:(OIDAuthStateAction)action

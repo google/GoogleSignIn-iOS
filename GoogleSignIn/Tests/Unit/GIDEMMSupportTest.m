@@ -66,7 +66,6 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testEMMSupportDelegate {
   XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
 
-
   GIDEMMSupport *emmSupport = [[GIDEMMSupport alloc] init];
   GIDFailingOIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
   GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];

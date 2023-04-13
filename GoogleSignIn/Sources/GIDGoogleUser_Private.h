@@ -16,8 +16,6 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
-@import GTMAppAuth;
-
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
@@ -32,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
 /// Internal methods for the class that are not part of the public API.
-@interface GIDGoogleUser () <GTMAuthSessionDelegate, OIDAuthStateChangeDelegate>
+@interface GIDGoogleUser () <OIDAuthStateChangeDelegate>
 
 @property(nonatomic, readwrite) GIDToken *accessToken;
 

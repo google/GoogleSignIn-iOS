@@ -49,7 +49,6 @@
 #import <AppAuth/OIDTokenResponse.h>
 #import <GoogleUtilities/GULSwizzler.h>
 #import <GoogleUtilities/GULSwizzler+Unswizzle.h>
-//#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <OCMock/OCMock.h>
 #endif
 

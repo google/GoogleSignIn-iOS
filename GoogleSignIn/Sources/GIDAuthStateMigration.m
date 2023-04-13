@@ -49,7 +49,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
   self = [super init];
   if (self) {
-    self.keychainStore = keychainStore;
+    _keychainStore = keychainStore;
   }
   return self;
 }

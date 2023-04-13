@@ -56,12 +56,12 @@ static NSString *const kAppVerificationRequiredErrorPrefix = @"emm_app_verificat
 static NSString *const kErrorPayloadSeparator = @":";
 
 // A list for recognized error codes.
-typedef enum {
+NS_ENUM(NSInteger, ErrorCode) {
   ErrorCodeNone = 0,
   ErrorCodeDeviceNotCompliant,
   ErrorCodeScreenlockRequired,
   ErrorCodeAppVerificationRequired,
-} ErrorCode;
+};
 
 @implementation GIDEMMSupport
 
@@ -71,7 +71,7 @@ typedef enum {
 
 + (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
-  ErrorCode errorCode = ErrorCodeNone;
+  enum ErrorCode errorCode = ErrorCodeNone;
 
   if (errorJSON) {
     id errorValue = errorJSON[kErrorKey];
