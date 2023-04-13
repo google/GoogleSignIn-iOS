@@ -56,7 +56,7 @@ static NSString *const kAppVerificationRequiredErrorPrefix = @"emm_app_verificat
 static NSString *const kErrorPayloadSeparator = @":";
 
 // A list for recognized error codes.
-NS_ENUM(NSInteger, ErrorCode) {
+typedef NS_ENUM(NSInteger, ErrorCode) {
   ErrorCodeNone = 0,
   ErrorCodeDeviceNotCompliant,
   ErrorCodeScreenlockRequired,
@@ -71,7 +71,7 @@ NS_ENUM(NSInteger, ErrorCode) {
 
 + (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
-  enum ErrorCode errorCode = ErrorCodeNone;
+  ErrorCode errorCode = ErrorCodeNone;
 
   if (errorJSON) {
     id errorValue = errorJSON[kErrorKey];
