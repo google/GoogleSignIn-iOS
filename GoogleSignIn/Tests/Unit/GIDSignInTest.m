@@ -503,6 +503,18 @@ static NSString *const kNewScope = @"newScope";
   [_authState verify];
 }
 
+- (void)testNotRestorePreviousSignWhenCompletionIsNil {
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturnValue:[NSNumber numberWithBool:NO]] isAuthorized];
+  _completionCalled = NO;
+  _authError = nil;
+
+  [_signIn restorePreviousSignInWithCompletion:nil];
+  [NSThread sleepForTimeInterval:1.0];
+
+  XCTAssertNil(_signIn.currentUser);
+}
+
 - (void)testOAuthLogin {
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
