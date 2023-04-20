@@ -69,30 +69,6 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   return [super init];
 }
 
-+ (nullable NSError *)handleTokenFetchEMMError:(nullable NSError *)error {
-  NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
-  ErrorCode errorCode = ErrorCodeNone;
-
-  if (errorJSON) {
-    id errorValue = errorJSON[kErrorKey];
-    if ([errorValue isEqual:kScreenlockRequiredError]) {
-      errorCode = ErrorCodeScreenlockRequired;
-    } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
-      errorCode = ErrorCodeAppVerificationRequired;
-    } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
-      errorCode = ErrorCodeDeviceNotCompliant;
-    }
-  }
-
-  if (errorCode) {
-    return [NSError errorWithDomain:kGIDSignInErrorDomain
-                               code:kGIDSignInErrorCodeEMM
-                           userInfo:error.userInfo];
-  } else {
-    return error;
-  }
-}
-
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
@@ -151,7 +127,27 @@ additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
 
 - (nullable NSError *)updatedErrorForAuthSession:(GTMAuthSession *)authSession
                                    originalError:(NSError *)originalError {
-  return [GIDEMMSupport handleTokenFetchEMMError:originalError];
+  NSDictionary *errorJSON = originalError.userInfo[OIDOAuthErrorResponseErrorKey];
+  ErrorCode errorCode = ErrorCodeNone;
+
+  if (errorJSON) {
+    id errorValue = errorJSON[kErrorKey];
+    if ([errorValue isEqual:kScreenlockRequiredError]) {
+      errorCode = ErrorCodeScreenlockRequired;
+    } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
+      errorCode = ErrorCodeAppVerificationRequired;
+    } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
+      errorCode = ErrorCodeDeviceNotCompliant;
+    }
+  }
+
+  if (errorCode) {
+    return [NSError errorWithDomain:kGIDSignInErrorDomain
+                               code:kGIDSignInErrorCodeEMM
+                           userInfo:originalError.userInfo];
+  } else {
+    return originalError;
+  }
 }
 
 @end
