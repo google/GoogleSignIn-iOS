@@ -65,8 +65,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testEMMSupportDelegate {
   XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
 
-  GIDFailingOIDAuthState *authState = [GIDFailingOIDAuthState testInstance];
-  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  GIDFailingOIDAuthState *failingAuthState = [GIDFailingOIDAuthState testInstance];
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:failingAuthState profileData:nil];
   GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
                                                 initWithAuthorizer:user.fetcherAuthorizer];
 
