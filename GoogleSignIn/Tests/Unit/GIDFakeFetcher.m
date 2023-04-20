@@ -17,12 +17,6 @@
 
 typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 
-@interface GIDFakeFetcher ()
-
-@property(nonatomic, strong, nullable) NSError *fetcherError;
-
-@end
-
 @implementation GIDFakeFetcher {
   FetchCompletionHandler _handler;
   NSURL *_requestURL;
@@ -63,7 +57,6 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 - (void)authorizeRequestWithCompletion:(FetchCompletionHandler)completion {
   NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:self.request.URL];
   [self.authorizer authorizeRequest:mutableRequest completionHandler:^(NSError * _Nullable error) {
-    self.fetcherError = error;
     completion(nil, error);
   }];
 }
