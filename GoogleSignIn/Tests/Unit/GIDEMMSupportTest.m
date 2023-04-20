@@ -31,7 +31,6 @@
 #import "GoogleSignIn/Tests/Unit/GIDFailingOIDAuthState.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
-#import "GoogleSignIn/Tests/Unit/GIDTestWorker.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -72,11 +71,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                 initWithAuthorizer:user.fetcherAuthorizer];
 
   NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@""]];
-  GTMSessionFetcher *fakeFetcher = [fakeFetcherService fetcherWithRequest:request];
+  GTMSessionFetcher *fetcher = [fakeFetcherService fetcherWithRequest:request];
 
-  GIDTestWorker *testWorker = [[GIDTestWorker alloc] initWithFetcher:fakeFetcher];
-
-  [testWorker failWorkWithCompletion:^(NSError * _Nullable error) {
+  [fetcher beginFetchWithCompletionHandler:^(NSData * _Nullable data, NSError * _Nullable error) {
     XCTAssertNotNil(error);
     NSDictionary<NSString *, id> *userInfo = @{
       @"OIDOAuthErrorResponseErrorKey": @{@"error": @"emm_passcode_required"},
