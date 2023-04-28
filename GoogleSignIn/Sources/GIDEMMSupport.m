@@ -47,11 +47,6 @@ static NSString *const kNewIOSSystemName = @"iOS";
 // The error key in the server response.
 static NSString *const kErrorKey = @"error";
 
-// Error strings in the server response.
-static NSString *const kGeneralErrorPrefix = @"emm_";
-static NSString *const kScreenlockRequiredError = @"emm_passcode_required";
-static NSString *const kAppVerificationRequiredErrorPrefix = @"emm_app_verification_required";
-
 // Optional separator between error prefix and the payload.
 static NSString *const kErrorPayloadSeparator = @":";
 
