@@ -46,9 +46,8 @@ let package = Package(
       url: "https://github.com/openid/AppAuth-iOS.git",
       "1.6.0" ..< "2.0.0"),
     .package(
-      name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
-      "3.0.0" ..< "4.0.0"),
+      .branch("mdmathias/update-error-completion")),
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",

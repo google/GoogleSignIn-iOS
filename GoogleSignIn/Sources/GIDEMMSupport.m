@@ -125,29 +125,12 @@ additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
           authSession.authState.lastTokenResponse.additionalParameters];
 }
 
-- (nullable NSError *)updatedErrorForAuthSession:(GTMAuthSession *)authSession
-                                   originalError:(NSError *)originalError {
-  NSDictionary *errorJSON = originalError.userInfo[OIDOAuthErrorResponseErrorKey];
-  ErrorCode errorCode = ErrorCodeNone;
-
-  if (errorJSON) {
-    id errorValue = errorJSON[kErrorKey];
-    if ([errorValue isEqual:kScreenlockRequiredError]) {
-      errorCode = ErrorCodeScreenlockRequired;
-    } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
-      errorCode = ErrorCodeAppVerificationRequired;
-    } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
-      errorCode = ErrorCodeDeviceNotCompliant;
-    }
-  }
-
-  if (errorCode) {
-    return [NSError errorWithDomain:kGIDSignInErrorDomain
-                               code:kGIDSignInErrorCodeEMM
-                           userInfo:originalError.userInfo];
-  } else {
-    return originalError;
-  }
+- (void)updatedErrorForAuthSession:(GTMAuthSession *)authSession
+                     originalError:(NSError *)originalError
+                        completion:(void (^)(NSError * _Nullable))completion {
+  [GIDEMMSupport handleTokenFetchEMMError:originalError completion:^(NSError *_Nullable error) {
+    completion(error);
+  }];
 }
 
 @end
