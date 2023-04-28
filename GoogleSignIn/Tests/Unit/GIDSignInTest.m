@@ -517,13 +517,18 @@ static NSString *const kNewScope = @"newScope";
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:YES]] isAuthorized];
 
   OIDTokenResponse *tokenResponse =
-  [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
-                                accessToken:kAccessToken
-                                  expiresIn:nil
-                               refreshToken:kRefreshToken
-                               tokenRequest:nil];
+      [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
+                                    accessToken:kAccessToken
+                                      expiresIn:nil
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:nil];
 
   [[[_authState stub] andReturn:tokenResponse] lastTokenResponse];
+
+  id profile = OCMStrictClassMock([GIDProfileData class]);
+  OCMStub([profile email]).andReturn(kUserEmail);
+  OCMStub([_user profile]).andReturn(profile);
+  OCMStub([_user userID]).andReturn(kUserID);
 
   [[[_user stub] andReturn:_user] alloc];
   (void)[[[_user expect] andReturn:_user] initWithAuthState:OCMOCK_ANY
@@ -533,6 +538,8 @@ static NSString *const kNewScope = @"newScope";
   [_signIn restorePreviousSignInWithCompletion:nil];
 
   XCTAssertNotNil(_signIn.currentUser);
+  XCTAssertEqualObjects(_signIn.currentUser.userID, kUserID);
+  XCTAssertEqualObjects(_signIn.currentUser.profile.email, kUserEmail);
   [_authState verify];
 }
 
