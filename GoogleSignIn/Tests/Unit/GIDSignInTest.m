@@ -38,9 +38,6 @@
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
-#import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
-#import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
-#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
