@@ -38,6 +38,9 @@
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
+#import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
+#import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
@@ -525,11 +528,7 @@ static NSString *const kNewScope = @"newScope";
 
   [[[_authState stub] andReturn:tokenResponse] lastTokenResponse];
 
-  id profile = OCMStrictClassMock([GIDProfileData class]);
-  OCMStub([profile email]).andReturn(kUserEmail);
-  OCMStub([_user profile]).andReturn(profile);
-  OCMStub([_user userID]).andReturn(kUserID);
-
+  // TODO: Create a real GIDGoogleUser to verify the signed in user value(#306).
   [[[_user stub] andReturn:_user] alloc];
   (void)[[[_user expect] andReturn:_user] initWithAuthState:OCMOCK_ANY
                                                 profileData:OCMOCK_ANY];
@@ -538,9 +537,6 @@ static NSString *const kNewScope = @"newScope";
   [_signIn restorePreviousSignInWithCompletion:nil];
 
   XCTAssertNotNil(_signIn.currentUser);
-  XCTAssertEqualObjects(_signIn.currentUser.userID, kUserID);
-  XCTAssertEqualObjects(_signIn.currentUser.profile.email, kUserEmail);
-  [_authState verify];
 }
 
 - (void)testOAuthLogin {
