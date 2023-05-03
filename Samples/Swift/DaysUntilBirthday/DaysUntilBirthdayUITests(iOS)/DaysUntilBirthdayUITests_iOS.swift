@@ -141,16 +141,16 @@ extension DaysUntilBirthdayUITests_iOS {
     guard sampleApp
             .keyboards
             .element
-            .buttons["go"]
+            .buttons["return"]
             .waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find 'go' button")
+      XCTFail("Failed to find 'return' button")
       return false
     }
 
     sampleApp
       .secureTextFields["Enter your password"]
       .typeText(Credential.password.rawValue)
-    sampleApp.keyboards.element.buttons["go"].tap()
+    sampleApp.keyboards.element.buttons["return"].tap()
 
     return true
   }
