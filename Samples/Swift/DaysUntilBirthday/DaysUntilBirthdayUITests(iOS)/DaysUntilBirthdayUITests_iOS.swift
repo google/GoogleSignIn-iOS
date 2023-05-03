@@ -64,7 +64,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
 
 extension DaysUntilBirthdayUITests_iOS {
   /// Performs a sign in.
-  /// - returns: `true` if the sign in was succesfull.
+  /// - returns: `true` if the sign in was successful.
   func signIn() -> Bool {
     let signInButton = sampleApp.buttons["GoogleSignInButton"]
     guard signInButton.exists else {
