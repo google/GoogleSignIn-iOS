@@ -503,6 +503,39 @@ static NSString *const kNewScope = @"newScope";
   [_authState verify];
 }
 
+- (void)testNotRestorePreviousSignInWhenSignedOutAndCompletionIsNil {
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturnValue:[NSNumber numberWithBool:NO]] isAuthorized];
+
+  [_signIn restorePreviousSignInWithCompletion:nil];
+
+  XCTAssertNil(_signIn.currentUser);
+}
+
+- (void)testRestorePreviousSignInWhenCompletionIsNil {
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturnValue:[NSNumber numberWithBool:YES]] isAuthorized];
+
+  OIDTokenResponse *tokenResponse =
+      [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
+                                    accessToken:kAccessToken
+                                      expiresIn:nil
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:nil];
+
+  [[[_authState stub] andReturn:tokenResponse] lastTokenResponse];
+
+  // TODO: Create a real GIDGoogleUser to verify the signed in user value(#306).
+  [[[_user stub] andReturn:_user] alloc];
+  (void)[[[_user expect] andReturn:_user] initWithAuthState:OCMOCK_ANY
+                                                profileData:OCMOCK_ANY];
+  XCTAssertNil(_signIn.currentUser);
+
+  [_signIn restorePreviousSignInWithCompletion:nil];
+
+  XCTAssertNotNil(_signIn.currentUser);
+}
+
 - (void)testOAuthLogin {
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
@@ -1239,7 +1272,7 @@ static NSString *const kNewScope = @"newScope";
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     if (oldAccessToken) {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      // Corresponds to EMM support 
+      // Corresponds to EMM support
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];

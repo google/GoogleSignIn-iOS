@@ -202,6 +202,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                                NSError *_Nullable error))completion {
   [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:
                            ^(GIDSignInResult *signInResult, NSError *error) {
+    if (!completion) {
+      return;
+    }
     if (signInResult) {
       completion(signInResult.user, nil);
     } else {
