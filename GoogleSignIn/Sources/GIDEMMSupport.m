@@ -120,9 +120,9 @@ additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
           authSession.authState.lastTokenResponse.additionalParameters];
 }
 
-- (void)updatedErrorForAuthSession:(GTMAuthSession *)authSession
-                     originalError:(NSError *)originalError
-                        completion:(void (^)(NSError * _Nullable))completion {
+- (void)updateErrorForAuthSession:(GTMAuthSession *)authSession
+                    originalError:(NSError *)originalError
+                       completion:(void (^)(NSError * _Nullable))completion {
   [GIDEMMSupport handleTokenFetchEMMError:originalError completion:^(NSError *_Nullable error) {
     completion(error);
   }];
