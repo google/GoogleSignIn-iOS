@@ -33,6 +33,5 @@ Pod::Spec.new do |s|
     unit_tests.source_files = [
       'GoogleSignInSwift/Tests/Unit/*.swift',
     ]
-    unit_tests.requires_app_host = false
   end
 end
