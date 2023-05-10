@@ -18,6 +18,7 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
@@ -31,6 +32,7 @@
 #import "GoogleSignIn/Tests/Unit/GIDFailingOIDAuthState.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
+#import "GoogleSignIn/Tests/Unit/UIAlertAction+Testing.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -58,11 +60,15 @@ static NSString *const kDeviceOSKey = @"device_os";
 static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 @interface GIDEMMSupportTest : XCTestCase
+  // The view controller that has been presented, if any.
+@property(nonatomic, strong, nullable) UIViewController *presentedViewController;
+
 @end
 
 @implementation GIDEMMSupportTest
 
 - (void)testEMMSupportDelegate {
+  [self setupSwizzlers];
   XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
 
   GIDFailingOIDAuthState *failingAuthState = [GIDFailingOIDAuthState testInstance];
@@ -86,7 +92,27 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
     [emmErrorExpectation fulfill];
   }];
 
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *mainThreadExpectation =
+      [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [mainThreadExpectation fulfill];
+  });
+  [self waitForExpectations:@[mainThreadExpectation] timeout:1];
+
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 2);
+
+  // Pretend to touch the "Cancel" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"Cancel");
+  action.actionHandler(action);
+
   [self waitForExpectations:@[emmErrorExpectation] timeout:1];
+  [self unswizzle];
 }
 
 - (void)testUpdatedEMMParametersWithParameters_NoEMMKey {
@@ -252,6 +278,28 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 - (NSString *)systemVersion {
   return [UIDevice currentDevice].systemVersion;
+}
+
+- (void)setupSwizzlers {
+  UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return fakeKeyWindow; }];
+  [GULSwizzler swizzleClass:[UIViewController class]
+                   selector:@selector(presentViewController:animated:completion:)
+            isClassSelector:NO
+                  withBlock:^(id obj, id arg1) { self->_presentedViewController = arg1; }];
+}
+
+- (void)unswizzle {
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
+  [GULSwizzler unswizzleClass:[UIViewController class]
+                     selector:@selector(presentViewController:animated:completion:)
+              isClassSelector:NO];
+  self.presentedViewController = nil;
 }
 
 @end
