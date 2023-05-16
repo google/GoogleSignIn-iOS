@@ -510,6 +510,7 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testRestorePreviousSignInWhenCompletionIsNil {
   [[[_authorization expect] andReturn:_authState] authState];
+  [[_keychainStore expect] saveAuthSession:OCMOCK_ANY error:[OCMArg anyObjectRef]];
   [[[_authState expect] andReturnValue:[NSNumber numberWithBool:YES]] isAuthorized];
 
   OIDTokenResponse *tokenResponse =
