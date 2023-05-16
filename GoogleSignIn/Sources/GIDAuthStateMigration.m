@@ -73,13 +73,13 @@ static NSString *const kFingerprintService = @"fingerprint";
   // action and go on to mark the migration check as having been performed.
   if (!isFreshInstall) {
     // Attempt migration
-    GTMAuthSession *authorization =
-        [self extractAuthorizationWithTokenURL:tokenURL callbackPath:callbackPath];
+    GTMAuthSession *authSession =
+        [self extractAuthSessionWithTokenURL:tokenURL callbackPath:callbackPath];
 
     // If migration was successful, save our migrated state to the keychain.
-    if (authorization) {
+    if (authSession) {
       NSError *err;
-      [self.keychainStore saveAuthSession:authorization error:&err];
+      [self.keychainStore saveAuthSession:authSession error:&err];
       // If we're unable to save to the keychain, return without marking migration performed.
       if (err) {
         return;
@@ -93,8 +93,8 @@ static NSString *const kFingerprintService = @"fingerprint";
 
 // Returns a |GTMAuthSession| object containing any old auth state or |nil| if none
 // was found or the migration failed.
-- (nullable GTMAuthSession *)
-    extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath {
+- (nullable GTMAuthSession *)extractAuthSessionWithTokenURL:(NSURL *)tokenURL
+                                               callbackPath:(NSString *)callbackPath {
   // Retrieve the last used fingerprint.
   NSString *fingerprint = [GIDAuthStateMigration passwordForService:kFingerprintService];
   if (!fingerprint) {
@@ -149,7 +149,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 
   // Use |GTMOAuth2Compatibility| to generate a |GTMAuthSession| from the
   // persistence string, redirect URI, client ID, and token endpoint URL.
-  GTMAuthSession *authorization =
+  GTMAuthSession *authSession =
       [GTMOAuth2Compatibility authSessionForPersistenceString:persistenceString
                                                      tokenURL:tokenURL
                                                   redirectURI:redirectURI
@@ -157,7 +157,7 @@ static NSString *const kFingerprintService = @"fingerprint";
                                                  clientSecret:nil
                                                         error:nil];
 
-  return authorization;
+  return authSession;
 }
 
 // Returns the password string for a given service string stored by an old version of the SDK or

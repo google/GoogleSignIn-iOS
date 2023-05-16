@@ -237,13 +237,13 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
     _profile = profileData;
     
-    GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+    GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     _authSessionDelegate = [[GIDEMMSupport alloc] init];
-    authorization.delegate = self.authSessionDelegate;
+    authSession.delegate = _authSessionDelegate;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    authorization.authState.stateChangeDelegate = self;
-    _fetcherAuthorizer = authorization;
+    authSession.authState.stateChangeDelegate = self;
+    _fetcherAuthorizer = authSession;
     
     [self updateTokensWithAuthState:authState];
   }

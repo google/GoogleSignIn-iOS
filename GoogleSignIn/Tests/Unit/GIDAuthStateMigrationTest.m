@@ -56,9 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDAuthStateMigration ()
 
-+ (nullable GTMAuthSession *)
-    extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
-
 + (nullable NSString *)passwordForService:(NSString *)service;
 
 /// Returns a `GTMAuthSession` given the provided token URL.
@@ -66,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// This method enables using an instance of `GIDAuthStateMigration` that is created with a fake
 /// `GTMKeychainStore` and thereby minimizes mocking.
 - (nullable GTMAuthSession *)
-    extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
+    extractAuthSessionWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
 
 @end
 
@@ -187,8 +184,8 @@ NS_ASSUME_NONNULL_BEGIN
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   GTMAuthSession *authorization =
-      [migration extractAuthorizationWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                     callbackPath:kCallbackPath];
+      [migration extractAuthSessionWithTokenURL:[NSURL URLWithString:kTokenURL]
+                                   callbackPath:kCallbackPath];
 
   XCTAssertNotNil(authorization);
 }
@@ -199,8 +196,8 @@ NS_ASSUME_NONNULL_BEGIN
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   GTMAuthSession *authorization =
-      [migration extractAuthorizationWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                     callbackPath:kCallbackPath];
+      [migration extractAuthSessionWithTokenURL:[NSURL URLWithString:kTokenURL]
+                                   callbackPath:kCallbackPath];
 
   XCTAssertNotNil(authorization);
 }
