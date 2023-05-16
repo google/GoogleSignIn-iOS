@@ -18,14 +18,21 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 
+#import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
+#import "GoogleSignIn/Tests/Unit/GIDFailingOIDAuthState.h"
+#import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
+#import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
+#import "GoogleSignIn/Tests/Unit/UIAlertAction+Testing.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
@@ -53,9 +60,60 @@ static NSString *const kDeviceOSKey = @"device_os";
 static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 @interface GIDEMMSupportTest : XCTestCase
+  // The view controller that has been presented, if any.
+@property(nonatomic, strong, nullable) UIViewController *presentedViewController;
+
 @end
 
 @implementation GIDEMMSupportTest
+
+- (void)testEMMSupportDelegate {
+  [self setupSwizzlers];
+  XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
+
+  GIDFailingOIDAuthState *failingAuthState = [GIDFailingOIDAuthState testInstance];
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:failingAuthState profileData:nil];
+  GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
+                                                initWithAuthorizer:user.fetcherAuthorizer];
+
+  NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@""]];
+  GTMSessionFetcher *fetcher = [fakeFetcherService fetcherWithRequest:request];
+
+  [fetcher beginFetchWithCompletionHandler:^(NSData * _Nullable data, NSError * _Nullable error) {
+    XCTAssertNotNil(error);
+    NSDictionary<NSString *, id> *userInfo = @{
+      @"OIDOAuthErrorResponseErrorKey": @{@"error": @"emm_passcode_required"},
+      NSUnderlyingErrorKey: [NSError errorWithDomain:@"SomeUnderlyingError" code:0 userInfo:nil]
+    };
+    NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                                 code:kGIDSignInErrorCodeEMM
+                                             userInfo:userInfo];
+    XCTAssertEqualObjects(expectedError, error);
+    [emmErrorExpectation fulfill];
+  }];
+
+  // Wait for the code under test to be executed on the main thread.
+  XCTestExpectation *mainThreadExpectation =
+      [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [mainThreadExpectation fulfill];
+  });
+  [self waitForExpectations:@[mainThreadExpectation] timeout:1];
+
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqual(alert.actions.count, 2);
+
+  // Pretend to touch the "Cancel" button.
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"Cancel");
+  action.actionHandler(action);
+
+  [self waitForExpectations:@[emmErrorExpectation] timeout:1];
+  [self unswizzle];
+}
 
 - (void)testUpdatedEMMParametersWithParameters_NoEMMKey {
   NSDictionary *originalParameters = @{
@@ -220,6 +278,28 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 - (NSString *)systemVersion {
   return [UIDevice currentDevice].systemVersion;
+}
+
+- (void)setupSwizzlers {
+  UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return fakeKeyWindow; }];
+  [GULSwizzler swizzleClass:[UIViewController class]
+                   selector:@selector(presentViewController:animated:completion:)
+            isClassSelector:NO
+                  withBlock:^(id obj, id arg1) { self->_presentedViewController = arg1; }];
+}
+
+- (void)unswizzle {
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
+  [GULSwizzler unswizzleClass:[UIViewController class]
+                     selector:@selector(presentViewController:animated:completion:)
+              isClassSelector:NO];
+  self.presentedViewController = nil;
 }
 
 @end
