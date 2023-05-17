@@ -309,7 +309,7 @@ static NSString *const kNewScope = @"newScope";
   OCMVerifyAll(_tokenResponse);
   OCMVerifyAll(_tokenRequest);
   OCMVerifyAll(_user);
-//  OCMVerifyAll(_oidAuthorizationService);
+  OCMVerifyAll(_oidAuthorizationService);
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OCMVerifyAll(_presentingViewController);
