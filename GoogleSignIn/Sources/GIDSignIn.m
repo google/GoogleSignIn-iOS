@@ -36,9 +36,10 @@
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 @import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthState.h>
@@ -53,8 +54,6 @@
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -166,6 +165,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
+  // Keychain manager for GTMAppAuth
+  GTMKeychainStore *_keychainStore;
 }
 
 #pragma mark - Public methods
@@ -202,6 +203,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                                NSError *_Nullable error))completion {
   [self signInWithOptions:[GIDSignInInternalOptions silentOptionsWithCompletion:
                            ^(GIDSignInResult *signInResult, NSError *error) {
+    if (!completion) {
+      return;
+    }
     if (signInResult) {
       completion(signInResult.user, nil);
     } else {
@@ -446,7 +450,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Private methods
 
-- (id)initPrivate {
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -456,7 +460,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (bundle) {
       _configuration = [GIDSignIn configurationFromBundle:bundle];
     }
-    
+
     // Check to see if the 3P app is being run for the first time after a fresh install.
     BOOL isFreshInstall = [self isFreshInstall];
 
@@ -472,16 +476,25 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+    _keychainStore = keychainStore;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
-    [GIDAuthStateMigration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
-                                          callbackPath:kBrowserCallbackPath
-                                          keychainName:kGTMAppAuthKeychainName
-                                        isFreshInstall:isFreshInstall];
+    GIDAuthStateMigration *migration =
+        [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore];
+    [migration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
+                              callbackPath:kBrowserCallbackPath
+                              keychainName:kGTMAppAuthKeychainName
+                            isFreshInstall:isFreshInstall];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
+}
+
+- (instancetype)initPrivate {
+  GTMKeychainStore *keychainStore =
+      [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
+  return [self initWithKeychainStore:keychainStore];
 }
 
 // Does sanity check for parameters and then authenticates if necessary.
@@ -869,8 +882,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     withCompletionHandler:(void (^)(NSData *, NSError *))handler {
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
   GTMSessionFetcher *fetcher;
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
+  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
   id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
   if (fetcherService) {
     fetcher = [fetcherService fetcherWithRequest:request];
@@ -974,22 +986,18 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)removeAllKeychainEntries {
-  [GTMAppAuthFetcherAuthorization removeAuthorizationFromKeychainForName:kGTMAppAuthKeychainName
-                                               useDataProtectionKeychain:YES];
+  [_keychainStore removeAuthSessionWithError:nil];
 }
 
 - (BOOL)saveAuthState:(OIDAuthState *)authState {
-  GTMAppAuthFetcherAuthorization *authorization =
-      [[GTMAppAuthFetcherAuthorization alloc] initWithAuthState:authState];
-  return [GTMAppAuthFetcherAuthorization saveAuthorization:authorization
-                                         toKeychainForName:kGTMAppAuthKeychainName
-                                 useDataProtectionKeychain:YES];
+  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+  NSError *error;
+  [_keychainStore saveAuthSession:authorization error:&error];
+  return error == nil;
 }
 
 - (OIDAuthState *)loadAuthState {
-  GTMAppAuthFetcherAuthorization *authorization =
-      [GTMAppAuthFetcherAuthorization authorizationFromKeychainForName:kGTMAppAuthKeychainName
-                                             useDataProtectionKeychain:YES];
+  GTMAuthSession *authorization = [_keychainStore retrieveAuthSessionWithError:nil];
   return authorization.authState;
 }
 

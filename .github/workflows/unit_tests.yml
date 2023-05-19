@@ -14,11 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, macos-12]
+        os: [macos-12]
         podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
         flag: [
-          "", 
-          "--use-libraries", 
+          "",
           "--use-static-frameworks"
         ]
         include:
@@ -33,14 +32,14 @@ jobs:
     - name: Lint podspec using local source
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
-           ${{ matrix.includePodspecFlag }}  ${{ matrix.flag }}
+           ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
 
   spm-build-test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, macos-12]
+        os: [macos-12]
         sdk: ['macosx', 'iphonesimulator']
         include:
           - sdk: 'macosx'

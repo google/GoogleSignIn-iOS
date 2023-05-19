@@ -30,6 +30,8 @@
 #import "GoogleSignIn/Tests/Unit/OIDTokenRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 @import GoogleUtilities_MethodSwizzler;
@@ -47,7 +49,6 @@
 #import <AppAuth/OIDTokenResponse.h>
 #import <GoogleUtilities/GULSwizzler.h>
 #import <GoogleUtilities/GULSwizzler+Unswizzle.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization.h>
 #import <OCMock/OCMock.h>
 #endif
 
@@ -216,7 +217,7 @@ static NSString *const kNewScope = @"newScope";
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   id<GTMFetcherAuthorizationProtocol> fetcherAuthorizer = user.fetcherAuthorizer;
 #pragma clang diagnostic pop
-  XCTAssertTrue([fetcherAuthorizer isKindOfClass:[GTMAppAuthFetcherAuthorization class]]);
+  XCTAssertTrue([fetcherAuthorizer isKindOfClass:[GTMAuthSession class]]);
   XCTAssertTrue([fetcherAuthorizer canAuthorize]);
 }
 

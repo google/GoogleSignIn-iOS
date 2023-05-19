@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@import GTMAppAuth;
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 
 typedef void (^FetchCompletionHandler)(NSData *, NSError *);
@@ -29,6 +30,17 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
   return self;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+- (instancetype)initWithRequest:(NSURLRequest *)request
+                     authorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer {
+#pragma clang diagnostic pop
+  self = [self initWithRequest:request];
+  if (self) {
+    self.authorizer = authorizer;
+  }
+  return self;
+}
 
 - (void)beginFetchWithDelegate:(id)delegate didFinishSelector:(SEL)finishedSEL {
   [NSException raise:@"NotImplementedException" format:@"Implement this method if it is used"];
@@ -39,6 +51,14 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
     [NSException raise:NSInvalidArgumentException format:@"Attempted start fetch again"];
   }
   _handler = [handler copy];
+  [self authorizeRequestWithCompletion:handler];
+}
+
+- (void)authorizeRequestWithCompletion:(FetchCompletionHandler)completion {
+  NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:self.request.URL];
+  [self.authorizer authorizeRequest:mutableRequest completionHandler:^(NSError * _Nullable error) {
+    completion(nil, error);
+  }];
 }
 
 - (NSURL *)requestURL {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,5 @@
  * limitations under the License.
  */
 
-#import <TargetConditionals.h>
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
-#ifdef SWIFT_PACKAGE
-@import GTMAppAuth;
-#else
-#import <GTMAppAuth/GTMAppAuth.h>
-#endif
-
-NS_ASSUME_NONNULL_BEGIN
-
-// A specialized GTMAppAuthFetcherAuthorization subclass with EMM support.
-@interface GIDAppAuthFetcherAuthorizationWithEMMSupport : GTMAppAuthFetcherAuthorization
-
-@end
-
-NS_ASSUME_NONNULL_END
-
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+// This is necessary for `SignInSample`'s `Podfile` to use `use_frameworks! :linkage => :static`

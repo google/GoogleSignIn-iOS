@@ -21,6 +21,7 @@
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDSignInStrings.h"
+#import "GoogleSignIn/Tests/Unit/UIAlertAction+Testing.h"
 
 #ifdef SWIFT_PACKAGE
 @import GoogleUtilities_MethodSwizzler;
@@ -33,22 +34,6 @@
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
-
-// Addtional methods added to UIAlertAction for testing.
-@interface UIAlertAction (Testing)
-
-// Returns the handler block for this alert action.
-- (void (^)(UIAlertAction *))actionHandler;
-
-@end
-
-@implementation UIAlertAction (Testing)
-
-- (void (^)(UIAlertAction *))actionHandler {
-  return [self valueForKey:@"handler"];
-}
-
-@end
 
 // Unit test for GIDEMMErrorHandler.
 @interface GIDEMMErrorHandlerTest : XCTestCase
