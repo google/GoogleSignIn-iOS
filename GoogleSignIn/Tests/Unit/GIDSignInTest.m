@@ -1494,7 +1494,7 @@ static NSString *const kNewScope = @"newScope";
                         authorizationResponse:SAVE_TO_ARG_BLOCK(updatedAuthorizationResponse)
                                   profileData:SAVE_TO_ARG_BLOCK(profileData)];
     } else {
-      [[[_user stub] andReturn:_user] alloc];
+      [[[_user expect] andReturn:_user] alloc];
       (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
                                                     profileData:SAVE_TO_ARG_BLOCK(profileData)];
     }
