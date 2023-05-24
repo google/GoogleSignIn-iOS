@@ -590,6 +590,34 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Authentication flow
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
+  NSString *emmSupport;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
+
+  [self createAuthorizationRequestWithOptions:options completion:
+      ^(OIDAuthorizationRequest * _Nullable request, NSError * _Nullable error) {
+    self->_currentAuthorizationFlow = [OIDAuthorizationService
+                                       presentAuthorizationRequest:request
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                       presentingViewController:options.presentingViewController
+#elif TARGET_OS_OSX
+                                       presentingWindow:options.presentingWindow
+#endif // TARGET_OS_OSX
+                                       callback:
+                                         ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                           NSError *_Nullable error) {
+      [self processAuthorizationResponse:authorizationResponse
+                                   error:error
+                              emmSupport:emmSupport];
+    }];
+  }];
+}
+
+- (void)createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
+      (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
   GIDSignInCallbackSchemes *schemes =
       [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
   NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
@@ -627,14 +655,37 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (options.shouldUseAppCheck) {
+    // Should create and present a spinner here?
+    UIActivityIndicatorView *activityView =
+        [[UIActivityIndicatorView alloc]
+            initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    activityView.translatesAutoresizingMaskIntoConstraints = NO;
+    [activityView startAnimating];
+
+    [options.presentingViewController.view addSubview:activityView];
+    NSLayoutConstraint *centerX = [activityView.centerXAnchor constraintEqualToAnchor:options.presentingViewController.view.centerXAnchor];
+    NSLayoutConstraint *centerY = [activityView.centerYAnchor constraintEqualToAnchor:options.presentingViewController.view.centerYAnchor];
+    [NSLayoutConstraint activateConstraints:@[centerX, centerY]];
+
     [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
      ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
       if (token) {
         additionalParameters[@"client_assertion"] = token.token;
-      }
-      if (error) {
+        OIDAuthorizationRequest *request =
+            [[OIDAuthorizationRequest alloc] initWithConfiguration:self->_appAuthConfiguration
+                                                          clientId:options.configuration.clientID
+                                                            scopes:options.scopes
+                                                       redirectURL:redirectURL
+                                                      responseType:OIDResponseTypeCode
+                                              additionalParameters:additionalParameters];
+        completion(request, nil);
+        [activityView stopAnimating];
+        [activityView removeFromSuperview];
         return;
       }
+      completion(nil, error);
+      [activityView stopAnimating];
+      [activityView removeFromSuperview];
     }];
   }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -646,31 +697,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
-
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-         presentingViewController:options.presentingViewController
-#elif TARGET_OS_OSX
-                 presentingWindow:options.presentingWindow
-#endif // TARGET_OS_OSX
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                   NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport];
-  }];
-}
-
-- (void)createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
-      (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
-// Should present a spinner here?
-// 1. Create the `additionalParameters` (checking if App Check is needed)
-// 2. Call `-[GIDAppCheck getLimitedUseTokenWithCompletion:]`
-// 3. In completion from 2, create the `OIDAuthorizationRequest` and dismiss the spinner
-// 4. Call completion (maybe no need for an error parameter?)
-// 5. Completion is received in `-authenticateInteractivelyWithOptions` above, which is where
-//    `OIDAuthorizationService`will be created and presented.
+  completion(request, nil);
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
