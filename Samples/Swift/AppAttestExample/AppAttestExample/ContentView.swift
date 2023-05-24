@@ -15,21 +15,33 @@
  */
 
 import SwiftUI
+import GoogleSignIn
+import GoogleSignInSwift
 
 struct ContentView: View {
   var body: some View {
     VStack {
-      Image(systemName: "globe")
-        .imageScale(.large)
-        .foregroundColor(.accentColor)
-      Text("Hello, world!")
+      GoogleSignInButton {
+        guard let foregroundWindows = UIApplication.shared.connectedScenes
+          .filter({ $0.activationState == .foregroundActive })
+          .first(where: { $0 is UIWindowScene })
+          .flatMap({ ($0 as? UIWindowScene)?.windows }),
+              let keyWindow = foregroundWindows.first(where: { $0.isKeyWindow }),
+                let rootViewController = keyWindow.rootViewController else {
+            print("No root view controller")
+            return
+        }
+        GIDSignIn.sharedInstance.signInWithAppAttest(withPresenting: rootViewController) { result, error in
+          print("Signed in user")
+        }
+      }
     }
     .padding()
   }
 }
-
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView()
-  }
-}
+//
+//struct ContentView_Previews: PreviewProvider {
+//  static var previews: some View {
+//    ContentView()
+//  }
+//}
