@@ -66,6 +66,17 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// The active configuration for this instance of `GIDSignIn`.
 @property(nonatomic, nullable) GIDConfiguration *configuration;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+/// Configures `GIDSignIn` for use.
+///
+/// Call this method on `GIDSignIn` prior to use and as early as possible. This method is used to
+/// prepare `GIDSignIn` to be used and does things generating App Attest key IDs eagerly to minimize
+/// latency later on during the sign in flow.
++ (void)configure;
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 /// Unavailable. Use the `sharedInstance` property to instantiate `GIDSignIn`.
 /// :nodoc:
 + (instancetype)new NS_UNAVAILABLE;
@@ -118,9 +129,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                 completion:
-    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                       NSError *_Nullable error))completion
-    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                   NSError *_Nullable error))completion
+NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint.
 ///
@@ -139,9 +150,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                                 completion:
-    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                       NSError *_Nullable error))completion
-    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                   NSError *_Nullable error))completion
+NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint and additional scopes.
 ///
@@ -161,9 +172,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                 completion:
-    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                       NSError *_Nullable error))completion
-    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                   NSError *_Nullable error))completion
+NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 #elif TARGET_OS_OSX
 
@@ -218,6 +229,28 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                                                       NSError *_Nullable error))completion;
 
 #endif
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+/// Starts an interactive sign-in flow on iOS using Firebase App Check to assert the validity of
+/// your sign in request and app.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
+///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
+///     iOS 13+.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+// TODO: Finalize name and add correct variants of this method (mdmathias, 2023.05.23)
+- (void)signInWithAppAttestWithPresentingViewController:(UIViewController *)presentingViewController
+                                             completion:
+(nullable void (^)(GIDSignInResult *_Nullable signInResult, NSError *_Nullable error))completion
+NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 @end
 
