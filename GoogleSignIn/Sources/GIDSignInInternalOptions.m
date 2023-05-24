@@ -100,6 +100,26 @@ NS_ASSUME_NONNULL_BEGIN
   return options;
 }
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
++ (instancetype)appCheckOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                        presentingViewController:(nullable UIViewController *)presentingViewController
+                                       loginHint:(nullable NSString *)loginHint
+                                   addScopesFlow:(BOOL)addScopesFlow
+                                          scopes:(nullable NSArray *)scopes
+                                      completion:(nullable GIDSignInCompletion)completion {
+  GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
+                                                   presentingViewController:presentingViewController
+                                                                  loginHint:loginHint
+                                                              addScopesFlow:addScopesFlow
+                                                                     scopes:scopes
+                                                                 completion:completion];
+  options->_useAppCheck = YES;
+  return options;
+}
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 - (instancetype)optionsWithExtraParameters:(NSDictionary *)extraParams
                            forContinuation:(BOOL)continuation {
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];

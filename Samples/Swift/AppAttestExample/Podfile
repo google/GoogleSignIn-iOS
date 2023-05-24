@@ -1,0 +1,12 @@
+pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
+pod 'GoogleSignInSwiftSupport', :path => '../../../', :testspecs => ['unit']
+project 'AppAttestExample.xcodeproj'
+
+use_frameworks! :linkage => :static
+
+target 'AppAttestExample' do
+  platform :ios, '14.0'
+
+  pod 'FirebaseCore', '~> 10.0'
+  pod 'FirebaseAppCheck', '~> 10.0'
+end

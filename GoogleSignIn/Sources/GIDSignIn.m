@@ -28,6 +28,7 @@
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import "GoogleSignIn/Sources/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -61,6 +62,10 @@
 #elif TARGET_OS_OSX
 #import <AppAuth/OIDAuthorizationService+Mac.h>
 #endif
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <FirebaseAppCheck/FirebaseAppCheck.h>
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #endif
 
@@ -379,6 +384,24 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #endif // TARGET_OS_OSX
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+#pragma mark - Signing in with App Check
+
+- (void)signInWithAppAttestWithPresentingViewController:(UIViewController *)presentingViewController
+                                             completion:(nullable GIDSignInCompletion)completion {
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions appCheckOptionsWithConfiguration:self.configuration
+                                        presentingViewController:presentingViewController
+                                                       loginHint:nil
+                                                   addScopesFlow:NO
+                                                          scopes:nil
+                                                      completion:completion];
+  [self signInWithOptions:options];
+}
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 - (void)signOut {
   // Clear the current user if there is one.
   if (_currentUser) {
@@ -447,6 +470,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   });
   return sharedInstance;
 }
+
+#pragma mark - Configuring and pre-warming
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
++ (void)configure {
+  [[GIDAppCheck sharedInstance] prepareForAppAttest];
+}
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Private methods
 
@@ -592,6 +625,20 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  if (options.shouldUseAppCheck) {
+    [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
+     ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+      if (token) {
+        additionalParameters[@"client_assertion"] = token.token;
+      }
+      if (error) {
+        return;
+      }
+    }];
+  }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -613,6 +660,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                  error:error
                             emmSupport:emmSupport];
   }];
+}
+
+- (void)createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
+      (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
+// Should present a spinner here?
+// 1. Create the `additionalParameters` (checking if App Check is needed)
+// 2. Call `-[GIDAppCheck getLimitedUseTokenWithCompletion:]`
+// 3. In completion from 2, create the `OIDAuthorizationRequest` and dismiss the spinner
+// 4. Call completion (maybe no need for an error parameter?)
+// 5. Completion is received in `-authenticateInteractivelyWithOptions` above, which is where
+//    `OIDAuthorizationService`will be created and presented.
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
@@ -680,6 +738,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {
+    // TODO: Determine if we also need to use App Check in the flows below (mdmathias, 2023.05.23)
     [self authenticateInteractivelyWithOptions:options];
     return;
   }

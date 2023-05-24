@@ -16,3 +16,6 @@ Credentials.xcconfig
 Pods/
 gen/
 Podfile.lock
+
+# Firebase App Check Example
+**/GoogleService-Info.plist
