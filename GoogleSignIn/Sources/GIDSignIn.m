@@ -138,6 +138,11 @@ static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes
 static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
 
+// Parameters for auth and token exchange endpoints using App Attest.
+static NSString *const kClientAssertionParameter = @"client_assertion";
+static NSString *const kClientAssertionTypeParameter = @"client_assertion_type";
+static NSString *const kClientAssertionTypeParameterValue =@"APP_CHECK_TOKEN";
+
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
@@ -657,7 +662,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (options.shouldUseAppCheck) {
     // TODO: Make sure the ensure that this presents for at least 500ms (mdmathias, 2023.05.24)
-    GIDActivityIndicatorViewController *activityVC = [[GIDActivityIndicatorViewController alloc] init];
+    GIDActivityIndicatorViewController *activityVC =
+        [[GIDActivityIndicatorViewController alloc] init];
     [options.presentingViewController presentViewController:activityVC
                                                    animated:true
                                                  completion:nil];
@@ -665,7 +671,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
         ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
       if (token) {
-        additionalParameters[@"client_assertion"] = token.token;
+        additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
+        additionalParameters[kClientAssertionParameter] =
+            [[token.token dataUsingEncoding:NSUTF8StringEncoding]
+                base64EncodedStringWithOptions:kNilOptions];
         OIDAuthorizationRequest *request =
             [[OIDAuthorizationRequest alloc] initWithConfiguration:self->_appAuthConfiguration
                                                           clientId:options.configuration.clientID

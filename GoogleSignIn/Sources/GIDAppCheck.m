@@ -19,6 +19,12 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+@interface GIDAppCheck ()
+
+@property(nonatomic, strong) FIRAppCheck *appCheck;
+
+@end
+
 @implementation GIDAppCheck
 
 + (instancetype)sharedInstance {
@@ -33,6 +39,7 @@
 - (instancetype)initPrivate {
   if (self = [super init]) {
     _prepared = NO;
+    _appCheck = [FIRAppCheck appCheck];
   }
   return self;
 }
@@ -44,9 +51,8 @@
     return;
   }
 
-  FIRAppCheck *appCheck = [FIRAppCheck appCheck];
-  [appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                            NSError * _Nullable error) {
+  [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                 NSError * _Nullable error) {
     if (token) {
       self->_prepared = YES;
       NSLog(@"Prepared for App Attest with token: %@", token);
@@ -60,8 +66,7 @@
 
 - (void)getLimitedUseTokenWithCompletion:
     (void (^)(FIRAppCheckToken * _Nullable, NSError * _Nullable))completion {
-  FIRAppCheck *appCheck = [FIRAppCheck appCheck];
-  [appCheck limitedUseTokenWithCompletion:completion];
+  [self.appCheck limitedUseTokenWithCompletion:completion];
 }
 
 @end
