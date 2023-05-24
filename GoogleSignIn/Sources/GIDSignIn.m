@@ -36,6 +36,7 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
+#import "GoogleSignIn/Sources/GIDActivityIndicatorViewController.h"
 
 @import GTMAppAuth;
 
@@ -655,20 +656,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (options.shouldUseAppCheck) {
-    // Should create and present a spinner here?
-    UIActivityIndicatorView *activityView =
-        [[UIActivityIndicatorView alloc]
-            initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-    activityView.translatesAutoresizingMaskIntoConstraints = NO;
-    [activityView startAnimating];
-
-    [options.presentingViewController.view addSubview:activityView];
-    NSLayoutConstraint *centerX = [activityView.centerXAnchor constraintEqualToAnchor:options.presentingViewController.view.centerXAnchor];
-    NSLayoutConstraint *centerY = [activityView.centerYAnchor constraintEqualToAnchor:options.presentingViewController.view.centerYAnchor];
-    [NSLayoutConstraint activateConstraints:@[centerX, centerY]];
+    // TODO: Make sure the ensure that this presents for at least 500ms (mdmathias, 2023.05.24)
+    GIDActivityIndicatorViewController *activityVC = [[GIDActivityIndicatorViewController alloc] init];
+    [options.presentingViewController presentViewController:activityVC
+                                                   animated:true
+                                                 completion:nil];
 
     [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
-     ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+        ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
       if (token) {
         additionalParameters[@"client_assertion"] = token.token;
         OIDAuthorizationRequest *request =
@@ -678,18 +673,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                        redirectURL:redirectURL
                                                       responseType:OIDResponseTypeCode
                                               additionalParameters:additionalParameters];
+        [activityVC.activityIndicator stopAnimating];
+        [activityVC dismissViewControllerAnimated:YES completion:nil];
         completion(request, nil);
-        [activityView stopAnimating];
-        [activityView removeFromSuperview];
         return;
       }
+      [activityVC.activityIndicator stopAnimating];
+      [activityVC dismissViewControllerAnimated:YES completion:nil];
       completion(nil, error);
-      [activityView stopAnimating];
-      [activityView removeFromSuperview];
     }];
   }
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
+#else
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
@@ -698,6 +692,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
   completion(request, nil);
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse

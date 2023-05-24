@@ -60,7 +60,8 @@
 
 - (void)getLimitedUseTokenWithCompletion:
     (void (^)(FIRAppCheckToken * _Nullable, NSError * _Nullable))completion {
-
+  FIRAppCheck *appCheck = [FIRAppCheck appCheck];
+  [appCheck limitedUseTokenWithCompletion:completion];
 }
 
 @end
