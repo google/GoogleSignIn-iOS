@@ -11,7 +11,6 @@
 		73A464042A1C3B3400BA8528 /* AppAttestExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */; };
 		73A464062A1C3B3400BA8528 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464052A1C3B3400BA8528 /* ContentView.swift */; };
 		73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73A4640A2A1C3B3500BA8528 /* Preview Assets.xcassets */; };
-		73E0957D2A1EA12600E2E759 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 73E0957B2A1E9F4000E2E759 /* Info.plist */; };
 		73E0957E2A1EA14B00E2E759 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 737CA2822A1D90A800C09BDB /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
@@ -155,7 +154,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				73E0957E2A1EA14B00E2E759 /* GoogleService-Info.plist in Resources */,
-				73E0957D2A1EA12600E2E759 /* Info.plist in Resources */,
 				73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -343,8 +341,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AppAttestExample/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AppAttestExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -373,8 +371,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AppAttestExample/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AppAttestExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
