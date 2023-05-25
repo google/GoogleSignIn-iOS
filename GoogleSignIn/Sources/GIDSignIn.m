@@ -625,11 +625,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
       (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
-  GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
   NSString *emmSupport;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
@@ -676,6 +671,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
             additionalParameters[kClientAssertionParameter] =
             [[token.token dataUsingEncoding:NSUTF8StringEncoding]
                 base64EncodedStringWithOptions:kNilOptions];
+            NSURL *redirectURL = [self redirectURLWithOptions:options];
             OIDAuthorizationRequest *request =
               [[OIDAuthorizationRequest alloc] initWithConfiguration:self->_appAuthConfiguration
                                                             clientId:options.configuration.clientID
@@ -694,17 +690,37 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         }];
       });
     }];
+  } else {
+    OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
+                                                        additionalParameters:additionalParameters];
+    completion(request, nil);
   }
 #else
+  OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
+                                                      additionalParameters:additionalParameters];
+  completion(request, nil);
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+}
+
+- (NSURL *)redirectURLWithOptions:(GIDSignInInternalOptions *)options {
+  GIDSignInCallbackSchemes *schemes =
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
+                                             [schemes clientIdentifierScheme],
+                                             kBrowserCallbackPath]];
+  return redirectURL;
+}
+
+- (OIDAuthorizationRequest *)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+                                        additionalParameters:(NSDictionary *)additionalParameters {
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
                                                       scopes:options.scopes
-                                                 redirectURL:redirectURL
+                                                 redirectURL:[self redirectURLWithOptions:options]
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
-  completion(request, nil);
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  return request;
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
