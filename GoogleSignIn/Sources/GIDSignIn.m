@@ -673,12 +673,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                 base64EncodedStringWithOptions:kNilOptions];
             NSURL *redirectURL = [self redirectURLWithOptions:options];
             OIDAuthorizationRequest *request =
-              [[OIDAuthorizationRequest alloc] initWithConfiguration:self->_appAuthConfiguration
-                                                            clientId:options.configuration.clientID
-                                                              scopes:options.scopes
-                                                         redirectURL:redirectURL
-                                                        responseType:OIDResponseTypeCode
-                                                additionalParameters:additionalParameters];
+                [self authorizationRequestWithOptions:options
+                                 additionalParameters:additionalParameters];
             [activityVC.activityIndicator stopAnimating];
             [activityVC dismissViewControllerAnimated:YES completion:nil];
             completion(request, nil);
