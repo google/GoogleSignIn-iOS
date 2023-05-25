@@ -282,10 +282,10 @@ static NSString *const kNewScope = @"newScope";
   _keychainHandler = [[GIDFakeKeychainHandler alloc] init];
   
   _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
+
+  _profileDataFetcher = [[GIDFakeProfileDataFetcher alloc] init];
   
   _authorizationFlowProcessor = [[GIDFakeAuthorizationFlowProcessor alloc] init];
-  
-  _profileDataFetcher = [[GIDFakeProfileDataFetcher alloc] init];
   
   _signIn = [[GIDSignIn alloc] initWithKeychainHandler:_keychainHandler
                                            httpFetcher:_httpFetcher
