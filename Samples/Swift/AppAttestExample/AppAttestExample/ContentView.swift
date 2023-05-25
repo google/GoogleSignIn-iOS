@@ -19,9 +19,12 @@ import GoogleSignIn
 import GoogleSignInSwift
 
 struct ContentView: View {
+  @State private var userInfo = ""
+
   var body: some View {
     VStack {
       GoogleSignInButton {
+        self.userInfo = ""
         guard let foregroundWindows = UIApplication.shared.connectedScenes
           .filter({ $0.activationState == .foregroundActive })
           .first(where: { $0 is UIWindowScene })
@@ -31,17 +34,26 @@ struct ContentView: View {
             print("No root view controller")
             return
         }
-        GIDSignIn.sharedInstance.signInWithAppAttest(withPresenting: rootViewController) { result, error in
-          print("Signed in user")
+        GIDSignIn.sharedInstance.signInWithAppAttest(
+          withPresenting: rootViewController
+        ) { result, error in
+          print("Successfully signed in user")
+          self.userInfo = result?.user.profile?.json ?? ""
         }
       }
+      Text(userInfo)
     }
     .padding()
   }
 }
-//
-//struct ContentView_Previews: PreviewProvider {
-//  static var previews: some View {
-//    ContentView()
-//  }
-//}
+
+private extension GIDProfileData {
+  var json: String {
+    """
+    {
+      username: \(self.name)
+      email: \(self.email)
+    }
+    """
+  }
+}

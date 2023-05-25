@@ -141,7 +141,8 @@ static NSString *const kHostedDomainParameter = @"hd";
 // Parameters for auth and token exchange endpoints using App Attest.
 static NSString *const kClientAssertionParameter = @"client_assertion";
 static NSString *const kClientAssertionTypeParameter = @"client_assertion_type";
-static NSString *const kClientAssertionTypeParameterValue =@"APP_CHECK_TOKEN";
+static NSString *const kClientAssertionTypeParameterValue =
+    @"urn:ietf:params:oauth:client-assertion-type:appcheck";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
@@ -661,35 +662,37 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (options.shouldUseAppCheck) {
-    // TODO: Make sure the ensure that this presents for at least 500ms (mdmathias, 2023.05.24)
     GIDActivityIndicatorViewController *activityVC =
         [[GIDActivityIndicatorViewController alloc] init];
     [options.presentingViewController presentViewController:activityVC
                                                    animated:true
-                                                 completion:nil];
-
-    [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
-        ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
-      if (token) {
-        additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
-        additionalParameters[kClientAssertionParameter] =
+                                                 completion:^{
+      dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
+      dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
+            ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+          if (token) {
+            additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
+            additionalParameters[kClientAssertionParameter] =
             [[token.token dataUsingEncoding:NSUTF8StringEncoding]
                 base64EncodedStringWithOptions:kNilOptions];
-        OIDAuthorizationRequest *request =
-            [[OIDAuthorizationRequest alloc] initWithConfiguration:self->_appAuthConfiguration
-                                                          clientId:options.configuration.clientID
-                                                            scopes:options.scopes
-                                                       redirectURL:redirectURL
-                                                      responseType:OIDResponseTypeCode
-                                              additionalParameters:additionalParameters];
-        [activityVC.activityIndicator stopAnimating];
-        [activityVC dismissViewControllerAnimated:YES completion:nil];
-        completion(request, nil);
-        return;
-      }
-      [activityVC.activityIndicator stopAnimating];
-      [activityVC dismissViewControllerAnimated:YES completion:nil];
-      completion(nil, error);
+            OIDAuthorizationRequest *request =
+              [[OIDAuthorizationRequest alloc] initWithConfiguration:self->_appAuthConfiguration
+                                                            clientId:options.configuration.clientID
+                                                              scopes:options.scopes
+                                                         redirectURL:redirectURL
+                                                        responseType:OIDResponseTypeCode
+                                                additionalParameters:additionalParameters];
+            [activityVC.activityIndicator stopAnimating];
+            [activityVC dismissViewControllerAnimated:YES completion:nil];
+            completion(request, nil);
+            return;
+          }
+          [activityVC.activityIndicator stopAnimating];
+          [activityVC dismissViewControllerAnimated:YES completion:nil];
+          completion(nil, error);
+        }];
+      });
     }];
   }
 #else
