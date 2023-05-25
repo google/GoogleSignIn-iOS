@@ -19,9 +19,12 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWorkerQueue";
+
 @interface GIDAppCheck ()
 
 @property(nonatomic, strong) FIRAppCheck *appCheck;
+@property(nonatomic, strong) dispatch_queue_t workerQueue;
 
 @end
 
@@ -40,6 +43,7 @@
   if (self = [super init]) {
     _prepared = NO;
     _appCheck = [FIRAppCheck appCheck];
+    _workerQueue = dispatch_queue_create("com.google.googlesignin.appCheckWorkerQueue", nil);
   }
   return self;
 }
@@ -51,22 +55,30 @@
     return;
   }
 
-  [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                 NSError * _Nullable error) {
-    if (token) {
-      self->_prepared = YES;
-      NSLog(@"Prepared for App Attest with token: %@", token);
-      return;
-    }
-    if (error) {
-      NSLog(@"Failed to prepare for App Attest: %@", error);
-    }
-  }];
+  dispatch_async(self.workerQueue, ^{
+    [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                   NSError * _Nullable error) {
+      if (token) {
+        self->_prepared = YES;
+        NSLog(@"Prepared for App Attest with token: %@", token);
+        return;
+      }
+      if (error) {
+        NSLog(@"Failed to prepare for App Attest: %@", error);
+      }
+    }];
+  });
 }
 
 - (void)getLimitedUseTokenWithCompletion:
     (void (^)(FIRAppCheckToken * _Nullable, NSError * _Nullable))completion {
-  [self.appCheck limitedUseTokenWithCompletion:completion];
+  dispatch_async(self.workerQueue, ^{
+    [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                   NSError * _Nullable error) {
+      self->_prepared = YES;
+      completion(token, error);
+    }];
+  });
 }
 
 @end

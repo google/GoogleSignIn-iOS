@@ -37,8 +37,12 @@ struct ContentView: View {
         GIDSignIn.sharedInstance.signInWithAppAttest(
           withPresenting: rootViewController
         ) { result, error in
+          guard let result else {
+            print("Error signing in: \(String(describing: error))")
+            return
+          }
           print("Successfully signed in user")
-          self.userInfo = result?.user.profile?.json ?? ""
+          self.userInfo = result.user.profile?.json ?? ""
         }
       }
       Text(userInfo)
