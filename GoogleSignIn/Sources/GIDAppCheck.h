@@ -23,12 +23,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDAppCheck : NSObject
 
+///:nodoc:
 - (instancetype)init NS_UNAVAILABLE;
+
+/// Prewarms the library for App Attest by asking Firebase App Check to generate the App Attest key
+/// id and perform the initial attestation process (if needed).
 - (void)prepareForAppAttest;
+
+/// Fetches the limited use Firebase token.
+/// @param completion: A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
+/// otherwise.
 - (void)getLimitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
                                                             NSError * _Nullable error))completion;
 
+/// The shared instance of this App Check wrapper class.
 @property(class, nonatomic, strong, readonly) GIDAppCheck *sharedInstance;
+
+/// Whether or not the App Attest key ID created and the attestation object has been fetched.
 @property(nonatomic, readonly, getter=isPrepared) BOOL prepared;
 
 @end

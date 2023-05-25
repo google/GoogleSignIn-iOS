@@ -19,8 +19,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 NS_CLASS_AVAILABLE_IOS(14.0)
+/// A `UIViewController` presented onscreen to indicate to the user that GSI is performing blocking
+/// work.
 @interface GIDActivityIndicatorViewController : UIViewController
 
+/// The indicator view spinning on screen.
 @property(nonatomic, strong, readonly) UIActivityIndicatorView *activityIndicator;
 
 @end

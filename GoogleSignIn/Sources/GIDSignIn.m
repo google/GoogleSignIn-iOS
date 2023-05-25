@@ -662,6 +662,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     [options.presentingViewController presentViewController:activityVC
                                                    animated:true
                                                  completion:^{
+      // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
       dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
       dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
@@ -671,7 +672,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
             additionalParameters[kClientAssertionParameter] =
             [[token.token dataUsingEncoding:NSUTF8StringEncoding]
                 base64EncodedStringWithOptions:kNilOptions];
-            NSURL *redirectURL = [self redirectURLWithOptions:options];
             OIDAuthorizationRequest *request =
                 [self authorizationRequestWithOptions:options
                                  additionalParameters:additionalParameters];

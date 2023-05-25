@@ -70,9 +70,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 
 /// Configures `GIDSignIn` for use.
 ///
-/// Call this method on `GIDSignIn` prior to use and as early as possible. This method is used to
-/// prepare `GIDSignIn` to be used and does things generating App Attest key IDs eagerly to minimize
-/// latency later on during the sign in flow.
+/// Call this method on `GIDSignIn` prior to use and as early as possible. Currently, this method
+/// generates App Attest key IDs and the attestation object eagerly to minimize latency later on
+/// during the sign in or add scopes flows.
 + (void)configure;
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
