@@ -34,9 +34,7 @@ struct ContentView: View {
             print("No root view controller")
             return
         }
-        GIDSignIn.sharedInstance.signInWithAppAttest(
-          withPresenting: rootViewController
-        ) { result, error in
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, error in
           guard let result else {
             print("Error signing in: \(String(describing: error))")
             return
@@ -54,9 +52,12 @@ struct ContentView: View {
 private extension GIDProfileData {
   var json: String {
     """
-    {
-      username: \(self.name)
-      email: \(self.email)
+    success: {
+      Given Name: \(self.givenName ?? "None")
+      Family Name: \(self.familyName ?? "None")
+      Name: \(self.name)
+      Email: \(self.email)
+      Profile Photo: \(self.imageURL(withDimension: 1)?.absoluteString ?? "None");
     }
     """
   }

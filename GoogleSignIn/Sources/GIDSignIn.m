@@ -171,6 +171,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  // Whether or not the sign in or add scopes flows should use the Firebase App Check token
+  BOOL _useAppCheckToken;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
@@ -391,24 +395,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #endif // TARGET_OS_OSX
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
-#pragma mark - Signing in with App Check
-
-- (void)signInWithAppAttestWithPresentingViewController:(UIViewController *)presentingViewController
-                                             completion:(nullable GIDSignInCompletion)completion {
-  GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions appCheckOptionsWithConfiguration:self.configuration
-                                        presentingViewController:presentingViewController
-                                                       loginHint:nil
-                                                   addScopesFlow:NO
-                                                          scopes:nil
-                                                      completion:completion];
-  [self signInWithOptions:options];
-}
-
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 - (void)signOut {
   // Clear the current user if there is one.
   if (_currentUser) {
@@ -484,6 +470,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 + (void)configure {
   [[GIDAppCheck sharedInstance] prepareForAppAttest];
+  [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
 }
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -526,6 +513,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
+    _useAppCheckToken = NO;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
@@ -604,7 +592,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   emmSupport = nil;
 #endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
-  [self createAuthorizationRequestWithOptions:options completion:
+  [self authorizationRequestWithOptions:options completion:
       ^(OIDAuthorizationRequest * _Nullable request, NSError * _Nullable error) {
     self->_currentAuthorizationFlow = [OIDAuthorizationService
                                        presentAuthorizationRequest:request
@@ -623,52 +611,68 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }];
 }
 
-- (void)createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
-      (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
+- (void)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
+    (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
+  BOOL shouldCallCompletion = YES;
   NSMutableDictionary<NSString *, NSString *> *additionalParameters =
-      [self additionalParametersFromOptions:options];
+  [self additionalParametersFromOptions:options];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  if (options.shouldUseAppCheck) {
-    GIDActivityIndicatorViewController *activityVC =
-        [[GIDActivityIndicatorViewController alloc] init];
-    [options.presentingViewController presentViewController:activityVC
-                                                   animated:true
-                                                 completion:^{
-      // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
-      dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
-      dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
-            ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
-          if (token) {
-            additionalParameters[kClientAssertionTypeParameter] =
-                kClientAssertionTypeParameterValue;
-            additionalParameters[kClientAssertionParameter] =
-            [[token.token dataUsingEncoding:NSUTF8StringEncoding]
-                base64EncodedStringWithOptions:kNilOptions];
-            OIDAuthorizationRequest *request =
-                [self authorizationRequestWithOptions:options
-                                 additionalParameters:additionalParameters];
+  if (@available(iOS 14.0, *)) {
+    if (_useAppCheckToken) {
+      shouldCallCompletion = NO;
+      GIDActivityIndicatorViewController *activityVC =
+      [[GIDActivityIndicatorViewController alloc] init];
+      [options.presentingViewController presentViewController:activityVC
+                                                     animated:true
+                                                   completion:^{
+        // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
+        dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
+        dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+          [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
+              ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+            if (token) {
+              additionalParameters[kClientAssertionTypeParameter] =
+                  kClientAssertionTypeParameterValue;
+              additionalParameters[kClientAssertionParameter] =
+                  [[token.token dataUsingEncoding:NSUTF8StringEncoding]
+                      base64EncodedStringWithOptions:kNilOptions];
+              OIDAuthorizationRequest *request =
+              [self authorizationRequestWithOptions:options
+                               additionalParameters:additionalParameters];
+              [activityVC.activityIndicator stopAnimating];
+              [activityVC dismissViewControllerAnimated:YES completion:nil];
+              completion(request, nil);
+              return;
+            }
             [activityVC.activityIndicator stopAnimating];
             [activityVC dismissViewControllerAnimated:YES completion:nil];
-            completion(request, nil);
+            completion(nil, error);
             return;
-          }
-          [activityVC.activityIndicator stopAnimating];
-          [activityVC dismissViewControllerAnimated:YES completion:nil];
-          completion(nil, error);
-        }];
-      });
-    }];
-  } else {
+          }];
+        });
+      }];
+    }
+  }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  if (shouldCallCompletion) {
     OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
                                                         additionalParameters:additionalParameters];
     completion(request, nil);
   }
-#else
-  OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
-                                                      additionalParameters:additionalParameters];
-  completion(request, nil);
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+}
+
+
+- (OIDAuthorizationRequest *)
+    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+               additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
+  OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:options.scopes
+                                                 redirectURL:[self redirectURLWithOptions:options]
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
+  return request;
 }
 
 - (NSMutableDictionary<NSString *, NSString *> *)
@@ -714,19 +718,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
   return redirectURL;
-}
-
-- (OIDAuthorizationRequest *)
-    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-               additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:[self redirectURLWithOptions:options]
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
-  return request;
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
@@ -791,7 +782,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 // Perform authentication with the provided options.
 - (void)authenticateWithOptions:(GIDSignInInternalOptions *)options {
-
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {
     // TODO: Determine if we also need to use App Check in the flows below (mdmathias, 2023.05.23)

@@ -230,28 +230,6 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
 
 #endif
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-/// Starts an interactive sign-in flow on iOS using Firebase App Check to assert the validity of
-/// your sign in request and app.
-///
-/// The completion will be called at the end of this process.  Any saved sign-in state will be
-/// replaced by the result of this flow.  Note that this method should not be called when the app is
-/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
-/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
-///
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
-///     iOS 13+.
-/// @param completion The optional block that is called on completion.  This block will
-///     be called asynchronously on the main queue.
-// TODO: Finalize name and add correct variants of this method (mdmathias, 2023.05.23)
-- (void)signInWithAppAttestWithPresentingViewController:(UIViewController *)presentingViewController
-                                             completion:
-(nullable void (^)(GIDSignInResult *_Nullable signInResult, NSError *_Nullable error))completion
-NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
-
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 @end
 
 NS_ASSUME_NONNULL_END

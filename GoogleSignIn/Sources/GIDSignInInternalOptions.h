@@ -64,13 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// The login hint to be used during the flow.
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
-/// Whether or not to use App Check during the sign-in or add scopes flow.
-@property(nonatomic, readonly, getter=shouldUseAppCheck) BOOL useAppCheck;
-
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 /// Creates the default options.
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
@@ -103,19 +96,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion;
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
-// TODO: Ensure that this is the correct method and/or consider variants (mdmathias, 2023.05.23)
-/// Creates the options to sign in with App Check.
-+ (instancetype)appCheckOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                        presentingViewController:(nullable UIViewController *)presentingViewController
-                                       loginHint:(nullable NSString *)loginHint
-                                   addScopesFlow:(BOOL)addScopesFlow
-                                          scopes:(nullable NSArray *)scopes
-                                      completion:(nullable GIDSignInCompletion)completion;
-
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.
