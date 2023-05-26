@@ -637,8 +637,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                   [[token.token dataUsingEncoding:NSUTF8StringEncoding]
                       base64EncodedStringWithOptions:kNilOptions];
               OIDAuthorizationRequest *request =
-              [self authorizationRequestWithOptions:options
-                               additionalParameters:additionalParameters];
+                  [self authorizationRequestWithOptions:options
+                                   additionalParameters:additionalParameters];
               [activityVC.activityIndicator stopAnimating];
               [activityVC dismissViewControllerAnimated:YES completion:nil];
               completion(request, nil);
