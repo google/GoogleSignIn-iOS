@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name = 'GoogleSignInSwiftSupport'
-  s.version = '7.0.0'
-  s.swift_version = '4.0'
+  s.version = '7.0.1'
+  s.swift_version = '5.0'
   s.summary = 'Adds Swift-focused support for Google Sign-In.'
   s.description = 'Additional Swift support for the Google Sign-In SDK.'
   s.homepage = 'https://developers.google.com/identity/sign-in/ios/'
