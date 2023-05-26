@@ -625,36 +625,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)createAuthorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
       (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
-  NSString *emmSupport;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
-  emmSupport = nil;
-#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
-
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
-  if (options.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
-  }
-  if (options.loginHint) {
-    additionalParameters[kLoginHintParameter] = options.loginHint;
-  }
-  if (options.configuration.hostedDomain) {
-    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
-  }
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:options.extraParams];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+      [self additionalParametersFromOptions:options];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (options.shouldUseAppCheck) {
     GIDActivityIndicatorViewController *activityVC =
@@ -668,7 +640,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
             ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
           if (token) {
-            additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
+            additionalParameters[kClientAssertionTypeParameter] =
+                kClientAssertionTypeParameterValue;
             additionalParameters[kClientAssertionParameter] =
             [[token.token dataUsingEncoding:NSUTF8StringEncoding]
                 base64EncodedStringWithOptions:kNilOptions];
@@ -698,6 +671,42 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
+- (NSMutableDictionary<NSString *, NSString *> *)
+    additionalParametersFromOptions:(GIDSignInInternalOptions *)options {
+  NSString *emmSupport;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
+
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+      [[NSMutableDictionary alloc] init];
+  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
+  if (options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
+  }
+  if (options.loginHint) {
+    additionalParameters[kLoginHintParameter] = options.loginHint;
+  }
+  if (options.configuration.hostedDomain) {
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
+  }
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport parametersWithParameters:options.extraParams
+                                   emmSupport:emmSupport
+                       isPasscodeInfoRequired:NO]];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:options.extraParams];
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  return additionalParameters;
+}
+
 - (NSURL *)redirectURLWithOptions:(GIDSignInInternalOptions *)options {
   GIDSignInCallbackSchemes *schemes =
       [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
@@ -707,8 +716,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   return redirectURL;
 }
 
-- (OIDAuthorizationRequest *)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-                                        additionalParameters:(NSDictionary *)additionalParameters {
+- (OIDAuthorizationRequest *)
+    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+               additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
