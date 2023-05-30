@@ -51,8 +51,8 @@
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "FIRAAppCheckDebugToken"
-            value = "AD175BBB-764B-45AD-B629-9D11A2A29BC0"
+            key = "FIRAppCheckDebugToken"
+            value = "2983B5DA-5310-4325-B033-BD894E663A25"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

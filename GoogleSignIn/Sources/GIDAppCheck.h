@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prepareForAppAttest;
 
 /// Fetches the limited use Firebase token.
-/// @param completion: A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
+/// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
 /// otherwise.
 - (void)getLimitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
                                                             NSError * _Nullable error))completion;
