@@ -75,6 +75,12 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// during the sign in or add scopes flows.
 + (void)configure;
 
+/// Tells `GIDSignIn` to not request and use the Firebase App Check token
+///
+/// Call this method, for example, when you do not wish to send the App Check token with the sign in
+/// or add scopes requests.
+- (void)turnOffAppAttest;
+
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 /// Unavailable. Use the `sharedInstance` property to instantiate `GIDSignIn`.
