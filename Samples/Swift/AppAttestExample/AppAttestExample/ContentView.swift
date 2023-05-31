@@ -20,9 +20,11 @@ import GoogleSignInSwift
 
 struct ContentView: View {
   @State private var userInfo = ""
-  @State private var birthday = ""
   @State private var shouldPresentAlert = false
+  @State private var shouldPresentBirthdayAlert = false
   @State private var errorInfo: ErrorInfo?
+  @State private var birthday: Birthday?
+  private let birthdayLoader = BirthdayLoader()
 
   var body: some View {
     NavigationStack {
@@ -71,7 +73,7 @@ struct ContentView: View {
                   return
                 }
                 GIDSignIn.sharedInstance.currentUser?.addScopes(
-                  ["https://www.googleapis.com/auth/user.birthday.read"],
+                  [BirthdayLoader.birthdayReadScope],
                   presenting: rvc
                 ) { result, error in
                   shouldPresentAlert = true
@@ -101,6 +103,39 @@ struct ContentView: View {
                 }
               }
               .disabled(userInfo.isEmpty)
+            }
+            ToolbarItem(placement: .bottomBar) {
+              Button(NSLocalizedString("Fetch Birthday", comment: "birthday")) {
+                birthdayLoader.requestBirthday { birthdayResult in
+                  switch birthdayResult {
+                  case .success(let birthday):
+                    print(birthday)
+                    self.birthday = birthday
+                    errorInfo = ErrorInfo.birthday(with: birthday)
+                  case .failure(let error):
+                    print("Error fetching birthday: \(error)")
+                    errorInfo = ErrorInfo(
+                      errorDescription: (error as NSError).domain,
+                      failureReason: String((error as NSError).code)
+                    )
+                  }
+                  shouldPresentBirthdayAlert = true
+                }
+              }
+              .disabled(
+                !(GIDSignIn
+                  .sharedInstance
+                  .currentUser?
+                  .grantedScopes?
+                  .contains(BirthdayLoader.birthdayReadScope) ?? false)
+              )
+              .alert(
+                isPresented: $shouldPresentBirthdayAlert,
+                error: errorInfo) { info in
+                  Text(info.errorDescription ?? "Unknown birthday fetch error")
+                } message: { info in
+                  Text(info.birthday?.description ?? "No birthday")
+                }
             }
           }
           .alert(
@@ -158,18 +193,26 @@ private extension GIDProfileData {
 fileprivate struct ErrorInfo: LocalizedError {
   static var unkownError: ErrorInfo {
     return ErrorInfo(
-      errorDescription: NSLocalizedString("Unkown Error!", comment: "unknown error"),
+      errorDescription: NSLocalizedString("Unknown Error!", comment: "unknown error"),
       failureReason: NSLocalizedString("NA", comment: "NA error string")
     )
   }
   static var success: ErrorInfo {
     return ErrorInfo(
-      errorDescription: NSLocalizedString("Successfully!", comment: "no error"),
+      errorDescription: NSLocalizedString("Success!", comment: "no error"),
       failureReason: NSLocalizedString("Added birthday read scope.", comment: "scope added")
+    )
+  }
+  static func birthday(with bday: Birthday) -> ErrorInfo {
+    return ErrorInfo(
+      errorDescription: NSLocalizedString("Success!", comment: "no error"),
+      failureReason: NSLocalizedString("Added birthday read scope.", comment: "scope added"),
+      birthday: bday
     )
   }
   var errorDescription: String?
   var failureReason: String?
   var recoverySuggestion: String?
   var helpAnchor: String?
+  var birthday: Birthday?
 }
