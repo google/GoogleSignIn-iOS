@@ -70,10 +70,13 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 
 /// Configures `GIDSignIn` for use.
 ///
+/// @param completion A nullable callback block passing back any error arising from the
+/// configuration process if any exists.
+///
 /// Call this method on `GIDSignIn` prior to use and as early as possible. Currently, this method
 /// generates App Attest key IDs and the attestation object eagerly to minimize latency later on
 /// during the sign in or add scopes flows.
-+ (void)configure;
++ (void)configureWithCompletion:(nullable void (^) (NSError * _Nullable error))completion;
 
 /// Tells `GIDSignIn` to not request and use the Firebase App Check token
 ///

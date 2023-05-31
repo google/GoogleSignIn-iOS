@@ -48,22 +48,23 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
   return self;
 }
 
-- (void)prepareForAppAttest {
-  // TODO: Make this threadsafe (mdmathias, 2023.05.23)
-  if (self.isPrepared) {
-    NSLog(@"Already prepared for App Attest");
-    return;
-  }
-
+- (void)prepareForAppAttestWithCompletion:(void (^)(FIRAppCheckToken * _Nullable,
+                                                    NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
+    if (self.isPrepared) {
+      NSLog(@"Already prepared for App Attest");
+      return;
+    }
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
       if (token) {
         self->_prepared = YES;
         NSLog(@"Prepared for App Attest with token: %@", token);
+        completion(token, nil);
         return;
       }
       if (error) {
+        completion(nil, error);
         NSLog(@"Failed to prepare for App Attest: %@", error);
       }
     }];

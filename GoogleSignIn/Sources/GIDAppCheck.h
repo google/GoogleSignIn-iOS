@@ -28,9 +28,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Prewarms the library for App Attest by asking Firebase App Check to generate the App Attest key
 /// id and perform the initial attestation process (if needed).
-- (void)prepareForAppAttest;
+///
+/// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
+/// otherwise.
+- (void)prepareForAppAttestWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
+                                                             NSError * _Nullable error))completion;
 
 /// Fetches the limited use Firebase token.
+///
 /// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
 /// otherwise.
 - (void)getLimitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,

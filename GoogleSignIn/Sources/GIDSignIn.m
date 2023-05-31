@@ -468,13 +468,28 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-+ (void)configure {
-  [[GIDAppCheck sharedInstance] prepareForAppAttest];
-  [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
++ (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
+  @synchronized([GIDSignIn sharedInstance]) {
+    [[GIDAppCheck sharedInstance]
+     prepareForAppAttestWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                         NSError * _Nullable error) {
+      if (token) {
+        [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
+        completion(nil);
+        return;
+      }
+      if (error) {
+        completion(error);
+        NSLog(@"Error preparing for App Check: %@", error);
+      }
+    }];
+  }
 }
 
 - (void)turnOffAppAttest {
-  [GIDSignIn sharedInstance]->_useAppCheckToken = NO;
+  @synchronized([GIDSignIn sharedInstance]) {
+    [GIDSignIn sharedInstance]->_useAppCheckToken = NO;
+  }
 }
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
