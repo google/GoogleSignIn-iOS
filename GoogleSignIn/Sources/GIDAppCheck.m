@@ -15,11 +15,19 @@
  */
 
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 @import FirebaseAppCheck;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+/// Identifier for queue where App Check work is performed.
 static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWorkerQueue";
+
+/// A list of potential error codes returned from the Google Sign-In SDK during App Check.
+typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
+  /// `GIDAppCheck` has already performed the key generation and attestation steps.
+  kGIDAppCheckAlreadyPrepared = 1,
+};
 
 @interface GIDAppCheck ()
 
@@ -53,6 +61,10 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
   dispatch_async(self.workerQueue, ^{
     if (self.isPrepared) {
       NSLog(@"Already prepared for App Attest");
+      NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                           code:kGIDAppCheckAlreadyPrepared
+                                       userInfo:nil];
+      completion(nil, error);
       return;
     }
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
@@ -76,7 +88,9 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
   dispatch_async(self.workerQueue, ^{
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
-      self->_prepared = YES;
+      if (token) {
+        self->_prepared = YES;
+      }
       completion(token, error);
     }];
   });
