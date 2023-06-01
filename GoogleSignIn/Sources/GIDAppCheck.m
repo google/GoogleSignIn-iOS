@@ -56,15 +56,17 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
   return self;
 }
 
-- (void)prepareForAppAttestWithCompletion:(void (^)(FIRAppCheckToken * _Nullable,
-                                                    NSError * _Nullable))completion {
+- (void)prepareForAppAttestWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable,
+                                                             NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
     if (self.isPrepared) {
       NSLog(@"Already prepared for App Attest");
       NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                            code:kGIDAppCheckAlreadyPrepared
                                        userInfo:nil];
-      completion(nil, error);
+      if (completion) {
+        completion(nil, error);
+      }
       return;
     }
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
@@ -72,26 +74,32 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
       if (token) {
         self->_prepared = YES;
         NSLog(@"Prepared for App Attest with token: %@", token);
-        completion(token, nil);
+        if (completion) {
+          completion(token, nil);
+        }
         return;
       }
       if (error) {
-        completion(nil, error);
         NSLog(@"Failed to prepare for App Attest: %@", error);
+        if (completion) {
+          completion(nil, error);
+        }
       }
     }];
   });
 }
 
 - (void)getLimitedUseTokenWithCompletion:
-    (void (^)(FIRAppCheckToken * _Nullable, NSError * _Nullable))completion {
+    (nullable void (^)(FIRAppCheckToken * _Nullable, NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
       if (token) {
         self->_prepared = YES;
       }
-      completion(token, error);
+      if (completion) {
+        completion(token, error);
+      }
     }];
   });
 }
