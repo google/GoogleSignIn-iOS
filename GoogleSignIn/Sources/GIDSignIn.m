@@ -475,12 +475,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                          NSError * _Nullable error) {
       if (token) {
         [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
-        completion(nil);
+        if (completion) {
+          completion(nil);
+        }
         return;
       }
       if (error) {
-        completion(error);
         NSLog(@"Error preparing for App Check: %@", error);
+        if (completion) {
+          completion(error);
+        }
       }
     }];
   }
