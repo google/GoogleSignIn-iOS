@@ -36,48 +36,57 @@ class BirthdayLoader {
     return URLRequest(url: url)
   }()
 
-  private lazy var session: URLSession? = {
-    guard let accessToken = GIDSignIn
-      .sharedInstance
-      .currentUser?
-      .accessToken
-      .tokenString else { return nil }
-    let configuration = URLSessionConfiguration.default
-    configuration.httpAdditionalHeaders = [
-      "Authorization": "Bearer \(accessToken)"
-    ]
-    return URLSession(configuration: configuration)
-  }()
+  private func sessionWithFreshToken(completion: @escaping (Result<URLSession, Error>) -> Void) {
+    GIDSignIn.sharedInstance.currentUser?.refreshTokensIfNeeded { user, error in
+      guard let token = user?.accessToken.tokenString else {
+        completion(.failure(.couldNotRefreshToken))
+        return
+      }
+      let config = URLSessionConfiguration.default
+      config.httpAdditionalHeaders = [
+        "Authorization": "Bearer \(token)"
+      ]
+      let session = URLSession(configuration: config)
+      completion(.success(session))
+    }
+  }
 
   func requestBirthday(completion: @escaping (Result<Birthday, Error>) -> Void) {
     guard let req = request else {
       completion(.failure(Error.noRequest))
       return
     }
-    let task = session?.dataTask(with: req) { data, response, error in
-      guard let data else {
-        completion(.failure(Error.noData))
-        return
-      }
-      do {
-        let jsonData = try JSONSerialization.jsonObject(with: data)
-        guard let json = jsonData as? [String: Any] else {
-          completion(.failure(Error.jsonDataCannotCastToString))
-          return
+    sessionWithFreshToken { sessionResult in
+      switch sessionResult {
+      case .success(let session):
+        let task = session.dataTask(with: req) { data, response, error in
+          guard let data else {
+            completion(.failure(Error.noData))
+            return
+          }
+          do {
+            let jsonData = try JSONSerialization.jsonObject(with: data)
+            guard let json = jsonData as? [String: Any] else {
+              completion(.failure(Error.jsonDataCannotCastToString))
+              return
+            }
+            guard let birthdays = json["birthdays"] as? [[String: Any]],
+                  let firstBday = birthdays.first?["date"] as? [String: Int],
+                  let day = firstBday["day"],
+                  let month = firstBday["month"] else {
+              completion(.failure(Error.noBirthday))
+              return
+            }
+            completion(.success(Birthday(day: day, month: month)))
+          } catch {
+            completion(.failure(Error.noJSON))
+          }
         }
-        guard let birthdays = json["birthdays"] as? [[String: Any]],
-              let firstBday = birthdays.first?["date"] as? [String: Int],
-              let day = firstBday["day"],
-              let month = firstBday["month"] else {
-          completion(.failure(Error.noBirthday))
-          return
-        }
-        completion(.success(Birthday(day: day, month: month)))
-      } catch {
-        completion(.failure(Error.noJSON))
+        task.resume()
+      case .failure(let error):
+        completion(.failure(error))
       }
     }
-    task?.resume()
   }
 }
 
@@ -88,6 +97,7 @@ extension BirthdayLoader {
     case noJSON
     case jsonDataCannotCastToString
     case noBirthday
+    case couldNotRefreshToken
   }
 }
 

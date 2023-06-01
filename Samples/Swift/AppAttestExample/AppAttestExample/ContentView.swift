@@ -30,7 +30,7 @@ struct ContentView: View {
     NavigationStack {
       VStack {
         HStack {
-          GoogleSignInButton {
+          GoogleSignInButton(style: .wide) {
             self.userInfo = ""
             guard let rootViewController = self.rootViewController else {
               print("No root view controller")
