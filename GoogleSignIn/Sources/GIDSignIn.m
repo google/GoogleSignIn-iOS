@@ -174,6 +174,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // Whether or not the sign in or add scopes flows should use the Firebase App Check token
   BOOL _useAppCheckToken;
+  GIDAppCheck *_appCheck;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
@@ -470,9 +471,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 + (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized([GIDSignIn sharedInstance]) {
-    [[GIDAppCheck sharedInstance]
-     prepareForAppAttestWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                         NSError * _Nullable error) {
+    [[GIDSignIn sharedInstance]->_appCheck
+        prepareForAppAttestWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                            NSError * _Nullable error) {
       if (token) {
         [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
         if (completion) {
@@ -500,7 +501,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Private methods
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                     appCheckProvider:(nullable id<GIDAppAttestProvider>)provider {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -537,6 +539,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
     _useAppCheckToken = NO;
+    _appCheck = [[GIDAppCheck alloc] initWithAppAttestProvider:provider];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
@@ -545,7 +548,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (instancetype)initPrivate {
   GTMKeychainStore *keychainStore =
       [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-  return [self initWithKeychainStore:keychainStore];
+  return [self initWithKeychainStore:keychainStore appCheckProvider:nil];
 }
 
 // Does sanity check for parameters and then authenticates if necessary.
@@ -651,7 +654,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
         dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
         dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-          [[GIDAppCheck sharedInstance] getLimitedUseTokenWithCompletion:
+          [self->_appCheck getLimitedUseTokenWithCompletion:
               ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
             if (token) {
               additionalParameters[kClientAssertionTypeParameter] =

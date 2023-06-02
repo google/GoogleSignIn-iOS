@@ -38,19 +38,14 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
 
 @implementation GIDAppCheck
 
-+ (instancetype)sharedInstance {
-  static dispatch_once_t once;
-  static GIDAppCheck *sharedInstance;
-  dispatch_once(&once, ^{
-    sharedInstance = [[self alloc] initPrivate];
-  });
-  return sharedInstance;
+- (instancetype)init {
+  return [self initWithAppAttestProvider:nil];
 }
 
-- (instancetype)initPrivate {
+- (instancetype)initWithAppAttestProvider:(nullable id<GIDAppAttestProvider>)provider {
   if (self = [super init]) {
     _prepared = NO;
-    _appCheck = [FIRAppCheck appCheck];
+    _appCheck = provider ?: [FIRAppCheck appCheck];
     _workerQueue = dispatch_queue_create("com.google.googlesignin.appCheckWorkerQueue", nil);
   }
   return self;

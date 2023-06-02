@@ -21,28 +21,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+@protocol GIDAppAttestProvider <NSObject>
+
+/// Get the limited used `FIRAppCheckToken`.
+/// @param completion A block that passes back the `FIRAppCheckToken` upon success or an error in
+///     the case of any failure.
+- (void)limitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
+                                                         NSError * _Nullable error))completion;
+
+@end
+
 @interface GIDAppCheck : NSObject
 
-///:nodoc:
-- (instancetype)init NS_UNAVAILABLE;
+/// Creates the instance of this App Check wrapper class.
+///
+/// If `provider` is nil, then we default to `FIRAppCheck`.
+/// @param provider The instance performing the Firebase App Check requeests.
+- (instancetype)initWithAppAttestProvider:(nullable id<GIDAppAttestProvider>)provider
+    NS_DESIGNATED_INITIALIZER;
 
 /// Prewarms the library for App Attest by asking Firebase App Check to generate the App Attest key
 /// id and perform the initial attestation process (if needed).
 ///
 /// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
-/// otherwise.
+///     otherwise.
 - (void)prepareForAppAttestWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
                                                              NSError * _Nullable error))completion;
 
 /// Fetches the limited use Firebase token.
 ///
 /// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
-/// otherwise.
+///     otherwise.
 - (void)getLimitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
                                                             NSError * _Nullable error))completion;
-
-/// The shared instance of this App Check wrapper class.
-@property(class, nonatomic, strong, readonly) GIDAppCheck *sharedInstance;
 
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
 @property(nonatomic, readonly, getter=isPrepared) BOOL prepared;

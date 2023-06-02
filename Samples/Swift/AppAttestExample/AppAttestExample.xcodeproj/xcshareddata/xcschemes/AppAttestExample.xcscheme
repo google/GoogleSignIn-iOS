@@ -52,7 +52,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "FIRAppCheckDebugToken"
-            value = "2983B5DA-5310-4325-B033-BD894E663A25"
+            value = "F40DF0E8-9CCC-46DF-AC01-43DE96FCEDD8"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
