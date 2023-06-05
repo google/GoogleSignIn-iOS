@@ -17,13 +17,15 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
 @class FIRAppCheckToken;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 @protocol GIDAppAttestProvider <NSObject>
 
-/// Get the limited used `FIRAppCheckToken`.
+/// Get the limited use `FIRAppCheckToken`.
+///
 /// @param completion A block that passes back the `FIRAppCheckToken` upon success or an error in
 ///     the case of any failure.
 - (void)limitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
@@ -36,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates the instance of this App Check wrapper class.
 ///
 /// If `provider` is nil, then we default to `FIRAppCheck`.
+///
 /// @param provider The instance performing the Firebase App Check requeests.
 - (instancetype)initWithAppAttestProvider:(nullable id<GIDAppAttestProvider>)provider
     NS_DESIGNATED_INITIALIZER;

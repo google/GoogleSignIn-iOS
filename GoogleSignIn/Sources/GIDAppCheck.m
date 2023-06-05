@@ -16,6 +16,8 @@
 
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/FIRAppCheck+GIDAppAttestProvider.h"
+
 @import FirebaseAppCheck;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -31,7 +33,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
 
 @interface GIDAppCheck ()
 
-@property(nonatomic, strong) FIRAppCheck *appCheck;
+@property(nonatomic, strong) id<GIDAppAttestProvider> appCheck;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
 
 @end
