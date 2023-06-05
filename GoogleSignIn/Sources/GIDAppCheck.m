@@ -15,8 +15,7 @@
  */
 
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
-#import "GoogleSignIn/Sources/FIRAppCheck+GIDAppAttestProvider.h"
+#import "GoogleSignIn/Sources/FIRAppCheck+GIDAppCheckProvider.h"
 
 @import FirebaseAppCheck;
 
@@ -25,15 +24,9 @@
 /// Identifier for queue where App Check work is performed.
 static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWorkerQueue";
 
-/// A list of potential error codes returned from the Google Sign-In SDK during App Check.
-typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
-  /// `GIDAppCheck` has already performed the key generation and attestation steps.
-  kGIDAppCheckAlreadyPrepared = 1,
-};
-
 @interface GIDAppCheck ()
 
-@property(nonatomic, strong) id<GIDAppAttestProvider> appCheck;
+@property(nonatomic, strong) id<GIDAppCheckProvider> appCheck;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
 
 @end
@@ -41,10 +34,10 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
 @implementation GIDAppCheck
 
 - (instancetype)init {
-  return [self initWithAppAttestProvider:nil];
+  return [self initWithAppCheckProvider:nil];
 }
 
-- (instancetype)initWithAppAttestProvider:(nullable id<GIDAppAttestProvider>)provider {
+- (instancetype)initWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider {
   if (self = [super init]) {
     _prepared = NO;
     _appCheck = provider ?: [FIRAppCheck appCheck];
@@ -53,8 +46,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
   return self;
 }
 
-- (void)prepareForAppAttestWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable,
-                                                             NSError * _Nullable))completion {
+- (void)prepareForAppCheckWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable,
+                                                            NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
     if (self.isPrepared) {
       NSLog(@"Already prepared for App Attest");

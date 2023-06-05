@@ -328,7 +328,7 @@ static NSString *const kNewScope = @"newScope";
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore appCheckProvider:nil];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;

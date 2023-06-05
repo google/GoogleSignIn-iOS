@@ -15,6 +15,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-@protocol GIDAppAttestProvider <NSObject>
+@protocol GIDAppCheckProvider <NSObject>
 
 /// Get the limited use `FIRAppCheckToken`.
 ///
@@ -33,6 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// A list of potential error codes returned from the Google Sign-In SDK during App Check.
+typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
+  /// `GIDAppCheck` has already performed the key generation and attestation steps.
+  kGIDAppCheckAlreadyPrepared = 1,
+};
+
 @interface GIDAppCheck : NSObject
 
 /// Creates the instance of this App Check wrapper class.
@@ -40,16 +47,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// If `provider` is nil, then we default to `FIRAppCheck`.
 ///
 /// @param provider The instance performing the Firebase App Check requeests.
-- (instancetype)initWithAppAttestProvider:(nullable id<GIDAppAttestProvider>)provider
+- (instancetype)initWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
     NS_DESIGNATED_INITIALIZER;
 
-/// Prewarms the library for App Attest by asking Firebase App Check to generate the App Attest key
+/// Prewarms the library for App Check by asking Firebase App Check to generate the App Attest key
 /// id and perform the initial attestation process (if needed).
 ///
 /// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
 ///     otherwise.
-- (void)prepareForAppAttestWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
-                                                             NSError * _Nullable error))completion;
+- (void)prepareForAppCheckWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
+                                                            NSError * _Nullable error))completion;
 
 /// Fetches the limited use Firebase token.
 ///

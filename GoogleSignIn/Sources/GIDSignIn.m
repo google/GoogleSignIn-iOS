@@ -472,8 +472,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 + (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized([GIDSignIn sharedInstance]) {
     [[GIDSignIn sharedInstance]->_appCheck
-        prepareForAppAttestWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                            NSError * _Nullable error) {
+        prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                           NSError * _Nullable error) {
       if (token) {
         [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
         if (completion) {
@@ -491,7 +491,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 }
 
-- (void)turnOffAppAttest {
+- (void)turnOffAppCheck {
   @synchronized([GIDSignIn sharedInstance]) {
     [GIDSignIn sharedInstance]->_useAppCheckToken = NO;
   }
@@ -502,7 +502,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Private methods
 
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-                     appCheckProvider:(nullable id<GIDAppAttestProvider>)provider {
+                     appCheckProvider:(nullable id<GIDAppCheckProvider>)provider {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -539,7 +539,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
     _useAppCheckToken = NO;
-    _appCheck = [[GIDAppCheck alloc] initWithAppAttestProvider:provider];
+    _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:provider];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
