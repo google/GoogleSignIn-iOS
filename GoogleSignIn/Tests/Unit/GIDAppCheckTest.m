@@ -22,7 +22,7 @@
 
 @implementation GIDAppCheckTest
 
-- (void)testExample {
+- (void)testGetLimitedUseTokenFailure {
   XCTestExpectation *tokenFailExpectation =
       [self expectationWithDescription:@"App check token fail"];
   NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
