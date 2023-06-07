@@ -30,6 +30,7 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -64,10 +65,6 @@
 #elif TARGET_OS_OSX
 #import <AppAuth/OIDAuthorizationService+Mac.h>
 #endif
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <FirebaseAppCheck/FirebaseAppCheck.h>
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #endif
 
@@ -153,6 +150,12 @@ static NSString *const kConfigClientIDKey = @"GIDClientID";
 static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
 static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
 static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
+
+/// Used to determine if the `sharedInstance` or `sharedInstanceWithAppCheckProvider:` methods have
+/// been called to prevent multiple instances of `GIDSignIn`.
+static dispatch_once_t once;
+/// The `static` instance of `GIDSignIn`.
+static GIDSignIn *sharedInstance;
 
 // The callback queue used for authentication flow.
 @interface GIDAuthFlow : GIDCallbackQueue
@@ -458,10 +461,19 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Custom getters and setters
 
 + (GIDSignIn *)sharedInstance {
-  static dispatch_once_t once;
-  static GIDSignIn *sharedInstance;
   dispatch_once(&once, ^{
-    sharedInstance = [[self alloc] initPrivate];
+    GTMKeychainStore *keychainStore =
+        [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
+    sharedInstance = [[self alloc] initWithKeychainStore:keychainStore appCheckProvider:nil];
+  });
+  return sharedInstance;
+}
+
++ (GIDSignIn *)sharedInstanceWithAppCheckProvider:(id<GIDAppCheckProvider>)provider {
+  dispatch_once(&once, ^{
+    GTMKeychainStore *keychainStore =
+        [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
+    sharedInstance = [[self alloc] initWithKeychainStore:keychainStore appCheckProvider:provider];
   });
   return sharedInstance;
 }
@@ -470,11 +482,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-- (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
++ (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
+                           completion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
-    [[GIDSignIn sharedInstance]->_appCheck
-        prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                           NSError * _Nullable error) {
+    GIDSignIn *signIn = [GIDSignIn sharedInstanceWithAppCheckProvider:provider];
+    [signIn->_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                          NSError * _Nullable error) {
       if (token) {
         [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
         if (completion) {
@@ -494,7 +507,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)turnOffAppCheck {
   @synchronized(self) {
-    [GIDSignIn sharedInstance]->_useAppCheckToken = NO;
+    _useAppCheckToken = NO;
   }
 }
 
@@ -544,12 +557,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
-}
-
-- (instancetype)initPrivate {
-  GTMKeychainStore *keychainStore =
-      [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-  return [self initWithKeychainStore:keychainStore appCheckProvider:nil];
 }
 
 // Does sanity check for parameters and then authenticates if necessary.
@@ -660,9 +667,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
             if (token) {
               additionalParameters[kClientAssertionTypeParameter] =
                   kClientAssertionTypeParameterValue;
-              additionalParameters[kClientAssertionParameter] =
-                  [[token.token dataUsingEncoding:NSUTF8StringEncoding]
-                      base64EncodedStringWithOptions:kNilOptions];
+              additionalParameters[kClientAssertionParameter] = token.token;
               OIDAuthorizationRequest *request =
                   [self authorizationRequestWithOptions:options
                                    additionalParameters:additionalParameters];

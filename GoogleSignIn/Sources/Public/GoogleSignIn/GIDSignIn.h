@@ -26,6 +26,7 @@
 @class GIDConfiguration;
 @class GIDGoogleUser;
 @class GIDSignInResult;
+@protocol GIDAppCheckProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -70,13 +71,17 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 
 /// Configures `GIDSignIn` for use.
 ///
+/// @param provider The `GIDAppCheckProvider` conforming instance to use when performing
+///     App Check operations. If `nil`, a default provider is used.
 /// @param completion A nullable callback block passing back any error arising from the
 /// configuration process if any exists.
 ///
 /// Call this method on `GIDSignIn` prior to use and as early as possible. Currently, this method
 /// generates App Attest key IDs and the attestation object eagerly to minimize latency later on
 /// during the sign in or add scopes flows.
-- (void)configureWithCompletion:(nullable void (^) (NSError * _Nullable error))completion;
++ (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
+                           completion:(nullable void (^)(NSError * _Nullable error))completion
+NS_SWIFT_NAME(configureWithAppCheckProvider(_:completion:));
 
 /// Tells `GIDSignIn` to not request and use the Firebase App Check token.
 ///

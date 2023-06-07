@@ -35,6 +35,7 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Tests/Unit/GIDAppCheckProviderFake.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
@@ -328,7 +329,10 @@ static NSString *const kNewScope = @"newScope";
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore appCheckProvider:nil];
+  GIDAppCheckProviderFake *appCheckProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                    appCheckProvider:appCheckProvider];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -364,14 +368,32 @@ static NSString *const kNewScope = @"newScope";
 
 #pragma mark - Tests
 
-- (void)testShareInstance {
+- (void)testSharedInstance {
+  NSString *expDescription = @"-[GIDSignIn configureWithAppCheckProvider:completion: expectation";
+  XCTestExpectation *configureExpectation = [self expectationWithDescription:expDescription];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+  // We call configure here with fake so that App Check does not complain about using a default
+  // app check provider before Firebase is configured
+  [GIDSignIn configureWithAppCheckProvider:fakeProvider completion:^(NSError * _Nullable error) {
+    // We expect an error because we pass `nil` for both the token and error params to
+    // `GIDAppCheckProviderFake`'s initializer above
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+    [configureExpectation fulfill];
+  }];
   GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
   GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
+  [self waitForExpectations:@[configureExpectation] timeout:1];
 }
 
-- (void)testInitPrivate {
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+- (void)testInitWithKeychainStoreAppCheckProvider {
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                              appCheckProvider:fakeProvider];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -379,21 +401,30 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(signIn.configuration.openIDRealm);
 }
 
-- (void)testInitPrivate_noConfig {
+- (void)testInitWithKeychainStoreAppCheckProvider_noConfig {
   [_fakeMainBundle fakeWithClientID:nil
                      serverClientID:nil
                        hostedDomain:nil
                         openIDRealm:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                              appCheckProvider:fakeProvider];
   XCTAssertNil(signIn.configuration);
 }
 
-- (void)testInitPrivate_fullConfig {
+- (void)testInitWithKeychainStoreAppCheckProvider_fullConfig {
   [_fakeMainBundle fakeWithClientID:kClientId
                      serverClientID:kServerClientId
                        hostedDomain:kFakeHostedDomain
                         openIDRealm:kOpenIDRealm];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                              appCheckProvider:fakeProvider];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -401,12 +432,16 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqual(signIn.configuration.openIDRealm, kOpenIDRealm);
 }
 
-- (void)testInitPrivate_invalidConfig {
+- (void)testInitWithKeychainStoreAppCheckProvider_invalidConfig {
   [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
                      serverClientID:nil
                        hostedDomain:nil
                         openIDRealm:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                              appCheckProvider:fakeProvider];
   XCTAssertNil(signIn.configuration);
 }
 

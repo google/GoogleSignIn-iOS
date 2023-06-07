@@ -19,25 +19,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class FIRAppCheckToken;
-
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-@protocol GIDAppCheckProvider <NSObject>
-
-/// Get the limited use `FIRAppCheckToken`.
-///
-/// @param completion A block that passes back the `FIRAppCheckToken` upon success or an error in
-///     the case of any failure.
-- (void)limitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
-                                                         NSError * _Nullable error))completion;
-
-@end
+@class FIRAppCheckToken;
 
 /// A list of potential error codes returned from the Google Sign-In SDK during App Check.
 typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
+  /// An unexpected error was encountered.
+  kGIDAppCheckUnexpectedError = 1,
   /// `GIDAppCheck` has already performed the key generation and attestation steps.
-  kGIDAppCheckAlreadyPrepared = 1,
+  kGIDAppCheckAlreadyPrepared = 2,
 };
 
 @interface GIDAppCheck : NSObject

@@ -15,6 +15,7 @@
  */
 
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/FIRAppCheck+GIDAppCheckProvider.h"
 
 @import FirebaseAppCheck;
@@ -74,6 +75,13 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
         if (completion) {
           completion(nil, error);
         }
+        return;
+      }
+      if (completion) {
+        NSError *noError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                               code:kGIDAppCheckUnexpectedError
+                                           userInfo:nil];
+        completion(nil, noError);
       }
     }];
   });
