@@ -17,7 +17,6 @@
 #import "GoogleSignIn/Tests/Unit/GIDAppCheckProviderFake.h"
 
 @interface GIDAppCheckTest : XCTestCase
-
 @end
 
 @implementation GIDAppCheckTest

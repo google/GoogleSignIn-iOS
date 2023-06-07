@@ -76,7 +76,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Call this method on `GIDSignIn` prior to use and as early as possible. Currently, this method
 /// generates App Attest key IDs and the attestation object eagerly to minimize latency later on
 /// during the sign in or add scopes flows.
-+ (void)configureWithCompletion:(nullable void (^) (NSError * _Nullable error))completion;
+- (void)configureWithCompletion:(nullable void (^) (NSError * _Nullable error))completion;
 
 /// Tells `GIDSignIn` to not request and use the Firebase App Check token.
 ///

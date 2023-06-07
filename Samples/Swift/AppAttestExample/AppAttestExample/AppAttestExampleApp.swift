@@ -29,7 +29,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     FirebaseApp.configure()
     FirebaseApp.app()
 
-    GIDSignIn.configure { error in
+    GIDSignIn.sharedInstance.configure { error in
       if let error {
         print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
       }
