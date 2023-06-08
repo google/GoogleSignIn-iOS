@@ -400,10 +400,15 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testInitWithKeychainStoreAppCheckProvider {
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheckProviderFake *fakeProvider =
       [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                                              appCheckProvider:fakeProvider];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                   appCheckProvider:fakeProvider];
+#else
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -417,10 +422,15 @@ static NSString *const kNewScope = @"newScope";
                        hostedDomain:nil
                         openIDRealm:nil];
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheckProviderFake *fakeProvider =
       [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                                              appCheckProvider:fakeProvider];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                   appCheckProvider:fakeProvider];
+#else
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   XCTAssertNil(signIn.configuration);
 }
 
@@ -431,10 +441,15 @@ static NSString *const kNewScope = @"newScope";
                         openIDRealm:kOpenIDRealm];
 
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheckProviderFake *fakeProvider =
       [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                                              appCheckProvider:fakeProvider];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                   appCheckProvider:fakeProvider];
+#else
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -448,10 +463,15 @@ static NSString *const kNewScope = @"newScope";
                        hostedDomain:nil
                         openIDRealm:nil];
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheckProviderFake *fakeProvider =
       [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                                              appCheckProvider:fakeProvider];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                   appCheckProvider:fakeProvider];
+#else
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   XCTAssertNil(signIn.configuration);
 }
 
