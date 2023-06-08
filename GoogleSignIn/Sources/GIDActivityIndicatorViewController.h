@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#if __has_include(<UIKit/UIKit.h>)
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <UIKit/UIKit.h>
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,3 +31,5 @@ NS_CLASS_AVAILABLE_IOS(14.0)
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

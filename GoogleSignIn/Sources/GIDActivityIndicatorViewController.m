@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import "GIDActivityIndicatorViewController.h"
 
 @interface GIDActivityIndicatorViewController ()
@@ -38,3 +40,5 @@
 }
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
