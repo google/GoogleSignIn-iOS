@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
 #import <Foundation/Foundation.h>
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 

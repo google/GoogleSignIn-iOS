@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#import <TargetConditionals.h>
 #import <Foundation/Foundation.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
 
@@ -30,3 +33,5 @@ extern NSUInteger const kGIDAppCheckProviderTokenError;
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

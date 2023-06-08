@@ -464,11 +464,13 @@ static GIDSignIn *sharedInstance;
   dispatch_once(&once, ^{
     GTMKeychainStore *keychainStore =
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-    sharedInstance = [[self alloc] initWithKeychainStore:keychainStore appCheckProvider:nil];
+    sharedInstance = [[self alloc] initWithKeychainStore:keychainStore];
   });
   return sharedInstance;
 }
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+/// Private initializer to create the shared instance in the context of tests.
 + (GIDSignIn *)sharedInstanceWithAppCheckProvider:(id<GIDAppCheckProvider>)provider {
   dispatch_once(&once, ^{
     GTMKeychainStore *keychainStore =
@@ -477,11 +479,11 @@ static GIDSignIn *sharedInstance;
   });
   return sharedInstance;
 }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Configuring and pre-warming
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 + (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
                            completion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
@@ -510,13 +512,11 @@ static GIDSignIn *sharedInstance;
     _useAppCheckToken = NO;
   }
 }
-
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Private methods
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-                     appCheckProvider:(nullable id<GIDAppCheckProvider>)provider {
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -536,14 +536,13 @@ static GIDSignIn *sharedInstance;
     }
 
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
+                                         [GIDSignInPreferences googleAuthorizationServer]];
     NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
+                                  [GIDSignInPreferences googleTokenServer]];
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+                             initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
+                             tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
     _keychainStore = keychainStore;
-
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
     GIDAuthStateMigration *migration =
@@ -552,12 +551,20 @@ static GIDSignIn *sharedInstance;
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
-    _useAppCheckToken = NO;
-    _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:provider];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
 }
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                     appCheckProvider:(nullable id<GIDAppCheckProvider>)provider {
+  self = [self initWithKeychainStore:keychainStore];
+  _useAppCheckToken = NO;
+  _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:provider];
+  return self;
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Does sanity check for parameters and then authenticates if necessary.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options {

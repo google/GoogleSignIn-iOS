@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <XCTest/XCTest.h>
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
@@ -123,3 +127,5 @@ static NSUInteger const timeout = 1;
 }
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
