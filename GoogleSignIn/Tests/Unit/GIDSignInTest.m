@@ -34,6 +34,8 @@
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import "FirebaseAppCheck/FIRAppCheckToken.h"
+#import "GoogleSignIn/Sources/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Tests/Unit/GIDAppCheckProviderFake.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -372,6 +374,42 @@ static NSString *const kNewScope = @"newScope";
 }
 
 #pragma mark - Tests
+
+- (void)testConfigureSucceeds {
+  // FIXME: Test fails because it is not hermetic; `GIDSignIn` is a singleton (mdmathias, 2023.06.08)
+  // The singleton means that previous calls to configure `GIDSignIn` will impact this test. E.g.,
+  // `testConfigureFailsNoTokenOrError` sets up `configureWithWithAppCheckProvider:completion:`
+  // to fail.
+  XCTestExpectation *configureSucceedsExpecation =
+      [self expectationWithDescription:@"Configure succeeds expectation"];
+
+  FIRAppCheckToken *token = [[FIRAppCheckToken alloc] initWithToken:@"foo"
+                                                     expirationDate:[NSDate distantFuture]];
+  GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token
+                                                                                       error:nil];
+  [GIDSignIn configureWithAppCheckProvider:provider completion:^(NSError * _Nullable error) {
+    XCTAssertNil(error);
+    [configureSucceedsExpecation fulfill];
+  }];
+
+  [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
+}
+
+- (void)testConfigureFailsNoTokenOrError {
+  XCTestExpectation *configureFailsExpecation =
+      [self expectationWithDescription:@"Configure fails expectation"];
+
+  GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil
+                                                                                       error:nil];
+  // `configureWithAppCheckProvider:completion:` should fail if neither a token or error is present
+  [GIDSignIn configureWithAppCheckProvider:provider completion:^(NSError * _Nullable error) {
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+    [configureFailsExpecation fulfill];
+  }];
+
+  [self waitForExpectations:@[configureFailsExpecation] timeout:1];
+}
 
 - (void)testSharedInstance {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
