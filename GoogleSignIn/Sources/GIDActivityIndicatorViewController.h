@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+#if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
