@@ -84,4 +84,42 @@ static NSUInteger const timeout = 1;
   XCTAssertTrue(appCheck.isPrepared);
 }
 
+- (void)testGetLimitedUseTokenSucceeds {
+  XCTestExpectation *prepareExpectation =
+      [self expectationWithDescription:@"Prepare for App Check expectation"];
+  FIRAppCheckToken *expectedToken = [[FIRAppCheckToken alloc] initWithToken:@"foo"
+                                                             expirationDate:[NSDate distantFuture]];
+
+  GIDAppCheckProviderFake *appCheckProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:expectedToken error:nil];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+
+  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                               NSError * _Nullable error) {
+    XCTAssertEqualObjects(token, expectedToken);
+    XCTAssertNil(error);
+    [prepareExpectation fulfill];
+  }];
+
+  // Wait for preparation to complete to test `isPrepared`
+  [self waitForExpectations:@[prepareExpectation] timeout:timeout];
+
+  XCTAssertTrue(appCheck.isPrepared);
+
+  XCTestExpectation *getLimitedUseTokenSucceedsExpectation =
+      [self expectationWithDescription:@"getLimitedUseToken should succeed"];
+
+  [appCheck getLimitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                               NSError * _Nullable error) {
+    XCTAssertNil(error);
+    XCTAssertNotNil(token);
+    XCTAssertEqualObjects(token, expectedToken);
+    [getLimitedUseTokenSucceedsExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[getLimitedUseTokenSucceedsExpectation] timeout:timeout];
+
+  XCTAssertTrue(appCheck.isPrepared);
+}
+
 @end
