@@ -76,9 +76,12 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param completion A nullable callback block passing back any error arising from the
 /// configuration process if any exists.
 ///
-/// Call this method on `GIDSignIn` prior to use and as early as possible. Currently, this method
-/// generates App Attest key IDs and the attestation object eagerly to minimize latency later on
-/// during the sign in or add scopes flows.
+/// Call this method on `GIDSignIn` prior to use and as early as possible. This method creates the
+/// `GIDSignIn` singleton instance with the given `GIDAppCheckProvider` (or uses a default if none
+/// is given). Calling this method _after_ accessing the `sharedInstance` will not set the
+/// `GIDAppCheck` instance used for the attestation process. Currently, this method generates App
+/// Attest key IDs and the attestation object eagerly to minimize latency later on during the sign
+/// in or add scopes flows.
 + (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
                            completion:(nullable void (^)(NSError * _Nullable error))completion
 NS_SWIFT_NAME(configureWithAppCheckProvider(_:completion:));

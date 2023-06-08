@@ -13,8 +13,11 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
+#import "FirebaseAppCheck/FIRAppCheckToken.h"
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
 #import "GoogleSignIn/Tests/Unit/GIDAppCheckProviderFake.h"
+
+static NSUInteger const timeout = 1;
 
 @interface GIDAppCheckTest : XCTestCase
 @end
@@ -38,7 +41,47 @@
     [tokenFailExpectation fulfill];
   }];
 
-  [self waitForExpectations:@[tokenFailExpectation]];
+  [self waitForExpectations:@[tokenFailExpectation] timeout:timeout];
+}
+
+- (void)testIsPreparedError {
+  XCTestExpectation *notAlreadyPreparedExpectation =
+      [self expectationWithDescription:@"App check not already prepared error"];
+
+  FIRAppCheckToken *expectedToken = [[FIRAppCheckToken alloc] initWithToken:@"foo"
+                                                             expirationDate:[NSDate distantFuture]];
+  // It doesn't matter what we pass for the error since we will check `isPrepared` and make one
+  GIDAppCheckProviderFake *appCheckProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:expectedToken error:nil];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+
+  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                               NSError * _Nullable error) {
+    XCTAssertEqualObjects(token, expectedToken);
+    XCTAssertNil(error);
+    [notAlreadyPreparedExpectation fulfill];
+  }];
+
+  NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                               code:kGIDAppCheckAlreadyPrepared
+                                           userInfo:nil];
+
+  XCTestExpectation *alreadyPreparedExpectation =
+      [self expectationWithDescription:@"App check already prepared error"];
+
+  // We don't need to wait for `notAlreadyPreparedExpectation` to fulfill  because
+  // `prepareForAppCheckWithCompletion:`'s work is dispatched to a serial background queue and will
+  // and will execute in the order received
+  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+    XCTAssertNil(token);
+    XCTAssertNotNil(error);
+    XCTAssertEqualObjects(error, expectedError);
+    [alreadyPreparedExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[notAlreadyPreparedExpectation, alreadyPreparedExpectation]
+                    timeout:timeout];
+  XCTAssertTrue(appCheck.isPrepared);
 }
 
 @end
