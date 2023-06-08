@@ -45,10 +45,16 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// Redeclare |currentUser| as readwrite for internal use.
 @property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 /// Private initializer taking a `GTMKeychainStore` and optionally a `GIDAppCheckProvider`to use
 /// during tests.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
                      appCheckProvider:(nullable id<GIDAppCheckProvider>)provider;
+#else
+/// Private initializer taking a `GTMKeychainStore` and optionally a `GIDAppCheckProvider`to use
+/// during tests.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;

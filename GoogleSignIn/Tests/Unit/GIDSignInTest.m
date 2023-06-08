@@ -329,10 +329,15 @@ static NSString *const kNewScope = @"newScope";
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheckProviderFake *appCheckProvider =
       [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                     appCheckProvider:appCheckProvider];
+#else
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -369,6 +374,7 @@ static NSString *const kNewScope = @"newScope";
 #pragma mark - Tests
 
 - (void)testSharedInstance {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   NSString *expDescription = @"-[GIDSignIn configureWithAppCheckProvider:completion: expectation";
   XCTestExpectation *configureExpectation = [self expectationWithDescription:expDescription];
   GIDAppCheckProviderFake *fakeProvider =
@@ -382,10 +388,14 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
     [configureExpectation fulfill];
   }];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
   GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
   GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [self waitForExpectations:@[configureExpectation] timeout:1];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 - (void)testInitWithKeychainStoreAppCheckProvider {
