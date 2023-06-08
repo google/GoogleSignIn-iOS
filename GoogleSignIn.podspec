@@ -33,7 +33,6 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   ]
   s.ios.framework = 'UIKit'
   s.osx.framework = 'AppKit'
-  s.dependency 'FirebaseCore', '~> 10.0'
   s.dependency 'FirebaseAppCheck', '~> 10.0'
   s.dependency 'AppAuth', '~> 1.6'
   s.dependency 'GTMAppAuth', '~> 4.0'

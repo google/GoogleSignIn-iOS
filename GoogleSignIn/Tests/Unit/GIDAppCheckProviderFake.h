@@ -14,6 +14,7 @@
 
 #import <Foundation/Foundation.h>
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
 
 @class FIRAppCheckToken;
 
