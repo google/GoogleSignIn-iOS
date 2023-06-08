@@ -29,6 +29,7 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
+#import "GoogleSignIn/Sources/GIDActivityIndicatorViewController.h"
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
@@ -38,7 +39,6 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
-#import "GoogleSignIn/Sources/GIDActivityIndicatorViewController.h"
 
 @import GTMAppAuth;
 
@@ -655,7 +655,7 @@ static GIDSignIn *sharedInstance;
     if (_useAppCheckToken) {
       shouldCallCompletion = NO;
       GIDActivityIndicatorViewController *activityVC =
-      [[GIDActivityIndicatorViewController alloc] init];
+          [[GIDActivityIndicatorViewController alloc] init];
       [options.presentingViewController presentViewController:activityVC
                                                      animated:true
                                                    completion:^{
