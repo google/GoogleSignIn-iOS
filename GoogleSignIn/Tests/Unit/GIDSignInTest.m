@@ -464,7 +464,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(signIn.configuration.openIDRealm);
 }
 
-- (void)testInitWithKeychainStoreAppCheckProvider_noConfig {
+- (void)testInitWithKeychainStore_noConfig {
   [_fakeMainBundle fakeWithClientID:nil
                      serverClientID:nil
                        hostedDomain:nil
@@ -475,7 +475,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(signIn.configuration);
 }
 
-- (void)testInitWithKeychainStoreAppCheckProvider_fullConfig {
+- (void)testInitWithKeychainStore_fullConfig {
   [_fakeMainBundle fakeWithClientID:kClientId
                      serverClientID:kServerClientId
                        hostedDomain:kFakeHostedDomain
@@ -491,7 +491,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqual(signIn.configuration.openIDRealm, kOpenIDRealm);
 }
 
-- (void)testInitWithKeychainStoreAppCheckProvider_invalidConfig {
+- (void)testInitWithKeychainStore_invalidConfig {
   [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
                      serverClientID:nil
                        hostedDomain:nil
