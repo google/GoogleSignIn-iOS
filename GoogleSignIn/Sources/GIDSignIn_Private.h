@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 @class GTMKeychainStore;
+@class GIDAppCheck;
 @protocol GIDAppCheckProvider;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
@@ -44,6 +45,12 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 
 /// Redeclare |currentUser| as readwrite for internal use.
 @property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
+
+/// Expose `GIDAppCheck` for tests.
+@property(nonatomic, readonly, nullable) GIDAppCheck *appCheck;
+
+/// Whether or not the sign in or add scopes flows should use the Firebase App Check token
+@property(nonatomic, readonly) BOOL useAppCheckToken;
 
 /// Private initializer taking a `GTMKeychainStore`to use during tests.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;

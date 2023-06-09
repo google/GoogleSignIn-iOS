@@ -170,8 +170,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  // Whether or not the sign in or add scopes flows should use the Firebase App Check token
-  BOOL _useAppCheckToken;
   GIDAppCheck *_appCheck;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.

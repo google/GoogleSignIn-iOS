@@ -367,11 +367,8 @@ static NSString *const kNewScope = @"newScope";
 
 #pragma mark - Tests
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)testConfigureSucceeds {
-  // FIXME: Test fails because it is not hermetic; `GIDSignIn` is a singleton (mdmathias, 2023.06.08)
-  // The singleton means that previous calls to configure `GIDSignIn` will impact this test. E.g.,
-  // `testConfigureFailsNoTokenOrError` sets up `configureWithWithAppCheckProvider:completion:`
-  // to fail.
   XCTestExpectation *configureSucceedsExpecation =
       [self expectationWithDescription:@"Configure succeeds expectation"];
 
@@ -386,6 +383,7 @@ static NSString *const kNewScope = @"newScope";
   }];
 
   [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
+  XCTAssertTrue(GIDSignIn.sharedInstance.appCheck.isPrepared);
 }
 
 - (void)testConfigureFailsNoTokenOrError {
@@ -403,7 +401,31 @@ static NSString *const kNewScope = @"newScope";
   }];
 
   [self waitForExpectations:@[configureFailsExpecation] timeout:1];
+  XCTAssertFalse(GIDSignIn.sharedInstance.appCheck.isPrepared);
 }
+
+- (void)testTurnOffAppCheck {
+  XCTestExpectation *configureSucceedsExpecation =
+      [self expectationWithDescription:@"Configure succeeds expectation"];
+
+  FIRAppCheckToken *token = [[FIRAppCheckToken alloc] initWithToken:@"foo"
+                                                     expirationDate:[NSDate distantFuture]];
+  GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token
+                                                                                       error:nil];
+  [GIDSignIn.sharedInstance configureWithAppCheckProvider:provider
+                                               completion:^(NSError * _Nullable error) {
+    XCTAssertNil(error);
+    [configureSucceedsExpecation fulfill];
+  }];
+
+  [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
+  XCTAssertTrue(GIDSignIn.sharedInstance.appCheck.isPrepared);
+  XCTAssertTrue(GIDSignIn.sharedInstance.useAppCheckToken);
+
+  [GIDSignIn.sharedInstance turnOffAppCheck];
+  XCTAssertFalse(GIDSignIn.sharedInstance.useAppCheckToken);
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testSharedInstance {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
