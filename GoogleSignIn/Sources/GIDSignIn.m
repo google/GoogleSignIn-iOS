@@ -151,12 +151,6 @@ static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
 static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
 static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
-/// Used to determine if the `sharedInstance` or `sharedInstanceWithAppCheckProvider:` methods have
-/// been called to prevent multiple instances of `GIDSignIn`.
-static dispatch_once_t once;
-/// The `static` instance of `GIDSignIn`.
-static GIDSignIn *sharedInstance;
-
 // The callback queue used for authentication flow.
 @interface GIDAuthFlow : GIDCallbackQueue
 
@@ -461,6 +455,8 @@ static GIDSignIn *sharedInstance;
 #pragma mark - Custom getters and setters
 
 + (GIDSignIn *)sharedInstance {
+  static dispatch_once_t once;
+  static GIDSignIn *sharedInstance;
   dispatch_once(&once, ^{
     GTMKeychainStore *keychainStore =
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
@@ -469,25 +465,14 @@ static GIDSignIn *sharedInstance;
   return sharedInstance;
 }
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-/// Private initializer to create the shared instance in the context of tests.
-+ (GIDSignIn *)sharedInstanceWithAppCheckProvider:(id<GIDAppCheckProvider>)provider {
-  dispatch_once(&once, ^{
-    GTMKeychainStore *keychainStore =
-        [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-    sharedInstance = [[self alloc] initWithKeychainStore:keychainStore appCheckProvider:provider];
-  });
-  return sharedInstance;
-}
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
 #pragma mark - Configuring and pre-warming
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-+ (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
+- (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
                            completion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
-    GIDSignIn *signIn = [GIDSignIn sharedInstanceWithAppCheckProvider:provider];
+    _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:provider];
+    GIDSignIn *signIn = GIDSignIn.sharedInstance;
     [signIn->_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                           NSError * _Nullable error) {
       if (token) {
@@ -551,20 +536,11 @@ static GIDSignIn *sharedInstance;
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
+    _useAppCheckToken = NO;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
 }
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-                     appCheckProvider:(nullable id<GIDAppCheckProvider>)provider {
-  self = [self initWithKeychainStore:keychainStore];
-  _useAppCheckToken = NO;
-  _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:provider];
-  return self;
-}
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Does sanity check for parameters and then authenticates if necessary.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options {
