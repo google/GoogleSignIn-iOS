@@ -24,10 +24,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
   ) -> Bool {
-    let provider = AppCheckDebugProviderFactory()
-    AppCheck.setAppCheckProviderFactory(provider)
+    #if targetEnvironment(simulator)
+    let debugProvider = AppCheckDebugProviderFactory()
+    AppCheck.setAppCheckProviderFactory(debugProvider)
+    #else
+    AppCheck.setAppCheckProviderFactory(BirthdayAppCheckProviderFactory())
+    #endif
     FirebaseApp.configure()
-    FirebaseApp.app()
 
     GIDSignIn.sharedInstance.configureWithAppCheckProvider(nil) { error in
       if let error {
