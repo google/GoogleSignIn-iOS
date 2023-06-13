@@ -170,7 +170,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  GIDAppCheck *_appCheck;
+  GIDAppCheck *_appCheck API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;

@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSUInteger const kGIDAppCheckProviderTokenError;
 
+NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheckProviderFake : NSObject <GIDAppCheckProvider>
 
 - (instancetype)initWithAppCheckToken:(nullable FIRAppCheckToken *)token

@@ -32,6 +32,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
   kGIDAppCheckAlreadyPrepared = 2,
 };
 
+NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheck : NSObject
 
 /// Creates the instance of this App Check wrapper class.

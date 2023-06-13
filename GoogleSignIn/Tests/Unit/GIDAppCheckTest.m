@@ -23,6 +23,7 @@
 
 static NSUInteger const timeout = 1;
 
+NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheckTest : XCTestCase
 @end
 

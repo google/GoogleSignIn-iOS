@@ -20,10 +20,6 @@
 
 #import <TargetConditionals.h>
 
-@interface GIDActivityIndicatorViewController ()
-
-@end
-
 @implementation GIDActivityIndicatorViewController
 
 - (void)viewDidLoad {
