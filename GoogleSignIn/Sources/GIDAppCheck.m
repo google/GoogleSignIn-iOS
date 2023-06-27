@@ -29,6 +29,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
 
 @property(nonatomic, strong) id<GIDAppCheckProvider> appCheck;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
+@property(atomic, getter=isPrepared) BOOL prepared;
 
 @end
 
@@ -63,7 +64,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
       if (token) {
-        self->_prepared = YES;
+        self.prepared = YES;
         NSLog(@"Prepared for App Attest with token: %@", token);
         if (completion) {
           completion(token, nil);
@@ -93,7 +94,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
     [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
       if (token) {
-        self->_prepared = YES;
+        self.prepared = YES;
       }
       if (completion) {
         completion(token, error);

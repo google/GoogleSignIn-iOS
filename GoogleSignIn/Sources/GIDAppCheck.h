@@ -59,7 +59,7 @@ NS_CLASS_AVAILABLE_IOS(14)
                                                             NSError * _Nullable error))completion;
 
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
-@property(nonatomic, readonly, getter=isPrepared) BOOL prepared;
+@property(atomic, readonly, getter=isPrepared) BOOL prepared;
 
 @end
 
