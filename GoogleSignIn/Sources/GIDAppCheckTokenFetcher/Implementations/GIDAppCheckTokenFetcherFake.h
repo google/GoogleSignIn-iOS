@@ -13,37 +13,25 @@
 // limitations under the License.
 
 #import <TargetConditionals.h>
+#import <Foundation/Foundation.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GIDAppCheckProviderFake.h"
+#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/API/GIDAppCheckTokenFetcher.h"
 
-@import FirebaseAppCheck;
+@class FIRAppCheckToken;
 
-NSUInteger const kGIDAppCheckProviderTokenError = 1;
+NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDAppCheckProviderFake ()
+extern NSUInteger const kGIDAppCheckTokenFetcherTokenError;
 
-@property(nonatomic, strong, nullable) FIRAppCheckToken *token;
-@property(nonatomic, strong, nullable) NSError *error;
-
-@end
-
-@implementation GIDAppCheckProviderFake
+NS_CLASS_AVAILABLE_IOS(14)
+@interface GIDAppCheckTokenFetcherFake : NSObject <GIDAppCheckTokenFetcher>
 
 - (instancetype)initWithAppCheckToken:(nullable FIRAppCheckToken *)token
-                                error:(nullable NSError *)error {
-  if (self = [super init]) {
-    _token = token;
-    _error = error;
-  }
-  return self;
-}
-
-- (void)limitedUseTokenWithCompletion:(void (^)(FIRAppCheckToken * _Nullable,
-                                                NSError * _Nullable))completion {
-  completion(self.token, self.error);
-}
+                                error:(nullable NSError *)error;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

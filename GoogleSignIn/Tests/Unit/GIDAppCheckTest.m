@@ -18,8 +18,8 @@
 
 #import <XCTest/XCTest.h>
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
-#import "GoogleSignIn/Sources/GIDAppCheck.h"
-#import "GoogleSignIn/Tests/Unit/GIDAppCheckProviderFake.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/GIDAppCheckTokenFetcherFake.h"
 
 static NSUInteger const timeout = 1;
 
@@ -33,11 +33,11 @@ NS_CLASS_AVAILABLE_IOS(14)
   XCTestExpectation *tokenFailExpectation =
       [self expectationWithDescription:@"App check token fail"];
   NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                               code:kGIDAppCheckProviderTokenError
+                                               code:kGIDAppCheckTokenFetcherTokenError
                                            userInfo:nil];
-  GIDAppCheckProviderFake *appCheckProvider =
-      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
-  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+  GIDAppCheckTokenFetcherFake *tokenFetcher =
+      [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:nil error:expectedError];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
 
   [appCheck getLimitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
@@ -56,9 +56,9 @@ NS_CLASS_AVAILABLE_IOS(14)
   FIRAppCheckToken *expectedToken = [[FIRAppCheckToken alloc] initWithToken:@"foo"
                                                              expirationDate:[NSDate distantFuture]];
   // It doesn't matter what we pass for the error since we will check `isPrepared` and make one
-  GIDAppCheckProviderFake *appCheckProvider =
-      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:expectedToken error:nil];
-  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+  GIDAppCheckTokenFetcherFake *tokenFetcher =
+      [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:expectedToken error:nil];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
 
   [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
@@ -95,9 +95,9 @@ NS_CLASS_AVAILABLE_IOS(14)
   FIRAppCheckToken *expectedToken = [[FIRAppCheckToken alloc] initWithToken:@"foo"
                                                              expirationDate:[NSDate distantFuture]];
 
-  GIDAppCheckProviderFake *appCheckProvider =
-      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:expectedToken error:nil];
-  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+  GIDAppCheckTokenFetcherFake *tokenFetcher =
+      [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:expectedToken error:nil];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
 
   [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {

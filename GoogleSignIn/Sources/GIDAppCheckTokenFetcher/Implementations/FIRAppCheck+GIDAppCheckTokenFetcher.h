@@ -15,13 +15,13 @@
  */
 
 @import FirebaseAppCheck;
-#import "GoogleSignIn/Sources/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/API/GIDAppCheckTokenFetcher.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-@interface FIRAppCheck (FIRAppCheck_GIDAppCheckProvider) <GIDAppCheckProvider>
+@interface FIRAppCheck (FIRAppCheck_GIDAppCheckTokenFetcher) <GIDAppCheckTokenFetcher>
 @end
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

@@ -35,9 +35,9 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
-#import "GoogleSignIn/Sources/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/GIDAppCheckTokenFetcherFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#import "GoogleSignIn/Tests/Unit/GIDAppCheckProviderFake.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
@@ -375,17 +375,19 @@ static NSString *const kNewScope = @"newScope";
 
     FIRAppCheckToken *token = [[FIRAppCheckToken alloc] initWithToken:@"foo"
                                                        expirationDate:[NSDate distantFuture]];
-    GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token
-                                                                                         error:nil];
+    GIDAppCheckTokenFetcherFake *tokenFetcher =
+        [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:token error:nil];
+    GIDAppCheck *appCheckProvider = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                                                appCheckProvider:provider];
+                                                appCheckProvider:appCheckProvider];
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
     }];
 
     [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
-    XCTAssertTrue(signIn.appCheck.isPrepared);
+    XCTAssertTrue(appCheckProvider.isPrepared);
   }
 }
 
@@ -394,10 +396,13 @@ static NSString *const kNewScope = @"newScope";
     XCTestExpectation *configureFailsExpecation =
     [self expectationWithDescription:@"Configure fails expectation"];
 
-    GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil
-                                                                                         error:nil];
+    GIDAppCheckTokenFetcherFake *tokenFetcher =
+        [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:nil error:nil];
+    GIDAppCheck *appCheckProvider = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                                                appCheckProvider:provider];
+                                                appCheckProvider:appCheckProvider];
+
     // `configureWithCompletion:` should fail if neither a token or error is present
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
@@ -406,7 +411,7 @@ static NSString *const kNewScope = @"newScope";
     }];
 
     [self waitForExpectations:@[configureFailsExpecation] timeout:1];
-    XCTAssertFalse(signIn.appCheck.isPrepared);
+    XCTAssertFalse(appCheckProvider.isPrepared);
   }
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class FIRAppCheckToken;
@@ -23,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 NS_AVAILABLE_IOS(14)
-@protocol GIDAppCheckProvider <NSObject>
+@protocol GIDAppCheckTokenFetcher
 
 /// Get the limited use `FIRAppCheckToken`.
 ///

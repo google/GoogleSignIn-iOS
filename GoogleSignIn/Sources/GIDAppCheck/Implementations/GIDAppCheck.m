@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/GIDAppCheckProvider.h"
-#import "GoogleSignIn/Sources/FIRAppCheck+GIDAppCheckProvider.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
+#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/FIRAppCheck+GIDAppCheckTokenFetcher.h"
 
 @import FirebaseAppCheck;
 
@@ -27,7 +27,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
 
 @interface GIDAppCheck ()
 
-@property(nonatomic, strong) id<GIDAppCheckProvider> appCheck;
+@property(nonatomic, strong) id<GIDAppCheckTokenFetcher> tokenFetcher;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
 @property(atomic, getter=isPrepared) BOOL prepared;
 
@@ -35,14 +35,10 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
 
 @implementation GIDAppCheck
 
-- (instancetype)init {
-  return [self initWithAppCheckProvider:nil];
-}
-
-- (instancetype)initWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider {
+- (instancetype)initWithAppCheckTokenFetcher:(nullable id<GIDAppCheckTokenFetcher>)tokenFetcher {
   if (self = [super init]) {
     _prepared = NO;
-    _appCheck = provider ?: [FIRAppCheck appCheck];
+    _tokenFetcher = tokenFetcher ?: [FIRAppCheck appCheck];
     _workerQueue = dispatch_queue_create("com.google.googlesignin.appCheckWorkerQueue", nil);
   }
   return self;
@@ -61,8 +57,8 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
       }
       return;
     }
-    [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                   NSError * _Nullable error) {
+    [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                       NSError * _Nullable error) {
       if (token) {
         self.prepared = YES;
         NSLog(@"Prepared for App Attest with token: %@", token);
@@ -91,8 +87,8 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
 - (void)getLimitedUseTokenWithCompletion:
     (nullable void (^)(FIRAppCheckToken * _Nullable, NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
-    [self.appCheck limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                   NSError * _Nullable error) {
+    [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                       NSError * _Nullable error) {
       if (token) {
         self.prepared = YES;
       }

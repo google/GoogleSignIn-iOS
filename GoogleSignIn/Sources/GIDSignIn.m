@@ -29,9 +29,9 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
-#import "GoogleSignIn/Sources/GIDActivityIndicatorViewController.h"
-#import "GoogleSignIn/Sources/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/GIDAppCheckProvider.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -471,7 +471,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // This check helps to avoid needing to set `_appCheck` in an initializer called in
     // `+[GIDSignIn sharedInstance]`. Also defers to the fakes for `_appCheck` set in tests.
     if (!_appCheck) {
-      _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:nil];
+      _appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil];
     }
     [_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                   NSError * _Nullable error) {
@@ -541,7 +541,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                      appCheckProvider:(nullable id<GIDAppCheckProvider>)appCheckProvider {
   self = [self initWithKeychainStore:keychainStore];
   if (self) {
-    _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+    _appCheck = appCheckProvider;
   }
   return self;
 }
