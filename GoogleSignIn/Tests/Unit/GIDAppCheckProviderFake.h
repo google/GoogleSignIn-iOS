@@ -17,7 +17,7 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
+#import "GoogleSignIn/Sources/GIDAppCheckProvider.h"
 
 @class FIRAppCheckToken;
 

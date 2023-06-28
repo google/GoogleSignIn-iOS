@@ -15,9 +15,6 @@
  */
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GIDAppCheckProvider.h"
-#endif
 #import "GIDConfiguration.h"
 #import "GIDGoogleUser.h"
 #import "GIDProfileData.h"

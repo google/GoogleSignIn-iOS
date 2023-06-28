@@ -31,7 +31,7 @@
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
 #import "GoogleSignIn/Sources/GIDActivityIndicatorViewController.h"
 #import "GoogleSignIn/Sources/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckProvider.h"
+#import "GoogleSignIn/Sources/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
