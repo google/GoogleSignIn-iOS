@@ -491,12 +491,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }];
   }
 }
-
-- (void)turnOffAppCheck {
-  @synchronized(self) {
-    _useAppCheckToken = NO;
-  }
-}
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Private methods

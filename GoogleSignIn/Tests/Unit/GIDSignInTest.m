@@ -409,31 +409,6 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertFalse(signIn.appCheck.isPrepared);
   }
 }
-
-- (void)testTurnOffAppCheck {
-  if (@available(iOS 14, *)) {
-    XCTestExpectation *configureSucceedsExpecation =
-    [self expectationWithDescription:@"Configure succeeds expectation"];
-
-    FIRAppCheckToken *token = [[FIRAppCheckToken alloc] initWithToken:@"foo"
-                                                       expirationDate:[NSDate distantFuture]];
-    GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token
-                                                                                         error:nil];
-    GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                                                appCheckProvider:provider];
-    [signIn configureWithCompletion:^(NSError * _Nullable error) {
-      XCTAssertNil(error);
-      [configureSucceedsExpecation fulfill];
-    }];
-
-    [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
-    XCTAssertTrue(signIn.appCheck.isPrepared);
-    XCTAssertTrue(signIn.useAppCheckToken);
-
-    [signIn turnOffAppCheck];
-    XCTAssertFalse(signIn.useAppCheckToken);
-  }
-}
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testSharedInstance {
