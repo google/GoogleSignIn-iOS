@@ -377,14 +377,15 @@ static NSString *const kNewScope = @"newScope";
                                                        expirationDate:[NSDate distantFuture]];
     GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token
                                                                                          error:nil];
-    [GIDSignIn.sharedInstance configureWithAppCheckProvider:provider
-                                                 completion:^(NSError * _Nullable error) {
+    GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                                appCheckProvider:provider];
+    [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
     }];
 
     [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
-    XCTAssertTrue(GIDSignIn.sharedInstance.appCheck.isPrepared);
+    XCTAssertTrue(signIn.appCheck.isPrepared);
   }
 }
 
@@ -395,16 +396,17 @@ static NSString *const kNewScope = @"newScope";
 
     GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil
                                                                                          error:nil];
-    // `configureWithAppCheckProvider:completion:` should fail if neither a token or error is present
-    [GIDSignIn.sharedInstance configureWithAppCheckProvider:provider
-                                                 completion:^(NSError * _Nullable error) {
+    GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                                appCheckProvider:provider];
+    // `configureWithCompletion:` should fail if neither a token or error is present
+    [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
       XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
       [configureFailsExpecation fulfill];
     }];
 
     [self waitForExpectations:@[configureFailsExpecation] timeout:1];
-    XCTAssertFalse(GIDSignIn.sharedInstance.appCheck.isPrepared);
+    XCTAssertFalse(signIn.appCheck.isPrepared);
   }
 }
 
@@ -417,44 +419,24 @@ static NSString *const kNewScope = @"newScope";
                                                        expirationDate:[NSDate distantFuture]];
     GIDAppCheckProviderFake *provider = [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token
                                                                                          error:nil];
-    [GIDSignIn.sharedInstance configureWithAppCheckProvider:provider
-                                                 completion:^(NSError * _Nullable error) {
+    GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                                appCheckProvider:provider];
+    [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
     }];
 
     [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
-    XCTAssertTrue(GIDSignIn.sharedInstance.appCheck.isPrepared);
-    XCTAssertTrue(GIDSignIn.sharedInstance.useAppCheckToken);
+    XCTAssertTrue(signIn.appCheck.isPrepared);
+    XCTAssertTrue(signIn.useAppCheckToken);
 
-    [GIDSignIn.sharedInstance turnOffAppCheck];
-    XCTAssertFalse(GIDSignIn.sharedInstance.useAppCheckToken);
+    [signIn turnOffAppCheck];
+    XCTAssertFalse(signIn.useAppCheckToken);
   }
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testSharedInstance {
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  if (@available(iOS 14, *)) {
-    NSString *expDescription = @"-[GIDSignIn configureWithAppCheckProvider:completion: expectation";
-    XCTestExpectation *configureExpectation = [self expectationWithDescription:expDescription];
-    GIDAppCheckProviderFake *fakeProvider =
-        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
-    // We call configure here with fake so that App Check does not complain about using a default
-    // app check provider before Firebase is configured
-    [GIDSignIn.sharedInstance configureWithAppCheckProvider:fakeProvider
-                                                 completion:^(NSError * _Nullable error) {
-      // We expect an error because we pass `nil` for both the token and error params to
-      // `GIDAppCheckProviderFake`'s initializer above
-      XCTAssertNotNil(error);
-      XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
-      [configureExpectation fulfill];
-    }];
-
-    [self waitForExpectations:@[configureExpectation] timeout:1];
-  }
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-
   GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
   GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
   XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");

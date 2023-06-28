@@ -52,8 +52,15 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// Whether or not the sign in or add scopes flows should use the Firebase App Check token
 @property(nonatomic, readonly) BOOL useAppCheckToken;
 
-/// Private initializer taking a `GTMKeychainStore`to use during tests.
+/// Private initializer taking a `GTMKeychainStore` and `GIDAppCheckProvider` to use during tests.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
+
+#if TARGET_OS_IOS || !TARGET_OS_MACCATALYST
+/// Private initializer taking a `GTMKeychainStore` and `GIDAppCheckProvider` to use during tests.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                     appCheckProvider:(nullable id<GIDAppCheckProvider>)appCheckProvider
+API_AVAILABLE(ios(14));
+#endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;

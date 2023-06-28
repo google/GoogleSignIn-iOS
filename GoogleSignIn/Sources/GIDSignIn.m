@@ -466,15 +466,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Configuring and pre-warming
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-- (void)configureWithAppCheckProvider:(nullable id<GIDAppCheckProvider>)provider
-                           completion:(nullable void (^)(NSError * _Nullable))completion {
+- (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
-    _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:provider];
-    GIDSignIn *signIn = GIDSignIn.sharedInstance;
-    [signIn->_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                          NSError * _Nullable error) {
+    // This check helps to avoid needing to set `_appCheck` in an initializer called in
+    // `+[GIDSignIn sharedInstance]`. Also defers to the fakes for `_appCheck` set in tests.
+    if (!_appCheck) {
+      _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:nil];
+    }
+    [_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                  NSError * _Nullable error) {
       if (token) {
-        [GIDSignIn sharedInstance]->_useAppCheckToken = YES;
+        self->_useAppCheckToken = YES;
         if (completion) {
           completion(nil);
         }
@@ -539,6 +541,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
   return self;
 }
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                     appCheckProvider:(nullable id<GIDAppCheckProvider>)appCheckProvider {
+  self = [self initWithKeychainStore:keychainStore];
+  if (self) {
+    _appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:appCheckProvider];
+  }
+  return self;
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Does sanity check for parameters and then authenticates if necessary.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options {
