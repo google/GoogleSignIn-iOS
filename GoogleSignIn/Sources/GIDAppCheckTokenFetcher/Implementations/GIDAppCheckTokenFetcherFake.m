@@ -41,7 +41,9 @@ NSUInteger const kGIDAppCheckTokenFetcherTokenError = 1;
 
 - (void)limitedUseTokenWithCompletion:(void (^)(FIRAppCheckToken * _Nullable,
                                                 NSError * _Nullable))completion {
-  completion(self.token, self.error);
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completion(self.token, self.error);
+  });
 }
 
 @end

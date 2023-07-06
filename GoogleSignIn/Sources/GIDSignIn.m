@@ -170,7 +170,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  GIDAppCheck *_appCheck API_AVAILABLE(ios(14));
+  id<GIDAppCheckProvider> _appCheck API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
@@ -470,13 +470,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   @synchronized(self) {
     // This check helps to avoid needing to set `_appCheck` in an initializer called in
     // `+[GIDSignIn sharedInstance]`. Also defers to the fakes for `_appCheck` set in tests.
+    // Ultimately, we would prefer to use `GIDSignIn`'s initializer to pass this information in, but
+    // this is currently impossible given that `GIDSignIn` is a singleton.
+    // TODO: Remove this once `GIDSignIn` is no longer a singleton (https://github.com/google/GoogleSignIn-iOS/issues/322)
     if (!_appCheck) {
       _appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil];
     }
     [_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                   NSError * _Nullable error) {
       if (token) {
-        self->_useAppCheckToken = YES;
         if (completion) {
           completion(nil);
         }
@@ -530,7 +532,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
-    _useAppCheckToken = NO;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
@@ -614,18 +615,19 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   emmSupport = nil;
 #endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
-  [self authorizationRequestWithOptions:options completion:
-      ^(OIDAuthorizationRequest * _Nullable request, NSError * _Nullable error) {
-    self->_currentAuthorizationFlow = [OIDAuthorizationService
-                                       presentAuthorizationRequest:request
+  [self authorizationRequestWithOptions:options
+                             completion:^(OIDAuthorizationRequest * _Nullable request,
+                                          NSError * _Nullable error) {
+    self->_currentAuthorizationFlow =
+        [OIDAuthorizationService presentAuthorizationRequest:request
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                       presentingViewController:options.presentingViewController
+                                    presentingViewController:options.presentingViewController
 #elif TARGET_OS_OSX
                                        presentingWindow:options.presentingWindow
 #endif // TARGET_OS_OSX
-                                       callback:
-                                         ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                           NSError *_Nullable error) {
+                                                    callback:
+                                                      ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                                        NSError *_Nullable error) {
       [self processAuthorizationResponse:authorizationResponse
                                    error:error
                               emmSupport:emmSupport];
@@ -637,10 +639,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
   BOOL shouldCallCompletion = YES;
   NSMutableDictionary<NSString *, NSString *> *additionalParameters =
-  [self additionalParametersFromOptions:options];
+      [self additionalParametersFromOptions:options];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (@available(iOS 14.0, *)) {
-    if (_useAppCheckToken) {
+    if (_appCheck) {
       shouldCallCompletion = NO;
       GIDActivityIndicatorViewController *activityVC =
           [[GIDActivityIndicatorViewController alloc] init];

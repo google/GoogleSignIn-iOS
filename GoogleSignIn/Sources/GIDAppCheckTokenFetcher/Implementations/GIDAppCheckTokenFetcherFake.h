@@ -27,6 +27,14 @@ extern NSUInteger const kGIDAppCheckTokenFetcherTokenError;
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheckTokenFetcherFake : NSObject <GIDAppCheckTokenFetcher>
 
+/// Creates an instance with the provided app check token and error.
+///
+/// This protocol is mainly used for testing purposes so that the token fetching from Firebase App
+/// Check can be faked.
+/// @param token The `FIRAppCheckToken` to pass into the completion called from
+/// `limitedUseTokenWithCompletion:`.
+/// @param error The `NSError` to pass into the completion called from
+/// `limitedUseTokenWithCompletion:`.
 - (instancetype)initWithAppCheckToken:(nullable FIRAppCheckToken *)token
                                 error:(nullable NSError *)error;
 

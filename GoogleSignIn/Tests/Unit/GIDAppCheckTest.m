@@ -67,6 +67,8 @@ NS_CLASS_AVAILABLE_IOS(14)
     [notAlreadyPreparedExpectation fulfill];
   }];
 
+  [self waitForExpectations:@[notAlreadyPreparedExpectation] timeout:timeout];
+
   NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                                code:kGIDAppCheckAlreadyPrepared
                                            userInfo:nil];
@@ -74,18 +76,16 @@ NS_CLASS_AVAILABLE_IOS(14)
   XCTestExpectation *alreadyPreparedExpectation =
       [self expectationWithDescription:@"App check already prepared error"];
 
-  // We don't need to wait for `notAlreadyPreparedExpectation` to fulfill  because
-  // `prepareForAppCheckWithCompletion:`'s work is dispatched to a serial background queue and will
-  // and will execute in the order received
-  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                               NSError * _Nullable error) {
     XCTAssertNil(token);
     XCTAssertNotNil(error);
     XCTAssertEqualObjects(error, expectedError);
     [alreadyPreparedExpectation fulfill];
   }];
 
-  [self waitForExpectations:@[notAlreadyPreparedExpectation, alreadyPreparedExpectation]
-                    timeout:timeout];
+  [self waitForExpectations:@[alreadyPreparedExpectation] timeout:timeout];
+
   XCTAssertTrue(appCheck.isPrepared);
 }
 

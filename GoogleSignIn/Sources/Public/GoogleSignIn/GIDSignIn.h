@@ -74,11 +74,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @param completion A nullable callback block passing back any error arising from the
 /// configuration process if any exists.
 ///
-/// Call this method on `GIDSignIn` prior to use and as early as possible. This method creates and
-/// assigns the `GIDAppCheck` instance on the `GIDSignIn` singleton using a default
-/// `GIDAppCheckProvider`. This method generates App Attest key IDs and the attestation object
-/// eagerly to minimize latency later on during the sign in or add
-/// scopes flows.
+/// Call this method on `GIDSignIn` prior to use and as early as possible. This method generates App
+/// Attest key IDs and the attestation object eagerly to minimize latency later on during the sign
+/// in or add scopes flows.
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable error))completion
 API_AVAILABLE(ios(14))
 NS_SWIFT_NAME(configureWithCompletion(completion:));
@@ -137,9 +135,9 @@ NS_SWIFT_NAME(configureWithCompletion(completion:));
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                 completion:
-(nullable void (^)(GIDSignInResult *_Nullable signInResult,
-                   NSError *_Nullable error))completion
-NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
 /// Starts an interactive sign-in flow on iOS using the provided hint.
 ///

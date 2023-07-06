@@ -45,9 +45,6 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// Redeclare |currentUser| as readwrite for internal use.
 @property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
 
-/// Whether or not the sign in or add scopes flows should use the Firebase App Check token
-@property(nonatomic, readonly) BOOL useAppCheckToken;
-
 /// Private initializer taking a `GTMKeychainStore` and `GIDAppCheckProvider` to use during tests.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
 

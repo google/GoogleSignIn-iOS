@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 NS_AVAILABLE_IOS(14)
-@protocol GIDAppCheckTokenFetcher
+@protocol GIDAppCheckTokenFetcher <NSObject>
 
 /// Get the limited use `FIRAppCheckToken`.
 ///

@@ -52,7 +52,6 @@ NS_AVAILABLE_IOS(14)
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
 @property(atomic, readonly, getter=isPrepared) BOOL prepared;
 
-
 @end
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

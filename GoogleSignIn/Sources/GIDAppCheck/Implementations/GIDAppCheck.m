@@ -47,7 +47,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
 - (void)prepareForAppCheckWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable,
                                                             NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
-    if (self.isPrepared) {
+    if ([self isPrepared]) {
       NSLog(@"Already prepared for App Attest");
       NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                            code:kGIDAppCheckAlreadyPrepared
