@@ -485,7 +485,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         return;
       }
       if (error) {
-        NSLog(@"Error preparing for App Check: %@", error);
         if (completion) {
           completion(error);
         }

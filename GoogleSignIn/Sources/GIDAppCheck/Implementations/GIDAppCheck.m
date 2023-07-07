@@ -56,7 +56,6 @@ NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
                                                             NSError * _Nullable))completion {
   dispatch_async(self.workerQueue, ^{
     if ([self isPrepared]) {
-      NSLog(@"Already prepared for App Attest");
       NSError *error = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                            code:kGIDAppCheckAlreadyPrepared
                                        userInfo:nil];
@@ -69,14 +68,12 @@ NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
                                                        NSError * _Nullable error) {
       if (token) {
         [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
-        NSLog(@"Prepared for App Attest with token: %@", token);
         if (completion) {
           completion(token, nil);
         }
         return;
       }
       if (error) {
-        NSLog(@"Failed to prepare for App Attest: %@", error);
         if (completion) {
           completion(nil, error);
         }
