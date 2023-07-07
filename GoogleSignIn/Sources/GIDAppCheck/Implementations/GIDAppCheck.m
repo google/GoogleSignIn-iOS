@@ -25,6 +25,8 @@
 /// Identifier for queue where App Check work is performed.
 static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWorkerQueue";
 
+NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
+
 @interface GIDAppCheck ()
 
 @property(nonatomic, strong) id<GIDAppCheckTokenFetcher> tokenFetcher;
@@ -49,7 +51,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
   dispatch_async(self.workerQueue, ^{
     if ([self isPrepared]) {
       NSLog(@"Already prepared for App Attest");
-      NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+      NSError *error = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                            code:kGIDAppCheckAlreadyPrepared
                                        userInfo:nil];
       if (completion) {
@@ -75,7 +77,7 @@ static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWor
         return;
       }
       if (completion) {
-        NSError *noError = [NSError errorWithDomain:kGIDSignInErrorDomain
+        NSError *noError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                                code:kGIDAppCheckUnexpectedError
                                            userInfo:nil];
         completion(nil, noError);

@@ -32,7 +32,7 @@ NS_CLASS_AVAILABLE_IOS(14)
 - (void)testGetLimitedUseTokenFailure {
   XCTestExpectation *tokenFailExpectation =
       [self expectationWithDescription:@"App check token fail"];
-  NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+  NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                                code:kGIDAppCheckTokenFetcherTokenError
                                            userInfo:nil];
   GIDAppCheckTokenFetcherFake *tokenFetcher =
@@ -69,7 +69,7 @@ NS_CLASS_AVAILABLE_IOS(14)
 
   [self waitForExpectations:@[notAlreadyPreparedExpectation] timeout:timeout];
 
-  NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+  NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                                code:kGIDAppCheckAlreadyPrepared
                                            userInfo:nil];
 

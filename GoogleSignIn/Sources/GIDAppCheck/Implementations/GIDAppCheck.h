@@ -19,15 +19,17 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import <Foundation/Foundation.h>
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class FIRAppCheckToken;
 
+/// The error domain for `NSError`s returned by the Google Sign-In SDK related to App Check.
+extern NSErrorDomain const kGIDAppCheckErrorDomain;
+
 /// A list of potential error codes returned from the Google Sign-In SDK during App Check.
-typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDAppCheckErrorCode) {
+typedef NS_ERROR_ENUM(kGIDAppCheckErrorDomain, GIDAppCheckErrorCode) {
   /// An unexpected error was encountered.
   kGIDAppCheckUnexpectedError = 1,
   /// `GIDAppCheck` has already performed the key generation and attestation steps.
