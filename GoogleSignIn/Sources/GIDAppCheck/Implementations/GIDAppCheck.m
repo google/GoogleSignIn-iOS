@@ -17,6 +17,7 @@
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/FIRAppCheck+GIDAppCheckTokenFetcher.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
 
 @import FirebaseAppCheck;
 

@@ -20,6 +20,7 @@
 #import "FirebaseAppCheck/FIRAppCheckToken.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/GIDAppCheckTokenFetcherFake.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
 
 static NSUInteger const timeout = 1;
 
