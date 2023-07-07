@@ -474,7 +474,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // this is currently impossible given that `GIDSignIn` is a singleton.
     // TODO: Remove this once `GIDSignIn` is no longer a singleton (https://github.com/google/GoogleSignIn-iOS/issues/322)
     if (!_appCheck) {
-      _appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil];
+      _appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil userDefaults:nil];
     }
     [_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                   NSError * _Nullable error) {

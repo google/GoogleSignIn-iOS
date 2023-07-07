@@ -82,6 +82,9 @@
     return YES;\
 }]
 
+/// `NSUserDefaults` suite name for testing with `GIDAppCheck`.
+static NSString *const kUserDefaultsSuiteName = @"GIDAppCheckKeySuiteName";
+
 static NSString * const kFakeGaiaID = @"123456789";
 static NSString * const kFakeIDToken = @"FakeIDToken";
 static NSString * const kClientId = @"FakeClientID";
@@ -264,6 +267,9 @@ static NSString *const kNewScope = @"newScope";
 
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
+
+  // Test userDefaults for use with `GIDAppCheck`
+  NSUserDefaults *_testUserDefaults;
 }
 @end
 
@@ -328,11 +334,12 @@ static NSString *const kNewScope = @"newScope";
   [_fakeMainBundle fakeAllSchemesSupported];
 
   // Object under test
-  [[NSUserDefaults standardUserDefaults] setBool:YES
-                                          forKey:kAppHasRunBeforeKey];
+  [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kAppHasRunBeforeKey];
 
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
   _hint = nil;
+
+  _testUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
 
   __weak GIDSignInTest *weakSelf = self;
   _completion = ^(GIDSignInResult *_Nullable signInResult, NSError * _Nullable error) {
@@ -360,6 +367,9 @@ static NSString *const kNewScope = @"newScope";
   OCMVerifyAll(_presentingWindow);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
+  [[NSUserDefaults standardUserDefaults] removeObjectForKey:kAppHasRunBeforeKey];
+  [_testUserDefaults removeObjectForKey:kGIDAppCheckPreparedKey];
+  [_testUserDefaults removeSuiteNamed:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
@@ -377,7 +387,9 @@ static NSString *const kNewScope = @"newScope";
                                                        expirationDate:[NSDate distantFuture]];
     GIDAppCheckTokenFetcherFake *tokenFetcher =
         [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:token error:nil];
-    GIDAppCheck *appCheckProvider = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+    GIDAppCheck *appCheckProvider =
+        [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
+                                             userDefaults:_testUserDefaults];
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                                 appCheckProvider:appCheckProvider];
@@ -398,7 +410,9 @@ static NSString *const kNewScope = @"newScope";
 
     GIDAppCheckTokenFetcherFake *tokenFetcher =
         [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:nil error:nil];
-    GIDAppCheck *appCheckProvider = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+    GIDAppCheck *appCheckProvider =
+        [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
+                                             userDefaults:_testUserDefaults];
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                                 appCheckProvider:appCheckProvider];

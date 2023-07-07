@@ -23,12 +23,27 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
 
 static NSUInteger const timeout = 1;
+static NSString *const kUserDefaultsSuiteName = @"GIDAppCheckKeySuiteName";
 
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheckTest : XCTestCase
+
+@property(nonatomic, strong) NSUserDefaults *userDefaults;
+
 @end
 
 @implementation GIDAppCheckTest
+
+- (void)setUp {
+  [super setUp];
+  _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
+}
+
+- (void)tearDown {
+  [super tearDown];
+  [self.userDefaults removeObjectForKey:kGIDAppCheckPreparedKey];
+  [self.userDefaults removeSuiteNamed:kUserDefaultsSuiteName];
+}
 
 - (void)testGetLimitedUseTokenFailure {
   XCTestExpectation *tokenFailExpectation =
@@ -38,7 +53,8 @@ NS_CLASS_AVAILABLE_IOS(14)
                                            userInfo:nil];
   GIDAppCheckTokenFetcherFake *tokenFetcher =
       [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:nil error:expectedError];
-  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
+                                                               userDefaults:self.userDefaults];
 
   [appCheck getLimitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
@@ -59,7 +75,8 @@ NS_CLASS_AVAILABLE_IOS(14)
   // It doesn't matter what we pass for the error since we will check `isPrepared` and make one
   GIDAppCheckTokenFetcherFake *tokenFetcher =
       [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:expectedToken error:nil];
-  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
+                                                               userDefaults:self.userDefaults];
 
   [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
@@ -98,7 +115,8 @@ NS_CLASS_AVAILABLE_IOS(14)
 
   GIDAppCheckTokenFetcherFake *tokenFetcher =
       [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:expectedToken error:nil];
-  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
+                                                               userDefaults:self.userDefaults];
 
   [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {

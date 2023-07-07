@@ -24,6 +24,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class FIRAppCheckToken;
+extern NSString *const kGIDAppCheckPreparedKey;
 
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheck : NSObject <GIDAppCheckProvider>

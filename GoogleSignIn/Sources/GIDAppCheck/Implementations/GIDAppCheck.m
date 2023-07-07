@@ -25,26 +25,31 @@
 
 /// Identifier for queue where App Check work is performed.
 static NSString *const kGIDAppCheckQueue = @"com.google.googlesignin.appCheckWorkerQueue";
-
 NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
+NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
 
 @interface GIDAppCheck ()
 
 @property(nonatomic, strong) id<GIDAppCheckTokenFetcher> tokenFetcher;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
-@property(atomic, getter=isPrepared) BOOL prepared;
+@property(nonatomic, strong) NSUserDefaults *userDefaults;
 
 @end
 
 @implementation GIDAppCheck
 
-- (instancetype)initWithAppCheckTokenFetcher:(nullable id<GIDAppCheckTokenFetcher>)tokenFetcher {
+- (instancetype)initWithAppCheckTokenFetcher:(nullable id<GIDAppCheckTokenFetcher>)tokenFetcher
+                                userDefaults:(nullable NSUserDefaults *)userDefaults {
   if (self = [super init]) {
-    _prepared = NO;
     _tokenFetcher = tokenFetcher ?: [FIRAppCheck appCheck];
+    _userDefaults = userDefaults ?: [NSUserDefaults standardUserDefaults];
     _workerQueue = dispatch_queue_create("com.google.googlesignin.appCheckWorkerQueue", nil);
   }
   return self;
+}
+
+- (BOOL)isPrepared {
+  return [self.userDefaults boolForKey:kGIDAppCheckPreparedKey];
 }
 
 - (void)prepareForAppCheckWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable,
@@ -63,7 +68,7 @@ NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
     [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                        NSError * _Nullable error) {
       if (token) {
-        self.prepared = YES;
+        [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         NSLog(@"Prepared for App Attest with token: %@", token);
         if (completion) {
           completion(token, nil);
@@ -93,7 +98,7 @@ NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
     [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                        NSError * _Nullable error) {
       if (token) {
-        self.prepared = YES;
+        [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
       }
       if (completion) {
         completion(token, error);

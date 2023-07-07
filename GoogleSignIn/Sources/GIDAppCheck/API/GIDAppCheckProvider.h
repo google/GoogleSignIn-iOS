@@ -29,10 +29,12 @@ NS_AVAILABLE_IOS(14)
 
 /// Creates the instance of this App Check wrapper class.
 ///
-/// If `provider` is nil, then we default to `FIRAppCheck`.
-///
-/// @param tokenFetcher The instance performing the Firebase App Check token requests.
-- (instancetype)initWithAppCheckTokenFetcher:(nullable id<GIDAppCheckTokenFetcher>)tokenFetcher;
+/// @param tokenFetcher The instance performing the Firebase App Check token requests. If `provider`
+///     is nil, then we default to `FIRAppCheck`.
+/// @param userDefaults The instance of `NSUserDefaults` that `GIDAppCheck` will use to store its
+///     preparation status. If nil, `GIDAppCheck` will use `-[NSUserDefaults standardUserDefaults]`.
+- (instancetype)initWithAppCheckTokenFetcher:(nullable id<GIDAppCheckTokenFetcher>)tokenFetcher
+                                userDefaults:(nullable NSUserDefaults *)userDefaults;
 
 /// Prewarms the library for App Check by asking Firebase App Check to generate the App Attest key
 /// id and perform the initial attestation process (if needed).
@@ -50,7 +52,7 @@ NS_AVAILABLE_IOS(14)
                                                             NSError * _Nullable error))completion;
 
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
-@property(atomic, readonly, getter=isPrepared) BOOL prepared;
+- (BOOL)isPrepared;
 
 @end
 
