@@ -104,7 +104,7 @@ NS_CLASS_AVAILABLE_IOS(14)
 
   [self waitForExpectations:@[alreadyPreparedExpectation] timeout:timeout];
 
-  XCTAssertTrue(appCheck.isPrepared);
+  XCTAssertTrue([appCheck isPrepared]);
 }
 
 - (void)testGetLimitedUseTokenSucceeds {
@@ -143,7 +143,64 @@ NS_CLASS_AVAILABLE_IOS(14)
 
   [self waitForExpectations:@[getLimitedUseTokenSucceedsExpectation] timeout:timeout];
 
-  XCTAssertTrue(appCheck.isPrepared);
+  XCTAssertTrue([appCheck isPrepared]);
+}
+
+- (void)testAsyncCompletions {
+  XCTestExpectation *firstPrepareExpectation =
+      [self expectationWithDescription:@"First async prepare for App Check expectation"];
+
+  XCTestExpectation *secondPrepareExpectation =
+      [self expectationWithDescription:@"Second async prepare for App Check expectation"];
+
+  FIRAppCheckToken *expectedToken = [[FIRAppCheckToken alloc] initWithToken:@"foo"
+                                                             expirationDate:[NSDate distantFuture]];
+
+  GIDAppCheckTokenFetcherFake *tokenFetcher =
+      [[GIDAppCheckTokenFetcherFake alloc] initWithAppCheckToken:expectedToken error:nil];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
+                                                               userDefaults:self.userDefaults];
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                 NSError * _Nullable error) {
+      XCTAssertNil(error);
+      XCTAssertNotNil(token);
+      XCTAssertEqualObjects(token, expectedToken);
+      [firstPrepareExpectation fulfill];
+    }];
+  });
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                                 NSError * _Nullable error) {
+      XCTAssertNil(error);
+      XCTAssertNotNil(token);
+      XCTAssertEqualObjects(token, expectedToken);
+      [secondPrepareExpectation fulfill];
+    }];
+  });
+
+  [self waitForExpectations:@[firstPrepareExpectation, secondPrepareExpectation] timeout:timeout];
+
+  XCTAssertTrue([appCheck isPrepared]);
+
+  // Simulate requesting later on after `appCheck` is prepared
+  XCTestExpectation *preparedExpectation =
+      [self expectationWithDescription:@"Prepared expectation"];
+
+  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
+                                               NSError * _Nullable error) {
+    XCTAssertNil(token);
+    XCTAssertNotNil(error);
+    NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                                 code:kGIDAppCheckAlreadyPrepared
+                                             userInfo:nil];
+    XCTAssertEqualObjects(error, expectedError);
+    [preparedExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[preparedExpectation] timeout:timeout];
 }
 
 @end
