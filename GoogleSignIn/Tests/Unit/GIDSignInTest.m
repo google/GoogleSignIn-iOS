@@ -268,8 +268,10 @@ static NSString *const kNewScope = @"newScope";
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // Test userDefaults for use with `GIDAppCheck`
   NSUserDefaults *_testUserDefaults;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 @end
 
@@ -339,7 +341,9 @@ static NSString *const kNewScope = @"newScope";
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
   _hint = nil;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   _testUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
   __weak GIDSignInTest *weakSelf = self;
   _completion = ^(GIDSignInResult *_Nullable signInResult, NSError * _Nullable error) {
@@ -368,8 +372,10 @@ static NSString *const kNewScope = @"newScope";
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:kAppHasRunBeforeKey];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [_testUserDefaults removeObjectForKey:kGIDAppCheckPreparedKey];
   [_testUserDefaults removeSuiteNamed:kUserDefaultsSuiteName];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
