@@ -805,7 +805,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)authenticateWithOptions:(GIDSignInInternalOptions *)options {
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {
-    // TODO: Determine if we also need to use App Check in the flows below (mdmathias, 2023.05.23)
     [self authenticateInteractivelyWithOptions:options];
     return;
   }
