@@ -78,9 +78,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
                                                                userDefaults:self.userDefaults];
 
-  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                               NSError * _Nullable error) {
-    XCTAssertEqualObjects(token, expectedToken);
+  [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
     [notAlreadyPreparedExpectation fulfill];
   }];
@@ -94,9 +92,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   XCTestExpectation *alreadyPreparedExpectation =
       [self expectationWithDescription:@"App check already prepared error"];
 
-  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                               NSError * _Nullable error) {
-    XCTAssertNil(token);
+  [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
     XCTAssertEqualObjects(error, expectedError);
     [alreadyPreparedExpectation fulfill];
@@ -118,9 +114,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:tokenFetcher
                                                                userDefaults:self.userDefaults];
 
-  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                               NSError * _Nullable error) {
-    XCTAssertEqualObjects(token, expectedToken);
+  [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNil(error);
     [prepareExpectation fulfill];
   }];
@@ -162,21 +156,15 @@ NS_CLASS_AVAILABLE_IOS(14)
                                                                userDefaults:self.userDefaults];
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                 NSError * _Nullable error) {
+    [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
-      XCTAssertNotNil(token);
-      XCTAssertEqualObjects(token, expectedToken);
       [firstPrepareExpectation fulfill];
     }];
   });
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                 NSError * _Nullable error) {
+    [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
-      XCTAssertNotNil(token);
-      XCTAssertEqualObjects(token, expectedToken);
       [secondPrepareExpectation fulfill];
     }];
   });
@@ -189,9 +177,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   XCTestExpectation *preparedExpectation =
       [self expectationWithDescription:@"Prepared expectation"];
 
-  [appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                               NSError * _Nullable error) {
-    XCTAssertNil(token);
+  [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
     XCTAssertNotNil(error);
     NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                                  code:kGIDAppCheckAlreadyPrepared

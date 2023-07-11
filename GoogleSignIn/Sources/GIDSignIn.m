@@ -476,19 +476,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (!_appCheck) {
       _appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil userDefaults:nil];
     }
-    [_appCheck prepareForAppCheckWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                  NSError * _Nullable error) {
-      if (token) {
-        if (completion) {
-          completion(nil);
-        }
-        return;
-      }
-      if (error) {
+    [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
         if (completion) {
           completion(error);
         }
-      }
     }];
   }
 }

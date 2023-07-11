@@ -26,14 +26,15 @@
 NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
 NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
 
-typedef void (^GIDAppCheckCompletion)(FIRAppCheckToken * _Nullable,NSError * _Nullable);
+typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
+typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError * _Nullable);
 
 @interface GIDAppCheck ()
 
 @property(nonatomic, strong) id<GIDAppCheckTokenFetcher> tokenFetcher;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
 @property(nonatomic, strong) NSUserDefaults *userDefaults;
-@property(atomic, strong) NSMutableArray<GIDAppCheckCompletion> *prepareCompletions;
+@property(atomic, strong) NSMutableArray<GIDAppCheckPrepareCompletion> *prepareCompletions;
 @property(atomic) BOOL preparing;
 
 @end
@@ -56,9 +57,9 @@ typedef void (^GIDAppCheckCompletion)(FIRAppCheckToken * _Nullable,NSError * _Nu
   return [self.userDefaults boolForKey:kGIDAppCheckPreparedKey];
 }
 
-- (void)prepareForAppCheckWithCompletion:(nullable GIDAppCheckCompletion)completion {
+- (void)prepareForAppCheckWithCompletion:(nullable GIDAppCheckPrepareCompletion)completion {
   if (completion) {
-    @synchronized (self.prepareCompletions) {
+    @synchronized (self) {
       [self.prepareCompletions addObject:completion];
     }
   }
@@ -72,26 +73,32 @@ typedef void (^GIDAppCheckCompletion)(FIRAppCheckToken * _Nullable,NSError * _Nu
   }
 
   dispatch_async(self.workerQueue, ^{
+    NSArray * __block callbacks;
+
     if ([self isPrepared]) {
       NSError *error = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                            code:kGIDAppCheckAlreadyPrepared
                                        userInfo:nil];
-      @synchronized (self) {
-        for (GIDAppCheckCompletion savedCompletion in self.prepareCompletions) {
-          savedCompletion(nil, error);
-        }
 
+      NSArray *callbacks;
+      @synchronized (self) {
+        callbacks = [self.prepareCompletions copy];
         [self.prepareCompletions removeAllObjects];
         self.preparing = NO;
-
-        return;
       }
+
+      for (GIDAppCheckPrepareCompletion savedCompletion in callbacks) {
+        savedCompletion(error);
+      }
+      return;
     }
 
     [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                       NSError * _Nullable error) {
+                                                  NSError * _Nullable error) {
+      NSError * __block maybeError;
       @synchronized (self) {
-        NSError *maybeError = error;
+        maybeError = error;
+
         if (!token && !maybeError) {
           maybeError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                            code:kGIDAppCheckUnexpectedError
@@ -102,18 +109,20 @@ typedef void (^GIDAppCheckCompletion)(FIRAppCheckToken * _Nullable,NSError * _Nu
           [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         }
 
-        for (GIDAppCheckCompletion savedCompletion in self.prepareCompletions) {
-          savedCompletion(token, maybeError);
-        }
-
+        callbacks = [self.prepareCompletions copy];
         [self.prepareCompletions removeAllObjects];
         self.preparing = NO;
+      }
+
+
+      for (GIDAppCheckPrepareCompletion savedCompletion in callbacks) {
+        savedCompletion(maybeError);
       }
     }];
   });
 }
 
-- (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckCompletion)completion {
+- (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
     [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                        NSError * _Nullable error) {

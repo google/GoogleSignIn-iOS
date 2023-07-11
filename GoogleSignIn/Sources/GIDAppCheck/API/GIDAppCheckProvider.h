@@ -39,10 +39,8 @@ NS_AVAILABLE_IOS(14)
 /// Prewarms the library for App Check by asking Firebase App Check to generate the App Attest key
 /// id and perform the initial attestation process (if needed).
 ///
-/// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
-///     otherwise.
-- (void)prepareForAppCheckWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
-                                                            NSError * _Nullable error))completion;
+/// @param completion A `nullable` callback with a `nullable` `NSError` if preparation fails.
+- (void)prepareForAppCheckWithCompletion:(nullable void (^)(NSError * _Nullable error))completion;
 
 /// Fetches the limited use Firebase token.
 ///
