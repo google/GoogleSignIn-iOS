@@ -94,7 +94,7 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
     }
 
     [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                  NSError * _Nullable error) {
+                                                       NSError * _Nullable error) {
       NSError * __block maybeError;
       @synchronized (self) {
         maybeError = error;
