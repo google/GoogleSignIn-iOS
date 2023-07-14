@@ -29,9 +29,6 @@ extern NSErrorDomain const kGIDAppCheckErrorDomain;
 typedef NS_ERROR_ENUM(kGIDAppCheckErrorDomain, GIDAppCheckErrorCode) {
   /// An unexpected error was encountered.
   kGIDAppCheckUnexpectedError = 1,
-  /// A notice that `GIDAppCheck` has already performed the key generation and attestation steps and
-  /// is already prepared; this is not a failing error.
-  kGIDAppCheckAlreadyPrepared = 2,
 };
 NS_ASSUME_NONNULL_END
 

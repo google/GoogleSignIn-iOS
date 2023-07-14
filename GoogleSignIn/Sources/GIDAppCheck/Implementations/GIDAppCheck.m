@@ -76,9 +76,9 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
     NSArray * __block callbacks;
 
     if ([self isPrepared]) {
-      NSError *error = [NSError errorWithDomain:kGIDAppCheckErrorDomain
-                                           code:kGIDAppCheckAlreadyPrepared
-                                       userInfo:nil];
+#if DEBUG
+      NSLog(@"`GIDAppCheck` is already prepared.");
+#endif
 
       NSArray *callbacks;
       @synchronized (self) {
@@ -88,24 +88,22 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
       }
 
       for (GIDAppCheckPrepareCompletion savedCompletion in callbacks) {
-        savedCompletion(error);
+        savedCompletion(nil);
       }
       return;
     }
 
     [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                        NSError * _Nullable error) {
-      NSError * __block maybeError;
+      NSError * __block maybeError = error;
       @synchronized (self) {
-        maybeError = error;
-
-        if (!token && !maybeError) {
+        if (!token && !error) {
           maybeError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                            code:kGIDAppCheckUnexpectedError
                                        userInfo:nil];
         }
 
-        if (!maybeError) {
+        if (token) {
           [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         }
 

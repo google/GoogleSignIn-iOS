@@ -85,16 +85,11 @@ NS_CLASS_AVAILABLE_IOS(14)
 
   [self waitForExpectations:@[notAlreadyPreparedExpectation] timeout:timeout];
 
-  NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
-                                               code:kGIDAppCheckAlreadyPrepared
-                                           userInfo:nil];
-
   XCTestExpectation *alreadyPreparedExpectation =
       [self expectationWithDescription:@"App check already prepared error"];
 
   [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
-    XCTAssertNotNil(error);
-    XCTAssertEqualObjects(error, expectedError);
+    XCTAssertNil(error);
     [alreadyPreparedExpectation fulfill];
   }];
 
@@ -178,11 +173,7 @@ NS_CLASS_AVAILABLE_IOS(14)
       [self expectationWithDescription:@"Prepared expectation"];
 
   [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
-    XCTAssertNotNil(error);
-    NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
-                                                 code:kGIDAppCheckAlreadyPrepared
-                                             userInfo:nil];
-    XCTAssertEqualObjects(error, expectedError);
+    XCTAssertNil(error);
     [preparedExpectation fulfill];
   }];
 
