@@ -18,11 +18,8 @@
 
 #import <XCTest/XCTest.h>
 
-#ifdef SWIFT_PACKAGE
 @import GTMAppAuth;
-#else
-#import <GTMAppAuth/GTMAppAuth.h>
-#endif
+
 
 static NSString *const kTestURL = @"https://testURL.com";
 static NSString *const kErrorDomain = @"ERROR_DOMAIN";

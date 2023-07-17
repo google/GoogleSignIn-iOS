@@ -1,10 +1,7 @@
 #import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 
-//#ifdef SWIFT_PACKAGE
 @import GTMAppAuth;
-//#else
-//#import <GTMAppAuth/GTMAppAuth.h>
-//#endif
+
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
 NS_ASSUME_NONNULL_BEGIN
