@@ -640,6 +640,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                      animated:true
                                                    completion:^{
         // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
+        // TODO: Re-implement per: https://github.com/google/GoogleSignIn-iOS/issues/329
         dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
         dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
           [self->_appCheck getLimitedUseTokenWithCompletion:
