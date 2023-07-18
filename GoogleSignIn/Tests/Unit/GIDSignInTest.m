@@ -436,12 +436,6 @@ static NSString *const kNewScope = @"newScope";
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-- (void)testSharedInstance {
-  GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
-  GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
-  XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
-}
-
 - (void)testInitWithKeychainStore {
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;

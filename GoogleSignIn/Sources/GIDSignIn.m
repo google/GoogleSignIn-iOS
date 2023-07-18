@@ -458,7 +458,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   dispatch_once(&once, ^{
     GTMKeychainStore *keychainStore =
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-    sharedInstance = [[self alloc] initWithKeychainStore:keychainStore];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (@available(iOS 14.0, *)) {
+      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
+                                          appCheckProvider:nil];
+    }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (!sharedInstance) {
+      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore];
+    }
   });
   return sharedInstance;
 }
@@ -468,14 +476,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
-    // This check helps to avoid needing to set `_appCheck` in an initializer called in
-    // `+[GIDSignIn sharedInstance]`. Also defers to the fakes for `_appCheck` set in tests.
-    // Ultimately, we would prefer to use `GIDSignIn`'s initializer to pass this information in, but
-    // this is currently impossible given that `GIDSignIn` is a singleton.
-    // TODO: Remove this once `GIDSignIn` is no longer a singleton (https://github.com/google/GoogleSignIn-iOS/issues/322)
-    if (!_appCheck) {
-      _appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil userDefaults:nil];
-    }
     [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
         if (completion) {
           completion(error);
@@ -532,7 +532,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                      appCheckProvider:(nullable id<GIDAppCheckProvider>)appCheckProvider {
   self = [self initWithKeychainStore:keychainStore];
   if (self) {
-    _appCheck = appCheckProvider;
+    _appCheck = appCheckProvider ?: [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil
+                                                                         userDefaults:nil];
   }
   return self;
 }
