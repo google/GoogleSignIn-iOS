@@ -51,7 +51,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 /// Private initializer taking a `GTMKeychainStore` and `GIDAppCheckProvider`.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-                     appCheckProvider:(nullable id<GIDAppCheckProvider>)appCheckProvider
+                     appCheckProvider:(id<GIDAppCheckProvider>)appCheckProvider
 API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
 
