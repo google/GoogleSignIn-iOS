@@ -76,10 +76,6 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
     NSArray * __block callbacks;
 
     if ([self isPrepared]) {
-#if DEBUG
-      NSLog(@"`GIDAppCheck` is already prepared.");
-#endif
-
       NSArray *callbacks;
       @synchronized (self) {
         callbacks = [self.prepareCompletions copy];
