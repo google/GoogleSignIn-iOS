@@ -28,6 +28,10 @@
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import "FirebaseAppCheck/FIRAppCheckToken.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -132,6 +136,12 @@ static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes
 static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
 
+// Parameters for auth and token exchange endpoints using App Attest.
+static NSString *const kClientAssertionParameter = @"client_assertion";
+static NSString *const kClientAssertionTypeParameter = @"client_assertion_type";
+static NSString *const kClientAssertionTypeParameterValue =
+    @"urn:ietf:params:oauth:client-assertion-type:appcheck";
+
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
@@ -159,6 +169,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  id<GIDAppCheckProvider> _appCheck API_AVAILABLE(ios(14));
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
@@ -443,10 +456,36 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   static dispatch_once_t once;
   static GIDSignIn *sharedInstance;
   dispatch_once(&once, ^{
-    sharedInstance = [[self alloc] initPrivate];
+    GTMKeychainStore *keychainStore =
+        [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (@available(iOS 14.0, *)) {
+      GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil
+                                                                   userDefaults:nil];
+      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
+                                          appCheckProvider:appCheck];
+    }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (!sharedInstance) {
+      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore];
+    }
   });
   return sharedInstance;
 }
+
+#pragma mark - Configuring and pre-warming
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
+  @synchronized(self) {
+    [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
+        if (completion) {
+          completion(error);
+        }
+    }];
+  }
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Private methods
 
@@ -470,14 +509,13 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
 
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
+                                         [GIDSignInPreferences googleAuthorizationServer]];
     NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
+                                  [GIDSignInPreferences googleTokenServer]];
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+                             initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
+                             tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
     _keychainStore = keychainStore;
-
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
     GIDAuthStateMigration *migration =
@@ -491,11 +529,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   return self;
 }
 
-- (instancetype)initPrivate {
-  GTMKeychainStore *keychainStore =
-      [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-  return [self initWithKeychainStore:keychainStore];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                     appCheckProvider:(id<GIDAppCheckProvider>)appCheckProvider {
+  self = [self initWithKeychainStore:keychainStore];
+  if (self) {
+    _appCheck = appCheckProvider;
+  }
+  return self;
 }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Does sanity check for parameters and then authenticates if necessary.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options {
@@ -557,11 +600,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Authentication flow
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
-  GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
   NSString *emmSupport;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
@@ -569,7 +607,100 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   emmSupport = nil;
 #endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  [self authorizationRequestWithOptions:options
+                             completion:^(OIDAuthorizationRequest * _Nullable request,
+                                          NSError * _Nullable error) {
+    self->_currentAuthorizationFlow =
+        [OIDAuthorizationService presentAuthorizationRequest:request
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                    presentingViewController:options.presentingViewController
+#elif TARGET_OS_OSX
+                                       presentingWindow:options.presentingWindow
+#endif // TARGET_OS_OSX
+                                                    callback:
+                                                      ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                                        NSError *_Nullable error) {
+      [self processAuthorizationResponse:authorizationResponse
+                                   error:error
+                              emmSupport:emmSupport];
+    }];
+  }];
+}
+
+- (void)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
+    (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
+  BOOL shouldCallCompletion = YES;
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+      [self additionalParametersFromOptions:options];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  if (@available(iOS 14.0, *)) {
+    if (_appCheck) {
+      shouldCallCompletion = NO;
+      GIDActivityIndicatorViewController *activityVC =
+          [[GIDActivityIndicatorViewController alloc] init];
+      [options.presentingViewController presentViewController:activityVC
+                                                     animated:true
+                                                   completion:^{
+        // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
+        // TODO: Re-implement per: https://github.com/google/GoogleSignIn-iOS/issues/329
+        dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
+        dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+          [self->_appCheck getLimitedUseTokenWithCompletion:
+              ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+            if (token) {
+              additionalParameters[kClientAssertionTypeParameter] =
+                  kClientAssertionTypeParameterValue;
+              additionalParameters[kClientAssertionParameter] = token.token;
+              OIDAuthorizationRequest *request =
+                  [self authorizationRequestWithOptions:options
+                                   additionalParameters:additionalParameters];
+              [activityVC.activityIndicator stopAnimating];
+              [activityVC dismissViewControllerAnimated:YES completion:nil];
+              completion(request, nil);
+              return;
+            }
+            [activityVC.activityIndicator stopAnimating];
+            [activityVC dismissViewControllerAnimated:YES completion:nil];
+            completion(nil, error);
+            return;
+          }];
+        });
+      }];
+    }
+  }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  if (shouldCallCompletion) {
+    OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
+                                                        additionalParameters:additionalParameters];
+    completion(request, nil);
+  }
+}
+
+
+- (OIDAuthorizationRequest *)
+    authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+               additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
+  OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:options.scopes
+                                                 redirectURL:[self redirectURLWithOptions:options]
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
+  return request;
+}
+
+- (NSMutableDictionary<NSString *, NSString *> *)
+    additionalParametersFromOptions:(GIDSignInInternalOptions *)options {
+  NSString *emmSupport;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
+
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+      [[NSMutableDictionary alloc] init];
   additionalParameters[kIncludeGrantedScopesParameter] = @"true";
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
@@ -592,27 +723,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
+  return additionalParameters;
+}
 
-  _currentAuthorizationFlow = [OIDAuthorizationService
-      presentAuthorizationRequest:request
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-         presentingViewController:options.presentingViewController
-#elif TARGET_OS_OSX
-                 presentingWindow:options.presentingWindow
-#endif // TARGET_OS_OSX
-                        callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                   NSError *_Nullable error) {
-    [self processAuthorizationResponse:authorizationResponse
-                                 error:error
-                            emmSupport:emmSupport];
-  }];
+- (NSURL *)redirectURLWithOptions:(GIDSignInInternalOptions *)options {
+  GIDSignInCallbackSchemes *schemes =
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
+                                             [schemes clientIdentifierScheme],
+                                             kBrowserCallbackPath]];
+  return redirectURL;
 }
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
@@ -677,7 +797,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 // Perform authentication with the provided options.
 - (void)authenticateWithOptions:(GIDSignInInternalOptions *)options {
-
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {
     [self authenticateInteractivelyWithOptions:options];

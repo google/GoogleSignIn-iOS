@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@class FIRAppCheckToken;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GIDAppCheckError.h"
-#endif
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDSignInResult.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+
+NS_AVAILABLE_IOS(14)
+@protocol GIDAppCheckTokenFetcher <NSObject>
+
+/// Get the limited use `FIRAppCheckToken`.
+///
+/// @param completion A block that passes back the `FIRAppCheckToken` upon success or an error in
+///     the case of any failure.
+- (void)limitedUseTokenWithCompletion:(nullable void (^)(FIRAppCheckToken * _Nullable token,
+                                                         NSError * _Nullable error))completion;
+
+@end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+NS_ASSUME_NONNULL_END

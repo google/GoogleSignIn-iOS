@@ -24,7 +24,7 @@ let package = Package(
   defaultLocalization: "en",
   platforms: [
     .macOS(.v10_15),
-    .iOS(.v10)
+    .iOS(.v11)
   ],
   products: [
     .library(
@@ -45,6 +45,10 @@ let package = Package(
       name: "AppAuth",
       url: "https://github.com/openid/AppAuth-iOS.git",
       "1.6.0" ..< "2.0.0"),
+    .package(
+      name: "Firebase",
+      url: "https://github.com/firebase/firebase-ios-sdk.git",
+      "10.0.0" ..< "11.0.0"),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
@@ -67,6 +71,7 @@ let package = Package(
       name: "GoogleSignIn",
       dependencies: [
         .product(name: "AppAuth", package: "AppAuth"),
+        .product(name: "FirebaseAppCheck", package: "Firebase"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
       ],
@@ -103,6 +108,7 @@ let package = Package(
         "GoogleSignIn",
         "OCMock",
         .product(name: "AppAuth", package: "AppAuth"),
+        .product(name: "FirebaseAppCheck", package: "Firebase"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
         .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
