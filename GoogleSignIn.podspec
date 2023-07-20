@@ -13,7 +13,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     :tag => s.version.to_s
   }
   s.swift_version = '4.0'
-  ios_deployment_target = '10.0'
+  ios_deployment_target = '11.0'
   osx_deployment_target = '10.15'
   s.ios.deployment_target = ios_deployment_target
   s.osx.deployment_target = osx_deployment_target
@@ -33,6 +33,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   ]
   s.ios.framework = 'UIKit'
   s.osx.framework = 'AppKit'
+  s.dependency 'FirebaseAppCheck', '~> 10.0'
   s.dependency 'AppAuth', '>= 1.7.3', '< 2.0'
   s.dependency 'GTMAppAuth', '>= 4.1.1', '< 5.0'
   s.dependency 'GTMSessionFetcher/Core', '~> 3.3'
