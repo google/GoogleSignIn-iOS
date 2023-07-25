@@ -48,7 +48,7 @@ let package = Package(
     .package(
       name: "Firebase",
       url: "https://github.com/firebase/firebase-ios-sdk.git",
-      "10.0.0" ..< "11.0.0"),
+      .branch("app-check-core"),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
