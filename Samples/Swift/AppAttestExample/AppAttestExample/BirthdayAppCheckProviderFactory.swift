@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import FirebaseCore
-import FirebaseAppCheck
-
-class BirthdayAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
-  func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
-    return AppAttestProvider(app: app)
-  }
-}
-
+//import FirebaseCore
+//import FirebaseAppCheck
+//
+//class BirthdayAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
+//  func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
+//    return AppAttestProvider(app: app)
+//  }
+//}
+//

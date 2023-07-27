@@ -17,8 +17,11 @@
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <AppCheckCore/GACAppCheckToken.h>
+
 #import <AppCheckCore/GACAppCheck.h>
+#import <AppCheckCore/GACAppCheckSettings.h>
+#import <AppCheckCore/GACAppCheckToken.h>
+#import <AppCheckCore/GACAppAttestProvider.h>
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
@@ -32,7 +35,8 @@ static NSString *const kGSIAppAttestResourceNameFormat = @"oauthClients/%@";
 static NSString *const kGSIAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
-typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullable, NSError * _Nullable);
+typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullable,
+                                           NSError * _Nullable);
 
 @interface GIDAppCheck ()
 

@@ -16,6 +16,8 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import <AppCheckCore/GACAppCheckToken.h>
+
 NSUInteger const kGIDAppCheckProviderFakeError = 1;
 
 @interface GIDAppCheckProviderFake ()
