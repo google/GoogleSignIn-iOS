@@ -16,7 +16,9 @@
 #import <Foundation/Foundation.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-@import AppCheckCore;
+#import <AppCheckCore/GACAppCheckProvider.h>
+
+@class GACAppCheckToken;
 
 NS_ASSUME_NONNULL_BEGIN
 

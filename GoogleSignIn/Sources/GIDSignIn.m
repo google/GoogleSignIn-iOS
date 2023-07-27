@@ -28,9 +28,9 @@
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-@import AppCheckCore;
-#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
+#import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

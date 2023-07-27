@@ -18,7 +18,6 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-@import AppCheckCore;
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN

@@ -34,7 +34,7 @@
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-@import AppCheckCore;
+#import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"

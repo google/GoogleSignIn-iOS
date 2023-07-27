@@ -15,7 +15,8 @@
  */
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-@import AppCheckCore;
+#import <AppCheckCore/GACAppCheckToken.h>
+#import <AppCheckCore/GACAppCheck.h>
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
