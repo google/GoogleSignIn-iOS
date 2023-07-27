@@ -16,26 +16,24 @@
 #import <Foundation/Foundation.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/API/GIDAppCheckTokenFetcher.h"
-
-@class FIRAppCheckToken;
+@import AppCheckCore;
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSUInteger const kGIDAppCheckTokenFetcherTokenError;
+extern NSUInteger const kGIDAppCheckProviderFakeError;
 
 NS_CLASS_AVAILABLE_IOS(14)
-@interface GIDAppCheckTokenFetcherFake : NSObject <GIDAppCheckTokenFetcher>
+@interface GIDAppCheckProviderFake : NSObject <GACAppCheckProvider>
 
 /// Creates an instance with the provided app check token and error.
 ///
 /// This protocol is mainly used for testing purposes so that the token fetching from Firebase App
 /// Check can be faked.
-/// @param token The `FIRAppCheckToken` to pass into the completion called from
-/// `limitedUseTokenWithCompletion:`.
+/// @param token The `GACAppCheckToken` instance to pass into the completion called from
+/// `getTokenWithCompletion:`.
 /// @param error The `NSError` to pass into the completion called from
-/// `limitedUseTokenWithCompletion:`.
-- (instancetype)initWithAppCheckToken:(nullable FIRAppCheckToken *)token
+/// `getTokenWithCompletion:`.
+- (instancetype)initWithAppCheckToken:(nullable GACAppCheckToken *)token
                                 error:(nullable NSError *)error;
 
 @end

@@ -71,7 +71,7 @@ let package = Package(
       name: "GoogleSignIn",
       dependencies: [
         .product(name: "AppAuth", package: "AppAuth"),
-        .product(name: "FirebaseAppCheck", package: "Firebase"),
+        .product(name: "AppCheckCore", package: "Firebase"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
       ],
@@ -108,7 +108,7 @@ let package = Package(
         "GoogleSignIn",
         "OCMock",
         .product(name: "AppAuth", package: "AppAuth"),
-        .product(name: "FirebaseAppCheck", package: "Firebase"),
+        .product(name: "AppCheckCore", package: "Firebase"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
         .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),

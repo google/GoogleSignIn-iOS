@@ -15,22 +15,20 @@
 #import <TargetConditionals.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/GIDAppCheckTokenFetcherFake.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 
-@import FirebaseAppCheck;
+NSUInteger const kGIDAppCheckProviderFakeError = 1;
 
-NSUInteger const kGIDAppCheckTokenFetcherTokenError = 1;
+@interface GIDAppCheckProviderFake ()
 
-@interface GIDAppCheckTokenFetcherFake ()
-
-@property(nonatomic, strong, nullable) FIRAppCheckToken *token;
+@property(nonatomic, strong, nullable) id<GACAppCheckTokenProtocol> token;
 @property(nonatomic, strong, nullable) NSError *error;
 
 @end
 
-@implementation GIDAppCheckTokenFetcherFake
+@implementation GIDAppCheckProviderFake
 
-- (instancetype)initWithAppCheckToken:(nullable FIRAppCheckToken *)token
+- (instancetype)initWithAppCheckToken:(nullable id<GACAppCheckTokenProtocol>)token
                                 error:(nullable NSError *)error {
   if (self = [super init]) {
     _token = token;
@@ -39,10 +37,10 @@ NSUInteger const kGIDAppCheckTokenFetcherTokenError = 1;
   return self;
 }
 
-- (void)limitedUseTokenWithCompletion:(void (^)(FIRAppCheckToken * _Nullable,
-                                                NSError * _Nullable))completion {
+- (void)getTokenWithCompletion:(nonnull void (^)(GACAppCheckToken * _Nullable,
+                                                 NSError * _Nullable))handler {
   dispatch_async(dispatch_get_main_queue(), ^{
-    completion(self.token, self.error);
+    handler(self.token, self.error);
   });
 }
 
