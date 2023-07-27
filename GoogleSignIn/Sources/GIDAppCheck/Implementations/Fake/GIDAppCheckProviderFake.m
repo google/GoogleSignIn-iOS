@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import <TargetConditionals.h>
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 
 NSUInteger const kGIDAppCheckProviderFakeError = 1;
 

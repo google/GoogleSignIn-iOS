@@ -22,6 +22,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol GACAppCheckProvider;
+@protocol GACAppCheckTokenProtocol;
+
 extern NSString *const kGIDAppCheckPreparedKey;
 
 NS_CLASS_AVAILABLE_IOS(14)

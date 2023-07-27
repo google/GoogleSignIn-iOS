@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppCheckCore/GACAppCheckToken.h>
 #import <AppCheckCore/GACAppCheck.h>
