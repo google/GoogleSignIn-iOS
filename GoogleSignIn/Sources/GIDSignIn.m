@@ -478,9 +478,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
     [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
-        if (completion) {
-          completion(error);
-        }
+      if (completion) {
+        completion(error);
+      }
     }];
   }
 }
