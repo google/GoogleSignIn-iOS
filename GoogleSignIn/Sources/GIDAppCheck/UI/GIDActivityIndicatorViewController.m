@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#import "GIDActivityIndicatorViewController.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -25,7 +25,13 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
+  UIActivityIndicatorViewStyle style;
+  if (@available(iOS 13.0, *)) {
+    style = UIActivityIndicatorViewStyleLarge;
+  } else {
+    style = UIActivityIndicatorViewStyleGray;
+  }
+  _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:style];
   self.activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
   [self.activityIndicator startAnimating];
   [self.view addSubview:self.activityIndicator];

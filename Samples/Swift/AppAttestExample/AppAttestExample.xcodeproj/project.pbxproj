@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4D8DB53AAE2F7D0055DCEA7F /* Pods_AppAttestExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91F3A930BB86D9E0648046BC /* Pods_AppAttestExample.framework */; };
 		738D5F732A26BC3B00A7F11B /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */; };
+		73A065642A786E81007BC7FC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 73A065632A786E81007BC7FC /* GoogleService-Info.plist */; };
 		73A464042A1C3B3400BA8528 /* AppAttestExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */; };
 		73A464062A1C3B3400BA8528 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464052A1C3B3400BA8528 /* ContentView.swift */; };
 		73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73A4640A2A1C3B3500BA8528 /* Preview Assets.xcassets */; };
@@ -18,6 +19,8 @@
 		1C96B5B2B34E31F1A1CEE95E /* Pods-AppAttestExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AppAttestExample.release.xcconfig"; path = "Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample.release.xcconfig"; sourceTree = "<group>"; };
 		73443A232A55F56900A4932E /* AppAttestExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppAttestExample.entitlements; sourceTree = "<group>"; };
 		738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
+		73A065612A786D10007BC7FC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		73A065632A786E81007BC7FC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		73A464002A1C3B3400BA8528 /* AppAttestExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppAttestExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAttestExampleApp.swift; sourceTree = "<group>"; };
 		73A464052A1C3B3400BA8528 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -72,6 +75,8 @@
 				73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */,
 				73A464052A1C3B3400BA8528 /* ContentView.swift */,
 				738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */,
+				73A065632A786E81007BC7FC /* GoogleService-Info.plist */,
+				73A065612A786D10007BC7FC /* Info.plist */,
 				73A464092A1C3B3500BA8528 /* Preview Content */,
 			);
 			path = AppAttestExample;
@@ -154,6 +159,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */,
+				73A065642A786E81007BC7FC /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,10 +345,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AppAttestExample/AppAttestExample.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AppAttestExample/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQHXZ8M8AV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AppAttestExample/Info.plist;
@@ -359,6 +367,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.experimental0.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Experimental App 0 Dev";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -373,10 +382,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AppAttestExample/AppAttestExample.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AppAttestExample/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQHXZ8M8AV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AppAttestExample/Info.plist;
@@ -393,6 +404,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.experimental0.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Experimental App 0 Dev";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
