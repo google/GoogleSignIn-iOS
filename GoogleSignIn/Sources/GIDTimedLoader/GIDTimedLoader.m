@@ -73,9 +73,11 @@ typedef NS_ENUM(NSUInteger, GIDTimedLoaderAnimationStatus) {
   }
   self.animationStatus = GIDTimedLoaderAnimationStatusAnimating;
   self.loadingTimeStamp = CACurrentMediaTime();
-  [self.presentingViewController presentViewController:self.loadingViewController
-                                              animated:YES
-                                            completion:nil];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self.presentingViewController presentViewController:self.loadingViewController
+                                                animated:YES
+                                              completion:nil];
+  });
 }
 
 - (void)stopTimingWithCompletion:(void (^)(void))completion {
