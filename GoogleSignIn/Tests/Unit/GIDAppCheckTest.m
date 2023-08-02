@@ -23,7 +23,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
 
 static NSUInteger const timeout = 1;
-static NSString *const kUserDefaultsSuiteName = @"GIDAppCheckKeySuiteName";
+static NSString *const kUserDefaultsTestSuiteName = @"GIDAppCheckTestKeySuiteName";
 
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheckTest : XCTestCase
@@ -36,13 +36,13 @@ NS_CLASS_AVAILABLE_IOS(14)
 
 - (void)setUp {
   [super setUp];
-  _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
+  _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsTestSuiteName];
 }
 
 - (void)tearDown {
   [super tearDown];
   [self.userDefaults removeObjectForKey:kGIDAppCheckPreparedKey];
-  [self.userDefaults removeSuiteNamed:kUserDefaultsSuiteName];
+  [self.userDefaults removeSuiteNamed:kUserDefaultsTestSuiteName];
 }
 
 - (void)testGetLimitedUseTokenFailure {
