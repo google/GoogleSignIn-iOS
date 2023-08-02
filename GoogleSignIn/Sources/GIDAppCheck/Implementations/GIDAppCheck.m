@@ -51,19 +51,9 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 @implementation GIDAppCheck
 
 - (instancetype)init {
-  if (self = [super init]) {
-    _appCheck = [[GACAppCheck alloc] initWithServiceName:kGIDConfigClientIDKey
-                                            resourceName:[GIDAppCheck appAttestResourceName]
-                                        appCheckProvider:[GIDAppCheck standardAppCheckProvider]
-                                                settings:[[GACAppCheckSettings alloc] init]
-                                           tokenDelegate:nil
-                                     keychainAccessGroup:nil];
-
-    _userDefaults = [NSUserDefaults standardUserDefaults];
-    _workerQueue = dispatch_queue_create("com.google.googlesignin.GIDAppCheckWorkerQueue", nil);
-    _prepareCompletions = [NSMutableArray array];
-    _preparing = NO;
-  }
+  id<GACAppCheckProvider> provider = [GIDAppCheck standardAppCheckProvider];
+  NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+  return [self initWithAppCheckProvider:provider userDefaults:userDefaults];
 }
 
 - (instancetype)initWithAppCheckProvider:(id<GACAppCheckProvider>)appCheckProvider

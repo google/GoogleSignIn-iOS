@@ -48,7 +48,7 @@ let package = Package(
     .package(
       name: "AppCheckCore",
       url: "https://github.com/google/app-check.git",
-      .branch("CocoaPods-0.1.0-alpha.1")),
+      .branch("main")),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
