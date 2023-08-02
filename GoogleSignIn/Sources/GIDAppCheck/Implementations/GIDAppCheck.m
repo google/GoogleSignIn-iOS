@@ -29,10 +29,10 @@
 
 NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
 NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
-static NSString *const kConfigClientIDKey = @"GIDClientID";
-static NSString *const kGSIAppAttestServiceName = @"GoogleSignIn-iOS";
-static NSString *const kGSIAppAttestResourceNameFormat = @"oauthClients/%@";
-static NSString *const kGSIAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
+static NSString *const kGIDConfigClientIDKey = @"GIDClientID";
+static NSString *const kGIDAppAttestServiceName = @"GoogleSignIn-iOS";
+static NSString *const kGIDAppAttestResourceNameFormat = @"oauthClients/%@";
+static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
 typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullable,
@@ -50,19 +50,33 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 
 @implementation GIDAppCheck
 
-- (instancetype)initWithAppCheckProvider:(nullable id<GACAppCheckProvider>)appCheckProvider
-                            userDefaults:(nullable NSUserDefaults *)userDefaults {
+- (instancetype)init {
   if (self = [super init]) {
-    id<GACAppCheckProvider> provider = appCheckProvider ?: [GIDAppCheck standardAppCheckProvider];
-
-    _appCheck = [[GACAppCheck alloc] initWithServiceName:kConfigClientIDKey
+    _appCheck = [[GACAppCheck alloc] initWithServiceName:kGIDConfigClientIDKey
                                             resourceName:[GIDAppCheck appAttestResourceName]
-                                        appCheckProvider:provider
+                                        appCheckProvider:[GIDAppCheck standardAppCheckProvider]
                                                 settings:[[GACAppCheckSettings alloc] init]
                                            tokenDelegate:nil
                                      keychainAccessGroup:nil];
 
-    _userDefaults = userDefaults ?: [NSUserDefaults standardUserDefaults];
+    _userDefaults = [NSUserDefaults standardUserDefaults];
+    _workerQueue = dispatch_queue_create("com.google.googlesignin.GIDAppCheckWorkerQueue", nil);
+    _prepareCompletions = [NSMutableArray array];
+    _preparing = NO;
+  }
+}
+
+- (instancetype)initWithAppCheckProvider:(id<GACAppCheckProvider>)appCheckProvider
+                            userDefaults:(NSUserDefaults *)userDefaults {
+  if (self = [super init]) {
+    _appCheck = [[GACAppCheck alloc] initWithServiceName:kGIDConfigClientIDKey
+                                            resourceName:[GIDAppCheck appAttestResourceName]
+                                        appCheckProvider:appCheckProvider
+                                                settings:[[GACAppCheckSettings alloc] init]
+                                           tokenDelegate:nil
+                                     keychainAccessGroup:nil];
+
+    _userDefaults = userDefaults;
     _workerQueue = dispatch_queue_create("com.google.googlesignin.GIDAppCheckWorkerQueue", nil);
     _prepareCompletions = [NSMutableArray array];
     _preparing = NO;
@@ -148,14 +162,14 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 }
 
 + (NSString *)appAttestResourceName {
-  NSString *clientID = [NSBundle.mainBundle objectForInfoDictionaryKey:kConfigClientIDKey];
-  return [NSString stringWithFormat:kGSIAppAttestResourceNameFormat, clientID];
+  NSString *clientID = [NSBundle.mainBundle objectForInfoDictionaryKey:kGIDConfigClientIDKey];
+  return [NSString stringWithFormat:kGIDAppAttestResourceNameFormat, clientID];
 }
 
 + (id<GACAppCheckProvider>)standardAppCheckProvider {
-  return [[GACAppAttestProvider alloc] initWithServiceName:kGSIAppAttestServiceName
+  return [[GACAppAttestProvider alloc] initWithServiceName:kGIDAppAttestServiceName
                                               resourceName:[GIDAppCheck appAttestResourceName]
-                                                   baseURL:kGSIAppAttestBaseURL
+                                                   baseURL:kGIDAppAttestBaseURL
                                                     APIKey:nil
                                        keychainAccessGroup:nil
                                                 limitedUse:YES

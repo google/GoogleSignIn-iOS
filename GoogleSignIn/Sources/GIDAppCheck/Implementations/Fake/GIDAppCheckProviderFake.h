@@ -27,14 +27,13 @@ extern NSUInteger const kGIDAppCheckProviderFakeError;
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheckProviderFake : NSObject <GACAppCheckProvider>
 
-/// Creates an instance with the provided app check token and error.
+/// Creates an instance conforming to `GACAppCheckProvider` with the provided app check token and
+/// error.
 ///
-/// This protocol is mainly used for testing purposes so that the token fetching from Firebase App
-/// Check can be faked.
 /// @param token The `GACAppCheckToken` instance to pass into the completion called from
-/// `getTokenWithCompletion:`.
+///     `getTokenWithCompletion:`.
 /// @param error The `NSError` to pass into the completion called from
-/// `getTokenWithCompletion:`.
+///     `getTokenWithCompletion:`.
 - (instancetype)initWithAppCheckToken:(nullable GACAppCheckToken *)token
                                 error:(nullable NSError *)error;
 

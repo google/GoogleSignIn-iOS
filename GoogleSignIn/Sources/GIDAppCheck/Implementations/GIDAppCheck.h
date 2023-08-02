@@ -30,7 +30,13 @@ extern NSString *const kGIDAppCheckPreparedKey;
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheck : NSObject
 
-- (instancetype)init NS_UNAVAILABLE;
+/// Creates the instance of this App Check wrapper class.
+///
+/// The instance is created using `+[NSUserDefaults standardUserDefaults]` and the standard App
+/// Check provider.
+///
+/// @SeeAlso The App Check provider is constructed with `+[GIDAppCheck standardAppCheckProvider]`.
+- (instancetype)init;
 
 /// Creates the instance of this App Check wrapper class.
 ///
@@ -38,8 +44,8 @@ NS_CLASS_AVAILABLE_IOS(14)
 ///     then a default implementation will be used.
 /// @param userDefaults The instance of `NSUserDefaults` that `GIDAppCheck` will use to store its
 ///     preparation status. If nil, `GIDAppCheck` will use `-[NSUserDefaults standardUserDefaults]`.
-- (instancetype)initWithAppCheckProvider:(nullable id<GACAppCheckProvider>)appCheckProvider
-                            userDefaults:(nullable NSUserDefaults *)userDefaults;
+- (instancetype)initWithAppCheckProvider:(id<GACAppCheckProvider>)appCheckProvider
+                            userDefaults:(NSUserDefaults *)userDefaults NS_DESIGNATED_INITIALIZER;
 
 /// Prewarms the library for App Check by asking Firebase App Check to generate the App Attest key
 /// id and perform the initial attestation process (if needed).
