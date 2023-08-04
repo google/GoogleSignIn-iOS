@@ -26,17 +26,10 @@
 CFTimeInterval const kGIDTimedLoaderMinAnimationDuration = 1.0;
 CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
 
-typedef NS_ENUM(NSUInteger, GIDTimedLoaderAnimationStatus) {
-  GIDTimedLoaderAnimationStatusNotStarted,
-  GIDTimedLoaderAnimationStatusAnimating,
-  GIDTimedLoaderAnimationStatusStopped,
-};
-
 @interface GIDTimedLoader ()
 
 @property(nonatomic, strong) UIViewController *presentingViewController;
 @property(nonatomic, strong) GIDActivityIndicatorViewController *loadingViewController;
-@property(nonatomic) GIDTimedLoaderAnimationStatus animationStatus;
 @property(nonatomic, strong, nullable) NSTimer *loadingTimer;
 /// Timestamp representing when the loading view controller was presented and started animating
 @property(nonatomic) CFTimeInterval loadingTimeStamp;

@@ -19,6 +19,12 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+typedef NS_ENUM(NSUInteger, GIDTimedLoaderAnimationStatus) {
+  GIDTimedLoaderAnimationStatusNotStarted,
+  GIDTimedLoaderAnimationStatusAnimating,
+  GIDTimedLoaderAnimationStatusStopped,
+};
+
 extern CFTimeInterval const kGIDTimedLoaderMinAnimationDuration;
 extern CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating;
 
@@ -48,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// @note Use the completion parameter to, for example, present the UI that should be shown after
 ///     the work has completed.
 - (void)stopTimingWithCompletion:(void (^)(void))completion;
+
+@property(nonatomic) GIDTimedLoaderAnimationStatus animationStatus;
 
 @end
 

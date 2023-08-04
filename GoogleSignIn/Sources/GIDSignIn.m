@@ -180,6 +180,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
   GTMKeychainStore *_keychainStore;
+  // The class used to manage presenting the loading screen for fetching app check tokens.
+  GIDTimedLoader *_timedLoader;
 }
 
 #pragma mark - Public methods
@@ -636,25 +638,28 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (_appCheck) {
       shouldCallCompletion = NO;
       UIViewController *presentingVC = options.presentingViewController;
-      GIDTimedLoader *timedLoader =
-          [[GIDTimedLoader alloc] initWithPresentingViewController:presentingVC];
-      [timedLoader startTiming];
+      if (!_timedLoader) {
+        _timedLoader = [[GIDTimedLoader alloc] initWithPresentingViewController:presentingVC];
+      }
+      if (_timedLoader.animationStatus != GIDTimedLoaderAnimationStatusAnimating) {
+        [_timedLoader startTiming];
+      }
       [self->_appCheck getLimitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
                                                           NSError * _Nullable error) {
-        [timedLoader stopTimingWithCompletion:^{
-          if (token) {
-            additionalParameters[kClientAssertionTypeParameter] =
-                kClientAssertionTypeParameterValue;
-            additionalParameters[kClientAssertionParameter] = token.token;
-            OIDAuthorizationRequest *request =
-                [self authorizationRequestWithOptions:options
-                                 additionalParameters:additionalParameters];
-            completion(request, nil);
-            return;
-          }
-          completion(nil, error);
-          return;
-        }];
+        OIDAuthorizationRequest *request = nil;
+        if (token) {
+          additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
+          additionalParameters[kClientAssertionParameter] = token.token;
+          request = [self authorizationRequestWithOptions:options
+                                     additionalParameters:additionalParameters];
+        }
+        if (self->_timedLoader.animationStatus == GIDTimedLoaderAnimationStatusAnimating) {
+          [self->_timedLoader stopTimingWithCompletion:^{
+            completion(request, error);
+          }];
+        } else {
+          completion(request, error);
+        }
       }];
     }
   }
