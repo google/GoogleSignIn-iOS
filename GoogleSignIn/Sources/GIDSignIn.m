@@ -646,8 +646,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       if (_timedLoader.animationStatus != GIDTimedLoaderAnimationStatusAnimating) {
         [_timedLoader startTiming];
       }
-      [self->_appCheck getLimitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                          NSError * _Nullable error) {
+      [self->_appCheck getLimitedUseTokenWithCompletion:
+          ^(id<GACAppCheckTokenProtocol> _Nullable token, NSError * _Nullable error) {
         OIDAuthorizationRequest *request = nil;
         if (token) {
           additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
