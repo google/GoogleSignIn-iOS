@@ -15,23 +15,32 @@
  */
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
-#import "GoogleSignIn/Sources/GIDAppCheckTokenFetcher/Implementations/FIRAppCheck+GIDAppCheckTokenFetcher.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
-
-@import FirebaseAppCheck;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import <AppCheckCore/GACAppCheck.h>
+#import <AppCheckCore/GACAppCheckSettings.h>
+#import <AppCheckCore/GACAppCheckToken.h>
+#import <AppCheckCore/GACAppAttestProvider.h>
+
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+
 NSErrorDomain const kGIDAppCheckErrorDomain = @"com.google.GIDAppCheck";
 NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
+static NSString *const kGIDConfigClientIDKey = @"GIDClientID";
+static NSString *const kGIDAppAttestServiceName = @"GoogleSignIn-iOS";
+static NSString *const kGIDAppAttestResourceNameFormat = @"oauthClients/%@";
+static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
-typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError * _Nullable);
+typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullable,
+                                           NSError * _Nullable);
 
 @interface GIDAppCheck ()
 
-@property(nonatomic, strong) id<GIDAppCheckTokenFetcher> tokenFetcher;
+@property(nonatomic, strong) GACAppCheck *appCheck;
 @property(nonatomic, strong) dispatch_queue_t workerQueue;
 @property(nonatomic, strong) NSUserDefaults *userDefaults;
 @property(atomic, strong) NSMutableArray<GIDAppCheckPrepareCompletion> *prepareCompletions;
@@ -41,11 +50,23 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
 
 @implementation GIDAppCheck
 
-- (instancetype)initWithAppCheckTokenFetcher:(nullable id<GIDAppCheckTokenFetcher>)tokenFetcher
-                                userDefaults:(nullable NSUserDefaults *)userDefaults {
+- (instancetype)init {
+  id<GACAppCheckProvider> provider = [GIDAppCheck standardAppCheckProvider];
+  NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+  return [self initWithAppCheckProvider:provider userDefaults:userDefaults];
+}
+
+- (instancetype)initWithAppCheckProvider:(id<GACAppCheckProvider>)appCheckProvider
+                            userDefaults:(NSUserDefaults *)userDefaults {
   if (self = [super init]) {
-    _tokenFetcher = tokenFetcher ?: [FIRAppCheck appCheck];
-    _userDefaults = userDefaults ?: [NSUserDefaults standardUserDefaults];
+    _appCheck = [[GACAppCheck alloc] initWithServiceName:kGIDConfigClientIDKey
+                                            resourceName:[GIDAppCheck appAttestResourceName]
+                                        appCheckProvider:appCheckProvider
+                                                settings:[[GACAppCheckSettings alloc] init]
+                                           tokenDelegate:nil
+                                     keychainAccessGroup:nil];
+
+    _userDefaults = userDefaults;
     _workerQueue = dispatch_queue_create("com.google.googlesignin.GIDAppCheckWorkerQueue", nil);
     _prepareCompletions = [NSMutableArray array];
     _preparing = NO;
@@ -89,8 +110,8 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
       return;
     }
 
-    [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                       NSError * _Nullable error) {
+    [self.appCheck getLimitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+                                                      NSError * _Nullable error) {
       NSError * __block maybeError = error;
       @synchronized (self) {
         if (!token && !error) {
@@ -118,8 +139,8 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
 
 - (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
-    [self.tokenFetcher limitedUseTokenWithCompletion:^(FIRAppCheckToken * _Nullable token,
-                                                       NSError * _Nullable error) {
+    [self.appCheck getLimitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+                                                      NSError * _Nullable error) {
       if (token) {
         [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
       }
@@ -128,6 +149,21 @@ typedef void (^GIDAppCheckTokenCompletion)(FIRAppCheckToken * _Nullable, NSError
       }
     }];
   });
+}
+
++ (NSString *)appAttestResourceName {
+  NSString *clientID = [NSBundle.mainBundle objectForInfoDictionaryKey:kGIDConfigClientIDKey];
+  return [NSString stringWithFormat:kGIDAppAttestResourceNameFormat, clientID];
+}
+
++ (id<GACAppCheckProvider>)standardAppCheckProvider {
+  return [[GACAppAttestProvider alloc] initWithServiceName:kGIDAppAttestServiceName
+                                              resourceName:[GIDAppCheck appAttestResourceName]
+                                                   baseURL:kGIDAppAttestBaseURL
+                                                    APIKey:nil
+                                       keychainAccessGroup:nil
+                                                limitedUse:YES
+                                              requestHooks:nil];
 }
 
 @end

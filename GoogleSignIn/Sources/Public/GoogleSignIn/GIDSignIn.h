@@ -26,7 +26,6 @@
 @class GIDConfiguration;
 @class GIDGoogleUser;
 @class GIDSignInResult;
-@protocol GIDAppCheckProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 

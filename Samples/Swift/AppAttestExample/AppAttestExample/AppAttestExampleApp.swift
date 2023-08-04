@@ -15,8 +15,6 @@
  */
 
 import SwiftUI
-import FirebaseCore
-import FirebaseAppCheck
 import GoogleSignIn
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -24,14 +22,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
   ) -> Bool {
-    #if targetEnvironment(simulator)
-    let debugProvider = AppCheckDebugProviderFactory()
-    AppCheck.setAppCheckProviderFactory(debugProvider)
-    #else
-    AppCheck.setAppCheckProviderFactory(BirthdayAppCheckProviderFactory())
-    #endif
-    FirebaseApp.configure()
-
     GIDSignIn.sharedInstance.configureWithCompletion { error in
       if let error {
         print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
