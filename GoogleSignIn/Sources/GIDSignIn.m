@@ -180,8 +180,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
   GTMKeychainStore *_keychainStore;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // The class used to manage presenting the loading screen for fetching app check tokens.
   GIDTimedLoader *_timedLoader;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 #pragma mark - Public methods
