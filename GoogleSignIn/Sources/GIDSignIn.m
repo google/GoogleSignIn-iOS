@@ -28,10 +28,9 @@
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "FirebaseAppCheck/FIRAppCheckToken.h"
-#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
+#import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
-#import "GoogleSignIn/Sources/GIDAppCheck/API/GIDAppCheckProvider.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -170,7 +169,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  id<GIDAppCheckProvider> _appCheck API_AVAILABLE(ios(14));
+  GIDAppCheck *_appCheck API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
@@ -460,10 +459,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 14.0, *)) {
-      GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckTokenFetcher:nil
-                                                                   userDefaults:nil];
+      GIDAppCheck *appCheck = [[GIDAppCheck alloc] init];
       sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
-                                          appCheckProvider:appCheck];
+                                                  appCheck:appCheck];
     }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (!sharedInstance) {
@@ -479,9 +477,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
     [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
-        if (completion) {
-          completion(error);
-        }
+      if (completion) {
+        completion(error);
+      }
     }];
   }
 }
@@ -531,10 +529,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-                     appCheckProvider:(id<GIDAppCheckProvider>)appCheckProvider {
+                             appCheck:(GIDAppCheck *)appCheck {
   self = [self initWithKeychainStore:keychainStore];
   if (self) {
-    _appCheck = appCheckProvider;
+    _appCheck = appCheck;
   }
   return self;
 }
@@ -646,7 +644,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
         dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
           [self->_appCheck getLimitedUseTokenWithCompletion:
-              ^(FIRAppCheckToken * _Nullable token, NSError * _Nullable error) {
+              ^(id<GACAppCheckTokenProtocol> _Nullable token, NSError * _Nullable error) {
             if (token) {
               additionalParameters[kClientAssertionTypeParameter] =
                   kClientAssertionTypeParameterValue;
