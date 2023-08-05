@@ -85,7 +85,6 @@ CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
 
   dispatch_time_t deadline = [self remainingDurationToAnimate];
   dispatch_after(deadline, dispatch_get_main_queue(), ^{
-    NSLog(@"Stopping");
     self.animationStatus = GIDTimedLoaderAnimationStatusStopped;
     [self.loadingViewController.activityIndicator stopAnimating];
     [self.loadingViewController dismissViewControllerAnimated:YES completion:nil];
@@ -107,7 +106,6 @@ CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
   }
 
   CFTimeInterval diff = kGIDTimedLoaderMinAnimationDuration - durationWaited;
-  NSLog(@"Time to wait: %f", diff);
   int64_t diffNanos = diff * NSEC_PER_SEC;
   dispatch_time_t timeToWait = dispatch_time(DISPATCH_TIME_NOW, diffNanos);
   return timeToWait;
