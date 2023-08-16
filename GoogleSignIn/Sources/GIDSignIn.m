@@ -643,9 +643,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       if (!_timedLoader) {
         _timedLoader = [[GIDTimedLoader alloc] initWithPresentingViewController:presentingVC];
       }
-      if (_timedLoader.animationStatus != GIDTimedLoaderAnimationStatusAnimating) {
-        [_timedLoader startTiming];
-      }
+      [_timedLoader startTiming];
       [self->_appCheck getLimitedUseTokenWithCompletion:
           ^(id<GACAppCheckTokenProtocol> _Nullable token, NSError * _Nullable error) {
         OIDAuthorizationRequest *request = nil;
