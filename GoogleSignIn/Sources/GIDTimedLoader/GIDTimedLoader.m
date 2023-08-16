@@ -80,10 +80,8 @@ CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
     return;
   }
 
-  if (self.loadingTimer) {
-    [self.loadingTimer invalidate];
-    self.loadingTimer = nil;
-  }
+  [self.loadingTimer invalidate];
+  self.loadingTimer = nil;
 
   dispatch_time_t deadline = [self remainingDurationToAnimate];
   dispatch_after(deadline, dispatch_get_main_queue(), ^{
