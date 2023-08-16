@@ -637,7 +637,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [self additionalParametersFromOptions:options];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (@available(iOS 14.0, *)) {
-    if (_appCheck) {
+    // Only use `_appCheck` (created via singleton `+[GIDSignIn sharedInstance]` call) if
+    // `-[GIDAppCheck prepareForAppCheckWithCompletion:]` has been called
+    if ([_appCheck isPrepared]) {
       shouldCallCompletion = NO;
       UIViewController *presentingVC = options.presentingViewController;
       if (!_timedLoader) {
