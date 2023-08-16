@@ -19,13 +19,19 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+/// An enumeration detailing the states of the timed loader.
 typedef NS_ENUM(NSUInteger, GIDTimedLoaderAnimationStatus) {
+  /// The timed loader has not started.
   GIDTimedLoaderAnimationStatusNotStarted,
+  /// The timed loader's activity indicator is animating.
   GIDTimedLoaderAnimationStatusAnimating,
+  /// The timed loader's activity indicator has stopped animating.
   GIDTimedLoaderAnimationStatusStopped,
 };
 
+/// The minimum animation duration time for the timed loader's activity indicator.
 extern CFTimeInterval const kGIDTimedLoaderMinAnimationDuration;
+/// The maximum delay to wait before the time loader will display the loading activity indicator.
 extern CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating;
 
 @class UIViewController;
