@@ -33,6 +33,7 @@
 #import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDTimedLoader/GIDTimedLoader.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
@@ -179,6 +180,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
   GTMKeychainStore *_keychainStore;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  // The class used to manage presenting the loading screen for fetching app check tokens.
+  GIDTimedLoader *_timedLoader;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 #pragma mark - Public methods
@@ -632,37 +637,31 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [self additionalParametersFromOptions:options];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (@available(iOS 14.0, *)) {
-    if (_appCheck) {
+    // Only use `_appCheck` (created via singleton `+[GIDSignIn sharedInstance]` call) if
+    // `-[GIDAppCheck prepareForAppCheckWithCompletion:]` has been called
+    if ([_appCheck isPrepared]) {
       shouldCallCompletion = NO;
-      GIDActivityIndicatorViewController *activityVC =
-          [[GIDActivityIndicatorViewController alloc] init];
-      [options.presentingViewController presentViewController:activityVC
-                                                     animated:true
-                                                   completion:^{
-        // Ensure that the activity indicator shows for at least 1/2 second to prevent "flashing"
-        // TODO: Re-implement per: https://github.com/google/GoogleSignIn-iOS/issues/329
-        dispatch_time_t halfSecond = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC / 2);
-        dispatch_after(halfSecond, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-          [self->_appCheck getLimitedUseTokenWithCompletion:
-              ^(id<GACAppCheckTokenProtocol> _Nullable token, NSError * _Nullable error) {
-            if (token) {
-              additionalParameters[kClientAssertionTypeParameter] =
-                  kClientAssertionTypeParameterValue;
-              additionalParameters[kClientAssertionParameter] = token.token;
-              OIDAuthorizationRequest *request =
-                  [self authorizationRequestWithOptions:options
-                                   additionalParameters:additionalParameters];
-              [activityVC.activityIndicator stopAnimating];
-              [activityVC dismissViewControllerAnimated:YES completion:nil];
-              completion(request, nil);
-              return;
-            }
-            [activityVC.activityIndicator stopAnimating];
-            [activityVC dismissViewControllerAnimated:YES completion:nil];
-            completion(nil, error);
-            return;
+      UIViewController *presentingVC = options.presentingViewController;
+      if (!_timedLoader) {
+        _timedLoader = [[GIDTimedLoader alloc] initWithPresentingViewController:presentingVC];
+      }
+      [_timedLoader startTiming];
+      [self->_appCheck getLimitedUseTokenWithCompletion:
+          ^(id<GACAppCheckTokenProtocol> _Nullable token, NSError * _Nullable error) {
+        OIDAuthorizationRequest *request = nil;
+        if (token) {
+          additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
+          additionalParameters[kClientAssertionParameter] = token.token;
+          request = [self authorizationRequestWithOptions:options
+                                     additionalParameters:additionalParameters];
+        }
+        if (self->_timedLoader.animationStatus == GIDTimedLoaderAnimationStatusAnimating) {
+          [self->_timedLoader stopTimingWithCompletion:^{
+            completion(request, error);
           }];
-        });
+        } else {
+          completion(request, error);
+        }
       }];
     }
   }
