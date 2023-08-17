@@ -22,7 +22,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NS_CLASS_AVAILABLE_IOS(14.0)
 /// A `UIViewController` presented onscreen to indicate to the user that GSI is performing blocking
 /// work.
 @interface GIDActivityIndicatorViewController : UIViewController
