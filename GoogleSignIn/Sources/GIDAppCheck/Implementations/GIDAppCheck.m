@@ -162,7 +162,6 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
                                                    baseURL:kGIDAppAttestBaseURL
                                                     APIKey:nil
                                        keychainAccessGroup:nil
-                                                limitedUse:YES
                                               requestHooks:nil];
 }
 
