@@ -183,6 +183,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // The class used to manage presenting the loading screen for fetching app check tokens.
   GIDTimedLoader *_timedLoader;
+  // Flag indicating developer's intent to use App Check.
+  BOOL _configureAppCheckCalled;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
@@ -481,6 +483,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
+    _configureAppCheckCalled = YES;
     [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
       if (completion) {
         completion(error);
@@ -538,6 +541,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   self = [self initWithKeychainStore:keychainStore];
   if (self) {
     _appCheck = appCheck;
+    _configureAppCheckCalled = NO;
   }
   return self;
 }
@@ -632,15 +636,18 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options completion:
     (void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
-  BOOL shouldCallCompletion = YES;
+  BOOL shouldCreateAuthRequest = YES;
   NSMutableDictionary<NSString *, NSString *> *additionalParameters =
       [self additionalParametersFromOptions:options];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   if (@available(iOS 14.0, *)) {
     // Only use `_appCheck` (created via singleton `+[GIDSignIn sharedInstance]` call) if
-    // `-[GIDAppCheck prepareForAppCheckWithCompletion:]` has been called
-    if ([_appCheck isPrepared]) {
-      shouldCallCompletion = NO;
+    // `GIDAppCheck` has been successfully prepared OR if the developer has attempted to configure.
+    // If former is false and the latter true, then preparation step failed for some reason; we
+    // still want to try to pass along the app check token (it just may take longer since the
+    // pre-warm step failed).
+    if ([_appCheck isPrepared] || _configureAppCheckCalled) {
+      shouldCreateAuthRequest = NO;
       UIViewController *presentingVC = options.presentingViewController;
       if (!_timedLoader) {
         _timedLoader = [[GIDTimedLoader alloc] initWithPresentingViewController:presentingVC];
@@ -652,9 +659,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         if (token) {
           additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
           additionalParameters[kClientAssertionParameter] = token.token;
-          request = [self authorizationRequestWithOptions:options
-                                     additionalParameters:additionalParameters];
         }
+        request = [self authorizationRequestWithOptions:options
+                                   additionalParameters:additionalParameters];
         if (self->_timedLoader.animationStatus == GIDTimedLoaderAnimationStatusAnimating) {
           [self->_timedLoader stopTimingWithCompletion:^{
             completion(request, error);
@@ -666,7 +673,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
   }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  if (shouldCallCompletion) {
+  if (shouldCreateAuthRequest) {
     OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
                                                         additionalParameters:additionalParameters];
     completion(request, nil);
