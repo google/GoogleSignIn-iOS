@@ -110,8 +110,8 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
       return;
     }
 
-    [self.appCheck getLimitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
-                                                      NSError * _Nullable error) {
+    [self.appCheck limitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+                                                   NSError * _Nullable error) {
       NSError * __block maybeError = error;
       @synchronized (self) {
         if (!token && !error) {
@@ -139,8 +139,8 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 
 - (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
-    [self.appCheck getLimitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
-                                                      NSError * _Nullable error) {
+    [self.appCheck limitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+                                                   NSError * _Nullable error) {
       if (token) {
         [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
       }
@@ -162,7 +162,6 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
                                                    baseURL:kGIDAppAttestBaseURL
                                                     APIKey:nil
                                        keychainAccessGroup:nil
-                                                limitedUse:YES
                                               requestHooks:nil];
 }
 
