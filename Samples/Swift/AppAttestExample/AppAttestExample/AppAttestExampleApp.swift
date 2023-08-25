@@ -22,11 +22,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
   ) -> Bool {
-    GIDSignIn.sharedInstance.configureWithCompletion { error in
+    #if DEBUG
+    GIDSignIn.sharedInstance.configure(usingDebugProvider: true) { error in
       if let error {
         print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
       }
     }
+    #else
+    GIDSignIn.sharedInstance.configure(usingDebugProvider: false) { error in
+      if let error {
+        print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
+      }
+    }
+    #endif
 
     return true
   }
