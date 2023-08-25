@@ -464,7 +464,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 14.0, *)) {
-      GIDAppCheck *appCheck = [[GIDAppCheck alloc] init];
+      GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithDebugProvider:NO];
       sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
                                                   appCheck:appCheck];
     }
@@ -479,8 +479,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Configuring and pre-warming
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-- (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
+- (void)configureWithDebugProvider:(BOOL)useDebugProvider
+                        completion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
+    if (useDebugProvider) {
+      _appCheck = [[GIDAppCheck alloc] initWithDebugProvider:useDebugProvider];
+    }
     [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
       if (completion) {
         completion(error);
