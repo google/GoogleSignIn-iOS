@@ -22,6 +22,7 @@
 #import <AppCheckCore/GACAppCheckSettings.h>
 #import <AppCheckCore/GACAppCheckTokenResult.h>
 #import <AppCheckCore/GACAppAttestProvider.h>
+#import <AppCheckCore/GACAppCheckDebugProvider.h>
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
