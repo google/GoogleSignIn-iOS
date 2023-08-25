@@ -32,12 +32,15 @@ NS_CLASS_AVAILABLE_IOS(14)
 
 - (instancetype)init NS_UNAVAILABLE;
 
-/// Creates the instance of this App Check wrapper class.
+/// Creates the instance of this App Check wrapper class using `GACAppCheckDebugProvider`.
 ///
 /// The instance is created using `+[NSUserDefaults standardUserDefaults]`.
++ (instancetype)appCheckUsingDebugProvider;
+
+/// Creates the instance of this App Check wrapper class using `GACAppAttestProvider`.
 ///
-/// @param useDebugProvider Whether or not the debug App Check provider should be used.
-- (instancetype)initWithDebugProvider:(BOOL)useDebugProvider;
+/// The instance is created using `+[NSUserDefaults standardUserDefaults]`.
++ (instancetype)appCheckUsingAppAttestProvider;
 
 /// Creates the instance of this App Check wrapper class.
 ///

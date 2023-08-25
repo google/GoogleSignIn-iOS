@@ -51,15 +51,14 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 
 @implementation GIDAppCheck
 
-- (instancetype)initWithDebugProvider:(BOOL)useDebugProvider {
-  id<GACAppCheckProvider> provider = nil;
-  if (useDebugProvider) {
-    provider = [GIDAppCheck standardAppCheckProvider];
-  } else {
-    provider = [GIDAppCheck debugAppCheckProvider];
-  }
-  NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-  return [self initWithAppCheckProvider:provider userDefaults:userDefaults];
++ (instancetype)appCheckUsingDebugProvider {
+  return [[self alloc] initWithAppCheckProvider:[GIDAppCheck debugAppCheckProvider]
+                                   userDefaults:[NSUserDefaults standardUserDefaults]];
+}
+
++ (instancetype)appCheckUsingAppAttestProvider {
+  return [[self alloc] initWithAppCheckProvider:[GIDAppCheck appAttestProvider]
+                                   userDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
 - (instancetype)initWithAppCheckProvider:(id<GACAppCheckProvider>)appCheckProvider
@@ -162,7 +161,7 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
   return [NSString stringWithFormat:kGIDAppAttestResourceNameFormat, clientID];
 }
 
-+ (id<GACAppCheckProvider>)standardAppCheckProvider {
++ (id<GACAppCheckProvider>)appAttestProvider {
   return [[GACAppAttestProvider alloc] initWithServiceName:kGIDAppAttestServiceName
                                               resourceName:[GIDAppCheck appAttestResourceName]
                                                    baseURL:kGIDAppAttestBaseURL
