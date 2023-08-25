@@ -50,8 +50,13 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 
 @implementation GIDAppCheck
 
-- (instancetype)init {
-  id<GACAppCheckProvider> provider = [GIDAppCheck standardAppCheckProvider];
+- (instancetype)initWithDebugProvider:(BOOL)useDebugProvider {
+  id<GACAppCheckProvider> provider = nil;
+  if (useDebugProvider) {
+    provider = [GIDAppCheck standardAppCheckProvider];
+  } else {
+    provider = [GIDAppCheck debugAppCheckProvider];
+  }
   NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
   return [self initWithAppCheckProvider:provider userDefaults:userDefaults];
 }
@@ -163,6 +168,13 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
                                                     APIKey:nil
                                        keychainAccessGroup:nil
                                               requestHooks:nil];
+}
+
++ (id<GACAppCheckProvider>)debugAppCheckProvider {
+  return [[GACAppCheckDebugProvider alloc] initWithServiceName:kGIDAppAttestServiceName
+                                                  resourceName:[GIDAppCheck appAttestResourceName]
+                                                        APIKey:nil
+                                                  requestHooks:nil];
 }
 
 @end

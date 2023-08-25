@@ -30,13 +30,14 @@ extern NSString *const kGIDAppCheckPreparedKey;
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheck : NSObject
 
+- (instancetype)init NS_UNAVAILABLE;
+
 /// Creates the instance of this App Check wrapper class.
 ///
-/// The instance is created using `+[NSUserDefaults standardUserDefaults]` and the standard App
-/// Check provider.
+/// The instance is created using `+[NSUserDefaults standardUserDefaults]`.
 ///
-/// @SeeAlso The App Check provider is constructed with `+[GIDAppCheck standardAppCheckProvider]`.
-- (instancetype)init;
+/// @param useDebugProvider Whether or not the debug App Check provider should be used.
+- (instancetype)initWithDebugProvider:(BOOL)useDebugProvider;
 
 /// Creates the instance of this App Check wrapper class.
 ///
