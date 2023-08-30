@@ -80,7 +80,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)configureWithDebugProviderEnabled:(BOOL)useDebugProvider
                                completion:(nullable void (^)(NSError * _Nullable error))completion
 API_AVAILABLE(ios(14))
-NS_SWIFT_NAME(configure(usingDebugProvider:completion:));
+NS_SWIFT_NAME(configure(debugProviderEnabled:completion:));
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
