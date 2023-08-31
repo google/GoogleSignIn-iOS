@@ -45,7 +45,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   [self.userDefaults removeSuiteNamed:kUserDefaultsTestSuiteName];
 }
 
-- (void)testGetLimitedUseTokenFailure {
+- (void)testGetLimitedUseTokenFailureReturnsPlaceholder {
   XCTestExpectation *tokenFailExpectation =
       [self expectationWithDescription:@"App check token fail"];
   NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
@@ -57,9 +57,9 @@ NS_CLASS_AVAILABLE_IOS(14)
   GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
                                                            userDefaults:self.userDefaults];
 
-  [appCheck getLimitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+  [appCheck getLimitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
-    XCTAssertNil(token);
+    XCTAssertNotNil(token); // If there is an error, we expect a placeholder token
     XCTAssertEqualObjects(expectedError, error);
     [tokenFailExpectation fulfill];
   }];
@@ -126,7 +126,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   XCTestExpectation *getLimitedUseTokenSucceedsExpectation =
       [self expectationWithDescription:@"getLimitedUseToken should succeed"];
 
-  [appCheck getLimitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+  [appCheck getLimitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
     XCTAssertNil(error);
     XCTAssertNotNil(token);

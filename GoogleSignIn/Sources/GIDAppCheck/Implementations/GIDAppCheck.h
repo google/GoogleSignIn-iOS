@@ -23,7 +23,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol GACAppCheckProvider;
-@protocol GACAppCheckTokenProtocol;
+@class GACAppCheckToken;
 
 extern NSString *const kGIDAppCheckPreparedKey;
 
@@ -58,7 +58,7 @@ NS_CLASS_AVAILABLE_IOS(14)
 /// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
 ///     otherwise.
 - (void)getLimitedUseTokenWithCompletion:
-    (nullable void (^)(id<GACAppCheckTokenProtocol> _Nullable token,
+    (nullable void (^)(GACAppCheckToken * _Nullable token,
                        NSError * _Nullable error))completion;
 
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
