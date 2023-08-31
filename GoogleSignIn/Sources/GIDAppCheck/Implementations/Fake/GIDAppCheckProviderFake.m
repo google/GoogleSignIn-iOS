@@ -22,14 +22,14 @@ NSUInteger const kGIDAppCheckProviderFakeError = 1;
 
 @interface GIDAppCheckProviderFake ()
 
-@property(nonatomic, strong, nullable) id<GACAppCheckTokenProtocol> token;
+@property(nonatomic, strong, nullable) GACAppCheckToken *token;
 @property(nonatomic, strong, nullable) NSError *error;
 
 @end
 
 @implementation GIDAppCheckProviderFake
 
-- (instancetype)initWithAppCheckToken:(nullable id<GACAppCheckTokenProtocol>)token
+- (instancetype)initWithAppCheckToken:(nullable GACAppCheckToken *)token
                                 error:(nullable NSError *)error {
   if (self = [super init]) {
     _token = token;
@@ -38,14 +38,14 @@ NSUInteger const kGIDAppCheckProviderFakeError = 1;
   return self;
 }
 
-- (void)getTokenWithCompletion:(nonnull void (^)(id<GACAppCheckTokenProtocol> _Nullable,
-                                                 NSError * _Nullable))handler {
+- (void)getTokenWithCompletion:(void (^)(GACAppCheckToken * _Nullable,
+                                         NSError * _Nullable))handler {
   dispatch_async(dispatch_get_main_queue(), ^{
     handler(self.token, self.error);
   });
 }
 
-- (void)getLimitedUseTokenWithCompletion:(void (^)(id<GACAppCheckTokenProtocol> _Nullable,
+- (void)getLimitedUseTokenWithCompletion:(void (^)(GACAppCheckToken * _Nullable,
                                                    NSError * _Nullable))handler {
   dispatch_async(dispatch_get_main_queue(), ^{
     handler(self.token, self.error);
