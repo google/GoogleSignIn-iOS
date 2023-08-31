@@ -49,13 +49,6 @@
             ReferencedContainer = "container:AppAttestExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "FIRAppCheckDebugToken"
-            value = "F40DF0E8-9CCC-46DF-AC01-43DE96FCEDD8"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
