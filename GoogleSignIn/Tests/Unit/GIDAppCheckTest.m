@@ -45,7 +45,7 @@ NS_CLASS_AVAILABLE_IOS(14)
   [self.userDefaults removeSuiteNamed:kUserDefaultsTestSuiteName];
 }
 
-- (void)testGetLimitedUseTokenFailure {
+- (void)testGetLimitedUseTokenFailureReturnsPlaceholder {
   XCTestExpectation *tokenFailExpectation =
       [self expectationWithDescription:@"App check token fail"];
   NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
@@ -59,7 +59,7 @@ NS_CLASS_AVAILABLE_IOS(14)
 
   [appCheck getLimitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                NSError * _Nullable error) {
-    XCTAssertNil(token);
+    XCTAssertNotNil(token); // If there is an error, we expect a placeholder token
     XCTAssertEqualObjects(expectedError, error);
     [tokenFailExpectation fulfill];
   }];

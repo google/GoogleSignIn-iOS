@@ -20,7 +20,7 @@
 
 #import <AppCheckCore/GACAppCheck.h>
 #import <AppCheckCore/GACAppCheckSettings.h>
-#import <AppCheckCore/GACAppCheckToken.h>
+#import <AppCheckCore/GACAppCheckTokenResult.h>
 #import <AppCheckCore/GACAppAttestProvider.h>
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
@@ -110,17 +110,16 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
       return;
     }
 
-    [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
-                                                   NSError * _Nullable error) {
-      NSError * __block maybeError = error;
+    [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckTokenResult * _Nonnull result) {
+      NSError * __block maybeError = result.error;
       @synchronized (self) {
-        if (!token && !error) {
+        if (!result.token && !result.error) {
           maybeError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
                                            code:kGIDAppCheckUnexpectedError
                                        userInfo:nil];
         }
 
-        if (token) {
+        if (result.token) {
           [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         }
 
@@ -139,13 +138,12 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
 
 - (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
-    [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
-                                                   NSError * _Nullable error) {
-      if (token) {
+    [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckTokenResult * _Nonnull result) {
+      if (result.token) {
         [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
       }
       if (completion) {
-        completion(token, error);
+        completion(result.token, result.error);
       }
     }];
   });
