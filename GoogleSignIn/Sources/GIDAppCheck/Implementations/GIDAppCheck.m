@@ -35,7 +35,7 @@ static NSString *const kGIDAppAttestResourceNameFormat = @"oauthClients/%@";
 static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
-typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullable,
+typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
                                            NSError * _Nullable);
 
 @interface GIDAppCheck ()
@@ -110,7 +110,7 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
       return;
     }
 
-    [self.appCheck limitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+    [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
       NSError * __block maybeError = error;
       @synchronized (self) {
@@ -139,7 +139,7 @@ typedef void (^GIDAppCheckTokenCompletion)(id<GACAppCheckTokenProtocol> _Nullabl
 
 - (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
-    [self.appCheck limitedUseTokenWithCompletion:^(id<GACAppCheckTokenProtocol> _Nullable token,
+    [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                    NSError * _Nullable error) {
       if (token) {
         [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
