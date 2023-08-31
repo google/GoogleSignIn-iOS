@@ -38,8 +38,8 @@ NSUInteger const kGIDAppCheckProviderFakeError = 1;
   return self;
 }
 
-- (void)getTokenWithCompletion:(nonnull void (^)(GACAppCheckToken * _Nullable,
-                                                 NSError * _Nullable))handler {
+- (void)getTokenWithCompletion:(void (^)(GACAppCheckToken * _Nullable,
+                                         NSError * _Nullable))handler {
   dispatch_async(dispatch_get_main_queue(), ^{
     handler(self.token, self.error);
   });
