@@ -660,6 +660,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
           additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
           additionalParameters[kClientAssertionParameter] = token.token;
         }
+        #if DEBUG
+        if (error) {
+          NSLog(@"[Google Sign-In iOS]: Error retrieving App Check limited use token: %@", error);
+        }
+        #endif
         request = [self authorizationRequestWithOptions:options
                                    additionalParameters:additionalParameters];
         if (self->_timedLoader.animationStatus == GIDTimedLoaderAnimationStatusAnimating) {
