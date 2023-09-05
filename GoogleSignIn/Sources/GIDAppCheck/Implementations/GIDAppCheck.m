@@ -51,8 +51,8 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
 
 @implementation GIDAppCheck
 
-+ (instancetype)appCheckUsingDebugProvider {
-  return [[self alloc] initWithAppCheckProvider:[GIDAppCheck debugAppCheckProvider]
++ (instancetype)appCheckUsingDebugProviderWithAPIKey:(NSString *)APIKey {
+  return [[self alloc] initWithAppCheckProvider:[GIDAppCheck debugAppCheckProviderWithAPIKey:APIKey]
                                    userDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
@@ -168,10 +168,11 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
                                               requestHooks:nil];
 }
 
-+ (id<GACAppCheckProvider>)debugAppCheckProvider {
++ (id<GACAppCheckProvider>)debugAppCheckProviderWithAPIKey:(NSString *)APIKey {
   return [[GACAppCheckDebugProvider alloc] initWithServiceName:kGIDAppAttestServiceName
                                                   resourceName:[GIDAppCheck appAttestResourceName]
-                                                        APIKey:nil
+                                                       baseURL:kGIDAppAttestBaseURL
+                                                        APIKey:APIKey
                                                   requestHooks:nil];
 }
 

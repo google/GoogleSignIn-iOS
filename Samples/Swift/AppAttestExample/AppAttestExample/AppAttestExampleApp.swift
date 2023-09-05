@@ -22,17 +22,23 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
   ) -> Bool {
-    let useDebugProvider: Bool
     #if targetEnvironment(simulator)
-    useDebugProvider = true
-    #else
-    useDebugProvider = false
-    #endif
-    GIDSignIn.sharedInstance.configure(usingDebugProvider: useDebugProvider) { error in
+    guard let apiKey = Bundle.main.infoDictionary!["APP_CHECK_WEB_API_KEY"] as? String else {
+      print("Failed to get App_Check_WEB_API_KEY from Bundle.")
+      return true
+    }
+    GIDSignIn.sharedInstance.configureDebugProvider(withAPIKey: apiKey) { error in
       if let error {
         print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
       }
     }
+    #else
+    GIDSignIn.sharedInstance.configure { error in
+      if let error {
+        print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
+      }
+    }
+    #endif
 
     return true
   }

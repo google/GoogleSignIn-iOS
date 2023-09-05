@@ -17,6 +17,7 @@
 /* Begin PBXFileReference section */
 		1C96B5B2B34E31F1A1CEE95E /* Pods-AppAttestExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AppAttestExample.release.xcconfig"; path = "Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample.release.xcconfig"; sourceTree = "<group>"; };
 		73443A232A55F56900A4932E /* AppAttestExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppAttestExample.entitlements; sourceTree = "<group>"; };
+		738B4A302AA7EB840056885D /* AppCheckSecrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppCheckSecrets.xcconfig; sourceTree = "<group>"; };
 		738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
 		73A065612A786D10007BC7FC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		73A464002A1C3B3400BA8528 /* AppAttestExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppAttestExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,6 +74,7 @@
 				73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */,
 				73A464052A1C3B3400BA8528 /* ContentView.swift */,
 				738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */,
+				738B4A302AA7EB840056885D /* AppCheckSecrets.xcconfig */,
 				73A065612A786D10007BC7FC /* Info.plist */,
 				73A464092A1C3B3500BA8528 /* Preview Content */,
 			);
@@ -219,6 +221,7 @@
 /* Begin XCBuildConfiguration section */
 		73A4640C2A1C3B3500BA8528 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 738B4A302AA7EB840056885D /* AppCheckSecrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

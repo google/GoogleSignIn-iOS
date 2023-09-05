@@ -1,3 +1,6 @@
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/firebase/SpecsDev.git'
+
 pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
 pod 'GoogleSignInSwiftSupport', :path => '../../../', :testspecs => ['unit']
 project 'AppAttestExample.xcodeproj'
@@ -5,6 +8,6 @@ project 'AppAttestExample.xcodeproj'
 use_frameworks! :linkage => :static
 
 target 'AppAttestExample' do
-  pod 'AppCheckCore', :git => 'https://github.com/google/app-check.git', :tag => 'CocoaPods-0.1.0-alpha.4'
+  pod 'AppCheckCore'
   platform :ios, '14.0'
 end

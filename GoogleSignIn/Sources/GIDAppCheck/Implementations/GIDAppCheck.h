@@ -34,8 +34,10 @@ NS_CLASS_AVAILABLE_IOS(14)
 
 /// Creates the instance of this App Check wrapper class using `GACAppCheckDebugProvider`.
 ///
+/// @param APIKey The API Key to use when creating the debug App Check provider.
+///
 /// The instance is created using `+[NSUserDefaults standardUserDefaults]`.
-+ (instancetype)appCheckUsingDebugProvider;
++ (instancetype)appCheckUsingDebugProviderWithAPIKey:(NSString *)APIKey;
 
 /// Creates the instance of this App Check wrapper class using `GACAppAttestProvider`.
 ///

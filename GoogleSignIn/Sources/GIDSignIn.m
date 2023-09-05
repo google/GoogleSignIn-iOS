@@ -479,12 +479,20 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Configuring and pre-warming
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-- (void)configureWithDebugProviderEnabled:(BOOL)useDebugProvider
-                               completion:(nullable void (^)(NSError * _Nullable))completion {
+- (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable))completion {
   @synchronized(self) {
-    if (useDebugProvider) {
-      _appCheck = [GIDAppCheck appCheckUsingDebugProvider];
-    }
+    [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
+      if (completion) {
+        completion(error);
+      }
+    }];
+  }
+}
+
+- (void)configureDebugProviderWithAPIKey:(NSString *)APIKey
+                              completion:(nullable void (^)(NSError * _Nullable))completion {
+  @synchronized(self) {
+    _appCheck = [GIDAppCheck appCheckUsingDebugProviderWithAPIKey:APIKey];
     [_appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
       if (completion) {
         completion(error);
