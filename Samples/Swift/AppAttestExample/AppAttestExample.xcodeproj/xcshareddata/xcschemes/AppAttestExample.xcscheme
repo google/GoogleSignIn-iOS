@@ -49,6 +49,15 @@
             ReferencedContainer = "container:AppAttestExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+<<<<<<< HEAD
+=======
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-FIRDebugEnabled"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
+>>>>>>> f25ca3f8211996119af8a5bd9cd1612664d69fa0
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

@@ -70,6 +70,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 
 /// Configures `GIDSignIn` for use.
 ///
+/// @param useDebugProvider Whether or not App Check should use the debug provider.
 /// @param completion A nullable callback block passing back any error arising from the
 ///     configuration process if any exists.
 ///

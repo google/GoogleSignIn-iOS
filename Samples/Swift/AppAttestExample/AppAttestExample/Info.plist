@@ -10,14 +10,14 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.googleusercontent.apps.665845761721-a9g0c1k6buv131av6nnmburou5scd63h</string>
+			<string>com.googleusercontent.apps.7094936827-l0b7c7l10jdbooi6r8s10ffq59ek04sj</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.665845761721-a9g0c1k6buv131av6nnmburou5scd63h</string>
+				<string>com.googleusercontent.apps.7094936827-l0b7c7l10jdbooi6r8s10ffq59ek04sj</string>
 			</array>
 		</dict>
 	</array>
 	<key>GIDClientID</key>
-	<string>665845761721-a9g0c1k6buv131av6nnmburou5scd63h.apps.googleusercontent.com</string>
+	<string>7094936827-l0b7c7l10jdbooi6r8s10ffq59ek04sj.apps.googleusercontent.com</string>
 </dict>
 </plist>

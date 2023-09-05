@@ -398,7 +398,8 @@ static NSString *const kNewScope = @"newScope";
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                                         appCheck:appCheck];
-    [signIn configureWithCompletion:^(NSError * _Nullable error) {
+    // Pass `NO` so that a debug provider is not created and used instead of `appCheck` above.
+    [signIn configureWithDebugProviderEnabled:NO completion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
     }];
@@ -422,8 +423,14 @@ static NSString *const kNewScope = @"newScope";
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                                         appCheck:appCheck];
 
+<<<<<<< HEAD
     // Should fail if missing both token and error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
+=======
+    // `configureWithWithDebugProvider:completion:` should fail if missing both token and erro
+    // Pass `NO` so that a debug provider is not created and used instead of `appCheck` above.
+    [signIn configureWithDebugProviderEnabled:NO completion:^(NSError * _Nullable error) {
+>>>>>>> f25ca3f8211996119af8a5bd9cd1612664d69fa0
       XCTAssertNotNil(error);
       XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
       [configureFailsExpecation fulfill];
