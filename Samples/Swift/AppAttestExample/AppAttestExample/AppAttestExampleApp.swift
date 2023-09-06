@@ -23,11 +23,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
   ) -> Bool {
     #if targetEnvironment(simulator)
-    guard let apiKey = Bundle.main.infoDictionary!["APP_CHECK_WEB_API_KEY"] as? String else {
-      print("Failed to get App_Check_WEB_API_KEY from Bundle.")
+    let secretReader = AppCheckSecretReader()
+    guard let APIKey = secretReader.APIKey else {
+      print("Unable to read API key from bundle or environment")
       return true
     }
-    GIDSignIn.sharedInstance.configureDebugProvider(withAPIKey: apiKey) { error in
+    GIDSignIn.sharedInstance.configureDebugProvider(withAPIKey: APIKey) { error in
       if let error {
         print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
       }
