@@ -71,14 +71,27 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Configures `GIDSignIn` for use.
 ///
 /// @param completion A nullable callback block passing back any error arising from the
-/// configuration process if any exists.
+///     configuration process if any exists.
 ///
 /// Call this method on `GIDSignIn` prior to use and as early as possible. This method generates App
 /// Attest key IDs and the attestation object eagerly to minimize latency later on during the sign
 /// in or add scopes flows.
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable error))completion
+NS_SWIFT_NAME(configure(completion:));
+
+/// Configures `GIDSignIn` for use in debug or test environments.
+///
+/// @param APIKey The API Key to use during configuration of the App Check debug provider.
+/// @param completion A nullable callback block passing back any error arising from the
+///     configuration process if any exists.
+///
+/// Call this method on `GIDSignIn` prior to use and as early as possible. This method generates App
+/// Attest key IDs and the attestation object eagerly to minimize latency later on during the sign
+/// in or add scopes flows.
+- (void)configureDebugProviderWithAPIKey:(NSString *)APIKey
+                              completion:(nullable void (^)(NSError * _Nullable error))completion
 API_AVAILABLE(ios(14))
-NS_SWIFT_NAME(configureWithCompletion(completion:));
+NS_SWIFT_NAME(configureDebugProvider(withAPIKey:completion:));
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 

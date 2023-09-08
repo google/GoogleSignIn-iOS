@@ -422,7 +422,7 @@ static NSString *const kNewScope = @"newScope";
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                                         appCheck:appCheck];
 
-    // `configureWithCompletion:` should fail if neither a token or error is present
+    // Should fail if missing both token and error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
       XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);

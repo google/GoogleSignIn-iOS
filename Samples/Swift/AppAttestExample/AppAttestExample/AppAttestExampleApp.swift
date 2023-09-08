@@ -22,11 +22,24 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
   ) -> Bool {
-    GIDSignIn.sharedInstance.configureWithCompletion { error in
+    #if targetEnvironment(simulator)
+    let secretReader = AppCheckSecretReader()
+    guard let APIKey = secretReader.APIKey else {
+      print("Unable to read API key from bundle or environment")
+      return true
+    }
+    GIDSignIn.sharedInstance.configureDebugProvider(withAPIKey: APIKey) { error in
       if let error {
         print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
       }
     }
+    #else
+    GIDSignIn.sharedInstance.configure { error in
+      if let error {
+        print("Error configuring `GIDSignIn` for Firebase App Check: \(error)")
+      }
+    }
+    #endif
 
     return true
   }
