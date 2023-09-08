@@ -30,13 +30,19 @@ extern NSString *const kGIDAppCheckPreparedKey;
 NS_CLASS_AVAILABLE_IOS(14)
 @interface GIDAppCheck : NSObject
 
-/// Creates the instance of this App Check wrapper class.
+- (instancetype)init NS_UNAVAILABLE;
+
+/// Creates the instance of this App Check wrapper class using `GACAppCheckDebugProvider`.
 ///
-/// The instance is created using `+[NSUserDefaults standardUserDefaults]` and the standard App
-/// Check provider.
+/// @param APIKey The API Key to use when creating the debug App Check provider.
 ///
-/// @SeeAlso The App Check provider is constructed with `+[GIDAppCheck standardAppCheckProvider]`.
-- (instancetype)init;
+/// The instance is created using `+[NSUserDefaults standardUserDefaults]`.
++ (instancetype)appCheckUsingDebugProviderWithAPIKey:(NSString *)APIKey;
+
+/// Creates the instance of this App Check wrapper class using `GACAppAttestProvider`.
+///
+/// The instance is created using `+[NSUserDefaults standardUserDefaults]`.
++ (instancetype)appCheckUsingAppAttestProvider;
 
 /// Creates the instance of this App Check wrapper class.
 ///
@@ -55,11 +61,9 @@ NS_CLASS_AVAILABLE_IOS(14)
 
 /// Fetches the limited use Firebase token.
 ///
-/// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
-///     otherwise.
+/// @param completion A `nullable` callback with the `FIRAppCheckToken`, or an `NSError` otherwise.
 - (void)getLimitedUseTokenWithCompletion:
-    (nullable void (^)(GACAppCheckToken * _Nullable token,
-                       NSError * _Nullable error))completion;
+    (nullable void (^)(GACAppCheckToken *token, NSError * _Nullable error))completion;
 
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
 - (BOOL)isPrepared;

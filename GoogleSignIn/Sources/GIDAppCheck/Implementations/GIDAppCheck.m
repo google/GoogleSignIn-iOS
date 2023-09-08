@@ -22,6 +22,7 @@
 #import <AppCheckCore/GACAppCheckSettings.h>
 #import <AppCheckCore/GACAppCheckTokenResult.h>
 #import <AppCheckCore/GACAppAttestProvider.h>
+#import <AppCheckCore/GACAppCheckDebugProvider.h>
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
@@ -35,8 +36,7 @@ static NSString *const kGIDAppAttestResourceNameFormat = @"oauthClients/%@";
 static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
-typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
-                                           NSError * _Nullable);
+typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullable);
 
 @interface GIDAppCheck ()
 
@@ -50,10 +50,14 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
 
 @implementation GIDAppCheck
 
-- (instancetype)init {
-  id<GACAppCheckProvider> provider = [GIDAppCheck standardAppCheckProvider];
-  NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-  return [self initWithAppCheckProvider:provider userDefaults:userDefaults];
++ (instancetype)appCheckUsingDebugProviderWithAPIKey:(NSString *)APIKey {
+  return [[self alloc] initWithAppCheckProvider:[GIDAppCheck debugAppCheckProviderWithAPIKey:APIKey]
+                                   userDefaults:[NSUserDefaults standardUserDefaults]];
+}
+
++ (instancetype)appCheckUsingAppAttestProvider {
+  return [[self alloc] initWithAppCheckProvider:[GIDAppCheck appAttestProvider]
+                                   userDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
 - (instancetype)initWithAppCheckProvider:(id<GACAppCheckProvider>)appCheckProvider
@@ -154,13 +158,21 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
   return [NSString stringWithFormat:kGIDAppAttestResourceNameFormat, clientID];
 }
 
-+ (id<GACAppCheckProvider>)standardAppCheckProvider {
++ (id<GACAppCheckProvider>)appAttestProvider {
   return [[GACAppAttestProvider alloc] initWithServiceName:kGIDAppAttestServiceName
                                               resourceName:[GIDAppCheck appAttestResourceName]
                                                    baseURL:kGIDAppAttestBaseURL
                                                     APIKey:nil
                                        keychainAccessGroup:nil
                                               requestHooks:nil];
+}
+
++ (id<GACAppCheckProvider>)debugAppCheckProviderWithAPIKey:(NSString *)APIKey {
+  return [[GACAppCheckDebugProvider alloc] initWithServiceName:kGIDAppAttestServiceName
+                                                  resourceName:[GIDAppCheck appAttestResourceName]
+                                                       baseURL:kGIDAppAttestBaseURL
+                                                        APIKey:APIKey
+                                                  requestHooks:nil];
 }
 
 @end

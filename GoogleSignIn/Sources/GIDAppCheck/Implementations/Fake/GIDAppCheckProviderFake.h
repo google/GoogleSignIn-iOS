@@ -31,7 +31,8 @@ NS_CLASS_AVAILABLE_IOS(14)
 /// error.
 ///
 /// @param token The `GACAppCheckToken` instance to pass into the completion called from
-///     `getTokenWithCompletion:`.
+///     `getTokenWithCompletion:`. Use `nil` if you would like a placeholder token from
+///     AppCheckCore.
 /// @param error The `NSError` to pass into the completion called from
 ///     `getTokenWithCompletion:`.
 - (instancetype)initWithAppCheckToken:(nullable GACAppCheckToken *)token
