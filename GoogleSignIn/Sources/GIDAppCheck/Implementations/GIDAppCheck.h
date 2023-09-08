@@ -61,11 +61,9 @@ NS_CLASS_AVAILABLE_IOS(14)
 
 /// Fetches the limited use Firebase token.
 ///
-/// @param completion A `nullable` callback with the `FIRAppCheckToken` if present, or an `NSError`
-///     otherwise.
+/// @param completion A `nullable` callback with the `FIRAppCheckToken`, or an `NSError` otherwise.
 - (void)getLimitedUseTokenWithCompletion:
-    (nullable void (^)(GACAppCheckToken * _Nullable token,
-                       NSError * _Nullable error))completion;
+    (nullable void (^)(GACAppCheckToken *token, NSError * _Nullable error))completion;
 
 /// Whether or not the App Attest key ID created and the attestation object has been fetched.
 - (BOOL)isPrepared;

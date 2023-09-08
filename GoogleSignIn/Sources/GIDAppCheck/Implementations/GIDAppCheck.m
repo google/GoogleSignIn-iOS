@@ -36,8 +36,7 @@ static NSString *const kGIDAppAttestResourceNameFormat = @"oauthClients/%@";
 static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
-typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken * _Nullable,
-                                           NSError * _Nullable);
+typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullable);
 
 @interface GIDAppCheck ()
 

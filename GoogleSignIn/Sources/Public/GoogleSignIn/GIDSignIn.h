@@ -79,7 +79,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)configureWithCompletion:(nullable void (^)(NSError * _Nullable error))completion
 NS_SWIFT_NAME(configure(completion:));
 
-/// Configures `GIDSignIn` for use.
+/// Configures `GIDSignIn` for use in debug or test environments.
 ///
 /// @param APIKey The API Key to use during configuration of the App Check debug provider.
 /// @param completion A nullable callback block passing back any error arising from the
