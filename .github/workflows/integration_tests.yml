@@ -58,7 +58,7 @@ jobs:
           build-for-testing \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11'
+          -destination 'platform=iOS Simulator,name=iPhone 14'
     - name: Run test target for App Check Example
       env:
         AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
@@ -69,6 +69,6 @@ jobs:
           test-without-building \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
           AppCheckDebugToken=$AppCheckDebugToken \
           APP_CHECK_WEB_API_KEY=$APP_CHECK_WEB_API_KEY
