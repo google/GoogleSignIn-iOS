@@ -56,7 +56,7 @@ jobs:
         xcodebuild \
           -project AppAttestExample.xcodeproj \
           build-for-testing \
-          -scheme AppCheckExample \
+          -scheme AppAttestExample \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11'
     - name: Run test target for App Check Example
@@ -65,9 +65,9 @@ jobs:
         APP_CHECK_WEB_API_KEY : ${{ secrets.APP_CHECK_WEB_API_KEY }}
       run: |
         xcodebuild \
-          -project AppCheckExample.xcodeproj \
+          -project AppAttestExample.xcodeproj \
           test-without-building \
-          -scheme AppCheckExample \
+          -scheme AppAttestExample \
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 11' \
           AppCheckDebugToken=$AppCheckDebugToken \
