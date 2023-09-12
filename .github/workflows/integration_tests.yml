@@ -41,7 +41,7 @@ jobs:
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
 
-  app-check-api-token-tests
+  app-check-api-token-tests:
     runs-on: macOS-12
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: "!github.event.pull_request.head.repo.fork"
