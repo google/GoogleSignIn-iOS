@@ -61,7 +61,7 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 11'
     - name: Run test target for App Check Example
       env:
-        AppCheckDebugToken : ${{ secrets.AppCheckDebugToken }}
+        AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
         APP_CHECK_WEB_API_KEY : ${{ secrets.APP_CHECK_WEB_API_KEY }}
       run: |
         xcodebuild \
