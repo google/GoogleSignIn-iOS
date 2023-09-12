@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1A2F00DF92FDD776B365CB5E /* Pods_AppAttestExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91F3A930BB86D9E0648046BC /* Pods_AppAttestExample.framework */; };
 		73080B2B2AAF9BDE00DEF667 /* AppAttestExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */; };
 		73080B392AAF9F1400DEF667 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73080B382AAF9F1400DEF667 /* GoogleSignIn */; };
 		738B4A322AA8FE800056885D /* AppCheckSecretReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */; };
@@ -30,7 +29,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1C96B5B2B34E31F1A1CEE95E /* Pods-AppAttestExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AppAttestExample.release.xcconfig"; path = "Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample.release.xcconfig"; sourceTree = "<group>"; };
 		73080B282AAF9BDE00DEF667 /* AppAttestExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppAttestExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAttestExampleTests.swift; sourceTree = "<group>"; };
 		73443A232A55F56900A4932E /* AppAttestExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppAttestExample.entitlements; sourceTree = "<group>"; };
@@ -44,7 +42,6 @@
 		73A4640A2A1C3B3500BA8528 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		73CD4AB02AAF8C8500642462 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
 		73D87D512AAFE0FE002D841C /* AppAttestExample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AppAttestExample.xctestplan; sourceTree = "<group>"; };
-		7D9832F2FFAF408698660CA8 /* Pods-AppAttestExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AppAttestExample.debug.xcconfig"; path = "Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample.debug.xcconfig"; sourceTree = "<group>"; };
 		91F3A930BB86D9E0648046BC /* Pods_AppAttestExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AppAttestExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -63,22 +60,12 @@
 			files = (
 				73CD4AB22AAF915900642462 /* GoogleSignIn in Frameworks */,
 				73CD4AB42AAF915F00642462 /* GoogleSignInSwift in Frameworks */,
-				1A2F00DF92FDD776B365CB5E /* Pods_AppAttestExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		6B1005926777EEB3C903F93A /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				7D9832F2FFAF408698660CA8 /* Pods-AppAttestExample.debug.xcconfig */,
-				1C96B5B2B34E31F1A1CEE95E /* Pods-AppAttestExample.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		73080B292AAF9BDE00DEF667 /* AppAttestExampleTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -95,7 +82,6 @@
 				73A464022A1C3B3400BA8528 /* AppAttestExample */,
 				73080B292AAF9BDE00DEF667 /* AppAttestExampleTests */,
 				73A464012A1C3B3400BA8528 /* Products */,
-				6B1005926777EEB3C903F93A /* Pods */,
 				A73FBC2B93918F4B411815A1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -176,11 +162,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 73A4640E2A1C3B3500BA8528 /* Build configuration list for PBXNativeTarget "AppAttestExample" */;
 			buildPhases = (
-				3183FF6EC2A0A2FE6C4A317F /* [CP] Check Pods Manifest.lock */,
 				73A463FC2A1C3B3400BA8528 /* Sources */,
 				73A463FD2A1C3B3400BA8528 /* Frameworks */,
 				73A463FE2A1C3B3400BA8528 /* Resources */,
-				C0679656EB58F5128B795D24 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -250,48 +234,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		3183FF6EC2A0A2FE6C4A317F /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AppAttestExample-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C0679656EB58F5128B795D24 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AppAttestExample/Pods-AppAttestExample-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		73080B242AAF9BDE00DEF667 /* Sources */ = {
@@ -477,7 +419,6 @@
 		};
 		73A4640F2A1C3B3500BA8528 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7D9832F2FFAF408698660CA8 /* Pods-AppAttestExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -515,7 +456,6 @@
 		};
 		73A464102A1C3B3500BA8528 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1C96B5B2B34E31F1A1CEE95E /* Pods-AppAttestExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
