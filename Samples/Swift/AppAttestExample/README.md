@@ -50,7 +50,7 @@ token if you provide them to your `xcodebuild` command.
 
 ## Integration Tests
 
-We should how you might hide your app's web API key and debug token when
+We show how you might hide your app's web API key and debug token when
 running locally and in CI environments. See GitHub's
 [secrets](https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context)
 documentation for how you might set those values in your repo.
