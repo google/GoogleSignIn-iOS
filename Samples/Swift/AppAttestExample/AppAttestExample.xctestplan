@@ -1,0 +1,40 @@
+{
+  "configurations" : [
+    {
+      "id" : "BE893D88-5ECF-4AF1-95E1-CE186B02A525",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "AppCheckDebugToken",
+        "value" : "$(AppCheckDebugToken)"
+      },
+      {
+        "key" : "APP_CHECK_WEB_API_KEY",
+        "value" : "$(APP_CHECK_WEB_API_KEY)"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:AppAttestExample.xcodeproj",
+      "identifier" : "73080B272AAF9BDE00DEF667",
+      "name" : "AppAttestExampleTests"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:AppAttestExample.xcodeproj",
+        "identifier" : "73080B272AAF9BDE00DEF667",
+        "name" : "AppAttestExampleTests"
+      }
+    }
+  ],
+  "version" : 1
+}

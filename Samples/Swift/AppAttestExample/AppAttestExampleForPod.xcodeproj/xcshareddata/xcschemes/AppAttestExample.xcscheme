@@ -62,11 +62,20 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "73A463FF2A1C3B3400BA8528"
+            BuildableName = "AppAttestExampleForPod.app"
+            BlueprintName = "AppAttestExampleForPod"
+            ReferencedContainer = "container:AppAttestExampleForPod.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "73A463FF2A1C3B3400BA8528"
             BuildableName = "AppAttestExample.app"
             BlueprintName = "AppAttestExample"
             ReferencedContainer = "container:AppAttestExample.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -84,6 +93,15 @@
             ReferencedContainer = "container:AppAttestExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "73A463FF2A1C3B3400BA8528"
+            BuildableName = "AppAttestExample.app"
+            BlueprintName = "AppAttestExample"
+            ReferencedContainer = "container:AppAttestExample.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

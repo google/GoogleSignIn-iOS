@@ -40,3 +40,35 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 11' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
+
+  app-check-api-token-tests:
+    runs-on: macOS-12
+    # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
+    if: "!github.event.pull_request.head.repo.fork"
+    defaults:
+      run:
+        working-directory: Samples/Swift/AppAttestExample
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Build test target for App Check Example
+      run: |
+        xcodebuild \
+          -project AppAttestExample.xcodeproj \
+          build-for-testing \
+          -scheme AppAttestExample \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 11'
+    - name: Run test target for App Check Example
+      env:
+        AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
+        APP_CHECK_WEB_API_KEY : ${{ secrets.APP_CHECK_WEB_API_KEY }}
+      run: |
+        xcodebuild \
+          -project AppAttestExample.xcodeproj \
+          test-without-building \
+          -scheme AppAttestExample \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          AppCheckDebugToken=$AppCheckDebugToken \
+          APP_CHECK_WEB_API_KEY=$APP_CHECK_WEB_API_KEY
