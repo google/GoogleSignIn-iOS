@@ -33,11 +33,18 @@ You will need a provisioning profile with the App Attest entitlement.
 ## Hiding Secrets
 
 This example app shows how you might hide your web API key and debug token
-(used during CI). Inside the `Secrets/` directory, we show a placeholder
-secrets file containing stubbed JSON data. You can make a new file to fill in
-that stubbed JSON data with your web API key. Make sure to add that new file to
-your `.gitignore` so that your secrets are not committed. Next, update
-`AppCheckSecretsReader.swift` to read your file.
+(used during CI; AppCheckCore manages the debug token running locally in the 
+simulator). Both of these are required. Inside the `Secrets/` directory, we
+include a placeholder secrets entitled `AppCheckDefaultSecrets.xcconfig`. We
+have also set that as a configuration file for the project as well, which means
+that it will be used to find the web API key during debug builds on the
+simulator (for example). You can either make a new file to fill in the stubbed
+data in `AppCheckDefaultSecrets.xcconfig` (which will require that you update
+where the projects finds its configurations), or you can fill in the data in
+
+In builds running under continuous integration, make sure to use environment
+variables and `AppCheckSecretReader.swift` will find your web API key and debug
+token if you provide them to your `xcodebuild` command.
 
 ## Integration Tests
 

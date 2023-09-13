@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		73080B2B2AAF9BDE00DEF667 /* AppAttestExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */; };
 		73080B392AAF9F1400DEF667 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73080B382AAF9F1400DEF667 /* GoogleSignIn */; };
-		734555682AB1270F0068F2B0 /* AppCheckDefaultSecrets.json in Resources */ = {isa = PBXBuildFile; fileRef = 734555672AB1270F0068F2B0 /* AppCheckDefaultSecrets.json */; };
 		738B4A322AA8FE800056885D /* AppCheckSecretReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */; };
 		738D5F732A26BC3B00A7F11B /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */; };
 		73A464042A1C3B3400BA8528 /* AppAttestExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */; };
@@ -33,7 +32,7 @@
 		73080B282AAF9BDE00DEF667 /* AppAttestExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppAttestExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAttestExampleTests.swift; sourceTree = "<group>"; };
 		73443A232A55F56900A4932E /* AppAttestExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppAttestExample.entitlements; sourceTree = "<group>"; };
-		734555672AB1270F0068F2B0 /* AppCheckDefaultSecrets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = AppCheckDefaultSecrets.json; sourceTree = "<group>"; };
+		734555752AB167B80068F2B0 /* AppCheckDefaultSecrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppCheckDefaultSecrets.xcconfig; sourceTree = "<group>"; };
 		738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCheckSecretReader.swift; sourceTree = "<group>"; };
 		738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
 		73A065612A786D10007BC7FC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -78,7 +77,7 @@
 		7345556B2AB127B00068F2B0 /* Secrets */ = {
 			isa = PBXGroup;
 			children = (
-				734555672AB1270F0068F2B0 /* AppCheckDefaultSecrets.json */,
+				734555752AB167B80068F2B0 /* AppCheckDefaultSecrets.xcconfig */,
 			);
 			path = Secrets;
 			sourceTree = "<group>";
@@ -238,7 +237,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				734555682AB1270F0068F2B0 /* AppCheckDefaultSecrets.json in Resources */,
 				73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -314,6 +312,7 @@
 		};
 		73A4640C2A1C3B3500BA8528 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 734555752AB167B80068F2B0 /* AppCheckDefaultSecrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
