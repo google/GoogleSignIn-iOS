@@ -18,7 +18,21 @@ import Foundation
 
 struct AppCheckSecretReader {
   private let APIKeyName = "APP_CHECK_WEB_API_KEY"
+  private let APIKeyResourceName = "AppCheckSecrets"
+  private let APIKeyExtensionName = "json"
+  private let debugTokenName = "AppCheckDebugToken"
 
+  /// Method to read the App Check debug token from the environment
+  var debugToken: String? {
+    guard let debugToken = ProcessInfo.processInfo.environment[debugTokenName],
+          !debugToken.isEmpty else {
+      print("Failed to get \(debugTokenName) from environment.")
+      return nil
+    }
+    return debugToken
+  }
+
+  /// Method to read the App Check API key from either the bundle or the environment
   var APIKey: String? {
     return APIKeyFromBundle ?? APIKeyFromEnvironment
   }
@@ -34,9 +48,9 @@ struct AppCheckSecretReader {
 
   /// Method for retrieving API key from the bundle during simulator or debug builds
   private var APIKeyFromBundle: String? {
-    guard let APIKey = Bundle.main.infoDictionary?[APIKeyName] as? String,
+    guard let APIKey = Bundle.main.object(forInfoDictionaryKey: APIKeyName) as? String,
           !APIKey.isEmpty else {
-      print("Failed to get \(APIKeyName) from Bundle.")
+      print("Failed to get \(APIKeyName) from environment.")
       return nil
     }
     return APIKey

@@ -3,11 +3,11 @@ source 'https://github.com/firebase/SpecsDev.git'
 
 pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
 pod 'GoogleSignInSwiftSupport', :path => '../../../', :testspecs => ['unit']
-project 'AppAttestExample.xcodeproj'
+project 'AppAttestExampleForPod.xcodeproj'
 
 use_frameworks! :linkage => :static
 
-target 'AppAttestExample' do
+target 'AppAttestExampleForPod' do
   pod 'AppCheckCore'
   platform :ios, '14.0'
 end
