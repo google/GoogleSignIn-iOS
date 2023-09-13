@@ -18,7 +18,7 @@ import XCTest
 @testable import AppAttestExample
 
 final class AppAttestExampleTests: XCTestCase {
-  func testThatAPIKeyCanBeReadFromEnvironment() {
+  func testThatAPIKeyCanBeReadFromBundleOrEnvironment() {
     let secretsReader = AppCheckSecretReader()
     XCTAssertNotNil(secretsReader.APIKey)
   }
