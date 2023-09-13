@@ -10,7 +10,6 @@
 		73080B2B2AAF9BDE00DEF667 /* AppAttestExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */; };
 		73080B392AAF9F1400DEF667 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73080B382AAF9F1400DEF667 /* GoogleSignIn */; };
 		734555682AB1270F0068F2B0 /* AppCheckDefaultSecrets.json in Resources */ = {isa = PBXBuildFile; fileRef = 734555672AB1270F0068F2B0 /* AppCheckDefaultSecrets.json */; };
-		7345556A2AB127820068F2B0 /* AppCheckSecrets.json in Resources */ = {isa = PBXBuildFile; fileRef = 734555692AB127820068F2B0 /* AppCheckSecrets.json */; };
 		738B4A322AA8FE800056885D /* AppCheckSecretReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */; };
 		738D5F732A26BC3B00A7F11B /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */; };
 		73A464042A1C3B3400BA8528 /* AppAttestExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */; };
@@ -35,7 +34,6 @@
 		73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAttestExampleTests.swift; sourceTree = "<group>"; };
 		73443A232A55F56900A4932E /* AppAttestExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppAttestExample.entitlements; sourceTree = "<group>"; };
 		734555672AB1270F0068F2B0 /* AppCheckDefaultSecrets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = AppCheckDefaultSecrets.json; sourceTree = "<group>"; };
-		734555692AB127820068F2B0 /* AppCheckSecrets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = AppCheckSecrets.json; sourceTree = "<group>"; };
 		738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCheckSecretReader.swift; sourceTree = "<group>"; };
 		738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
 		73A065612A786D10007BC7FC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -81,7 +79,6 @@
 			isa = PBXGroup;
 			children = (
 				734555672AB1270F0068F2B0 /* AppCheckDefaultSecrets.json */,
-				734555692AB127820068F2B0 /* AppCheckSecrets.json */,
 			);
 			path = Secrets;
 			sourceTree = "<group>";
@@ -243,7 +240,6 @@
 			files = (
 				734555682AB1270F0068F2B0 /* AppCheckDefaultSecrets.json in Resources */,
 				73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */,
-				7345556A2AB127820068F2B0 /* AppCheckSecrets.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
