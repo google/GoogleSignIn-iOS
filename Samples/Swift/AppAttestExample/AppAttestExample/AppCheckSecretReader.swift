@@ -48,7 +48,8 @@ struct AppCheckSecretReader {
 
   /// Method for retrieving API key from the bundle during simulator or debug builds
   private var APIKeyFromBundle: String? {
-    guard let APIKey = Bundle.main.object(forInfoDictionaryKey: APIKeyName) as? String else {
+    guard let APIKey = Bundle.main.object(forInfoDictionaryKey: APIKeyName) as? String,
+          !APIKey.isEmpty else {
       print("Failed to get \(APIKeyName) from environment.")
       return nil
     }
