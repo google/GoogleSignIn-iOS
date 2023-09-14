@@ -24,8 +24,7 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = UIColor.blackColor;
-  self.view.alpha = 0.25;
+  self.view.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.25];
 
   UIActivityIndicatorViewStyle style;
   if (@available(iOS 13.0, *)) {
