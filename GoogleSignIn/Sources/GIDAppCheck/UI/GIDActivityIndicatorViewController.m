@@ -24,6 +24,7 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  // Medium gray with transparency
   self.view.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.25];
 
   UIActivityIndicatorViewStyle style;
