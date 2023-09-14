@@ -68,9 +68,10 @@ CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
   self.loadingTimeStamp = CACurrentMediaTime();
   dispatch_async(dispatch_get_main_queue(), ^{
     // Since this loading VC may be reused, the activity indicator may have been stopped; restart it
+    self.loadingViewController.modalPresentationStyle = UIModalPresentationOverFullScreen;
     [self.loadingViewController.activityIndicator startAnimating];
     [self.presentingViewController presentViewController:self.loadingViewController
-                                                animated:YES
+                                                animated:NO
                                               completion:nil];
   });
 }
@@ -87,7 +88,7 @@ CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
   dispatch_after(deadline, dispatch_get_main_queue(), ^{
     self.animationStatus = GIDTimedLoaderAnimationStatusStopped;
     [self.loadingViewController.activityIndicator stopAnimating];
-    [self.loadingViewController dismissViewControllerAnimated:YES completion:nil];
+    [self.loadingViewController dismissViewControllerAnimated:NO completion:nil];
     completion();
   });
 }
