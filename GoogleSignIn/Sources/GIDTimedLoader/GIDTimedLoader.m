@@ -68,6 +68,9 @@ CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
   self.loadingTimeStamp = CACurrentMediaTime();
   dispatch_async(dispatch_get_main_queue(), ^{
     // Since this loading VC may be reused, the activity indicator may have been stopped; restart it
+    self.loadingViewController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    self.loadingViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    self.presentingViewController.definesPresentationContext = YES;
     [self.loadingViewController.activityIndicator startAnimating];
     [self.presentingViewController presentViewController:self.loadingViewController
                                                 animated:YES

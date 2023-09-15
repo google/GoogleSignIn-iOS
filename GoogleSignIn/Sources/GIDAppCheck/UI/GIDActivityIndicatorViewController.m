@@ -24,6 +24,8 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  // Medium gray with transparency
+  self.view.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.25];
 
   UIActivityIndicatorViewStyle style;
   if (@available(iOS 13.0, *)) {
@@ -32,6 +34,7 @@
     style = UIActivityIndicatorViewStyleGray;
   }
   _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:style];
+  _activityIndicator.color = UIColor.whiteColor;
   self.activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
   [self.activityIndicator startAnimating];
   [self.view addSubview:self.activityIndicator];

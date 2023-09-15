@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7345556F2AB142B40068F2B0 /* AppCheckDefaultSecrets.json in Resources */ = {isa = PBXBuildFile; fileRef = 7345556D2AB142B40068F2B0 /* AppCheckDefaultSecrets.json */; };
-		734555702AB142B40068F2B0 /* AppCheckSecrets.json in Resources */ = {isa = PBXBuildFile; fileRef = 7345556E2AB142B40068F2B0 /* AppCheckSecrets.json */; };
+		734555A02AB39FBF0068F2B0 /* AppCheckDefaultSecrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 7345559F2AB39FBF0068F2B0 /* AppCheckDefaultSecrets.xcconfig */; };
 		738B4A322AA8FE800056885D /* AppCheckSecretReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */; };
 		738D5F732A26BC3B00A7F11B /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */; };
 		73A464042A1C3B3400BA8528 /* AppAttestExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A464032A1C3B3400BA8528 /* AppAttestExampleApp.swift */; };
@@ -22,8 +21,7 @@
 		4728D878D216B7D622E237DA /* Pods_AppAttestExampleForPod.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AppAttestExampleForPod.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		73080B2A2AAF9BDE00DEF667 /* AppAttestExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAttestExampleTests.swift; sourceTree = "<group>"; };
 		73443A232A55F56900A4932E /* AppAttestExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppAttestExample.entitlements; sourceTree = "<group>"; };
-		7345556D2AB142B40068F2B0 /* AppCheckDefaultSecrets.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = AppCheckDefaultSecrets.json; sourceTree = "<group>"; };
-		7345556E2AB142B40068F2B0 /* AppCheckSecrets.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = AppCheckSecrets.json; sourceTree = "<group>"; };
+		7345559F2AB39FBF0068F2B0 /* AppCheckDefaultSecrets.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = AppCheckDefaultSecrets.xcconfig; sourceTree = "<group>"; };
 		738B4A312AA8FE800056885D /* AppCheckSecretReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCheckSecretReader.swift; sourceTree = "<group>"; };
 		738D5F722A26BC3B00A7F11B /* BirthdayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayLoader.swift; sourceTree = "<group>"; };
 		73A065612A786D10007BC7FC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -71,8 +69,7 @@
 		7345556C2AB142B40068F2B0 /* Secrets */ = {
 			isa = PBXGroup;
 			children = (
-				7345556D2AB142B40068F2B0 /* AppCheckDefaultSecrets.json */,
-				7345556E2AB142B40068F2B0 /* AppCheckSecrets.json */,
+				7345559F2AB39FBF0068F2B0 /* AppCheckDefaultSecrets.xcconfig */,
 			);
 			path = Secrets;
 			sourceTree = "<group>";
@@ -188,9 +185,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7345556F2AB142B40068F2B0 /* AppCheckDefaultSecrets.json in Resources */,
 				73A4640B2A1C3B3500BA8528 /* Preview Assets.xcassets in Resources */,
-				734555702AB142B40068F2B0 /* AppCheckSecrets.json in Resources */,
+				734555A02AB39FBF0068F2B0 /* AppCheckDefaultSecrets.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,6 +251,7 @@
 /* Begin XCBuildConfiguration section */
 		73A4640C2A1C3B3500BA8528 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7345559F2AB39FBF0068F2B0 /* AppCheckDefaultSecrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
