@@ -117,7 +117,6 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   return _cachedConfiguration;
 }
 
-// TODO: Should the refresh tokens flow also use App Check? (mdmathias, 2023.05.23)
 - (void)refreshTokensIfNeededWithCompletion:(GIDGoogleUserCompletion)completion {
   if (!([self.accessToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
       (self.idToken && [self.idToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
