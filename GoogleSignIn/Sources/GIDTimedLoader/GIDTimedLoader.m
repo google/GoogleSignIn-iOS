@@ -24,7 +24,7 @@
 #import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
 
 CFTimeInterval const kGIDTimedLoaderMinAnimationDuration = 1.0;
-CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.5;
+CFTimeInterval const kGIDTimedLoaderMaxDelayBeforeAnimating = 0.8;
 
 @interface GIDTimedLoader ()
 
