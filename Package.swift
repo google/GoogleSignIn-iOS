@@ -48,7 +48,7 @@ let package = Package(
     .package(
       name: "AppCheck",
       url: "https://github.com/google/app-check.git",
-      "10.18 ..< "11.0.0"),
+      "10.18" ..< "11.0.0"),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
