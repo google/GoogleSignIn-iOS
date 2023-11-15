@@ -1,5 +1,4 @@
 source 'https://github.com/CocoaPods/Specs.git'
-source 'https://github.com/firebase/SpecsDev.git'
 
 pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
 pod 'GoogleSignInSwiftSupport', :path => '../../../', :testspecs => ['unit']
