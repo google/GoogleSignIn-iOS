@@ -32,7 +32,7 @@ jobs:
     - name: Lint podspec using local source
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
-           --sources=https://github.com/firebase/SpecsDev.git,https://cdn.cocoapods.org/ \
+           --sources=https://cdn.cocoapods.org/ \
            ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
 
   spm-build-test:
