@@ -1,3 +1,22 @@
+# 7.1.0-fac-eap-1.0.0
+- Early Access Program (EAP) release supporting Firebase App Check tokens used
+to establish your application's integrity while signing in with Google
+  - Use [`-[GIDSignIn configureWithCompletion:]`](https://github.com/google/GoogleSignIn-iOS/blob/7.1.0-fac-eap-1.0.0/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L79)
+    to configure GSI to use Firebase App Check as early as possible in your app
+    to minimize latency.
+  - Use [`-[GIDSignIn configureDebugProviderWithAPIKey:completion:]`](https://github.com/google/GoogleSignIn-iOS/blob/7.1.0-fac-eap-1.0.0/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L91)
+    in debug builds or continuous integration environments.
+  - New [sample app](https://github.com/google/GoogleSignIn-iOS/tree/7.1.0-fac-eap-1.0.0/Samples/Swift/AppAttestExample)
+    showing example of configuring GSI to use Firebase App Check.
+- Internal
+  - Fix typo in `SFSafariViewController` ([#291](https://github.com/google/GoogleSignIn-iOS/pull/291))
+  - Removes `macos-11` runner in GitHub workflows ([#302](https://github.com/google/GoogleSignIn-iOS/pull/302))
+  - Updates button name reference so UI automation tests pass ([#308](https://github.com/google/GoogleSignIn-iOS/pull/308))
+  - Ensure that `completion` is not nil before calling
+    `-[GIDSignIn restorePreviousSignIn:]` ([#301](https://github.com/google/GoogleSignIn-iOS/pull/301))
+  - Use new [delegate protocol](https://github.com/google/GTMAppAuth/pull/224)
+    from GTMAppAuth 4.0.0 ([#299](https://github.com/google/GoogleSignIn-iOS/pull/299))
+
 # 7.0.0
 - All configuration can now be provided via your `Info.plist` file. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
   - Use the following keys in `<key>KEY</key><string>VALUE</string>` pairs to configure the SDK:

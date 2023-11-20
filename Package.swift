@@ -17,7 +17,7 @@
 
 import PackageDescription
 
-let googleSignInVersion = "7.0.0"
+let googleSignInVersion = "7.1.0-fac-eap-1.0.0"
 
 let package = Package(
   name: "GoogleSignIn",
