@@ -22,17 +22,16 @@
     ],
     "targetForVariableExpansion" : {
       "containerPath" : "container:AppAttestExample.xcodeproj",
-      "identifier" : "73080B272AAF9BDE00DEF667",
-      "name" : "AppAttestExampleTests"
+      "identifier" : "73A463FF2A1C3B3400BA8528",
+      "name" : "AppAttestExample"
     }
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:AppAttestExample.xcodeproj",
-        "identifier" : "73080B272AAF9BDE00DEF667",
-        "name" : "AppAttestExampleTests"
+        "identifier" : "73DB85E92B23DE3B00D051BA",
+        "name" : "AppAttestExampleTests(2)"
       }
     }
   ],
