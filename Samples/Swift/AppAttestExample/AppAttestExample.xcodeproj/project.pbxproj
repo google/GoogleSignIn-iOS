@@ -15,6 +15,7 @@
 		73CD4AB22AAF915900642462 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73CD4AB12AAF915900642462 /* GoogleSignIn */; };
 		73CD4AB42AAF915F00642462 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 73CD4AB32AAF915F00642462 /* GoogleSignInSwift */; };
 		73DB85ED2B23DE3B00D051BA /* AppAttestExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73DB85EC2B23DE3B00D051BA /* AppAttestExampleTests.swift */; };
+		73DB85F42B23E68A00D051BA /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 73DB85F32B23E68A00D051BA /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				73DB85F42B23E68A00D051BA /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,6 +182,9 @@
 				73DB85EF2B23DE3B00D051BA /* PBXTargetDependency */,
 			);
 			name = AppAttestExampleTests;
+			packageProductDependencies = (
+				73DB85F32B23E68A00D051BA /* GoogleSignIn */,
+			);
 			productName = "AppAttestExampleTests(2)";
 			productReference = 73DB85EA2B23DE3B00D051BA /* AppAttestExampleTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -561,6 +566,10 @@
 		73CD4AB32AAF915F00642462 /* GoogleSignInSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GoogleSignInSwift;
+		};
+		73DB85F32B23E68A00D051BA /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
