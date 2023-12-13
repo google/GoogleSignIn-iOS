@@ -31,7 +31,7 @@
       "target" : {
         "containerPath" : "container:AppAttestExample.xcodeproj",
         "identifier" : "73DB85E92B23DE3B00D051BA",
-        "name" : "AppAttestExampleTests(2)"
+        "name" : "AppAttestExampleTests"
       }
     }
   ],
