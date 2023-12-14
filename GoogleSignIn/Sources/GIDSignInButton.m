@@ -590,47 +590,49 @@ static UIColor *colorForStyleState(GIDSignInButtonColorScheme style,
   CGSize size = [self size];
   CGRect rect = CGRectMake(0.0f, 0.0f, size.width, size.height);
 
-  UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0.0);
-  CGContextRef context = UIGraphicsGetCurrentContext();
-  CGContextSetShouldAntialias(context, true);
-  CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
+  __block UIColor *blockColor = color;
 
-  CGContextScaleCTM(context, 1, -1);
-  CGContextTranslateCTM(context, 0, -rect.size.height);
+  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:rect.size];
+  UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+    CGContextRef context = rendererContext.CGContext;
 
-  CGContextClipToMask(context, rect, self.CGImage);
-  CGContextDrawImage(context, rect, self.CGImage);
+    CGContextSetShouldAntialias(context, true);
+    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
 
-  CGContextSetBlendMode(context, blendMode);
+    CGContextScaleCTM(context, 1, -1);
+    CGContextTranslateCTM(context, 0, -rect.size.height);
 
-  CGFloat alpha = 1.0;
-  if (blendMode == kCGBlendModeMultiply) {
-    CGFloat red, green, blue;
-    BOOL success = [color getRed:&red green:&green blue:&blue alpha:&alpha];
-    if (success) {
-      color = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
-    } else {
-      CGFloat grayscale;
-      success = [color getWhite:&grayscale alpha:&alpha];
-      if (success) {
-        color = [UIColor colorWithWhite:grayscale alpha:1.0];
-      }
+    CGContextClipToMask(context, rect, self.CGImage);
+    CGContextDrawImage(context, rect, self.CGImage);
+
+    CGContextSetBlendMode(context, blendMode);
+
+    CGFloat alpha = 1.0;
+    if (blendMode == kCGBlendModeMultiply) {
+        CGFloat red, green, blue;
+        BOOL success = [blockColor getRed:&red green:&green blue:&blue alpha:&alpha];
+        if (success) {
+            blockColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
+        } else {
+            CGFloat grayscale;
+            success = [blockColor getWhite:&grayscale alpha:&alpha];
+            if (success) {
+                blockColor = [UIColor colorWithWhite:grayscale alpha:1.0];
+            }
+        }
     }
-  }
 
-  CGContextSetFillColorWithColor(context, color.CGColor);
-  CGContextFillRect(context, rect);
-
-  if (blendMode == kCGBlendModeMultiply && alpha != 1.0) {
-    // Modulate by the alpha.
-    color = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:alpha];
-    CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
-    CGContextSetFillColorWithColor(context, color.CGColor);
+    CGContextSetFillColorWithColor(context, blockColor.CGColor);
     CGContextFillRect(context, rect);
-  }
 
-  UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
+    if (blendMode == kCGBlendModeMultiply && alpha != 1.0) {
+        // Modulate by the alpha.
+        blockColor = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:alpha];
+        CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
+        CGContextSetFillColorWithColor(context, blockColor.CGColor);
+        CGContextFillRect(context, rect);
+    }
+  }];
 
   if (self.capInsets.bottom > 0 || self.capInsets.top > 0 ||
       self.capInsets.left > 0 || self.capInsets.left > 0) {
