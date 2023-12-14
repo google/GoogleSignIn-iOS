@@ -39,7 +39,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "73DB85E92B23DE3B00D051BA"
+               BlueprintIdentifier = "7364341F2B2A914A00DA67DA"
                BuildableName = "AppAttestExampleTests.xctest"
                BlueprintName = "AppAttestExampleTests"
                ReferencedContainer = "container:AppAttestExample.xcodeproj">
@@ -50,7 +50,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "73DB85E92B23DE3B00D051BA"
+               BlueprintIdentifier = "7364341F2B2A914A00DA67DA"
                BuildableName = "AppAttestExampleTests.xctest"
                BlueprintName = "AppAttestExampleTests"
                ReferencedContainer = "container:AppAttestExample.xcodeproj">
