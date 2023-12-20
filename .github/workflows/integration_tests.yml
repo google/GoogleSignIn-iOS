@@ -42,7 +42,7 @@ jobs:
           PASSWORD_SECRET=$PASSWORD_SECRET
 
   app-check-api-token-tests:
-    runs-on: macOS-12
+    runs-on: macOS-13
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: "!github.event.pull_request.head.repo.fork"
     defaults:
@@ -51,6 +51,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Use Xcode 15.0.1
+      run: |
+        sudo xcode-select -s /Applications/Xcode_15.0.1.app
     - name: Build test target for App Check Example
       run: |
         xcodebuild \
@@ -58,7 +61,7 @@ jobs:
           build-for-testing \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11'
+          -destination 'platform=iOS Simulator,name=iPhone 15'
     - name: Run test target for App Check Example
       env:
         AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
@@ -69,6 +72,6 @@ jobs:
           test-without-building \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -destination 'platform=iOS Simulator,name=iPhone 15' \
           AppCheckDebugToken=$AppCheckDebugToken \
           APP_CHECK_WEB_API_KEY=$APP_CHECK_WEB_API_KEY
