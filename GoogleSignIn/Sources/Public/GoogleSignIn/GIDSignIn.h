@@ -86,7 +86,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// @return `YES` if there is a previous user sign-in saved in keychain.
 - (BOOL)hasPreviousSignIn;
 
-/// Attempts to restore a previous user sign-in without interaction.
+/// Attempts to restore a previous user sign-in without interaction. 
+///
+/// Restores user from the local cache and refreshes tokens if they have expired (>1 hour).
 ///
 /// @param completion The block that is called on completion.  This block will be called asynchronously
 ///     on the main queue.
