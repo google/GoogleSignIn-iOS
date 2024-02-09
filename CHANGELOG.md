@@ -1,3 +1,10 @@
+# 7.1.0-fac-beta-1.0.0
+- Beta release supporting Firebase App Check tokens used
+to establish your application's integrity while signing in with Google
+- Internal
+  - Update SignInSample Podfile minimum iOS version ([#355](https://github.com/google/GoogleSignIn-iOS/pull/355))
+  - Update AppCheckExample unit test target to pass during continuous integration ([#356](https://github.com/google/GoogleSignIn-iOS/pull/356))
+
 # 7.1.0-fac-eap-1.0.0
 - Early Access Program (EAP) release supporting Firebase App Check tokens used
 to establish your application's integrity while signing in with Google
