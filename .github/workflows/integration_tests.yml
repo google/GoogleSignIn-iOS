@@ -12,7 +12,7 @@ jobs:
   swift-button-functional-test:
     runs-on: macOS-12
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
-    if: "!github.event.pull_request.head.repo.fork"
+    if: false # Disabled per issue 367; add back here check for PRs from forks
     defaults:
       run:
         working-directory: Samples/Swift/DaysUntilBirthday
