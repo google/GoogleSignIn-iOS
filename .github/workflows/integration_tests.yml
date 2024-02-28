@@ -9,10 +9,48 @@ on:
 
 jobs:
 
+  grab-pr-body:
+    runs-on: ubuntu-latest
+    outputs:
+      PR_BODY: ${{ steps.body.outputs.PR_BODY }}
+    steps:
+    - id: body
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }} 
+      run: |
+        {
+          echo "PR_BODY<<EOF"
+          echo "$PR_BODY" 
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+  check-pr-body-for-key:
+    runs-on: ubuntu-latest
+    needs: grab-pr-body
+    outputs:
+      RUN_INTEGRATION: ${{ steps.check_key.outputs.RUN_INTEGRATION }}
+    steps:
+    - id: check_key
+      env:
+        PR_BODY: ${{ needs.grab-pr-body.outputs.PR_BODY }}
+        SKIP_KEY: "SKIP_INTEGRATION_TESTS=YES"
+      name: Check for key and set bool to skip integration tests
+      run: |
+        if [[ "$PR_BODY" == *"$SKIP_KEY"* ]]; then
+          echo "Skipping integration tests for PR body:"
+          echo "$PR_BODY"
+          echo "RUN_INTEGRATION=no" >> "$GITHUB_OUTPUT"
+        else
+          echo "Running integration tests for PR body:"
+          echo "$PR_BODY"
+          echo "RUN_INTEGRATION=yes" >> "$GITHUB_OUTPUT"
+        fi
+
   swift-button-functional-test:
     runs-on: macOS-12
+    needs: check-pr-body-for-key
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
-    if: false # Disabled per issue 367; add back here check for PRs from forks
+    if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' }} && "!github.event.pull_request.head.repo.fork"
     defaults:
       run:
         working-directory: Samples/Swift/DaysUntilBirthday
