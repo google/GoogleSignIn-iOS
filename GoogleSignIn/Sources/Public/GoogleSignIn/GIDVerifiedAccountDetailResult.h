@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
 
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDSignInResult.h"
-#import "GIDVerifyAccountDetail.h"
-#import "GIDVerifiableAccountDetail.h"
-#import "GIDVerifiedAccountDetailResult.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+#import <Foundation/Foundation.h>
+
+/// A helper object that contains the result of a successful verification or addScopes flow.
+/// This will pass back the necessary tokens to the requesting party.
+@interface GIDVerifiedAccountDetailResult : NSObject
+@end
