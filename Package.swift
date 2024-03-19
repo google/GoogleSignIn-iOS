@@ -95,7 +95,10 @@ let package = Package(
       dependencies: [
         "GoogleSignIn",
       ],
-      path: "GoogleSignInSwift/Sources"
+      path: "GoogleSignInSwift/Sources",
+      resources: [
+        .copy("Resources/PrivacyInfo.xcprivacy")
+      ]
     ),
     .testTarget(
       name: "GoogleSignIn-UnitTests",
