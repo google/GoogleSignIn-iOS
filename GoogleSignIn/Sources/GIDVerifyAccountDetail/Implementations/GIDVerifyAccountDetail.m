@@ -25,23 +25,26 @@
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult, NSError *_Nullable error))completion {
-    // TODO: Implement this method.
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
+                                                NSError *_Nullable error))completion {
+    // TODO(#383): Implement this method.
 }
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
                         hint:(nullable NSString *)hint
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult, NSError *_Nullable error))completion {
-    // TODO: Implement this method.
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
+                                                NSError *_Nullable error))completion {
+    // TODO(#383): Implement this method.
 }
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
                         hint:(nullable NSString *)hint
             additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult, NSError *_Nullable error))completion {
-    // TODO: Implement this method.
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
+                                                NSError *_Nullable error))completion {
+    // TODO(#383): Implement this method.
 }
 
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST

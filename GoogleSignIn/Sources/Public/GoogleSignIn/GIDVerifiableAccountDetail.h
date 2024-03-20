@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-/// Helper object used to hold the enumeration representing a list of
+/// Helper object used to hold GIDAccountDetailType representing a list of
 /// account details that Google can verify via GSI.
 @interface GIDVerifiableAccountDetail : NSObject
 @end

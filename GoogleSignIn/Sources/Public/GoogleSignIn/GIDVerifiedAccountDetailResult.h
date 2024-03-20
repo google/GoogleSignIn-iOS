@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-/// A helper object that contains the result of a successful verification or addScopes flow.
+/// A helper object that contains the result of a verification flow.
 /// This will pass back the necessary tokens to the requesting party.
 @interface GIDVerifiedAccountDetailResult : NSObject
 @end
