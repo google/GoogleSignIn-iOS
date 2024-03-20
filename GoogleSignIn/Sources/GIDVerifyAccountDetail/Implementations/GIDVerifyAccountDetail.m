@@ -16,5 +16,37 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
+
 @implementation GIDVerifyAccountDetail
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
+- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+    presentingViewController:(UIViewController *)presentingViewController
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
+                                                NSError *_Nullable error))completion {
+    // TODO(#383): Implement this method.
+}
+
+- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+    presentingViewController:(UIViewController *)presentingViewController
+                        hint:(nullable NSString *)hint
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
+                                                NSError *_Nullable error))completion {
+    // TODO(#383): Implement this method.
+}
+
+- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+    presentingViewController:(UIViewController *)presentingViewController
+                        hint:(nullable NSString *)hint
+            additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
+                                                NSError *_Nullable error))completion {
+    // TODO(#383): Implement this method.
+}
+
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
 @end
