@@ -33,8 +33,8 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   ]
   s.ios.framework = 'UIKit'
   s.osx.framework = 'AppKit'
-  s.dependency 'AppAuth', '~> 1.7'
-  s.dependency 'GTMAppAuth', '~> 4.1'
+  s.dependency 'AppAuth', '>= 1.7.3', '< 2.0'
+  s.dependency 'GTMAppAuth', '>= 4.1.1', '< 5.0'
   s.dependency 'GTMSessionFetcher/Core', '~> 3.3'
   s.resource_bundle = {
     'GoogleSignIn' => ['GoogleSignIn/Sources/{Resources,Strings}/*']
