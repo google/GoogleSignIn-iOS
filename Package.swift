@@ -44,15 +44,15 @@ let package = Package(
     .package(
       name: "AppAuth",
       url: "https://github.com/openid/AppAuth-iOS.git",
-      "1.7.3" ..< "2.0.0"),
+      from: "1.7.0"),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
-      from: "4.1.1"),
+      from: "4.1.0"),
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
-      "3.3.1" ..< "4.0.0"),
+      from: "3.3.0"),
     .package(
       name: "OCMock",
       url: "https://github.com/firebase/ocmock.git",
@@ -60,7 +60,7 @@ let package = Package(
     .package(
       name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
-      "7.13.1" ..< "8.0.0"),
+      from: "7.13.0"),
   ],
   targets: [
     .target(
