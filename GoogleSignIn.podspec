@@ -33,9 +33,9 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   ]
   s.ios.framework = 'UIKit'
   s.osx.framework = 'AppKit'
-  s.dependency 'AppAuth', '~> 1.6'
-  s.dependency 'GTMAppAuth', '~> 4.0'
-  s.dependency 'GTMSessionFetcher/Core', '>= 1.1', '< 4.0'
+  s.dependency 'AppAuth', '>= 1.7.3', '< 2.0'
+  s.dependency 'GTMAppAuth', '>= 4.1.1', '< 5.0'
+  s.dependency 'GTMSessionFetcher/Core', '~> 3.3'
   s.resource_bundle = {
     'GoogleSignIn' => ['GoogleSignIn/Sources/{Resources,Strings}/*']
   }
@@ -55,7 +55,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
     ]
     unit_tests.requires_app_host = true
     unit_tests.dependency 'OCMock'
-    unit_tests.dependency 'GoogleUtilities/MethodSwizzler', '~> 7.2'
-    unit_tests.dependency 'GoogleUtilities/SwizzlerTestHelpers', '~> 7.2'
+    unit_tests.dependency 'GoogleUtilities/MethodSwizzler', '~> 7.13'
+    unit_tests.dependency 'GoogleUtilities/SwizzlerTestHelpers', '~> 7.13'
   end
 end
