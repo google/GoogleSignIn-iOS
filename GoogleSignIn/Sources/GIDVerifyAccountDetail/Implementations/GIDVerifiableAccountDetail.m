@@ -17,4 +17,25 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
 @implementation GIDVerifiableAccountDetail
+
+- (instancetype)initWithAccountDetailType:(GIDAccountDetailType)accountDetailType {
+   self = [super init];
+   if (self) {
+       _accountDetailType = accountDetailType;
+   }
+   return self;
+}
+
+// Returns dictionary mapping account detail type to scope.
++ (NSDictionary<NSNumber *, NSString *> *)scopeMapping {
+  return @{
+    @(GIDAccountDetailTypeAgeOver18) : @"https://www.googleapis.com/auth/verified.age.over18.standard"
+  };
+}
+
+- (NSString *)retrieveScope {
+    NSDictionary<NSNumber *, NSString *> *mapping = [GIDVerifiableAccountDetail scopeMapping];
+    return mapping[@(self.accountDetailType)]; 
+}
+
 @end
