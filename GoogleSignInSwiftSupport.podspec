@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'GoogleSignInSwiftSupport'
-  s.version = '7.0.1'
+  s.version = '7.1.0'
   s.swift_version = '5.0'
   s.summary = 'Adds Swift-focused support for Google Sign-In.'
   s.description = 'Additional Swift support for the Google Sign-In SDK.'
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
     'CoreGraphics',
     'SwiftUI',
   ]
-  s.dependency 'GoogleSignIn', '~> 7.0'
+  s.dependency 'GoogleSignIn', '~> 7.1'
   s.resource_bundles = {
     'GoogleSignInSwiftSupport_Privacy' => 'GoogleSignInSwift/Sources/Resources/PrivacyInfo.xcprivacy'
   }
