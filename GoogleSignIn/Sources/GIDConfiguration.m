@@ -26,6 +26,9 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
 // The key for the openIDRealm property to be used with NSSecureCoding.
 static NSString *const kOpenIDRealmKey = @"openIDRealm";
 
+// The key for the nonce property to be used with NSSecureCoding.
+static NSString *const kNonceKey = @"nonce";
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDConfiguration
@@ -34,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
   return [self initWithClientID:clientID
                  serverClientID:nil
                    hostedDomain:nil
-                    openIDRealm:nil];
+                    openIDRealm:nil
+                          nonce:nil];
 }
 
 - (instancetype)initWithClientID:(NSString *)clientID
@@ -42,19 +46,22 @@ NS_ASSUME_NONNULL_BEGIN
   return [self initWithClientID:clientID
                  serverClientID:serverClientID
                    hostedDomain:nil
-                    openIDRealm:nil];
+                    openIDRealm:nil
+                          nonce:nil];
 }
 
 - (instancetype)initWithClientID:(NSString *)clientID
                   serverClientID:(nullable NSString *)serverClientID
                     hostedDomain:(nullable NSString *)hostedDomain
-                     openIDRealm:(nullable NSString *)openIDRealm {
+                     openIDRealm:(nullable NSString *)openIDRealm
+                           nonce:(nullable NSString *)nonce {
   self = [super init];
   if (self) {
     _clientID = [clientID copy];
     _serverClientID = [serverClientID copy];
     _hostedDomain = [hostedDomain copy];
     _openIDRealm = [openIDRealm copy];
+    _nonce = [nonce copy];
   }
   return self;
 }
@@ -62,13 +69,14 @@ NS_ASSUME_NONNULL_BEGIN
 // Extend NSObject's default description for easier debugging.
 - (NSString *)description {
   return [NSString stringWithFormat:
-      @"<%@: %p, clientID: %@, serverClientID: %@, hostedDomain: %@, openIDRealm: %@>",
+      @"<%@: %p, clientID: %@, serverClientID: %@, hostedDomain: %@, openIDRealm: %@, nonce: $@>",
       NSStringFromClass([self class]),
       self,
       _clientID,
       _serverClientID,
       _hostedDomain,
-      _openIDRealm];
+      _openIDRealm,
+      _nonce];
 }
 
 #pragma mark - NSCopying
@@ -89,6 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSString *serverClientID = [coder decodeObjectOfClass:[NSString class] forKey:kServerClientIDKey];
   NSString *hostedDomain = [coder decodeObjectOfClass:[NSString class] forKey:kHostedDomainKey];
   NSString *openIDRealm = [coder decodeObjectOfClass:[NSString class] forKey:kOpenIDRealmKey];
+  NSString *nonce = [coder decodeObjectOfClass:[NSString class] forKey:kNonceKey];
 
   // We must have a client ID.
   if (!clientID) {
@@ -98,7 +107,8 @@ NS_ASSUME_NONNULL_BEGIN
   return [self initWithClientID:clientID
                  serverClientID:serverClientID
                    hostedDomain:hostedDomain
-                    openIDRealm:openIDRealm];
+                    openIDRealm:openIDRealm
+                          nonce:nonce];
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder {
@@ -106,6 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
   [coder encodeObject:_serverClientID forKey:kServerClientIDKey];
   [coder encodeObject:_hostedDomain forKey:kHostedDomainKey];
   [coder encodeObject:_openIDRealm forKey:kOpenIDRealmKey];
+    [coder encodeObject:_nonce forKey:kNonceKey];
 }
 
 @end

@@ -698,10 +698,11 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOpenIDRealm {
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                      serverClientID:nil
-                                                        hostedDomain:nil
-                                                         openIDRealm:kOpenIDRealm];
+  _signIn._configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                       serverClientID:nil
+                                                         hostedDomain:nil
+                                                          openIDRealm:kOpenIDRealm
+                                                                nonce:nil];
 
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
@@ -745,10 +746,12 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testOAuthLogin_HostedDomain {
-  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
-                                                      serverClientID:nil
-                                                        hostedDomain:kHostedDomain
-                                                         openIDRealm:nil];
+
+  _signIn._configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                               serverClientID:nil
+                                                 hostedDomain:kHostedDomain
+                                                  openIDRealm:nil
+                                                        nonce:nil];
 
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
