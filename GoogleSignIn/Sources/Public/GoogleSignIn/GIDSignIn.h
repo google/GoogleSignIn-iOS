@@ -162,6 +162,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                          additionalParams:(nullable NSDictionary *)extraParams
                                 completion:
     (nullable void (^)(GIDSignInResult *_Nullable signInResult,
                        NSError *_Nullable error))completion
