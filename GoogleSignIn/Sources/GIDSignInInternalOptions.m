@@ -30,6 +30,43 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                               verifyCompletion:(nullable GIDVerifyCompletion)completion{
+  GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
+                                                    presentingViewController:presentingViewController
+                                                                  loginHint:loginHint
+                                                              addScopesFlow:addScopesFlow
+                                                     accountDetailsToVerify:@[]
+                                                           verifyCompletion:completion];
+  return options;
+}
+
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                       presentingViewController:(nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
+                         accountDetailsToVerify:(nullable NSArray *)accountDetailsToVerify
+                               verifyCompletion:(nullable GIDVerifyCompletion)completion{
+  GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
+  if (options) {
+    options->_interactive = YES;
+    options->_continuation = NO;
+    options->_addScopesFlow = addScopesFlow;
+    options->_configuration = configuration;
+    options->_presentingViewController = presentingViewController;
+    options->_loginHint = loginHint;
+    options->_accountDetailsToVerify = accountDetailsToVerify;
+    options->_verifyCompletion = completion;
+  }
+  return options;
+}
+
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                       presentingViewController:(nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                      completion:(nullable GIDSignInCompletion)completion {
 #elif TARGET_OS_OSX
