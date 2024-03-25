@@ -28,16 +28,10 @@ static NSString *const kAgeVerificationScope = @"https://www.googleapis.com/auth
   return self;
 }
 
-+ (NSDictionary<NSNumber *, NSString *> *)scopeMapping {
-  return @{
-    @(GIDAccountDetailTypeAgeOver18) : kAgeVerificationScope
-  };
-}
-
 - (NSString *)scope {
   switch (self.accountDetailType) {
     case GIDAccountDetailTypeAgeOver18:
-      return [GIDVerifiableAccountDetail scopeMapping][@(GIDAccountDetailTypeAgeOver18)];
+      return kAgeVerificationScope;
     default:
       return nil;
   }
