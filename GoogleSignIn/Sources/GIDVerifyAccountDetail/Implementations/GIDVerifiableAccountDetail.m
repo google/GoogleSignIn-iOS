@@ -21,11 +21,11 @@ static NSString *const kAgeVerificationScope = @"https://www.googleapis.com/auth
 @implementation GIDVerifiableAccountDetail
 
 - (instancetype)initWithAccountDetailType:(GIDAccountDetailType)accountDetailType {
-   self = [super init];
-   if (self) {
-       _accountDetailType = accountDetailType;
-   }
-   return self;
+  self = [super init];
+  if (self) {
+    _accountDetailType = accountDetailType;
+  }
+  return self;
 }
 
 + (NSDictionary<NSNumber *, NSString *> *)scopeMapping {
@@ -35,12 +35,12 @@ static NSString *const kAgeVerificationScope = @"https://www.googleapis.com/auth
 }
 
 - (NSString *)scope {
-    switch (self.accountDetailType) {
-        case GIDAccountDetailTypeAgeOver18:
-            return [GIDVerifiableAccountDetail scopeMapping][@(GIDAccountDetailTypeAgeOver18)];
-        default:
-            return nil;
-    }
+  switch (self.accountDetailType) {
+    case GIDAccountDetailTypeAgeOver18:
+      return [GIDVerifiableAccountDetail scopeMapping][@(GIDAccountDetailTypeAgeOver18)];
+    default:
+      return nil;
+  }
 }
 
 @end

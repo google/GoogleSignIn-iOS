@@ -18,9 +18,9 @@
 
 /// An enumeration defining the types of account details Google can verify.
 typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
-    // Verifies the user is 18 years of age or older.
-    GIDAccountDetailTypeAgeOver18
-    // Potential future account details can be added here 
+  // Verifies the user is 18 years of age or older.
+  GIDAccountDetailTypeAgeOver18
+  // Potential future account details can be added here
 };
 
 /// Helper object used to hold the enumeration representing a list of
