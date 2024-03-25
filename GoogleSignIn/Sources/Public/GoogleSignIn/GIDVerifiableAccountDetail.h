@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
 /// account details that Google can verify via GSI.
 @interface GIDVerifiableAccountDetail : NSObject
 
-// The type of account detail that will be verified.
+/// The type of account detail that will be verified.
 @property(nonatomic, readonly) GIDAccountDetailType accountDetailType;
 
 /// Initializes a new GIDVerifiableAccountDetail object with the given
@@ -39,6 +39,6 @@ typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
 /// Retrieves the scope required to verify the account detail.
 ///
 /// @return A string representing the scope required to verify the account detail.
-- (NSString *)retrieveScope;
+- (NSString *)scope;
 
 @end

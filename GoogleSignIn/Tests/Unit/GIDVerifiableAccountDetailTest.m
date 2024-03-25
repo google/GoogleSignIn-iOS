@@ -15,7 +15,7 @@
 
 - (void)testScopeRetrieval {
   GIDVerifiableAccountDetail *detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
-  NSString *retrievedScope = [detail retrieveScope];
+  NSString *retrievedScope = [detail scope];
   NSString *expectedScope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
   XCTAssertEqualObjects(retrievedScope, expectedScope);
 }
