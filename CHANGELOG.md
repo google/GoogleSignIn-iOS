@@ -1,3 +1,15 @@
+# 7.1.0
+- Update to Swift 5.0 in `GoogleSignInSwiftSupport` pod ([#317](https://github.com/google/GoogleSignIn-iOS/pull/317))
+- Documentation updates ([#351](https://github.com/google/GoogleSignIn-iOS/pull/351), [#372](https://github.com/google/GoogleSignIn-iOS/pull/372))
+- Add Privacy Manifest ([#382](https://github.com/google/GoogleSignIn-iOS/pull/382))
+- Internal
+  - Fix typo in `SFSafariViewController` ([#291](https://github.com/google/GoogleSignIn-iOS/pull/291))
+  - Fix `OCMock` usage in unit test ([#298](https://github.com/google/GoogleSignIn-iOS/pull/298))
+  - Use new [delegate protocol](https://github.com/google/GTMAppAuth/pull/224) from GTMAppAuth 4.0.0 ([#299](https://github.com/google/GoogleSignIn-iOS/pull/299))
+  - Ensure that `completion` is not nil before calling `-[GIDSignIn restorePreviousSignIn:]` ([#301](https://github.com/google/GoogleSignIn-iOS/pull/301))
+  - Removes `macos-11` runner in GitHub workflows ([#302](https://github.com/google/GoogleSignIn-iOS/pull/302))
+  - Updates button name reference so UI automation tests pass ([#308](https://github.com/google/GoogleSignIn-iOS/pull/308))
+
 # 7.0.0
 - All configuration can now be provided via your `Info.plist` file. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
   - Use the following keys in `<key>KEY</key><string>VALUE</string>` pairs to configure the SDK:
