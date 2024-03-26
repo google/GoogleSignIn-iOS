@@ -2,6 +2,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
+static NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
+
 @interface GIDVerifiableAccountDetailTests : XCTestCase
 @end
 
@@ -16,8 +18,14 @@
 - (void)testScopeRetrieval {
   GIDVerifiableAccountDetail *detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
   NSString *retrievedScope = [detail scope];
-  NSString *expectedScope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
-  XCTAssertEqualObjects(retrievedScope, expectedScope);
+  XCTAssertEqualObjects(retrievedScope, kAccountDetailTypeAgeOver18Scope);
+}
+
+- (void)testScopeRetrieval_MissingScope {
+  NSInteger missingScope = 5;
+  GIDVerifiableAccountDetail *detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:missingScope];
+  NSString *retrievedScope = [detail scope];
+  XCTAssertNil(retrievedScope);
 }
 
 @end

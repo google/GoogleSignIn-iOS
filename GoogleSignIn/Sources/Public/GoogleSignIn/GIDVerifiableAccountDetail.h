@@ -16,11 +16,12 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// An enumeration defining the types of account details Google can verify.
 typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
-  // Verifies the user is 18 years of age or older.
-  GIDAccountDetailTypeAgeOver18
-  // Potential future account details can be added here
+  /// User account detail for age over 18.
+  GIDAccountDetailTypeAgeOver18,
 };
 
 /// Helper object used to hold the enumeration representing a list of
@@ -39,6 +40,8 @@ typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
 /// Retrieves the scope required to verify the account detail.
 ///
 /// @return A string representing the scope required to verify the account detail.
-- (NSString *)scope;
+- (nullable NSString *)scope;
 
 @end
+
+NS_ASSUME_NONNULL_END

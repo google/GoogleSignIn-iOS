@@ -16,7 +16,7 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
-static NSString *const kAgeVerificationScope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
+static NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
 
 @implementation GIDVerifiableAccountDetail
 
@@ -28,10 +28,10 @@ static NSString *const kAgeVerificationScope = @"https://www.googleapis.com/auth
   return self;
 }
 
-- (NSString *)scope {
+- (nullable NSString *)scope {
   switch (self.accountDetailType) {
     case GIDAccountDetailTypeAgeOver18:
-      return kAgeVerificationScope;
+      return kAccountDetailTypeAgeOver18Scope;
     default:
       return nil;
   }
