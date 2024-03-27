@@ -24,6 +24,8 @@ typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
   GIDAccountDetailTypeAgeOver18,
 };
 
+extern NSString *const kAccountDetailTypeAgeOver18Scope;
+
 /// Helper object used to hold the enumeration representing a list of
 /// account details that Google can verify via GSI.
 @interface GIDVerifiableAccountDetail : NSObject
