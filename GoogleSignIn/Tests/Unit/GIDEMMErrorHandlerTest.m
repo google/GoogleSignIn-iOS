@@ -458,9 +458,6 @@ NS_ASSUME_NONNULL_BEGIN
   [self testScreenlockRequiredCancel];
 }
 
-// Temporarily disable testKeyWindow for Xcode 12 and under due to unexplained failure.
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
-
 // Verifies that the `keyWindow` internal method works on all OS versions as expected.
 - (void)testKeyWindow {
   // The original method has been swizzled in `setUp` so get its original implementation to test.
@@ -470,7 +467,7 @@ NS_ASSUME_NONNULL_BEGIN
                        selector:@selector(keyWindow)
                 isClassSelector:NO];
   UIWindow *mockKeyWindow = OCMClassMock([UIWindow class]);
-  OCMStub(mockKeyWindow.isKeyWindow).andReturn(YES);
+  OCMStub(mockKeyWindow.keyWindow).andReturn(YES);
   UIApplication *mockApplication = OCMClassMock([UIApplication class]);
   [GULSwizzler swizzleClass:[UIApplication class]
                    selector:@selector(sharedApplication)
@@ -478,6 +475,7 @@ NS_ASSUME_NONNULL_BEGIN
                   withBlock:^{ return mockApplication; }];
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
   if (@available(iOS 15, *)) {
+    printf("test - 15\n");
     UIWindowScene *mockWindowScene = OCMClassMock([UIWindowScene class]);
     OCMStub(mockApplication.connectedScenes).andReturn(@[mockWindowScene]);
     OCMStub(mockWindowScene.activationState).andReturn(UISceneActivationStateForegroundActive);
@@ -487,9 +485,11 @@ NS_ASSUME_NONNULL_BEGIN
   {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     if (@available(iOS 13, *)) {
+      printf("test - 13\n");
       OCMStub(mockApplication.windows).andReturn(@[mockKeyWindow]);
     } else {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+      printf("test - fallback\n");
       OCMStub(mockApplication.keyWindow).andReturn(mockKeyWindow);
 #endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
     }
@@ -502,8 +502,6 @@ NS_ASSUME_NONNULL_BEGIN
                      selector:@selector(sharedApplication)
               isClassSelector:YES];
 }
-
-#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
 
 @end
 
