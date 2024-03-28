@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                verifyCompletion:(nullable GIDVerifyCompletion)completion{
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
-                                                    presentingViewController:presentingViewController
+                                                   presentingViewController:presentingViewController
                                                                   loginHint:loginHint
                                                               addScopesFlow:addScopesFlow
                                                      accountDetailsToVerify:@[]

@@ -37,11 +37,11 @@
   GIDVerifyCompletion completion = ^(GIDVerifiedAccountDetailResult *_Nullable verifiedResult,
                                      NSError * _Nullable error) {};
   GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
-                                       presentingViewController:presentingViewController
-                                                      loginHint:loginHint
-                                                  addScopesFlow:NO
-                                               verifyCompletion:completion];
+  [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                   presentingViewController:presentingViewController
+                                                  loginHint:loginHint
+                                              addScopesFlow:NO
+                                           verifyCompletion:completion];
 
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);
