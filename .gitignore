@@ -17,5 +17,6 @@ Pods/
 gen/
 Podfile.lock
 
-# Swift build
+# Swift Build
 .build/
+Package.resolved
