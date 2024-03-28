@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDSignInInternalOptions;
 @class GTMKeychainStore;
 
+@protocol GIDHTTPFetcher;
+
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.
 typedef void (^GIDSignInCompletion)(GIDSignInResult *_Nullable signInResult,
@@ -48,7 +50,8 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 - (instancetype)initPrivate;
 
 /// Private initializer taking a `GTMKeychainStore` to use during tests.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                          httpFetcher:(id<GIDHTTPFetcher>)httpFetcher;
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;

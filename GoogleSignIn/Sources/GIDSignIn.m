@@ -21,6 +21,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/API/GIDHTTPFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -118,9 +120,6 @@ static NSString *const kUserCanceledError = @"The user canceled the sign-in flow
 // User preference key to detect fresh install of the app.
 static NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
 
-// Maximum retry interval in seconds for the fetcher.
-static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
-
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
@@ -163,6 +162,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
+  // The class to fetches data from a url end point.
+  id<GIDHTTPFetcher> _httpFetcher;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
@@ -421,10 +422,13 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                      kEnvironmentLoggingParameter,
                      GIDEnvironment()];
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [self startFetchURL:revokeURL
-              fromAuthState:authState
-                withComment:@"GIDSignIn: revoke tokens"
-      withCompletionHandler:^(NSData *data, NSError *error) {
+  NSMutableURLRequest *revokeRequest = [NSMutableURLRequest requestWithURL:revokeURL];
+  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+  id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
+  [self->_httpFetcher fetchURLRequest:revokeRequest
+                   withFetcherService:fetcherService
+                          withComment:@"GIDSignIn: revoke tokens"
+                           completion:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
     if (!error) {
       [self signOut];
@@ -450,7 +454,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Private methods
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                          httpFetcher:(id<GIDHTTPFetcher>)httpFetcher {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -477,6 +482,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
     _keychainStore = keychainStore;
+    _httpFetcher = httpFetcher;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
@@ -494,7 +500,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (instancetype)initPrivate {
   GTMKeychainStore *keychainStore =
       [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
-  return [self initWithKeychainStore:keychainStore];
+  id<GIDHTTPFetcher> httpFetcher = [[GIDHTTPFetcher alloc] init];
+  return [self initWithKeychainStore:keychainStore
+                         httpFetcher:httpFetcher];
 }
 
 // Does sanity check for parameters and then authenticates if necessary.
@@ -823,10 +831,13 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
           [NSString stringWithFormat:kUserInfoURLTemplate,
               [GIDSignInPreferences googleUserInfoServer],
               authState.lastTokenResponse.accessToken]];
-      [self startFetchURL:infoURL
-                  fromAuthState:authState
-                    withComment:@"GIDSignIn: fetch basic profile info"
-          withCompletionHandler:^(NSData *data, NSError *error) {
+      NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:infoURL];
+      GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+      id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
+      [self->_httpFetcher fetchURLRequest:infoRequest
+                       withFetcherService:fetcherService
+                              withComment:@"GIDSignIn: fetch basic profile info"
+                               completion:^(NSData *data, NSError *error) {
         if (data && !error) {
           NSError *jsonDeserializationError;
           NSDictionary<NSString *, NSString *> *profileDict =
@@ -876,24 +887,24 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }];
 }
 
-- (void)startFetchURL:(NSURL *)URL
-            fromAuthState:(OIDAuthState *)authState
-              withComment:(NSString *)comment
-    withCompletionHandler:(void (^)(NSData *, NSError *))handler {
-  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
-  GTMSessionFetcher *fetcher;
-  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
-  id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
-  if (fetcherService) {
-    fetcher = [fetcherService fetcherWithRequest:request];
-  } else {
-    fetcher = [GTMSessionFetcher fetcherWithRequest:request];
-  }
-  fetcher.retryEnabled = YES;
-  fetcher.maxRetryInterval = kFetcherMaxRetryInterval;
-  fetcher.comment = comment;
-  [fetcher beginFetchWithCompletionHandler:handler];
-}
+//- (void)startFetchURL:(NSURL *)URL
+//            fromAuthState:(OIDAuthState *)authState
+//              withComment:(NSString *)comment
+//    withCompletionHandler:(void (^)(NSData *, NSError *))handler {
+//  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+//  GTMSessionFetcher *fetcher;
+//  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
+//  id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
+//  if (fetcherService) {
+//    fetcher = [fetcherService fetcherWithRequest:request];
+//  } else {
+//    fetcher = [GTMSessionFetcher fetcherWithRequest:request];
+//  }
+//  fetcher.retryEnabled = YES;
+//  fetcher.maxRetryInterval = kFetcherMaxRetryInterval;
+//  fetcher.comment = comment;
+//  [fetcher beginFetchWithCompletionHandler:handler];
+//}
 
 // Parse incoming URL from the Google Device Policy app.
 - (BOOL)handleDevicePolicyAppURL:(NSURL *)url {
