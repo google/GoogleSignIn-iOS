@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
   GIDAccountDetailTypeAgeOver18,
 };
 
+/// String scope representing the account detail type for age over 18.
 extern NSString *const kAccountDetailTypeAgeOver18Scope;
 
 /// Helper object used to hold the enumeration representing a list of
