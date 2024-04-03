@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import <Foundation/Foundation.h>
 
 #if __has_include(<UIKit/UIKit.h>)
