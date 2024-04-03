@@ -29,16 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 @class GTMKeychainStore;
-@class GIDVerifiedAccountDetailResult;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.
 typedef void (^GIDSignInCompletion)(GIDSignInResult *_Nullable signInResult,
-                                    NSError *_Nullable error);
-
-/// Represents a completion block that takes a `GIDVerifiedAccountDetailResult` on success or an
-/// error if the operation was unsuccessful.
-typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable verifiedResult,
                                     NSError *_Nullable error);
 
 /// Represents a completion block that takes an error if the operation was unsuccessful.

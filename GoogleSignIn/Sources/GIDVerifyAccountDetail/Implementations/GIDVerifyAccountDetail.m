@@ -21,13 +21,13 @@
 
 @implementation GIDVerifyAccountDetail
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-    // TODO(#383): Implement this method.
+  // TODO(#383): Implement this method.
 }
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
@@ -35,7 +35,7 @@
                         hint:(nullable NSString *)hint
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-    // TODO(#383): Implement this method.
+  // TODO(#383): Implement this method.
 }
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
@@ -44,9 +44,9 @@
             additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-    // TODO(#383): Implement this method.
+  // TODO(#383): Implement this method.
 }
 
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS
 
 @end
