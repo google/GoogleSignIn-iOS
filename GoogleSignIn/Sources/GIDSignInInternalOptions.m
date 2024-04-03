@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInInternalOptions
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
   }
   return options;
 }
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
