@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import <Foundation/Foundation.h>
 
 #if __has_include(<UIKit/UIKit.h>)
@@ -27,6 +28,7 @@
 
 @class GIDConfiguration;
 @class GIDSignInResult;
+@class GIDVerifiableAccountDetail;
 
 NS_ASSUME_NONNULL_BEGIN
 
