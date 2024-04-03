@@ -63,8 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// The completion block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCompletion completion;
 
+#if TARGET_OS_IOS
 /// The completion block to be called at the completion of the verify flow.
 @property(nonatomic, readonly, nullable) GIDVerifyCompletion verifyCompletion;
+#endif // TARGET_OS_IOS
 
 /// The scopes to be used during the flow.
 @property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;

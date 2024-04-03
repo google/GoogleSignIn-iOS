@@ -28,10 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDVerifiableAccountDetail;
 @class GIDVerifiedAccountDetailResult;
 
+#if TARGET_OS_IOS
 /// Represents a completion block that takes a `GIDVerifiedAccountDetailResult` on success or an
 /// error if the operation was unsuccessful.
 typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable verifiedResult,
                                     NSError *_Nullable error);
+#endif // TARGET_OS_IOS
 
 /// This class is used to verify a user's Google account details.
 @interface GIDVerifyAccountDetail : NSObject
