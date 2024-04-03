@@ -25,26 +25,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInInternalOptions
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-+ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:(nullable UIViewController *)presentingViewController
-                                      loginHint:(nullable NSString *)loginHint
-                                  addScopesFlow:(BOOL)addScopesFlow
-                               verifyCompletion:(nullable GIDVerifyCompletion)completion{
-  GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
-                                                    presentingViewController:presentingViewController
-                                                                  loginHint:loginHint
-                                                              addScopesFlow:addScopesFlow
-                                                     accountDetailsToVerify:@[]
-                                                           verifyCompletion:completion];
-  return options;
-}
 
+#if TARGET_OS_IOS
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                         accountDetailsToVerify:(nullable NSArray *)accountDetailsToVerify
+                         accountDetailsToVerify:(NSArray<GIDVerifiableAccountDetail *> *)accountDetailsToVerify
                                verifyCompletion:(nullable GIDVerifyCompletion)completion{
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
@@ -59,8 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
   }
   return options;
 }
-
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration

@@ -23,10 +23,10 @@
 #endif
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
 @class GIDConfiguration;
 @class GIDSignInResult;
-@class GIDVerifiableAccountDetail;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Whether the sign-in is an addScopes flow. NO means it is a sign in flow.
 @property(nonatomic, readonly) BOOL addScopesFlow;
 
-/// The user account details this flow will verify
+/// The user account details the Verify with Google flow will verify
 @property(nonatomic, copy, nullable, readonly) NSArray<GIDVerifiableAccountDetail *> *accountDetailsToVerify;
 
 /// The extra parameters used in the sign-in URL.
@@ -90,13 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                               verifyCompletion:(nullable GIDVerifyCompletion)completion;
-
-+ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:(nullable UIViewController *)presentingViewController
-                                      loginHint:(nullable NSString *)loginHint
-                                  addScopesFlow:(BOOL)addScopesFlow
-                         accountDetailsToVerify:(nullable NSArray *)accountDetailsToVerify
+                         accountDetailsToVerify:(NSArray<GIDVerifiableAccountDetail *> *)accountDetailsToVerify
                                verifyCompletion:(nullable GIDVerifyCompletion)completion;
 
 #elif TARGET_OS_OSX
