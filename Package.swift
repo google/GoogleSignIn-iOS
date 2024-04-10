@@ -44,7 +44,7 @@ let package = Package(
     .package(
       name: "AppAuth",
       url: "https://github.com/openid/AppAuth-iOS.git",
-      "1.6.0" ..< "2.0.0"),
+      from: "1.7.3"),
     .package(
       name: "AppCheck",
       url: "https://github.com/google/app-check.git",
@@ -52,11 +52,11 @@ let package = Package(
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
-      from: "4.0.0"),
+      from: "4.1.1"),
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
-      "1.5.0" ..< "4.0.0"),
+      from: "3.3.0"),
     .package(
       name: "OCMock",
       url: "https://github.com/firebase/ocmock.git",
@@ -64,7 +64,7 @@ let package = Package(
     .package(
       name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
-      "7.3.0" ..< "8.0.0"),
+      from: "7.13.0"),
   ],
   targets: [
     .target(
@@ -100,7 +100,10 @@ let package = Package(
       dependencies: [
         "GoogleSignIn",
       ],
-      path: "GoogleSignInSwift/Sources"
+      path: "GoogleSignInSwift/Sources",
+      resources: [
+        .copy("Resources/PrivacyInfo.xcprivacy")
+      ]
     ),
     .testTarget(
       name: "GoogleSignIn-UnitTests",
