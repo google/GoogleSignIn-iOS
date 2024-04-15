@@ -19,9 +19,9 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
-@implementation GIDVerifyAccountDetail
-
 #if TARGET_OS_IOS
+
+@implementation GIDVerifyAccountDetail
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
@@ -47,6 +47,6 @@
   // TODO(#383): Implement this method.
 }
 
-#endif // TARGET_OS_IOS
-
 @end
+
+#endif // TARGET_OS_IOS

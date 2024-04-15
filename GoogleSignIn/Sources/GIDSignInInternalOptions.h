@@ -43,8 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// Whether the sign-in is an addScopes flow. NO means it is a sign in flow.
 @property(nonatomic, readonly) BOOL addScopesFlow;
 
+#if TARGET_OS_IOS
 /// The user account details the Verify with Google flow will verify
 @property(nonatomic, copy, nullable, readonly) NSArray<GIDVerifiableAccountDetail *> *accountDetailsToVerify;
+#endif // TARGET_OS_IOS
 
 /// The extra parameters used in the sign-in URL.
 @property(nonatomic, readonly, nullable) NSDictionary *extraParams;
@@ -75,6 +77,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
 /// Creates the default options.
+#if TARGET_OS_IOS
++ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
+                       presentingViewController:(nullable UIViewController *)presentingViewController
+                                      loginHint:(nullable NSString *)loginHint
+                                  addScopesFlow:(BOOL)addScopesFlow
+                         accountDetailsToVerify:(NSArray<GIDVerifiableAccountDetail *> *)accountDetailsToVerify
+                               verifyCompletion:(nullable GIDVerifyCompletion)completion;
+#endif // TARGET_OS_IOS
+
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
@@ -88,14 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                      completion:(nullable GIDSignInCompletion)completion;
-
-+ (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
-                       presentingViewController:(nullable UIViewController *)presentingViewController
-                                      loginHint:(nullable NSString *)loginHint
-                                  addScopesFlow:(BOOL)addScopesFlow
-                         accountDetailsToVerify:(NSArray<GIDVerifiableAccountDetail *> *)accountDetailsToVerify
-                               verifyCompletion:(nullable GIDVerifyCompletion)completion;
-
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow

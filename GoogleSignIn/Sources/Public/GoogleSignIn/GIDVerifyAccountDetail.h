@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
 #import <TargetConditionals.h>
+
+#if TARGET_OS_IOS
+
+#import <Foundation/Foundation.h>
 
 #if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
@@ -28,17 +31,13 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDVerifiableAccountDetail;
 @class GIDVerifiedAccountDetailResult;
 
-#if TARGET_OS_IOS
 /// Represents a completion block that takes a `GIDVerifiedAccountDetailResult` on success or an
 /// error if the operation was unsuccessful.
 typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable verifiedResult,
                                     NSError *_Nullable error);
-#endif // TARGET_OS_IOS
 
 /// This class is used to verify a user's Google account details.
 @interface GIDVerifyAccountDetail : NSObject
-
-#if TARGET_OS_IOS
 
 /// Starts an interactive verification flow.
 ///
@@ -92,8 +91,8 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion;
 
-#endif // TARGET_OS_IOS
-
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS
