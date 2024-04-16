@@ -23,11 +23,13 @@
 #endif
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+
+#if TARGET_OS_IOS
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
+#endif // TARGET_OS_IOS
 
 @class GIDConfiguration;
 @class GIDSignInResult;
-@class GIDVerifiableAccountDetail;
 
 NS_ASSUME_NONNULL_BEGIN
 

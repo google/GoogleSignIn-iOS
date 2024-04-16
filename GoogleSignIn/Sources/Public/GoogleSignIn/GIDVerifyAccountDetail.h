@@ -45,9 +45,7 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 /// state will be replaced by the result of this flow.
 ///
 /// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
-///     iOS 13+.
+/// @param presentingViewController The view controller used to present the flow.
 /// @param completion The optional block called asynchronously on the main queue upon completion.
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
@@ -60,9 +58,7 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 /// state will be replaced by the result of this flow.
 ///
 /// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
-///     iOS 13+.
+/// @param presentingViewController The view controller used to present the flow.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param completion The optional block called asynchronously on the main queue upon completion.
@@ -78,8 +74,7 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 /// state will be replaced by the result of this flow.
 ///
 /// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10.
+/// @param presentingViewController The view controller used to present the flow.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
