@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
 #import <TargetConditionals.h>
+
+#if TARGET_OS_IOS
+
+#import <Foundation/Foundation.h>
 
 #if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
@@ -23,15 +26,18 @@
 #import <AppKit/AppKit.h>
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class GIDVerifiableAccountDetail;
 @class GIDVerifiedAccountDetailResult;
 
-NS_ASSUME_NONNULL_BEGIN
+/// Represents a completion block that takes a `GIDVerifiedAccountDetailResult` on success or an
+/// error if the operation was unsuccessful.
+typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable verifiedResult,
+                                    NSError *_Nullable error);
 
 /// This class is used to verify a user's Google account details.
 @interface GIDVerifyAccountDetail : NSObject
-
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// Starts an interactive verification flow.
 ///
@@ -39,13 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// state will be replaced by the result of this flow.
 ///
 /// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
-///     iOS 13+.
+/// @param presentingViewController The view controller used to present the flow.
 /// @param completion The optional block called asynchronously on the main queue upon completion.
-- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails 
-    presentingViewController:(UIViewController *)presentingViewController 
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult, 
+- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+    presentingViewController:(UIViewController *)presentingViewController
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion;
 
 /// Starts an interactive verification flow using the provided hint.
@@ -54,16 +58,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// state will be replaced by the result of this flow.
 ///
 /// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10 and to supply `presentationContextProvider` for `ASWebAuthenticationSession` on
-///     iOS 13+.
+/// @param presentingViewController The view controller used to present the flow.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param completion The optional block called asynchronously on the main queue upon completion.
-- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails 
-    presentingViewController:(UIViewController *)presentingViewController 
+- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+    presentingViewController:(UIViewController *)presentingViewController
                         hint:(nullable NSString *)hint
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult, 
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion;
 
 /// Starts an interactive verification flow using the provided hint and additional scopes.
@@ -72,21 +74,20 @@ NS_ASSUME_NONNULL_BEGIN
 /// state will be replaced by the result of this flow.
 ///
 /// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present `SFSafariViewController` on
-///     iOS 9 and 10.
+/// @param presentingViewController The view controller used to present the flow.
 /// @param hint An optional hint for the authorization server, for example the user's ID or email
 ///     address, to be prefilled if possible.
 /// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
 /// @param completion The optional block called asynchronously on the main queue upon completion.
-- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails 
-    presentingViewController:(UIViewController *)presentingViewController 
+- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+    presentingViewController:(UIViewController *)presentingViewController
                         hint:(nullable NSString *)hint
             additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult, 
+                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion;
-
-#endif
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS

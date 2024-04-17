@@ -17,6 +17,7 @@
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
 #ifdef SWIFT_PACKAGE
 @import OCMock;
@@ -24,10 +25,41 @@
 #import <OCMock/OCMock.h>
 #endif
 
+static NSString * const kClientId = @"FakeClientID";
+static NSString * const kOpenIDRealm = @"FakeRealm";
+
 @interface GIDSignInInternalOptionsTest : XCTestCase
 @end
 
 @implementation GIDSignInInternalOptionsTest
+
+#if TARGET_OS_IOS
+- (void)testDefaultOptionsForVerificationFlow {
+  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                                serverClientID:nil
+                                                                  hostedDomain:nil
+                                                                   openIDRealm:kOpenIDRealm];
+  UIViewController *presentingViewController = [[UIViewController alloc] init];
+  GIDVerifiableAccountDetail *ageOver18Detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+  NSArray<GIDVerifiableAccountDetail *> *accountDetailsToVerify = @[ageOver18Detail];
+  NSString *loginHint = @"login_hint";
+  
+  GIDSignInInternalOptions *options =
+  [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+                                   presentingViewController:presentingViewController
+                                                  loginHint:loginHint
+                                              addScopesFlow:YES
+                                     accountDetailsToVerify:accountDetailsToVerify
+                                           verifyCompletion:nil];
+
+  XCTAssertTrue(options.interactive);
+  XCTAssertFalse(options.continuation);
+  XCTAssertTrue(options.addScopesFlow);
+  XCTAssertEqual(options.configuration, configuration);
+  XCTAssertEqual(options.presentingViewController, presentingViewController);
+  XCTAssertEqual(options.accountDetailsToVerify, accountDetailsToVerify);
+}
+#endif // TARGET_OS_IOS
 
 - (void)testDefaultOptions {
   id configuration = OCMStrictClassMock([GIDConfiguration class]);
