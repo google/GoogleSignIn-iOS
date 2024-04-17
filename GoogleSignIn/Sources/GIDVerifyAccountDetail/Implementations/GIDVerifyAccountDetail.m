@@ -16,8 +16,12 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
+
+#import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 #if TARGET_OS_IOS
 
@@ -45,6 +49,59 @@
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
   // TODO(#383): Implement this method.
+}
+
+// Starts authorization flow using the provided options.
+- (void)verifyAccountDetailsInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
+  if (!options.interactive) {
+    return;
+  }
+  
+  // Ensure that a configuration is set.
+  if (!_configuration) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"No active configuration. Make sure GIDClientID is set in Info.plist."];
+    return;    
+  }
+  
+  // Explicitly throw exception for missing client ID here. This must come before
+  // scheme check because schemes rely on reverse client IDs.
+  [self assertValidParameters:options];
+  
+  [self assertValidPresentingViewController:options];
+  
+  // If the application does not support the required URL schemes tell the developer so.
+  GIDSignInCallbackSchemes *schemes =
+  [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
+  if (unsupportedSchemes.count != 0) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"Your app is missing support for the following URL schemes: %@",
+     [unsupportedSchemes componentsJoinedByString:@", "]];
+  }
+  // TODO(#397): Start the incremental authorization flow.
+}
+
+#pragma mark - Helpers
+
+// Asserts the parameters being valid.
+- (void)assertValidParameters:(GIDSignInInternalOptions *)options {
+  if (![options.configuration.clientID length]) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"You must specify |clientID| in |GIDConfiguration|"];
+  }
+}
+
+// Assert that the presenting view controller has been set.
+- (void)assertValidPresentingViewController:(GIDSignInInternalOptions *)options {
+  if (!options.presentingViewController) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"|presentingViewController| must be set."];
+  }
 }
 
 @end
