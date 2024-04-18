@@ -71,6 +71,11 @@ NS_ASSUME_NONNULL_BEGIN
                     hostedDomain:(nullable NSString *)hostedDomain
                      openIDRealm:(nullable NSString *)openIDRealm NS_DESIGNATED_INITIALIZER;
 
+/// Try to generate a |GIDConfiguration| from an |NSBundle|'s Info.plist.
+///
+/// @param bundle The bundle to generate a configuration value.
++ (nullable instancetype)configurationFromBundle:(NSBundle *)bundle;                     
+
 @end
 
 NS_ASSUME_NONNULL_END

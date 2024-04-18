@@ -26,6 +26,12 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
 // The key for the openIDRealm property to be used with NSSecureCoding.
 static NSString *const kOpenIDRealmKey = @"openIDRealm";
 
+// Info.plist config keys
+static NSString *const kConfigClientIDKey = @"GIDClientID";
+static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
+static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
+static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDConfiguration
@@ -57,6 +63,35 @@ NS_ASSUME_NONNULL_BEGIN
     _openIDRealm = [openIDRealm copy];
   }
   return self;
+}
+
+// Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.
++ (nullable NSString *)configValueFromBundle:(NSBundle *)bundle forKey:(NSString *)key {
+  NSString *value;
+  id configValue = [bundle objectForInfoDictionaryKey:key];
+  if ([configValue isKindOfClass:[NSString class]]) {
+    value = configValue;
+  }
+  return value;
+}
+
++ (nullable instancetype)configurationFromBundle:(NSBundle *)bundle {
+  // Retrieve any valid config parameters from the bundle's Info.plist.
+  NSString *clientID = [self configValueFromBundle:bundle forKey:kConfigClientIDKey];
+  NSString *serverClientID = [self configValueFromBundle:bundle
+                                                  forKey:kConfigServerClientIDKey];
+  NSString *hostedDomain = [self configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
+  NSString *openIDRealm = [self configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
+
+  // If we have at least a client ID, try to construct a configuration.
+  if (clientID) {
+    return [[self alloc] initWithClientID:clientID
+                           serverClientID:serverClientID
+                             hostedDomain:hostedDomain
+                              openIDRealm:openIDRealm];
+  }
+
+  return nil;
 }
 
 // Extend NSObject's default description for easier debugging.
