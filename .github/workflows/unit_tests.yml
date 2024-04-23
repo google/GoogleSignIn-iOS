@@ -31,11 +31,10 @@ jobs:
     - name: Install Ruby gems with Bundler
       run: bundle install
     - name: Lint podspec using local source
+      # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
            --sources=https://cdn.cocoapods.org/ \
-           # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
-           # ${{ matrix.includePodspecFlag }} 
            ${{ matrix.flag }}
 
   spm-build-test:
