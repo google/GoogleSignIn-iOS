@@ -20,9 +20,10 @@ jobs:
           "",
           "--use-static-frameworks"
         ]
-        include:
-          - podspec: GoogleSignInSwiftSupport.podspec
-            includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
+        # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
+        # include:
+        #  - podspec: GoogleSignInSwiftSupport.podspec
+        #    includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
     steps:
     - uses: actions/checkout@v3
     - name: Update Bundler
@@ -33,7 +34,9 @@ jobs:
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
            --sources=https://cdn.cocoapods.org/ \
-           ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
+           # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
+           # ${{ matrix.includePodspecFlag }} 
+           ${{ matrix.flag }}
 
   spm-build-test:
     runs-on: ${{ matrix.os }}
