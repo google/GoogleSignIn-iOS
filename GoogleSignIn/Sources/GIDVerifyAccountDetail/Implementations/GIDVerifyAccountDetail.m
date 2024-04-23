@@ -42,10 +42,7 @@
                         hint:(nullable NSString *)hint
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-  // Get the bundle of the current executable.
   NSBundle *bundle = NSBundle.mainBundle;
-
-  // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
   if (bundle) {
     _configuration = [GIDConfiguration configurationFromBundle:bundle];
   }
@@ -61,7 +58,6 @@
   [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
-// Starts authorization flow using the provided options.
 - (void)verifyAccountDetailsInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
   // TODO(#397): Sanity checks and start the incremental authorization flow.
 }
