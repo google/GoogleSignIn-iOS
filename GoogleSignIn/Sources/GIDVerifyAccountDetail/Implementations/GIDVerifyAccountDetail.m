@@ -16,8 +16,12 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
+
+#import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 #if TARGET_OS_IOS
 
@@ -27,7 +31,10 @@
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-  // TODO(#383): Implement this method.
+  [self verifyAccountDetails:accountDetails
+    presentingViewController:presentingViewController
+                        hint:nil
+                  completion:completion];
 }
 
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
@@ -35,16 +42,24 @@
                         hint:(nullable NSString *)hint
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-  // TODO(#383): Implement this method.
+  NSBundle *bundle = NSBundle.mainBundle;
+  if (bundle) {
+    _configuration = [GIDConfiguration configurationFromBundle:bundle];
+  }
+
+  GIDSignInInternalOptions *options =
+  [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+                                   presentingViewController:presentingViewController
+                                                  loginHint:hint
+                                              addScopesFlow:YES
+                                     accountDetailsToVerify:accountDetails
+                                           verifyCompletion:completion];
+
+  [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
-- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
-    presentingViewController:(UIViewController *)presentingViewController
-                        hint:(nullable NSString *)hint
-            additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
-                                                NSError *_Nullable error))completion {
-  // TODO(#383): Implement this method.
+- (void)verifyAccountDetailsInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
+  // TODO(#397): Sanity checks and start the incremental authorization flow.
 }
 
 @end

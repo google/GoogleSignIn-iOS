@@ -28,6 +28,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class GIDConfiguration;
 @class GIDVerifiableAccountDetail;
 @class GIDVerifiedAccountDetailResult;
 
@@ -38,6 +39,9 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 
 /// This class is used to verify a user's Google account details.
 @interface GIDVerifyAccountDetail : NSObject
+
+/// The active configuration for this instance of `GIDVerifyAccountDetail`.
+@property(nonatomic, nullable) GIDConfiguration *configuration;
 
 /// Starts an interactive verification flow.
 ///
@@ -65,24 +69,6 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
                         hint:(nullable NSString *)hint
-                  completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
-                                                NSError *_Nullable error))completion;
-
-/// Starts an interactive verification flow using the provided hint and additional scopes.
-///
-/// The completion will be called at the end of this process.  Any saved verification
-/// state will be replaced by the result of this flow.
-///
-/// @param accountDetails A list of verifiable account details.
-/// @param presentingViewController The view controller used to present the flow.
-/// @param hint An optional hint for the authorization server, for example the user's ID or email
-///     address, to be prefilled if possible.
-/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
-/// @param completion The optional block called asynchronously on the main queue upon completion.
-- (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
-    presentingViewController:(UIViewController *)presentingViewController
-                        hint:(nullable NSString *)hint
-            additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion;
 

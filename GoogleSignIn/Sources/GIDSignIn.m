@@ -135,12 +135,6 @@ static NSString *const kHostedDomainParameter = @"hd";
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
-// Info.plist config keys
-static NSString *const kConfigClientIDKey = @"GIDClientID";
-static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
-static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
-static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
-
 // The callback queue used for authentication flow.
 @interface GIDAuthFlow : GIDCallbackQueue
 
@@ -458,7 +452,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
     // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
     if (bundle) {
-      _configuration = [GIDSignIn configurationFromBundle:bundle];
+      _configuration = [GIDConfiguration configurationFromBundle:bundle];
     }
 
     // Check to see if the 3P app is being run for the first time after a fresh install.
@@ -1017,38 +1011,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
           givenName:idToken.claims[kBasicProfileGivenNameKey]
           familyName:idToken.claims[kBasicProfileFamilyNameKey]
             imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
-}
-
-// Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.
-+ (nullable NSString *)configValueFromBundle:(NSBundle *)bundle forKey:(NSString *)key {
-  NSString *value;
-  id configValue = [bundle objectForInfoDictionaryKey:key];
-  if ([configValue isKindOfClass:[NSString class]]) {
-    value = configValue;
-  }
-  return value;
-}
-
-// Try to generate a |GIDConfiguration| from an |NSBundle|'s Info.plist.
-+ (nullable GIDConfiguration *)configurationFromBundle:(NSBundle *)bundle {
-  GIDConfiguration *configuration;
-
-  // Retrieve any valid config parameters from the bundle's Info.plist.
-  NSString *clientID = [GIDSignIn configValueFromBundle:bundle forKey:kConfigClientIDKey];
-  NSString *serverClientID = [GIDSignIn configValueFromBundle:bundle
-                                                       forKey:kConfigServerClientIDKey];
-  NSString *hostedDomain = [GIDSignIn configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
-  NSString *openIDRealm = [GIDSignIn configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
-    
-  // If we have at least a client ID, try to construct a configuration.
-  if (clientID) {
-    configuration = [[GIDConfiguration alloc] initWithClientID:clientID
-                                                 serverClientID:serverClientID
-                                                   hostedDomain:hostedDomain
-                                                    openIDRealm:openIDRealm];
-  }
-  
-  return configuration;
 }
 
 @end
