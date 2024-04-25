@@ -135,12 +135,6 @@ static NSString *const kHostedDomainParameter = @"hd";
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
-// Info.plist config keys
-static NSString *const kConfigClientIDKey = @"GIDClientID";
-static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
-static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
-static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
-
 // The callback queue used for authentication flow.
 @interface GIDAuthFlow : GIDCallbackQueue
 

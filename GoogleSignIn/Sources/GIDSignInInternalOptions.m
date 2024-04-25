@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
+    options->_continuation = NO; // Not relevant to VwG flow.
     options->_addScopesFlow = addScopesFlow;
     options->_configuration = configuration;
     options->_presentingViewController = presentingViewController;
