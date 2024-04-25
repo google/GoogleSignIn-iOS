@@ -74,6 +74,8 @@
   [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
+#pragma mark - Authentication flow
+
 - (void)verifyAccountDetailsInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
   if (!options.interactive) {
     return;
