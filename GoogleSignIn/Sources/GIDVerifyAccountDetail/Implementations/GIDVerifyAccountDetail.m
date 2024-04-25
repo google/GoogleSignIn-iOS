@@ -27,6 +27,29 @@
 
 @implementation GIDVerifyAccountDetail
 
+- (instancetype)initWithConfig:(GIDConfiguration *)configuration {
+  self = [super init];
+  if (self) {
+    _configuration = configuration;
+  }
+  return self;
+}
+
+- (instancetype)init {
+  GIDConfiguration *configuration;
+  // Get the bundle of the current executable.
+  NSBundle *bundle = NSBundle.mainBundle;
+
+  // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
+  if (bundle) {
+    configuration = [GIDConfiguration configurationFromBundle:bundle];
+  }
+
+  return [self initWithConfig:configuration];
+}
+
+#pragma mark - Public methods
+
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
@@ -42,14 +65,6 @@
                         hint:(nullable NSString *)hint
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-  // Get the bundle of the current executable.
-  NSBundle *bundle = NSBundle.mainBundle;
-
-  // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
-  if (bundle) {
-    _configuration = [GIDConfiguration configurationFromBundle:bundle];
-  }
-
   GIDSignInInternalOptions *options =
   [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                    presentingViewController:presentingViewController
