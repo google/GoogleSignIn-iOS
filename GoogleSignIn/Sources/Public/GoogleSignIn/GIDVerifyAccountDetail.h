@@ -44,7 +44,7 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 @property(nonatomic, nullable) GIDConfiguration *configuration;
 
 - (instancetype)initWithConfig:(GIDConfiguration *)config
-  NS_DESIGNATED_INITIALIZER;
+NS_DESIGNATED_INITIALIZER;
 
 /// Starts an interactive verification flow.
 ///

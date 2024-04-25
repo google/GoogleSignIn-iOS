@@ -1,3 +1,17 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #import <XCTest/XCTest.h>
 
 #if TARGET_OS_IOS
@@ -9,19 +23,17 @@ static NSString * const kClientId = @"FakeClientID";
 
 @interface GIDVerifyAccountDetailTests : XCTestCase {
 @private
-  // Mock |UIViewController|.
+  // The |UIViewController| object being tested.
   UIViewController *_presentingViewController;
 
-  // Fake [NSBundle mainBundle];
+  // Fake [NSBundle mainBundle].
   GIDFakeMainBundle *_fakeMainBundle;
 
   // The |GIDVerifyAccountDetail| object being tested.
   GIDVerifyAccountDetail *_verifyAccountDetail;
 
-  // [comment]
+  // The list of account details when testing [GIDVerifiableAccountDetail].
   NSArray<GIDVerifiableAccountDetail *> *_verifiableAccountDetails;
-
-  GIDConfiguration *_configuration;
 }
 @end
 
@@ -34,7 +46,6 @@ static NSString * const kClientId = @"FakeClientID";
 
   _presentingViewController = [[UIViewController alloc] init];
 
-//  _verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
   _verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
 
   GIDVerifiableAccountDetail *ageOver18Detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
@@ -59,20 +70,20 @@ static NSString * const kClientId = @"FakeClientID";
 - (void)testClientIDMissingException {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnonnull"
- _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
+  _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
 #pragma GCC diagnostic pop
- BOOL threw = NO;
- @try {
-   [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                     presentingViewController:_presentingViewController
-                                   completion:nil];
- } @catch (NSException *exception) {
-   threw = YES;
-   XCTAssertEqualObjects(exception.description,
-                         @"You must specify |clientID| in |GIDConfiguration|");
- } @finally {
- }
- XCTAssert(threw);
+  BOOL threw = NO;
+  @try {
+    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                      presentingViewController:_presentingViewController
+                                    completion:nil];
+  } @catch (NSException *exception) {
+    threw = YES;
+    XCTAssertEqualObjects(exception.description,
+                          @"You must specify |clientID| in |GIDConfiguration|");
+  } @finally {
+  }
+  XCTAssert(threw);
 }
 
 - (void)testSchemesNotSupportedException {

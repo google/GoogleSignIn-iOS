@@ -38,10 +38,7 @@
 
 - (instancetype)init {
   GIDConfiguration *configuration;
-  // Get the bundle of the current executable.
   NSBundle *bundle = NSBundle.mainBundle;
-
-  // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
   if (bundle) {
     configuration = [GIDConfiguration configurationFromBundle:bundle];
   }
@@ -77,26 +74,25 @@
   [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
-// Starts authorization flow using the provided options.
 - (void)verifyAccountDetailsInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
   if (!options.interactive) {
     return;
   }
-  
+
   // Ensure that a configuration is set.
   if (!_configuration) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"No active configuration. Make sure GIDClientID is set in Info.plist."];
-    return;    
+    return;
   }
-  
+
   // Explicitly throw exception for missing client ID here. This must come before
   // scheme check because schemes rely on reverse client IDs.
   [self assertValidParameters:options];
-  
+
   [self assertValidPresentingViewController:options];
-  
+
   // If the application does not support the required URL schemes tell the developer so.
   GIDSignInCallbackSchemes *schemes =
   [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
