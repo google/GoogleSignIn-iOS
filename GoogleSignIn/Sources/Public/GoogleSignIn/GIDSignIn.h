@@ -167,6 +167,31 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                        NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
+
+/// Starts an interactive sign-in flow on iOS using the provided hint, additional scopes, and nonce.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
+///     iOS 9 and 10.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
+/// @param nonce A custom nonce.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                          additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                                     nonce:(nullable NSString *)nonce
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+
 #elif TARGET_OS_OSX
 
 /// Starts an interactive sign-in flow on macOS.
@@ -200,7 +225,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                         completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
-/// Starts an interactive sign-in flow on macOS using the provided hint.
+/// Starts an interactive sign-in flow on macOS using the provided hint and additional scopes.
 ///
 /// The completion will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -218,6 +243,28 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                         completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
+
+/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes, and nonce.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
+/// @param nonce A custom nonce.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                  additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                             nonce:(nullable NSString *)nonce
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                                                      NSError *_Nullable error))completion;
+
 
 #endif
 

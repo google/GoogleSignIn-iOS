@@ -253,12 +253,25 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                 completion:(nullable GIDSignInCompletion)completion {
+  [self signInWithPresentingViewController:presentingViewController 
+                                      hint:hint
+                          additionalScopes:additionalScopes
+                                     nonce:nil
+                                completion:completion];
+}
+
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                          additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                                     nonce:(nullable NSString *)nonce
+                                completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                      presentingViewController:presentingViewController
                                                     loginHint:hint
                                                 addScopesFlow:NO
                                                        scopes:additionalScopes
+                                                        nonce:nonce
                                                    completion:completion];
   [self signInWithOptions:options];
 }
@@ -331,12 +344,25 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                         completion:(nullable GIDSignInCompletion)completion {
+  [self signInWithPresentingWindow:presentingWindow
+                              hint:hint
+                  additionalScopes:additionalScopes
+                             nonce:nil
+                        completion:completion];
+}
+
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                  additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                             nonce:(nullable NSString *)nonce
+                        completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                              presentingWindow:presentingWindow
                                                     loginHint:hint
                                                 addScopesFlow:NO
                                                        scopes:additionalScopes
+                                                        nonce:nonce
                                                    completion:completion];
   [self signInWithOptions:options];
 }
@@ -598,6 +624,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                       scopes:options.scopes
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
+                                                       nonce:options.nonce
                                         additionalParameters:additionalParameters];
 
   _currentAuthorizationFlow = [OIDAuthorizationService

@@ -29,4 +29,6 @@ extern NSString *const OIDAuthorizationRequestTestingCodeVerifier;
 
 + (instancetype)testInstance;
 
++ (instancetype)testInstanceWithNonce:(nullable NSString *)nonce;
+
 @end
