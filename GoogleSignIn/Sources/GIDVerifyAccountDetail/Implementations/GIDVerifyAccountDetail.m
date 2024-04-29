@@ -20,17 +20,59 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+
+@import GTMAppAuth;
+
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GTMSessionFetcherCore;
+#else
+#import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDResponseTypes.h>
+#import <AppAuth/OIDServiceConfiguration.h>
+#endif
 
 #if TARGET_OS_IOS
 
-@implementation GIDVerifyAccountDetail
+// The URL template for the authorization endpoint.
+static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
+
+// The URL template for the token endpoint.
+static NSString *const kTokenURLTemplate = @"https://%@/token";
+
+// Expected path in the URL scheme to be handled.
+static NSString *const kBrowserCallbackPath = @"/oauth2callback";
+
+// The EMM support version
+static NSString *const kEMMVersion = @"1";
+
+// Parameters for the auth and token exchange endpoints.
+static NSString *const kAudienceParameter = @"audience";
+static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
+static NSString *const kLoginHintParameter = @"login_hint";
+static NSString *const kHostedDomainParameter = @"hd";
+
+@implementation GIDVerifyAccountDetail {
+  // AppAuth configuration object.
+  OIDServiceConfiguration *_appAuthConfiguration;
+}
 
 - (instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
+
+    NSString *authorizationEndpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
+        [GIDSignInPreferences googleAuthorizationServer]];
+    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
+        [GIDSignInPreferences googleTokenServer]];
+    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
+        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEndpointURL]
+                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
   }
   return self;
 }
@@ -104,7 +146,44 @@
                 format:@"Your app is missing support for the following URL schemes: %@",
      [unsupportedSchemes componentsJoinedByString:@", "]];
   }
-  // TODO(#397): Start the incremental authorization flow.
+  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
+                                             [schemes clientIdentifierScheme],
+                                             kBrowserCallbackPath]];
+
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
+  if (options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
+  }
+  if (options.loginHint) {
+    additionalParameters[kLoginHintParameter] = options.loginHint;
+  }
+  if (options.configuration.hostedDomain) {
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
+  }
+
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport parametersWithParameters:options.extraParams
+                                   emmSupport:kEMMVersion
+                       isPasscodeInfoRequired:NO]];
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  NSMutableArray *scopes;
+  for (GIDVerifiableAccountDetail *detail in options.accountDetailsToVerify) {
+    NSString *scopeString = [detail scope];
+    if (scopeString) {
+      [scopes addObject:scopeString];
+    }
+  }
+
+  OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:scopes
+                                                 redirectURL:redirectURL
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
 }
 
 #pragma mark - Helpers
