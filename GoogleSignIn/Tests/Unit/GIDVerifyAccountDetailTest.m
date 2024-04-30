@@ -22,6 +22,9 @@
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
 
 static NSString * const kClientId = @"FakeClientID";
+static NSString * const kServerClientId = @"FakeServerClientID";
+static NSString * const kOpenIDRealm = @"FakeRealm";
+static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
 @interface GIDVerifyAccountDetailTests : XCTestCase {
 @private
@@ -60,6 +63,48 @@ static NSString * const kClientId = @"FakeClientID";
 
 
 #pragma mark - Tests
+
+- (void)testInit {
+  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
+  XCTAssertNotNil(verifyAccountDetail.configuration);
+  XCTAssertEqual(verifyAccountDetail.configuration.clientID, kClientId);
+  XCTAssertNil(verifyAccountDetail.configuration.serverClientID);
+  XCTAssertNil(verifyAccountDetail.configuration.hostedDomain);
+  XCTAssertNil(verifyAccountDetail.configuration.openIDRealm);
+
+}
+
+- (void)testInit_noConfig {
+  [_fakeMainBundle fakeWithClientID:nil
+                     serverClientID:nil
+                       hostedDomain:nil
+                        openIDRealm:nil];
+  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
+  XCTAssertNil(verifyAccountDetail.configuration);
+}
+
+
+- (void)testInit_fullConfig {
+  [_fakeMainBundle fakeWithClientID:kClientId
+                     serverClientID:kServerClientId
+                       hostedDomain:kFakeHostedDomain
+                        openIDRealm:kOpenIDRealm];
+  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
+  XCTAssertNotNil(verifyAccountDetail.configuration);
+  XCTAssertEqual(verifyAccountDetail.configuration.clientID, kClientId);
+  XCTAssertEqual(verifyAccountDetail.configuration.serverClientID, kServerClientId);
+  XCTAssertEqual(verifyAccountDetail.configuration.hostedDomain, kFakeHostedDomain);
+  XCTAssertEqual(verifyAccountDetail.configuration.openIDRealm, kOpenIDRealm);
+}
+
+- (void)testInit_invalidConfig {
+  [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
+                     serverClientID:nil
+                       hostedDomain:nil
+                        openIDRealm:nil];
+  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
+  XCTAssertNil(verifyAccountDetail.configuration);
+}
 
 - (void)testPresentingViewControllerException {
   _presentingViewController = nil;
