@@ -26,20 +26,18 @@ static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kOpenIDRealm = @"FakeRealm";
 static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
-@interface GIDVerifyAccountDetailTests : XCTestCase {
-@private
-  // The |UIViewController| object being tested.
-  UIViewController *_presentingViewController;
+@interface GIDVerifyAccountDetailTests : XCTestCase
+// The |UIViewController| object being tested.
+@property UIViewController *presentingViewController;
 
-  // Fake [NSBundle mainBundle].
-  GIDFakeMainBundle *_fakeMainBundle;
+// Fake [NSBundle mainBundle].
+@property GIDFakeMainBundle *fakeMainBundle;
 
-  // The |GIDVerifyAccountDetail| object being tested.
-  GIDVerifyAccountDetail *_verifyAccountDetail;
+// The |GIDVerifyAccountDetail| object being tested.
+@property GIDVerifyAccountDetail *verifyAccountDetail;
 
-  // The list of account details when testing [GIDVerifiableAccountDetail].
-  NSArray<GIDVerifiableAccountDetail *> *_verifiableAccountDetails;
-}
+// The list of account details when testing [GIDVerifiableAccountDetail].
+@property NSArray<GIDVerifiableAccountDetail *> *verifiableAccountDetails;
 @end
 
 @implementation GIDVerifyAccountDetailTests
@@ -57,38 +55,41 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   _verifiableAccountDetails = @[ageOver18Detail];
 
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithClientID:kClientId];
-  [_fakeMainBundle fakeAllSchemesSupported];
 }
 
 
 #pragma mark - Tests
 
 - (void)testInit {
+  [_fakeMainBundle startFakingWithClientID:kClientId];
+
   GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
   XCTAssertNotNil(verifyAccountDetail.configuration);
   XCTAssertEqual(verifyAccountDetail.configuration.clientID, kClientId);
   XCTAssertNil(verifyAccountDetail.configuration.serverClientID);
   XCTAssertNil(verifyAccountDetail.configuration.hostedDomain);
   XCTAssertNil(verifyAccountDetail.configuration.openIDRealm);
-
 }
 
 - (void)testInit_noConfig {
+  [_fakeMainBundle startFakingWithClientID:kClientId];
   [_fakeMainBundle fakeWithClientID:nil
                      serverClientID:nil
                        hostedDomain:nil
                         openIDRealm:nil];
   GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
+
   XCTAssertNil(verifyAccountDetail.configuration);
 }
 
 
 - (void)testInit_fullConfig {
+  [_fakeMainBundle startFakingWithClientID:kClientId];
   [_fakeMainBundle fakeWithClientID:kClientId
                      serverClientID:kServerClientId
                        hostedDomain:kFakeHostedDomain
                         openIDRealm:kOpenIDRealm];
+
   GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
   XCTAssertNotNil(verifyAccountDetail.configuration);
   XCTAssertEqual(verifyAccountDetail.configuration.clientID, kClientId);
@@ -98,10 +99,12 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 }
 
 - (void)testInit_invalidConfig {
+  [_fakeMainBundle startFakingWithClientID:kClientId];
   [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
                      serverClientID:nil
                        hostedDomain:nil
                         openIDRealm:nil];
+
   GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
   XCTAssertNil(verifyAccountDetail.configuration);
 }
@@ -119,35 +122,21 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 #pragma GCC diagnostic ignored "-Wnonnull"
   _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
 #pragma GCC diagnostic pop
-  BOOL threw = NO;
-  @try {
-    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                      presentingViewController:_presentingViewController
-                                    completion:nil];
-  } @catch (NSException *exception) {
-    threw = YES;
-    XCTAssertEqualObjects(exception.description,
-                          @"You must specify |clientID| in |GIDConfiguration|");
-  } @finally {
-  }
-  XCTAssert(threw);
+
+  XCTAssertThrowsSpecificNamed(
+                               [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails presentingViewController:_presentingViewController completion:nil],
+                               NSException,
+                               NSInvalidArgumentException,
+                               @"You must specify |clientID| in |GIDConfiguration|");
 }
 
 - (void)testSchemesNotSupportedException {
-  [_fakeMainBundle fakeMissingAllSchemes];
-  BOOL threw = NO;
-  @try {
-    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                      presentingViewController:_presentingViewController
-                                    completion:nil];
-  } @catch (NSException *exception) {
-    threw = YES;
-    XCTAssertEqualObjects(exception.description,
-                          @"Your app is missing support for the following URL schemes: "
-                          "fakeclientid");
-  } @finally {
-  }
-  XCTAssert(threw);
+  XCTAssertThrowsSpecificNamed(
+                               [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails presentingViewController:_presentingViewController completion:nil],
+                               NSException,
+                               NSInvalidArgumentException,
+                               @"Your app is missing support for the following URL schemes: "
+                               "fakeclientid");
 }
 
 @end
