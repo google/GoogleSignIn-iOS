@@ -109,6 +109,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   XCTAssertNil(verifyAccountDetail.configuration);
 }
 
+// TODO(#405): Write tests for request and response handling.
+
 - (void)testPresentingViewControllerException {
   _presentingViewController = nil;
 
