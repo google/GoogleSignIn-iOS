@@ -26,20 +26,18 @@ static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kOpenIDRealm = @"FakeRealm";
 static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
-@interface GIDVerifyAccountDetailTests : XCTestCase {
-@private
-  // The |UIViewController| object being tested.
-  UIViewController *_presentingViewController;
+@interface GIDVerifyAccountDetailTests : XCTestCase
+// The |UIViewController| object being tested.
+@property UIViewController *presentingViewController;
 
-  // Fake [NSBundle mainBundle].
-  GIDFakeMainBundle *_fakeMainBundle;
+// Fake [NSBundle mainBundle].
+@property GIDFakeMainBundle *fakeMainBundle;
 
-  // The |GIDVerifyAccountDetail| object being tested.
-  GIDVerifyAccountDetail *_verifyAccountDetail;
+// The |GIDVerifyAccountDetail| object being tested.
+@property GIDVerifyAccountDetail *verifyAccountDetail;
 
-  // The list of account details when testing [GIDVerifiableAccountDetail].
-  NSArray<GIDVerifiableAccountDetail *> *_verifiableAccountDetails;
-}
+// The list of account details when testing [GIDVerifiableAccountDetail].
+@property NSArray<GIDVerifiableAccountDetail *> *verifiableAccountDetails;
 @end
 
 @implementation GIDVerifyAccountDetailTests
@@ -71,7 +69,6 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   XCTAssertNil(verifyAccountDetail.configuration.serverClientID);
   XCTAssertNil(verifyAccountDetail.configuration.hostedDomain);
   XCTAssertNil(verifyAccountDetail.configuration.openIDRealm);
-
 }
 
 - (void)testInit_noConfig {
