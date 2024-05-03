@@ -177,13 +177,14 @@ static NSString *const kHostedDomainParameter = @"hd";
     }
   }
 
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:scopes
-                                                 redirectURL:redirectURL
-                                                responseType:OIDResponseTypeCode
-                                        additionalParameters:additionalParameters];
+  // TODO(#405): Use request variable to present request and process response.
+  __unused OIDAuthorizationRequest *request =
+  [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                clientId:options.configuration.clientID
+                                                  scopes:scopes
+                                             redirectURL:redirectURL
+                                            responseType:OIDResponseTypeCode
+                                    additionalParameters:additionalParameters];
 }
 
 #pragma mark - Helpers
