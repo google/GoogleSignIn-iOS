@@ -36,7 +36,7 @@
 #import <AppAuth/OIDServiceConfiguration.h>
 #endif
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // The URL template for the authorization endpoint.
 static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
@@ -208,4 +208,4 @@ static NSString *const kHostedDomainParameter = @"hd";
 
 @end
 
-#endif // TARGET_OS_IOS
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
