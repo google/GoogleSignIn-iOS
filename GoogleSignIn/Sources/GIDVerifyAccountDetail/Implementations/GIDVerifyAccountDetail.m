@@ -19,11 +19,16 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+#import "GoogleSignIn/Sources/GIDCallbackQueue.h"
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+
+//#import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 
 @import GTMAppAuth;
 
@@ -31,9 +36,11 @@
 @import AppAuth;
 @import GTMSessionFetcherCore;
 #else
+#import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
+#import <AppAuth/OIDExternalUserAgentSession.h>
 #endif
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -50,15 +57,44 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
 // The EMM support version
 static NSString *const kEMMVersion = @"1";
 
+// The error code for Google Identity.
+NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerify";
+
+// Error string for user cancelations.
+static NSString *const kUserCanceledError = @"The user canceled the sign-in flow.";
+
+// Parameters in the callback URL coming back from browser.
+static NSString *const kOAuth2ErrorKeyName = @"error";
+static NSString *const kOAuth2AccessDenied = @"access_denied";
+static NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
+
 // Parameters for the auth and token exchange endpoints.
 static NSString *const kAudienceParameter = @"audience";
 static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
 static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
 
+// Minimum time to expiration for a restored access token.
+static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
+
+// The callback queue used for authentication flow.
+@interface GIDVerifyAuthFlow : GIDCallbackQueue
+
+@property(nonatomic, strong, nullable) OIDAuthState *authState;
+@property(nonatomic, strong, nullable) NSError *error;
+@property(nonatomic, copy, nullable) NSString *emmSupport;
+@property(nonatomic, nullable) GIDProfileData *profileData;
+
+@end
+
+@implementation GIDVerifyAuthFlow
+@end
+
 @implementation GIDVerifyAccountDetail {
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
+  // AppAuth external user-agent session state.
+  id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
 - (instancetype)initWithConfig:(nullable GIDConfiguration *)configuration {
@@ -67,12 +103,12 @@ static NSString *const kHostedDomainParameter = @"hd";
     _configuration = configuration;
 
     NSString *authorizationEndpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
+                                          [GIDSignInPreferences googleAuthorizationServer]];
     NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
+                                  [GIDSignInPreferences googleTokenServer]];
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEndpointURL]
-                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+                             initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEndpointURL]
+                             tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
   }
   return self;
 }
@@ -163,9 +199,9 @@ static NSString *const kHostedDomainParameter = @"hd";
   }
 
   [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:kEMMVersion
-                       isPasscodeInfoRequired:NO]];
+   [GIDEMMSupport parametersWithParameters:options.extraParams
+                                emmSupport:kEMMVersion
+                    isPasscodeInfoRequired:NO]];
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
@@ -177,17 +213,136 @@ static NSString *const kHostedDomainParameter = @"hd";
     }
   }
 
-  // TODO(#405): Use request variable to present request and process response.
-  __unused OIDAuthorizationRequest *request =
+  OIDAuthorizationRequest *request =
   [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                 clientId:options.configuration.clientID
                                                   scopes:scopes
                                              redirectURL:redirectURL
                                             responseType:OIDResponseTypeCode
                                     additionalParameters:additionalParameters];
+
+   _currentAuthorizationFlow = [OIDAuthorizationService
+                               presentAuthorizationRequest:request
+                               presentingViewController:options.presentingViewController
+                               callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                          NSError *_Nullable error) {
+    [self processAuthorizationResponse:authorizationResponse
+                                 error:error
+                            emmSupport:kEMMVersion];
+  }];
+}
+
+- (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
+                               error:(NSError *)error
+                          emmSupport:(NSString *)emmSupport{
+  GIDVerifyAuthFlow *authFlow = [[GIDVerifyAuthFlow alloc] init];
+  authFlow.emmSupport = emmSupport;
+
+  if (authorizationResponse) {
+    if (authorizationResponse.authorizationCode.length) {
+      authFlow.authState = [[OIDAuthState alloc] initWithAuthorizationResponse:authorizationResponse];
+      // perform auth code exchange
+      [self maybeFetchToken:authFlow];
+    } else {
+      // There was a failure, convert to appropriate error code.
+      NSString *errorString;
+      GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
+      NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
+
+      if (authFlow.emmSupport) {
+        [authFlow wait];
+        BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params completion:^{
+          [authFlow next];
+        }];
+        if (isEMMError) {
+          errorCode = kGIDVerifyErrorCodeEMM;
+        }
+      }
+      errorString = (NSString *)params[kOAuth2ErrorKeyName];
+      if ([errorString isEqualToString:kOAuth2AccessDenied]) {
+        errorCode = kGIDVerifyErrorCodeCanceled;
+      }
+
+      authFlow.error = [self errorWithString:errorString code:errorCode];
+    }
+  } else {
+    NSString *errorString = [error localizedDescription];
+    GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
+    if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
+      errorString = kUserCanceledError;
+      errorCode = kGIDVerifyErrorCodeCanceled;
+    }
+    authFlow.error = [self errorWithString:errorString code:errorCode];
+  }
+
+  // completion and decode
+}
+
+// Fetches the access token if necessary as part of the auth flow.
+- (void)maybeFetchToken:(GIDVerifyAuthFlow *)authFlow {
+  OIDAuthState *authState = authFlow.authState;
+  // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
+  if (authFlow.error ||
+      (authState.lastTokenResponse.accessToken &&
+       [authState.lastTokenResponse.accessTokenExpirationDate timeIntervalSinceNow] >
+       kMinimumRestoredAccessTokenTimeToExpire)) {
+    return;
+  }
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  if (_configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = _configuration.serverClientID;
+  }
+  NSDictionary<NSString *, NSObject *> *params =
+  authState.lastAuthorizationResponse.additionalParameters;
+  NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
+  [additionalParameters addEntriesFromDictionary:
+   [GIDEMMSupport parametersWithParameters:@{}
+                                emmSupport:authFlow.emmSupport
+                    isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  OIDTokenRequest *tokenRequest;
+  if (!authState.lastTokenResponse.accessToken &&
+      authState.lastAuthorizationResponse.authorizationCode) {
+    tokenRequest = [authState.lastAuthorizationResponse
+                    tokenExchangeRequestWithAdditionalParameters:additionalParameters];
+  } else {
+    [additionalParameters
+     addEntriesFromDictionary:authState.lastTokenResponse.request.additionalParameters];
+    tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  }
+
+  [authFlow wait];
+  [OIDAuthorizationService
+   performTokenRequest:tokenRequest
+   callback:^(OIDTokenResponse *_Nullable tokenResponse,
+              NSError *_Nullable error) {
+    [authState updateWithTokenResponse:tokenResponse error:error];
+    authFlow.error = error;
+
+    if (authFlow.emmSupport) {
+      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
+        authFlow.error = error;
+        [authFlow next];
+      }];
+    } else {
+      [authFlow next];
+    }
+  }];
 }
 
 #pragma mark - Helpers
+
+- (NSError *)errorWithString:(NSString *)errorString code:(GIDVerifyErrorCode)code {
+  if (errorString == nil) {
+    errorString = @"Unknown error";
+  }
+  NSDictionary<NSString *, NSString *> *errorDict = @{ NSLocalizedDescriptionKey : errorString };
+  return [NSError errorWithDomain:kGIDVerifyErrorDomain
+                             code:code
+                         userInfo:errorDict];
+}
 
 // Asserts the parameters being valid.
 - (void)assertValidParameters:(GIDSignInInternalOptions *)options {
