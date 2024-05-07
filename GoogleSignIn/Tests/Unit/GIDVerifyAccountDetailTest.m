@@ -19,7 +19,11 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 
 static NSString * const kClientId = @"FakeClientID";
 static NSString * const kServerClientId = @"FakeServerClientID";
@@ -51,7 +55,9 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
   _verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
 
-  GIDVerifiableAccountDetail *ageOver18Detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+  GIDVerifiableAccountDetail *ageOver18Detail = [[GIDVerifiableAccountDetail alloc]
+                                                 initWithAccountDetailType:
+                                                   GIDAccountDetailTypeAgeOver18];
   _verifiableAccountDetails = @[ageOver18Detail];
 
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
@@ -109,12 +115,60 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   XCTAssertNil(verifyAccountDetail.configuration);
 }
 
+- (void)testInitWithConfig_noConfig {
+  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] initWithConfig:nil];
+  XCTAssertNil(verifyAccountDetail.configuration);
+}
+
+- (void)testInitWithConfig_fullConfig {
+  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                                serverClientID:kServerClientId
+                                                                  hostedDomain:kFakeHostedDomain
+                                                                   openIDRealm:kOpenIDRealm];
+
+  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc]
+                                                 initWithConfig:configuration];
+  XCTAssertNotNil(verifyAccountDetail.configuration);
+  XCTAssertEqual(verifyAccountDetail.configuration.clientID, kClientId);
+  XCTAssertEqual(verifyAccountDetail.configuration.serverClientID, kServerClientId);
+  XCTAssertEqual(verifyAccountDetail.configuration.hostedDomain, kFakeHostedDomain);
+  XCTAssertEqual(verifyAccountDetail.configuration.openIDRealm, kOpenIDRealm);
+}
+
+- (void)testCurrentUserException {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
+  _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
+#pragma GCC diagnostic pop
+
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDSignIn.sharedInstance.currentUser = nil;
+
+  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                                                 presentingViewController:_presentingViewController
+                                                               completion:nil],
+                               NSException,
+                               NSInvalidArgumentException,
+                               @"|currentUser| must be set to verify.");
+}
+
 - (void)testPresentingViewControllerException {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
+  _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId];
+#pragma GCC diagnostic pop
   _presentingViewController = nil;
 
-  XCTAssertThrows([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                                    presentingViewController:_presentingViewController
-                                                  completion:nil]);
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDSignIn.sharedInstance.currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                                      profileData:nil];
+
+  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                                                 presentingViewController:_presentingViewController
+                                                               completion:nil],
+                               NSException,
+                               NSInvalidArgumentException,
+                               @"|presentingViewController| must be set.");
 }
 
 - (void)testClientIDMissingException {
@@ -123,16 +177,31 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
 #pragma GCC diagnostic pop
 
-  XCTAssertThrowsSpecificNamed(
-                               [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails presentingViewController:_presentingViewController completion:nil],
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDSignIn.sharedInstance.currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                                      profileData:nil];
+
+  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                                                 presentingViewController:_presentingViewController
+                                                               completion:nil],
                                NSException,
                                NSInvalidArgumentException,
                                @"You must specify |clientID| in |GIDConfiguration|");
 }
 
 - (void)testSchemesNotSupportedException {
-  XCTAssertThrowsSpecificNamed(
-                               [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails presentingViewController:_presentingViewController completion:nil],
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
+  _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId];
+#pragma GCC diagnostic pop
+
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDSignIn.sharedInstance.currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                                      profileData:nil];
+
+  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                                                 presentingViewController:_presentingViewController
+                                                               completion:nil],
                                NSException,
                                NSInvalidArgumentException,
                                @"Your app is missing support for the following URL schemes: "

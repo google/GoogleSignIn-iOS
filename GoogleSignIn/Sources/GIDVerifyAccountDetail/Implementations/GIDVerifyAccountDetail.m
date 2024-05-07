@@ -88,6 +88,8 @@
     return;
   }
 
+  [self assertValidCurrentUser];
+
   // Explicitly throw exception for missing client ID here. This must come before
   // scheme check because schemes rely on reverse client IDs.
   [self assertValidParameters:options];
@@ -108,6 +110,15 @@
 }
 
 #pragma mark - Helpers
+
+// Assert that a current user exists.
+- (void)assertValidCurrentUser {
+  if (!GIDSignIn.sharedInstance.currentUser) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"|currentUser| must be set to verify."];
+  }
+}
 
 // Asserts the parameters being valid.
 - (void)assertValidParameters:(GIDSignInInternalOptions *)options {
