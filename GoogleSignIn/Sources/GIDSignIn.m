@@ -273,6 +273,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)addScopes:(NSArray<NSString *> *)scopes
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable GIDSignInCompletion)completion {
+
   GIDConfiguration *configuration = self.currentUser.configuration;
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
@@ -583,21 +584,31 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
+  [GIDEMMSupport parametersWithParameters:options.extraParams
+                               emmSupport:emmSupport
+                   isPasscodeInfoRequired:NO]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
+  NSString *codeVerifier = [OIDAuthorizationRequest generateCodeVerifier];
+  NSString *codeChallenge = [OIDAuthorizationRequest codeChallengeS256ForVerifier:codeVerifier];
+  NSString *nonce = options.configuration.nonce ? options.configuration.nonce : [OIDAuthorizationRequest generateState];
+
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
-                                                      scopes:options.scopes
+                                                clientSecret:nil
+                                                       scope:[OIDScopeUtilities scopesWithArray:options.scopes]
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
+                                                       state:[OIDAuthorizationRequest generateState]
+                                                       nonce:nonce
+                                                codeVerifier:codeVerifier
+                                               codeChallenge:codeChallenge
+                                         codeChallengeMethod:OIDOAuthorizationRequestCodeChallengeMethodS256
                                         additionalParameters:additionalParameters];
 
   _currentAuthorizationFlow = [OIDAuthorizationService
@@ -1039,13 +1050,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                        forKey:kConfigServerClientIDKey];
   NSString *hostedDomain = [GIDSignIn configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
   NSString *openIDRealm = [GIDSignIn configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
-    
+
   // If we have at least a client ID, try to construct a configuration.
   if (clientID) {
     configuration = [[GIDConfiguration alloc] initWithClientID:clientID
                                                  serverClientID:serverClientID
                                                    hostedDomain:hostedDomain
-                                                    openIDRealm:openIDRealm];
+                                                    openIDRealm:openIDRealm
+                                                          nonce:nil];
   }
   
   return configuration;
