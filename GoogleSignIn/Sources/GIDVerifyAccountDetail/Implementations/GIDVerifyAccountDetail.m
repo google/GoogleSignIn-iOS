@@ -20,7 +20,6 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
-#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -46,15 +45,6 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
 
 // Expected path in the URL scheme to be handled.
 static NSString *const kBrowserCallbackPath = @"/oauth2callback";
-
-// The EMM support version
-static NSString *const kEMMVersion = @"1";
-
-// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
-static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
-static NSString *const kLoginHintParameter = @"login_hint";
-static NSString *const kHostedDomainParameter = @"hd";
 
 @implementation GIDVerifyAccountDetail {
   // AppAuth configuration object.
@@ -151,7 +141,7 @@ static NSString *const kHostedDomainParameter = @"hd";
                                              kBrowserCallbackPath]];
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
+  additionalParameters[kIncludeGrantedScopesParameter] = @"false";
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
@@ -161,11 +151,6 @@ static NSString *const kHostedDomainParameter = @"hd";
   if (options.configuration.hostedDomain) {
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
-
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:kEMMVersion
-                       isPasscodeInfoRequired:NO]];
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
@@ -179,7 +164,7 @@ static NSString *const kHostedDomainParameter = @"hd";
 
   // TODO(#405): Use request variable to present request and process response.
   __unused OIDAuthorizationRequest *request =
-  [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+    [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                 clientId:options.configuration.clientID
                                                   scopes:scopes
                                              redirectURL:redirectURL

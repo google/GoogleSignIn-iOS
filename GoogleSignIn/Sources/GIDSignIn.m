@@ -124,14 +124,6 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
-// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
-// See b/11669751 .
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
-static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
-static NSString *const kLoginHintParameter = @"login_hint";
-static NSString *const kHostedDomainParameter = @"hd";
-
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
