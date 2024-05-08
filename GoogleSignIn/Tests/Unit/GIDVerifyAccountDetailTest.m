@@ -25,6 +25,16 @@
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 
+// Exception Reasons
+static NSString * const kSchemesNotSupportedExceptionReason =
+    @"Your app is missing support for the following URL schemes: fakeclientid";
+static NSString * const kClientIDMissingExceptionReason =
+    @"You must specify |clientID| in |GIDConfiguration|";
+static NSString * const kMissingCurrentUserExceptionReason =
+    @"|currentUser| must be set to verify.";
+static NSString * const kMissingPresentingViewControllerExceptionReason =
+    @"|presentingViewController| must be set.";
+
 static NSString * const kClientId = @"FakeClientID";
 static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kOpenIDRealm = @"FakeRealm";
@@ -55,9 +65,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
   _verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
 
-  GIDVerifiableAccountDetail *ageOver18Detail = [[GIDVerifiableAccountDetail alloc]
-                                                 initWithAccountDetailType:
-                                                   GIDAccountDetailTypeAgeOver18];
+  GIDVerifiableAccountDetail *ageOver18Detail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
   _verifiableAccountDetails = @[ageOver18Detail];
 
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
@@ -144,12 +153,14 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   OIDAuthState *authState = [OIDAuthState testInstance];
   GIDSignIn.sharedInstance.currentUser = nil;
 
-  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                                                 presentingViewController:_presentingViewController
-                                                               completion:nil],
-                               NSException,
-                               NSInvalidArgumentException,
-                               @"|currentUser| must be set to verify.");
+  @try {
+    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                      presentingViewController:_presentingViewController
+                                    completion:nil];
+  } @catch (NSException *exception) {
+    XCTAssertEqual(exception.name, NSInvalidArgumentException);
+    XCTAssertEqualObjects(exception.reason, kMissingCurrentUserExceptionReason);
+  }
 }
 
 - (void)testPresentingViewControllerException {
@@ -163,12 +174,14 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   GIDSignIn.sharedInstance.currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                                       profileData:nil];
 
-  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                                                 presentingViewController:_presentingViewController
-                                                               completion:nil],
-                               NSException,
-                               NSInvalidArgumentException,
-                               @"|presentingViewController| must be set.");
+  @try {
+    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                      presentingViewController:_presentingViewController
+                                    completion:nil];
+  } @catch (NSException *exception) {
+    XCTAssertEqual(exception.name, NSInvalidArgumentException);
+    XCTAssertEqualObjects(exception.reason, kMissingPresentingViewControllerExceptionReason);
+  }
 }
 
 - (void)testClientIDMissingException {
@@ -181,12 +194,14 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   GIDSignIn.sharedInstance.currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                                       profileData:nil];
 
-  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                                                 presentingViewController:_presentingViewController
-                                                               completion:nil],
-                               NSException,
-                               NSInvalidArgumentException,
-                               @"You must specify |clientID| in |GIDConfiguration|");
+  @try {
+    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                      presentingViewController:_presentingViewController
+                                    completion:nil];
+  } @catch (NSException *exception) {
+    XCTAssertEqual(exception.name, NSInvalidArgumentException);
+    XCTAssertEqualObjects(exception.reason, kClientIDMissingExceptionReason);
+  }
 }
 
 - (void)testSchemesNotSupportedException {
@@ -199,13 +214,14 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   GIDSignIn.sharedInstance.currentUser = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                                       profileData:nil];
 
-  XCTAssertThrowsSpecificNamed([_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
-                                                 presentingViewController:_presentingViewController
-                                                               completion:nil],
-                               NSException,
-                               NSInvalidArgumentException,
-                               @"Your app is missing support for the following URL schemes: "
-                               "fakeclientid");
+  @try {
+    [_verifyAccountDetail verifyAccountDetails:_verifiableAccountDetails
+                      presentingViewController:_presentingViewController
+                                    completion:nil];
+  } @catch (NSException *exception) {
+    XCTAssertEqual(exception.name, NSInvalidArgumentException);
+    XCTAssertEqualObjects(exception.reason, kSchemesNotSupportedExceptionReason);
+  }
 }
 
 @end
