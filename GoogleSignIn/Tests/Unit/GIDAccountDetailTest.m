@@ -40,7 +40,7 @@ static NSString * const kServerClientId = @"FakeServerClientID";
 static NSString * const kOpenIDRealm = @"FakeRealm";
 static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
-@interface GIDVerifyAccountDetailTests : XCTestCase
+@interface GIDAccountDetailTests : XCTestCase
 // The |UIViewController| object being tested.
 @property UIViewController *presentingViewController;
 
@@ -54,7 +54,7 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 @property NSArray<GIDVerifiableAccountDetail *> *verifiableAccountDetails;
 @end
 
-@implementation GIDVerifyAccountDetailTests
+@implementation GIDAccountDetailTests
 
 #pragma mark - Lifecycle
 
