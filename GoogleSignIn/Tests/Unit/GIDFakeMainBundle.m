@@ -37,16 +37,31 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSMutableDictionary *_fakeConfig;
 }
 
-- (void)startFakingWithClientID:(NSString *)clientId {
-  _clientId = clientId;
+- (instancetype)initWithClientID:(id)clientID
+                  serverClientID:(id)serverClientID
+                    hostedDomain:(id)hostedDomain
+                     openIDRealm:(id)openIDRealm {
+  self = [super init];
 
+  if (self) {
+    _clientId = clientID;
+
+    _fakeConfig = clientID ? [@{ @"GIDClientID" : clientID } mutableCopy] : [@{} mutableCopy];
+
+    _fakeConfig[kConfigClientIDKey] = clientID;
+    _fakeConfig[kConfigServerClientIDKey] = serverClientID;
+    _fakeConfig[kConfigHostedDomainKey] = hostedDomain;
+    _fakeConfig[kConfigOpenIDRealmKey] = openIDRealm;
+  }
+  return self;
+}
+
+- (void)startFaking {
   _fakedKeys = @[ kCFBundleURLTypesKey,
                   kConfigClientIDKey,
                   kConfigServerClientIDKey,
                   kConfigHostedDomainKey,
                   kConfigOpenIDRealmKey ];
-  
-  _fakeConfig = [@{ @"GIDClientID" : clientId } mutableCopy];
 
   [GULSwizzler swizzleClass:[NSBundle class]
                    selector:@selector(objectForInfoDictionaryKey:)
@@ -60,6 +75,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                    userInfo:nil];
     }
   }];
+}
+
+- (void)startFakingWithClientID:(nullable NSString *)clientId {
+  _clientId = clientId;
+
+  _fakeConfig = clientId ? [@{ @"GIDClientID" : clientId } mutableCopy] : [@{} mutableCopy];
+
+  [self startFaking];
 }
 
 - (void)stopFaking {

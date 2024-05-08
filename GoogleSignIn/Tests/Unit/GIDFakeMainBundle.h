@@ -22,12 +22,19 @@
  */
 @interface GIDFakeMainBundle : NSObject
 
+- (instancetype)initWithClientID:(id)clientID
+                  serverClientID:(id)serverClientID
+                    hostedDomain:(id)hostedDomain
+                     openIDRealm:(id)openIDRealm;
+
+- (void)startFaking;
+
 /**
  * @fn startFakingWithClientID:
  * @brief Starts faking [NSBundle mainBundle]
  * @param clientID The fake client idenfitier for the app.
  */
-- (void)startFakingWithClientID:(NSString *)clientID;
+- (void)startFakingWithClientID:(nullable NSString *)clientID;
 
 /**
  * @fn stopFaking
