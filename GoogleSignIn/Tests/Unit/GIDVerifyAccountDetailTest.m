@@ -75,11 +75,6 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
                                                     openIDRealm:kOpenIDRealm];
 }
 
-- (void)tearDown {
-  [_fakeMainBundle stopFaking];
-  [super tearDown];
-}
-
 #pragma mark - Tests
 
 - (void)testInit {
@@ -91,6 +86,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   XCTAssertNil(verifyAccountDetail.configuration.serverClientID);
   XCTAssertNil(verifyAccountDetail.configuration.hostedDomain);
   XCTAssertNil(verifyAccountDetail.configuration.openIDRealm);
+
+  [_fakeMainBundle stopFaking];
 }
 
 - (void)testInit_noConfig {
@@ -98,6 +95,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
 
   XCTAssertNil(verifyAccountDetail.configuration);
+
+  [_fakeMainBundle stopFaking];
 }
 
 
@@ -110,6 +109,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   XCTAssertEqual(verifyAccountDetail.configuration.serverClientID, kServerClientId);
   XCTAssertEqual(verifyAccountDetail.configuration.hostedDomain, kFakeHostedDomain);
   XCTAssertEqual(verifyAccountDetail.configuration.openIDRealm, kOpenIDRealm);
+
+  [_fakeMainBundle stopFaking];
 }
 
 - (void)testInit_invalidConfig {
@@ -121,6 +122,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
   GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
   XCTAssertNil(verifyAccountDetail.configuration);
+
+  [_fakeMainBundle stopFaking];
 }
 
 - (void)testInitWithConfig_noConfig {
