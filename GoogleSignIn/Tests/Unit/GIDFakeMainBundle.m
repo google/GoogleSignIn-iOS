@@ -56,6 +56,13 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   return self;
 }
 
+- (instancetype)init {
+  return [self initWithClientID:nil
+                 serverClientID:nil
+                   hostedDomain:nil
+                    openIDRealm:nil];
+}
+
 - (void)startFaking {
   _fakedKeys = @[ kCFBundleURLTypesKey,
                   kConfigClientIDKey,

@@ -43,8 +43,12 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 /// The active configuration for this instance of `GIDVerifyAccountDetail`.
 @property(nonatomic, nullable) GIDConfiguration *configuration;
 
+/// Initialize a `GIDVerifyAccountDetail` object by specifying all available properties.
+///
+/// @param config The configuration to be used.
+/// @return An initialized `GIDVerifyAccountDetail` instance.
 - (instancetype)initWithConfig:(nullable GIDConfiguration *)config
-NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 
 /// Starts an interactive verification flow.
 ///

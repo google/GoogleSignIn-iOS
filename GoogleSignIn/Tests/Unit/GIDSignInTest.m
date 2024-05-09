@@ -286,6 +286,8 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
   _presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+
+  // TODO: Fix strict mocks from carrying forward to subsequent tests. (#410)
   _authState = OCMClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);

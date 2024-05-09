@@ -33,7 +33,8 @@
 - (nullable instancetype)initWithClientID:(nullable id)clientID
                            serverClientID:(nullable id)serverClientID
                              hostedDomain:(nullable id)hostedDomain
-                              openIDRealm:(nullable id)openIDRealm;
+                              openIDRealm:(nullable id)openIDRealm 
+    NS_DESIGNATED_INITIALIZER;
 
 /**
  * @fn startFaking:

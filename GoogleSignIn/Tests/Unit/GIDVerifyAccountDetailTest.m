@@ -41,16 +41,16 @@ static NSString * const kOpenIDRealm = @"FakeRealm";
 static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
 @interface GIDVerifyAccountDetailTests : XCTestCase
-// The |UIViewController| object being tested.
+/// The |UIViewController| object being tested.
 @property UIViewController *presentingViewController;
 
-// Fake [NSBundle mainBundle].
+/// Fake [NSBundle mainBundle].
 @property GIDFakeMainBundle *fakeMainBundle;
 
-// The |GIDVerifyAccountDetail| object being tested.
+/// The |GIDVerifyAccountDetail| object being tested.
 @property GIDVerifyAccountDetail *verifyAccountDetail;
 
-// The list of account details when testing [GIDVerifiableAccountDetail].
+/// The list of account details when testing [GIDVerifiableAccountDetail].
 @property NSArray<GIDVerifiableAccountDetail *> *verifiableAccountDetails;
 @end
 
@@ -73,6 +73,11 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
                                                  serverClientID:kServerClientId
                                                    hostedDomain:kFakeHostedDomain
                                                     openIDRealm:kOpenIDRealm];
+}
+
+- (void)tearDown {
+  [_fakeMainBundle stopFaking];
+  [super tearDown];
 }
 
 #pragma mark - Tests
@@ -129,8 +134,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
                                                                   hostedDomain:kFakeHostedDomain
                                                                    openIDRealm:kOpenIDRealm];
 
-  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc]
-                                                    initWithConfig:configuration];
+  GIDVerifyAccountDetail *verifyAccountDetail =
+      [[GIDVerifyAccountDetail alloc] initWithConfig:configuration];
   XCTAssertNotNil(verifyAccountDetail.configuration);
   XCTAssertEqual(verifyAccountDetail.configuration.clientID, kClientId);
   XCTAssertEqual(verifyAccountDetail.configuration.serverClientID, kServerClientId);
@@ -144,7 +149,6 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   _verifyAccountDetail.configuration = [[GIDConfiguration alloc] initWithClientID:nil];
 #pragma GCC diagnostic pop
 
-  OIDAuthState *authState = [OIDAuthState testInstance];
   GIDSignIn.sharedInstance.currentUser = nil;
 
   @try {
