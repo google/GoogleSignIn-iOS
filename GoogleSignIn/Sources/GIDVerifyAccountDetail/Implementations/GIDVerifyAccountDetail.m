@@ -141,7 +141,6 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
                                              kBrowserCallbackPath]];
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"false";
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
@@ -164,12 +163,12 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
 
   // TODO(#405): Use request variable to present request and process response.
   __unused OIDAuthorizationRequest *request =
-    [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                clientId:options.configuration.clientID
-                                                  scopes:scopes
-                                             redirectURL:redirectURL
-                                            responseType:OIDResponseTypeCode
-                                    additionalParameters:additionalParameters];
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:scopes
+                                                 redirectURL:redirectURL
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
 }
 
 #pragma mark - Helpers
