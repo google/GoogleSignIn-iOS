@@ -47,7 +47,8 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 ///
 /// @param config The configuration to be used.
 /// @return An initialized `GIDVerifyAccountDetail` instance.
-- (instancetype)initWithConfig:(GIDConfiguration *)config
+///     Otherwise, `nil` if the configuration is invalid or the initializer fails.
+- (nullable instancetype)initWithConfig:(GIDConfiguration *)config
     NS_DESIGNATED_INITIALIZER;
 
 /// Starts an interactive verification flow.

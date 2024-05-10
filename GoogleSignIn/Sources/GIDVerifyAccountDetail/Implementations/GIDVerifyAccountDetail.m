@@ -27,7 +27,7 @@
 
 @implementation GIDVerifyAccountDetail
 
-- (instancetype)initWithConfig:(GIDConfiguration *)configuration {
+- (nullable instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
