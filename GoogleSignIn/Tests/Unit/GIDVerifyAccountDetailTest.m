@@ -126,11 +126,6 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   [_fakeMainBundle stopFaking];
 }
 
-- (void)testInitWithConfig_noConfig {
-  GIDVerifyAccountDetail *verifyAccountDetail = [[GIDVerifyAccountDetail alloc] initWithConfig:nil];
-  XCTAssertNil(verifyAccountDetail.configuration);
-}
-
 - (void)testInitWithConfig_fullConfig {
   GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                                 serverClientID:kServerClientId
