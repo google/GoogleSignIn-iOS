@@ -23,6 +23,7 @@
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 

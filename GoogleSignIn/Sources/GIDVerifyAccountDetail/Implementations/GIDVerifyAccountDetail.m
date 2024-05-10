@@ -22,6 +22,7 @@
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 @import GTMAppAuth;

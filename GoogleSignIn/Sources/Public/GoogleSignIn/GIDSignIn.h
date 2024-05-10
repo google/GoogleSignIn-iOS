@@ -29,14 +29,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
-// See b/11669751 .
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
-static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
-static NSString *const kLoginHintParameter = @"login_hint";
-static NSString *const kHostedDomainParameter = @"hd";
-
 /// The error domain for `NSError`s returned by the Google Sign-In SDK.
 extern NSErrorDomain const kGIDSignInErrorDomain;
 
