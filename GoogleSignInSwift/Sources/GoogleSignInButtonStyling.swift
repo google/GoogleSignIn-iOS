@@ -235,7 +235,7 @@ extension GoogleSignInButtonStyle {
     let bt = buttonText as NSString
     let size = CGSize(width: .max, height: .max)
     let anyFont: Any
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
     anyFont = UIFont(name: fontNameRobotoBold, size: fontSize) as Any
 #elseif os(macOS)
     anyFont = NSFont(name: fontNameRobotoBold, size: fontSize) as Any

@@ -30,7 +30,7 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
@@ -56,7 +56,7 @@
 #import <AppAuth/OIDURLQueryComponent.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 #import <AppAuth/OIDAuthorizationService+IOS.h>
 #elif TARGET_OS_OSX
 #import <AppAuth/OIDAuthorizationService+Mac.h>
@@ -235,7 +235,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   return YES;
 }
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
@@ -565,7 +565,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSString *emmSupport;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX || TARGET_OS_VISION
   emmSupport = nil;
 #endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
 
@@ -586,7 +586,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [GIDEMMSupport parametersWithParameters:options.extraParams
                                    emmSupport:emmSupport
                        isPasscodeInfoRequired:NO]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST || TARGET_OS_VISION
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
@@ -602,7 +602,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   _currentAuthorizationFlow = [OIDAuthorizationService
       presentAuthorizationRequest:request
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
          presentingViewController:options.presentingViewController
 #elif TARGET_OS_OSX
                  presentingWindow:options.presentingWindow
@@ -639,7 +639,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST && !TARGET_OS_VISION
       if (authFlow.emmSupport) {
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
@@ -767,7 +767,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     } else {
       [authFlow next];
     }
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     [authFlow next];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
   }];
@@ -905,7 +905,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   if (![@"restart_auth" isEqualToString:actionString]) {
     return NO;
   }
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
   if (!_currentOptions.presentingViewController) {
     return NO;
   }
@@ -963,7 +963,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 // Assert that the presenting view controller has been set.
 - (void)assertValidPresentingViewController {
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
   if (!_currentOptions.presentingViewController)
 #elif TARGET_OS_OSX
   if (!_currentOptions.presentingWindow)

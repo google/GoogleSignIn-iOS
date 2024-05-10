@@ -172,7 +172,7 @@ private extension Font {
   /// - returns A `Bool` indicating whether or not the font was loaded.
   static func loadCGFont() -> Bool {
     // Check to see if the font has already been loaded
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
     if let _ = UIFont(name: fontNameRobotoBold, size: fontSize) {
       return true
     }

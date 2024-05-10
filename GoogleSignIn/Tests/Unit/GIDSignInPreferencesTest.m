@@ -40,6 +40,8 @@
 #endif // TARGET_OS_SIMULATOR
 #elif TARGET_OS_OSX
   expectedEnvironment = @"macos";
+#elif TARGET_OS_VISION
+  expectedEnvironment = @"visionos";
 #endif // TARGET_OS_MACCATALYST
   XCTAssertEqualObjects(environment, expectedEnvironment);
 }

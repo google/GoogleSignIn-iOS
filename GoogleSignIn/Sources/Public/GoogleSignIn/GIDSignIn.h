@@ -104,7 +104,7 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///     This block will be called asynchronously on the main queue.
 - (void)disconnectWithCompletion:(nullable void (^)(NSError *_Nullable error))completion;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 /// Starts an interactive sign-in flow on iOS.
 ///

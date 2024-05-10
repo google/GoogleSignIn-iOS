@@ -61,7 +61,7 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// @return NO if there is no user restored from the keychain.
 - (BOOL)restorePreviousSignInNoRefresh;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 /// Starts an interactive consent flow on iOS to add scopes to the current user's grants.
 ///

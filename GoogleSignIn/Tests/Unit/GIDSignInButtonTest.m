@@ -13,7 +13,7 @@
 // limitations under the License.
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
@@ -206,4 +206,4 @@ static NSString * const kAppBundleId = @"FakeBundleID";
 
 @end
 
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
