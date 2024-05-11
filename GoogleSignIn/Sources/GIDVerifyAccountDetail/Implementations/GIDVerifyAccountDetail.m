@@ -21,9 +21,9 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 
-#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -187,7 +187,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                                              kBrowserCallbackPath]];
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
   if (options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
   }
