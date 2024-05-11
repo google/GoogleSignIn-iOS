@@ -52,7 +52,7 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
   OIDServiceConfiguration *_appAuthConfiguration;
 }
 
-- (instancetype)initWithConfig:(nullable GIDConfiguration *)configuration {
+- (nullable instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
@@ -68,11 +68,15 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
   return self;
 }
 
-- (instancetype)init {
+- (nullable instancetype)init {
   GIDConfiguration *configuration;
   NSBundle *bundle = NSBundle.mainBundle;
   if (bundle) {
     configuration = [GIDConfiguration configurationFromBundle:bundle];
+  }
+
+  if (!configuration) {
+    return nil;
   }
 
   return [self initWithConfig:configuration];
@@ -120,6 +124,8 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
                 format:@"No active configuration. Make sure GIDClientID is set in Info.plist."];
     return;
   }
+
+  [self assertValidCurrentUser];
 
   // Explicitly throw exception for missing client ID here. This must come before
   // scheme check because schemes rely on reverse client IDs.
@@ -173,6 +179,15 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
 }
 
 #pragma mark - Helpers
+
+// Assert that a current user exists.
+- (void)assertValidCurrentUser {
+  if (!GIDSignIn.sharedInstance.currentUser) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"|currentUser| must be set to verify."];
+  }
+}
 
 // Asserts the parameters being valid.
 - (void)assertValidParameters:(GIDSignInInternalOptions *)options {

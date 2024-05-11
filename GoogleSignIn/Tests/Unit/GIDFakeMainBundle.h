@@ -23,11 +23,31 @@
 @interface GIDFakeMainBundle : NSObject
 
 /**
+ * @fn initWithClientID:serverClientID:hostedDomain:openIDRealm:
+ * @brief Initializes a GIDFakeMainBundle object.
+ * @param clientID The fake client idenfitier for the app.
+ * @param serverClientID The fake server client idenfitier for the app.
+ * @param hostedDomain The fake hosted domain for the app.
+ * @param openIDRealm The fake OpenID realm for the app.
+ */
+- (nullable instancetype)initWithClientID:(nullable id)clientID
+                           serverClientID:(nullable id)serverClientID
+                             hostedDomain:(nullable id)hostedDomain
+                              openIDRealm:(nullable id)openIDRealm 
+    NS_DESIGNATED_INITIALIZER;
+
+/**
+ * @fn startFaking:
+ * @brief Starts faking [NSBundle mainBundle]
+ */
+- (void)startFaking;
+
+/**
  * @fn startFakingWithClientID:
  * @brief Starts faking [NSBundle mainBundle]
  * @param clientID The fake client idenfitier for the app.
  */
-- (void)startFakingWithClientID:(NSString *)clientID;
+- (void)startFakingWithClientID:(nullable NSString *)clientID;
 
 /**
  * @fn stopFaking
@@ -87,9 +107,9 @@
  * @param hostedDomain The fake hosted domain for the app.
  * @param openIDRealm The fake OpenID realm for the app.
  */
-- (void)fakeWithClientID:(id)clientID
-          serverClientID:(id)serverClientID
-            hostedDomain:(id)hostedDomain
-             openIDRealm:(id)openIDRealm;
+- (void)fakeWithClientID:(nullable id)clientID
+          serverClientID:(nullable id)serverClientID
+            hostedDomain:(nullable id)hostedDomain
+             openIDRealm:(nullable id)openIDRealm;
 
 @end

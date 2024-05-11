@@ -286,12 +286,14 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
   _presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  _authState = OCMStrictClassMock([OIDAuthState class]);
+
+  // TODO: Fix strict mocks from carrying forward to subsequent tests. (#410)
+  _authState = OCMClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
-  _authorization = OCMStrictClassMock([GTMAuthSession class]);
+  _authorization = OCMClassMock([GTMAuthSession class]);
   _keychainStore = OCMStrictClassMock([GTMKeychainStore class]);
   OCMStub(
     [_keychainStore retrieveAuthSessionWithItemName:OCMOCK_ANY error:OCMArg.anyObjectRef]
