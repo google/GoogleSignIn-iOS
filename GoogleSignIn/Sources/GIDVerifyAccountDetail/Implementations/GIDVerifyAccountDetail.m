@@ -35,9 +35,19 @@
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDError.h>
+#import <AppAuth/OIDExternalUserAgentSession.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
-#import <AppAuth/OIDExternalUserAgentSession.h>
+#import <AppAuth/OIDTokenRequest.h>
+#import <AppAuth/OIDTokenResponse.h>
+
+#if TARGET_OS_IOS
+#import <AppAuth/OIDAuthorizationService+IOS.h>
+#endif
+
 #endif
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
