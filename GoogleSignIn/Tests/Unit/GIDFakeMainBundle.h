@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * @class GIDFakeMainBundle
  * @brief Helps fake [NSBundle mainBundle]
@@ -30,12 +32,17 @@
  * @param hostedDomain The fake hosted domain for the app.
  * @param openIDRealm The fake OpenID realm for the app.
  */
-- (nullable instancetype)initWithClientID:(nullable id)clientID
-                           serverClientID:(nullable id)serverClientID
-                             hostedDomain:(nullable id)hostedDomain
-                              openIDRealm:(nullable id)openIDRealm 
+- (instancetype)initWithClientID:(nullable id)clientID
+                  serverClientID:(nullable id)serverClientID
+                    hostedDomain:(nullable id)hostedDomain
+                     openIDRealm:(nullable id)openIDRealm
     NS_DESIGNATED_INITIALIZER;
 
+/**
+ * @fn init:
+ * @brief Initializes a GIDFakeMainBundle object with `nil` to all of the designated initializer's parameters.
+ */
+- (instancetype)init;
 /**
  * @fn startFaking:
  * @brief Starts faking [NSBundle mainBundle]
@@ -113,3 +120,5 @@
              openIDRealm:(nullable id)openIDRealm;
 
 @end
+
+NS_ASSUME_NONNULL_END

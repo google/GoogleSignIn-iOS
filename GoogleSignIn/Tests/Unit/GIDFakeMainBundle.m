@@ -37,10 +37,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSMutableDictionary *_fakeConfig;
 }
 
-- (nullable instancetype)initWithClientID:(nullable id)clientID
-                           serverClientID:(nullable id)serverClientID
-                             hostedDomain:(nullable id)hostedDomain
-                              openIDRealm:(nullable id)openIDRealm {
+- (instancetype)initWithClientID:(nullable id)clientID
+                  serverClientID:(nullable id)serverClientID
+                    hostedDomain:(nullable id)hostedDomain
+                     openIDRealm:(nullable id)openIDRealm {
   self = [super init];
 
   if (self) {

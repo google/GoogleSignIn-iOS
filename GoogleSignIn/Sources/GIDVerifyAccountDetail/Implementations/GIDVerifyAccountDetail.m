@@ -27,7 +27,7 @@
 
 @implementation GIDVerifyAccountDetail
 
-- (nullable instancetype)initWithConfig:(GIDConfiguration *)configuration {
+- (instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
@@ -35,7 +35,7 @@
   return self;
 }
 
-- (nullable instancetype)init {
+- (instancetype)init {
   GIDConfiguration *configuration;
   NSBundle *bundle = NSBundle.mainBundle;
   if (bundle) {
