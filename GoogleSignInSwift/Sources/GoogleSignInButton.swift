@@ -133,7 +133,7 @@ private extension Image {
     ) else {
       fatalError("Unable to load Google icon image url: \(Image.Error.unableToLoadGoogleIcon(name: googleImageName))")
     }
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
     guard let uiImage = UIImage(contentsOfFile: iconURL.path) else {
       fatalError("Unable to load Google icon image url: \(Image.Error.unableToLoadGoogleIcon(name: googleImageName))")
     }
