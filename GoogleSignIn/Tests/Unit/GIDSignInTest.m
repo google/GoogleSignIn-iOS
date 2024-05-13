@@ -32,13 +32,13 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/Fakes/GIDFakeHTTPFetcher.h"
+#import "GoogleSignIn/Sources/GIDHTTPFetcher/Implementations/GIDHTTPFetcher.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-#import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
-#import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
@@ -195,6 +195,12 @@ static NSString *const kNewScope = @"newScope";
   // Mock |GTMKeychainStore|.
   id _keychainStore;
 
+  // Mock |GTMSessionFetcherServiceProtocol|.
+  id _fetcherService;
+
+  // Fake for |GIDHTTPFetcher|.
+  GIDFakeHTTPFetcher *_httpFetcher;
+
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   // Mock |UIViewController|.
   id _presentingViewController;
@@ -214,9 +220,6 @@ static NSString *const kNewScope = @"newScope";
 
   // Whether callback block has been called.
   BOOL _completionCalled;
-
-  // Fake fetcher service to emulate network requests.
-  GIDFakeFetcherService *_fetcherService;
 
   // Fake [NSBundle mainBundle];
   GIDFakeMainBundle *_fakeMainBundle;
@@ -319,7 +322,6 @@ static NSString *const kNewScope = @"newScope";
                  callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
-  _fetcherService = [[GIDFakeFetcherService alloc] init];
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
   [_fakeMainBundle startFakingWithClientID:kClientId];
   [_fakeMainBundle fakeAllSchemesSupported];
@@ -328,8 +330,13 @@ static NSString *const kNewScope = @"newScope";
   [[NSUserDefaults standardUserDefaults] setBool:YES
                                           forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
+  _httpFetcher = [[GIDFakeHTTPFetcher alloc] init];
+
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                         httpFetcher:_httpFetcher];
   _hint = nil;
+
+  _fetcherService = nil;
 
   __weak GIDSignInTest *weakSelf = self;
   _completion = ^(GIDSignInResult *_Nullable signInResult, NSError * _Nullable error) {
@@ -869,60 +876,58 @@ static NSString *const kNewScope = @"newScope";
 #pragma mark - Tests - disconnectWithCallback:
 
 // Verifies disconnect calls callback with no errors if access token is present.
-- (void)testDisconnect_accessToken {
+- (void)testDisconnect_accessTokenIsPresent {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
+  NSData *data = [[NSData alloc] init];
+  [self didFetch:data withToken:kAccessToken error:nil];
+
   XCTestExpectation *accessTokenExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
-    if (error == nil) {
-      [accessTokenExpectation fulfill];
-    }
+    XCTAssertNil(error);
+    [accessTokenExpectation fulfill];
   }];
-  [self verifyAndRevokeToken:kAccessToken
-                 hasCallback:YES
-      waitingForExpectations:@[accessTokenExpectation]];
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 
 // Verifies disconnect if access token is present.
-- (void)testDisconnectNoCallback_accessToken {
+- (void)testDisconnectNoCallback_accessTokenIsPresent {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
+  NSData *data = [[NSData alloc] init];
+  [self didFetch:data withToken:kAccessToken error:nil];
+
   [_signIn disconnectWithCompletion:nil];
-  [self verifyAndRevokeToken:kAccessToken hasCallback:NO waitingForExpectations:@[]];
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 
 // Verifies disconnect calls callback with no errors if refresh token is present.
-- (void)testDisconnect_refreshToken {
+- (void)testDisconnect_refreshTokenIsPresent {
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kRefreshToken] refreshToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
+  NSData *data = [[NSData alloc] init];
+  [self didFetch:data withToken:kRefreshToken error:nil];
+
   XCTestExpectation *refreshTokenExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
-    if (error == nil) {
-      [refreshTokenExpectation fulfill];
-    }
+    XCTAssertNil(error);
+    [refreshTokenExpectation fulfill];
   }];
-  [self verifyAndRevokeToken:kRefreshToken
-                 hasCallback:YES
-      waitingForExpectations:@[refreshTokenExpectation]];
-  [_authorization verify];
-  [_authState verify];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
   [_tokenResponse verify];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
 }
 
 // Verifies disconnect errors are passed along to the callback.
@@ -930,22 +935,17 @@ static NSString *const kNewScope = @"newScope";
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
+  NSError *error = [self error];
+  [self didFetch:nil withToken:kAccessToken error:error];
+
   XCTestExpectation *errorExpectation =
       [self expectationWithDescription:@"Callback called with an error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
-    if (error != nil) {
-      [errorExpectation fulfill];
-    }
+    XCTAssertNotNil(error);
+    [errorExpectation fulfill];
   }];
-  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
-  // Emulate result back from server.
-  NSError *error = [self error];
-  [self didFetch:nil error:error];
-  [self waitForExpectations:@[errorExpectation] timeout:1];
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 // Verifies disconnect with errors
@@ -953,15 +953,12 @@ static NSString *const kNewScope = @"newScope";
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
-  [_signIn disconnectWithCompletion:nil];
-  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
-  // Emulate result back from server.
+  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
   NSError *error = [self error];
-  [self didFetch:nil error:error];
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
+  [self didFetch:nil withToken:kAccessToken error:error];
+
+  [_signIn disconnectWithCompletion:nil];
+  [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 
@@ -972,19 +969,16 @@ static NSString *const kNewScope = @"newScope";
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
+  [self notDoFetch];
   XCTestExpectation *noTokensExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
-    if (error == nil) {
-      [noTokensExpectation fulfill];
-    }
+    XCTAssertNil(error);
+    [noTokensExpectation fulfill];
+
   }];
   [self waitForExpectations:@[noTokensExpectation] timeout:1];
-  XCTAssertFalse([self isFetcherStarted], @"should not fetch");
   XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
 }
 
 // Verifies disconnect clears keychain if no tokens are present.
@@ -994,12 +988,10 @@ static NSString *const kNewScope = @"newScope";
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:nil] refreshToken];
+  [self notDoFetch];
+
   [_signIn disconnectWithCompletion:nil];
-  XCTAssertFalse([self isFetcherStarted], @"should not fetch");
   XCTAssertTrue(_keychainRemoved, @"keychain should be removed");
-  [_authorization verify];
-  [_authState verify];
-  [_tokenResponse verify];
 }
 
 - (void)testPresentingViewControllerException {
@@ -1230,41 +1222,35 @@ static NSString *const kNewScope = @"newScope";
 
 #pragma mark - Helpers
 
-// Whether or not a fetcher has been started.
-- (BOOL)isFetcherStarted {
-  NSUInteger count = _fetcherService.fetchers.count;
-  XCTAssertTrue(count <= 1, @"Only one fetcher is supported");
-  return !!count;
+- (void)didFetch:(NSData *) data
+       withToken:(NSString *) token
+           error:(NSError *) error {
+  XCTestExpectation *fetcherExpectation =
+        [self expectationWithDescription:@"testBlock is invoked."];
+  GIDHTTPFetcherTestBlock testBlock =
+        ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+          [self verifyRevokeRequest:request withToken:token];
+          responseProvider(data, error);
+          [fetcherExpectation fulfill];
+        };
+  [_httpFetcher setTestBlock:testBlock];
 }
 
-// Gets the URL being fetched.
-- (NSURL *)fetchedURL {
-  return [_fetcherService.fetchers[0] requestURL];
-}
-
-// Emulates server returning the data as in JSON.
-- (void)didFetch:(id)dataObject error:(NSError *)error {
-  NSData *data = nil;
-  if (dataObject) {
-    NSError *jsonError = nil;
-    data = [NSJSONSerialization dataWithJSONObject:dataObject
-                                           options:0
-                                             error:&jsonError];
-    XCTAssertNil(jsonError, @"must provide valid data");
-  }
-  [_fetcherService.fetchers[0] didFinishWithData:data error:error];
+- (void)notDoFetch {
+  GIDHTTPFetcherTestBlock testBlock =
+    ^(NSURLRequest *request, GIDHTTPFetcherFakeResponseProviderBlock responseProvider) {
+      XCTFail(@"_httpFetcher should not be invoked.");
+    };
+  [_httpFetcher setTestBlock:testBlock];
 }
 
 - (NSError *)error {
   return [NSError errorWithDomain:kErrorDomain code:kErrorCode userInfo:nil];
 }
 
-// Verifies a fetcher has started for revoking token and emulates a server response.
-- (void)verifyAndRevokeToken:(NSString *)token
-                 hasCallback:(BOOL)hasCallback
-      waitingForExpectations:(NSArray<XCTestExpectation *> *)expectations {
-  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
-  NSURL *url = [self fetchedURL];
+- (void)verifyRevokeRequest:(NSURLRequest *)request
+                  withToken:(NSString *)token {
+  NSURL *url = request.URL;
   XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
   XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
   XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
@@ -1276,12 +1262,6 @@ static NSString *const kNewScope = @"newScope";
                         @"SDK version logging parameter should match");
   XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
                         @"Environment logging parameter should match");
-  // Emulate result back from server.
-  [self didFetch:nil error:nil];
-  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
-  if (hasCallback) {
-    [self waitForExpectations:expectations timeout:1];
-  }
 }
 
 - (void)OAuthLoginWithAddScopesFlow:(BOOL)addScopesFlow
