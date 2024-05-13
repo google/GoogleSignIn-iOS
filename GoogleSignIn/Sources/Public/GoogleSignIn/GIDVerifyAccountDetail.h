@@ -55,7 +55,7 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 /// with the default configuration from the bundle's Info.plist.
 ///
 /// @return An initialized `GIDVerifyAccountDetail` instance.
-///     Otherwise, `nil` if the configuration is invalid .
+///     Otherwise, `nil` if the configuration cannot be automatically generated from your app's Info.plist.
 - (instancetype)init;
 
 /// Starts an interactive verification flow.
