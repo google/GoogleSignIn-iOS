@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)refreshTokensIfNeededWithCompletion:(void (^)(GIDGoogleUser *_Nullable user,
                                                       NSError *_Nullable error))completion;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 /// Starts an interactive consent flow on iOS to add new scopes to the user's `grantedScopes`.
 ///

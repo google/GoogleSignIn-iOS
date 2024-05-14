@@ -128,7 +128,7 @@ static NSString *const kNewScope = @"newScope";
   }
 }
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 // Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
@@ -138,7 +138,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqualObjects(user, newUser);
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 // Test the old encoding format for backword compatability.
 - (void)testOldFormatCoding {
@@ -456,11 +456,11 @@ static NSString *const kNewScope = @"newScope";
   id signIn = OCMClassMock([GIDSignIn class]);
   OCMStub([signIn sharedInstance]).andReturn(signIn);
   [[signIn expect] addScopes:OCMOCK_ANY
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
       presentingViewController:OCMOCK_ANY
 #elif TARGET_OS_OSX
               presentingWindow:OCMOCK_ANY
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                     completion:OCMOCK_ANY];
   
   GIDGoogleUser *currentUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
@@ -469,11 +469,11 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([signIn currentUser]).andReturn(currentUser);
   
   [currentUser addScopes:@[kNewScope]
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
       presentingViewController:[[UIViewController alloc] init]
 #elif TARGET_OS_OSX
               presentingWindow:[[NSWindow alloc] init]
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                     completion:nil];
   
   [signIn verify];
@@ -495,11 +495,11 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Completion is called."];
   
   [previousUser addScopes:@[kNewScope]
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
       presentingViewController:[[UIViewController alloc] init]
 #elif TARGET_OS_OSX
               presentingWindow:[[NSWindow alloc] init]
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                     completion:^(GIDSignInResult *signInResult, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(signInResult);
@@ -523,11 +523,11 @@ static NSString *const kNewScope = @"newScope";
       [self expectationWithDescription:@"Completion is called."];
   
   [previousUser addScopes:@[kNewScope]
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
       presentingViewController:[[UIViewController alloc] init]
 #elif TARGET_OS_OSX
               presentingWindow:[[NSWindow alloc] init]
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                     completion:^(GIDSignInResult *signInResult, NSError *error) {
     [expectation fulfill];
     XCTAssertNil(signInResult);

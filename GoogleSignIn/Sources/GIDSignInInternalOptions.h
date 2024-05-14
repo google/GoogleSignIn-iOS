@@ -47,13 +47,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// The configuration to use during the flow.
 @property(nonatomic, readonly, nullable) GIDConfiguration *configuration;
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 /// The view controller to use during the flow.
 @property(nonatomic, readonly, weak, nullable) UIViewController *presentingViewController;
 #elif TARGET_OS_OSX
 /// The window to use during the flow.
 @property(nonatomic, readonly, weak, nullable) NSWindow *presentingWindow;
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 /// The completion block to be called at the completion of the flow.
 @property(nonatomic, readonly, nullable) GIDSignInCompletion completion;
@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
 /// Creates the default options.
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                      completion:(nullable GIDSignInCompletion)completion;
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 /// Creates the options to sign in silently.
 + (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion;

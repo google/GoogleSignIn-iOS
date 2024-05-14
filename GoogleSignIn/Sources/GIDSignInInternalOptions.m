@@ -25,7 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInInternalOptions
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
@@ -39,18 +39,18 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                      completion:(nullable GIDSignInCompletion)completion {
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
     options->_continuation = NO;
     options->_addScopesFlow = addScopesFlow;
     options->_configuration = configuration;
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     options->_presentingViewController = presentingViewController;
 #elif TARGET_OS_OSX
     options->_presentingWindow = presentingWindow;
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     options->_loginHint = loginHint;
     options->_completion = completion;
     options->_scopes = [GIDScopes scopesWithBasicProfile:scopes];
@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
   return options;
 }
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
@@ -70,13 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                      completion:(nullable GIDSignInCompletion)completion {
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                                                      presentingViewController:presentingViewController
 #elif TARGET_OS_OSX
                                                              presentingWindow:presentingWindow
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                                                                     loginHint:loginHint
                                                                 addScopesFlow:addScopesFlow
                                                                        scopes:@[]
@@ -86,11 +86,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:nil
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                                                    presentingViewController:nil
 #elif TARGET_OS_OSX
                                                            presentingWindow:nil
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                                                                   loginHint:nil
                                                               addScopesFlow:NO
                                                                  completion:completion];
@@ -108,11 +108,11 @@ NS_ASSUME_NONNULL_BEGIN
     options->_continuation = continuation;
     options->_addScopesFlow = _addScopesFlow;
     options->_configuration = _configuration;
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     options->_presentingViewController = _presentingViewController;
 #elif TARGET_OS_OSX
     options->_presentingWindow = _presentingWindow;
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     options->_loginHint = _loginHint;
     options->_completion = _completion;
     options->_scopes = _scopes;

@@ -14,7 +14,7 @@
 
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInButton.h"
 
@@ -644,4 +644,4 @@ static UIColor *colorForStyleState(GIDSignInButtonColorScheme style,
 
 NS_ASSUME_NONNULL_END
 
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION

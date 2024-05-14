@@ -133,7 +133,7 @@ private extension Image {
     ) else {
       fatalError("Unable to load Google icon image url: \(Image.Error.unableToLoadGoogleIcon(name: googleImageName))")
     }
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
     guard let uiImage = UIImage(contentsOfFile: iconURL.path) else {
       fatalError("Unable to load Google icon image url: \(Image.Error.unableToLoadGoogleIcon(name: googleImageName))")
     }
@@ -172,7 +172,7 @@ private extension Font {
   /// - returns A `Bool` indicating whether or not the font was loaded.
   static func loadCGFont() -> Bool {
     // Check to see if the font has already been loaded
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
     if let _ = UIFont(name: fontNameRobotoBold, size: fontSize) {
       return true
     }

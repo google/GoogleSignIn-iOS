@@ -50,12 +50,12 @@ NSString *const GoogleSignInBundleName = @"GoogleSignIn";
     NSArray* allFontNames = @[ @"Roboto-Bold" ];
     NSBundle* bundle = [self gid_frameworkBundle];
     for (NSString *fontName in allFontNames) {
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
       // Check to see if the font is already here, and skip registration if so.
       if ([UIFont fontWithName:fontName size:[UIFont systemFontSize]]) {  // size doesn't matter
         continue;
       }
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
       // Load the font data file from the bundle.
       NSString *path = [bundle pathForResource:fontName ofType:@"ttf"];

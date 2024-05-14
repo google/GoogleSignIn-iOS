@@ -33,6 +33,7 @@ static NSString *const kAppleEnvironmentIOSSimulator = @"ios-sim";
 static NSString *const kAppleEnvironmentMacOS = @"macos";
 static NSString *const kAppleEnvironmentMacOSIOSOnMac = @"macos-ios";
 static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
+static NSString *const kAppleEnvironmentVisionOS = @"visionos";
 
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
@@ -75,6 +76,8 @@ NSString* GIDEnvironment(void) {
 #endif // TARGET_OS_SIMULATOR
 #elif TARGET_OS_OSX
   appleEnvironment = kAppleEnvironmentMacOS;
+#elif TARGET_OS_VISION
+  appleEnvironment = kAppleEnvironmentVisionOS;
 #endif // TARGET_OS_MACCATALYST
 
   return appleEnvironment;

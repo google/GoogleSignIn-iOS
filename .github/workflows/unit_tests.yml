@@ -39,13 +39,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12]
+        os: [macos-14]
         sdk: ['macosx', 'iphonesimulator']
         include:
           - sdk: 'macosx'
             destination: '"platform=OS X,arch=x86_64"'
           - sdk: 'iphonesimulator'
             destination: '"platform=iOS Simulator,name=iPhone 11"'
+          - sdk: 'xrsimulator'
+            destination: '"platform=visionOS simulator,name=Any visionOS Simulator Device"'
     steps:
     - uses: actions/checkout@v3
     - name: Build unit test target

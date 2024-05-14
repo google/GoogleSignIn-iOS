@@ -95,7 +95,7 @@
   }
 }
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 // Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDConfiguration *configuration = [GIDConfiguration testInstance];
@@ -104,6 +104,6 @@
   XCTAssertEqualObjects(configuration, newConfiguration);
   XCTAssertTrue(GIDConfiguration.supportsSecureCoding);
 }
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 
 @end

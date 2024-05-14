@@ -173,7 +173,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
         });
       }
     }];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     NSArray<GIDGoogleUserCompletion> *refreshTokensHandlerQueue;
     @synchronized(self->_tokenRefreshHandlerQueue) {
       refreshTokensHandlerQueue = [self->_tokenRefreshHandlerQueue copy];
@@ -193,11 +193,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)addScopes:(NSArray<NSString *> *)scopes
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     presentingViewController:(UIViewController *)presentingViewController
 #elif TARGET_OS_OSX
             presentingWindow:(NSWindow *)presentingWindow
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                   completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                 NSError *_Nullable error))completion {
   if (self != GIDSignIn.sharedInstance.currentUser) {
@@ -213,11 +213,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   }
   
   [GIDSignIn.sharedInstance addScopes:scopes
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
              presentingViewController:presentingViewController
 #elif TARGET_OS_OSX
                      presentingWindow:presentingWindow
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
                            completion:completion];
 }
 
