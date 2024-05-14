@@ -27,6 +27,30 @@
 
 @implementation GIDVerifyAccountDetail
 
+- (instancetype)initWithConfig:(GIDConfiguration *)configuration {
+  self = [super init];
+  if (self) {
+    _configuration = configuration;
+  }
+  return self;
+}
+
+- (instancetype)init {
+  GIDConfiguration *configuration;
+  NSBundle *bundle = NSBundle.mainBundle;
+  if (bundle) {
+    configuration = [GIDConfiguration configurationFromBundle:bundle];
+  }
+
+  if (!configuration) {
+    return nil;
+  }
+
+  return [self initWithConfig:configuration];
+}
+
+#pragma mark - Public methods
+
 - (void)verifyAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
     presentingViewController:(UIViewController *)presentingViewController
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
@@ -42,11 +66,6 @@
                         hint:(nullable NSString *)hint
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
-  NSBundle *bundle = NSBundle.mainBundle;
-  if (bundle) {
-    _configuration = [GIDConfiguration configurationFromBundle:bundle];
-  }
-
   GIDSignInInternalOptions *options =
   [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                    presentingViewController:presentingViewController
@@ -58,8 +77,69 @@
   [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
+#pragma mark - Authentication flow
+
 - (void)verifyAccountDetailsInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
-  // TODO(#397): Sanity checks and start the incremental authorization flow.
+  if (!options.interactive) {
+    return;
+  }
+
+  // Ensure that a configuration is set.
+  if (!_configuration) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"No active configuration. Make sure GIDClientID is set in Info.plist."];
+    return;
+  }
+
+  [self assertValidCurrentUser];
+
+  // Explicitly throw exception for missing client ID here. This must come before
+  // scheme check because schemes rely on reverse client IDs.
+  [self assertValidParameters:options];
+
+  [self assertValidPresentingViewController:options];
+
+  // If the application does not support the required URL schemes tell the developer so.
+  GIDSignInCallbackSchemes *schemes =
+  [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
+  if (unsupportedSchemes.count != 0) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"Your app is missing support for the following URL schemes: %@",
+     [unsupportedSchemes componentsJoinedByString:@", "]];
+  }
+  // TODO(#397): Start the incremental authorization flow.
+}
+
+#pragma mark - Helpers
+
+// Assert that a current user exists.
+- (void)assertValidCurrentUser {
+  if (!GIDSignIn.sharedInstance.currentUser) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"|currentUser| must be set to verify."];
+  }
+}
+
+// Asserts the parameters being valid.
+- (void)assertValidParameters:(GIDSignInInternalOptions *)options {
+  if (![options.configuration.clientID length]) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"You must specify |clientID| in |GIDConfiguration|"];
+  }
+}
+
+// Assert that the presenting view controller has been set.
+- (void)assertValidPresentingViewController:(GIDSignInInternalOptions *)options {
+  if (!options.presentingViewController) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"|presentingViewController| must be set."];
+  }
 }
 
 @end
