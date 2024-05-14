@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
 
 #import "GIDConfiguration.h"
 #import "GIDGoogleUser.h"
@@ -21,6 +20,4 @@
 #import "GIDSignIn.h"
 #import "GIDToken.h"
 #import "GIDSignInResult.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 #import "GIDSignInButton.h"
-#endif
