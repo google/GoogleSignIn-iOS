@@ -52,7 +52,7 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
   OIDServiceConfiguration *_appAuthConfiguration;
 }
 
-- (nullable instancetype)initWithConfig:(GIDConfiguration *)configuration {
+- (instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
@@ -68,7 +68,7 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
   return self;
 }
 
-- (nullable instancetype)init {
+- (instancetype)init {
   GIDConfiguration *configuration;
   NSBundle *bundle = NSBundle.mainBundle;
   if (bundle) {
