@@ -38,17 +38,8 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-// The URL template for the authorization endpoint.
-static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
-
-// The URL template for the token endpoint.
-static NSString *const kTokenURLTemplate = @"https://%@/token";
-
-// Expected path in the URL scheme to be handled.
-static NSString *const kBrowserCallbackPath = @"/oauth2callback";
-
 @implementation GIDVerifyAccountDetail {
-  // AppAuth configuration object.
+  /// AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
 }
 
@@ -135,7 +126,7 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
 
   // If the application does not support the required URL schemes tell the developer so.
   GIDSignInCallbackSchemes *schemes =
-  [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
   NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
   if (unsupportedSchemes.count != 0) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
@@ -143,9 +134,10 @@ static NSString *const kBrowserCallbackPath = @"/oauth2callback";
                 format:@"Your app is missing support for the following URL schemes: %@",
      [unsupportedSchemes componentsJoinedByString:@", "]];
   }
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
+  NSString *redirectURI = [NSString stringWithFormat:@"%@:%@",
+                           [schemes clientIdentifierScheme],
+                           kBrowserCallbackPath];
+  NSURL *redirectURL = [NSURL URLWithString:redirectURI];
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
   if (options.configuration.serverClientID) {
