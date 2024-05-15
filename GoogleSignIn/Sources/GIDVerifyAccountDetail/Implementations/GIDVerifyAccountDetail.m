@@ -19,13 +19,13 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
+
+#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Implementations/GIDVerifyAuthFlow.h"
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 
 @import GTMAppAuth;
 
@@ -74,18 +74,6 @@ static NSString *const kOAuth2AccessDenied = @"access_denied";
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
-// The callback queue used for authentication flow.
-@interface GIDVerifyAuthFlow : GIDCallbackQueue
-
-@property(nonatomic, strong, nullable) OIDAuthState *authState;
-@property(nonatomic, strong, nullable) NSError *error;
-@property(nonatomic, nullable) GIDProfileData *profileData;
-
-@end
-
-@implementation GIDVerifyAuthFlow
-@end
-
 @implementation GIDVerifyAccountDetail {
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
@@ -98,10 +86,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (self) {
     _configuration = configuration;
 
-    NSString *authorizationEndpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-                                          [GIDSignInPreferences googleAuthorizationServer]];
-    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-                                  [GIDSignInPreferences googleTokenServer]];
+    NSString *authorizationEndpointURL = 
+        [NSString stringWithFormat:kAuthorizationURLTemplate,
+         [GIDSignInPreferences googleAuthorizationServer]];
+    NSString *tokenEndpointURL =
+        [NSString stringWithFormat:kTokenURLTemplate, [GIDSignInPreferences googleTokenServer]];
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEndpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
@@ -264,7 +253,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   // TODO: Add completion callback method (#413).
 }
 
-// Fetches the access token if necessary as part of the auth flow.
 - (void)maybeFetchToken:(GIDVerifyAuthFlow *)authFlow {
   OIDAuthState *authState = authFlow.authState;
   // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.

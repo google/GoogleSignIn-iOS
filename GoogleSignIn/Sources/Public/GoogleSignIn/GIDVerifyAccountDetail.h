@@ -38,11 +38,9 @@ extern NSErrorDomain const kGIDVerifyErrorDomain;
 /// A list of potential error codes returned from the Google Sign-In SDK.
 typedef NS_ERROR_ENUM(kGIDVerifyErrorDomain, GIDVerifyErrorCode) {
   /// Indicates an unknown error has occurred.
-  kGIDVerifyErrorCodeUnknown = -1,
+  kGIDVerifyErrorCodeUnknown = 1,
   /// Indicates the user canceled the verification request.
-  kGIDVerifyErrorCodeCanceled = -2,
-  /// Indicates an Enterprise Mobility Management related error has occurred.
-  kGIDVerifyErrorCodeEMM = -3,
+  kGIDVerifyErrorCodeCanceled = 2,
 };
 
 /// Represents a completion block that takes a `GIDVerifiedAccountDetailResult` on success or an
