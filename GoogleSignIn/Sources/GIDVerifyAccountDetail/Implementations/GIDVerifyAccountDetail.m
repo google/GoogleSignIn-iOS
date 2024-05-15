@@ -52,15 +52,6 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-// The URL template for the authorization endpoint.
-static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
-
-// The URL template for the token endpoint.
-static NSString *const kTokenURLTemplate = @"https://%@/token";
-
-// Expected path in the URL scheme to be handled.
-static NSString *const kBrowserCallbackPath = @"/oauth2callback";
-
 // The error code for Google Identity.
 NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerify";
 
@@ -75,13 +66,13 @@ static NSString *const kOAuth2AccessDenied = @"access_denied";
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 @implementation GIDVerifyAccountDetail {
-  // AppAuth configuration object.
+  /// AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
-- (nullable instancetype)initWithConfig:(GIDConfiguration *)configuration {
+- (instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
@@ -98,7 +89,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return self;
 }
 
-- (nullable instancetype)init {
+- (instancetype)init {
   GIDConfiguration *configuration;
   NSBundle *bundle = NSBundle.mainBundle;
   if (bundle) {
@@ -165,7 +156,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
   // If the application does not support the required URL schemes tell the developer so.
   GIDSignInCallbackSchemes *schemes =
-  [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
   NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
   if (unsupportedSchemes.count != 0) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
@@ -173,9 +164,9 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                 format:@"Your app is missing support for the following URL schemes: %@",
      [unsupportedSchemes componentsJoinedByString:@", "]];
   }
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
+  NSString *redirectURI =
+      [NSString stringWithFormat:@"%@:%@", [schemes clientIdentifierScheme], kBrowserCallbackPath];
+  NSURL *redirectURL = [NSURL URLWithString:redirectURI];
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
   if (options.configuration.serverClientID) {

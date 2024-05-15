@@ -33,7 +33,7 @@ static NSString * const kOpenIDRealm = @"FakeRealm";
 
 @implementation GIDSignInInternalOptionsTest
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)testDefaultOptionsForVerificationFlow {
   GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                                 serverClientID:nil
@@ -59,7 +59,7 @@ static NSString * const kOpenIDRealm = @"FakeRealm";
   XCTAssertEqual(options.presentingViewController, presentingViewController);
   XCTAssertEqual(options.accountDetailsToVerify, accountDetailsToVerify);
 }
-#endif // TARGET_OS_IOS
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testDefaultOptions {
   id configuration = OCMStrictClassMock([GIDConfiguration class]);

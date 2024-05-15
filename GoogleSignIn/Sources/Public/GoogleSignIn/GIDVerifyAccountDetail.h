@@ -16,7 +16,7 @@
 
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import <Foundation/Foundation.h>
 
@@ -58,9 +58,16 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 ///
 /// @param config The configuration to be used.
 /// @return An initialized `GIDVerifyAccountDetail` instance.
-///     Otherwise, `nil` if the configuration is invalid or the initializer fails.
-- (nullable instancetype)initWithConfig:(GIDConfiguration *)config
+- (instancetype)initWithConfig:(GIDConfiguration *)config
     NS_DESIGNATED_INITIALIZER;
+
+
+/// Initialize a `GIDVerifyAccountDetail` object by calling the designated initializer 
+/// with the default configuration from the bundle's Info.plist.
+///
+/// @return An initialized `GIDVerifyAccountDetail` instance.
+///     Otherwise, `nil` if the configuration cannot be automatically generated from your app's Info.plist.
+- (instancetype)init;
 
 /// Starts an interactive verification flow.
 ///
@@ -95,4 +102,4 @@ typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable ve
 
 NS_ASSUME_NONNULL_END
 
-#endif // TARGET_OS_IOS
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

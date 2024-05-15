@@ -16,10 +16,26 @@
 
 #import <Foundation/Foundation.h>
 
-// Parameters for the auth and token exchange endpoints.
+/// The URL template for the authorization endpoint.
+extern NSString *const kAuthorizationURLTemplate;
+
+/// The URL template for the token endpoint.
+extern NSString *const kTokenURLTemplate;
+
+/// Expected path in the URL scheme to be handled.
+extern NSString *const kBrowserCallbackPath;
+
+/// The name of the audience parameter for the auth and token exchange endpoints.
 extern NSString *const kAudienceParameter;
-// See b/11669751 .
+
+/// The name of the open ID realm parameter for the auth and token exchange endpoints.
 extern NSString *const kOpenIDRealmParameter;
+
+/// The name of the include granted scopes parameter for the auth and token exchange endpoints.
 extern NSString *const kIncludeGrantedScopesParameter;
+
+/// The name of the login hint parameter for the auth and token exchange endpoints.
 extern NSString *const kLoginHintParameter;
+
+/// The name of the hosted domain parameter for the auth and token exchange endpoints.
 extern NSString *const kHostedDomainParameter;

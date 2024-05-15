@@ -18,9 +18,11 @@
 
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 
-// Parameters for the auth and token exchange endpoints.
+NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
+NSString *const kTokenURLTemplate = @"https://%@/token";
+NSString *const kBrowserCallbackPath = @"/oauth2callback";
+
 NSString *const kAudienceParameter = @"audience";
-// See b/11669751 .
 NSString *const kOpenIDRealmParameter = @"openid.realm";
 NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
 NSString *const kLoginHintParameter = @"login_hint";
