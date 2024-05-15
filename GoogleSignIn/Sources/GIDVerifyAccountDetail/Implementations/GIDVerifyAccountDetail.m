@@ -134,9 +134,8 @@
                 format:@"Your app is missing support for the following URL schemes: %@",
      [unsupportedSchemes componentsJoinedByString:@", "]];
   }
-  NSString *redirectURI = [NSString stringWithFormat:@"%@:%@",
-                           [schemes clientIdentifierScheme],
-                           kBrowserCallbackPath];
+  NSString *redirectURI =
+      [NSString stringWithFormat:@"%@:%@", [schemes clientIdentifierScheme], kBrowserCallbackPath];
   NSURL *redirectURL = [NSURL URLWithString:redirectURI];
 
   NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
