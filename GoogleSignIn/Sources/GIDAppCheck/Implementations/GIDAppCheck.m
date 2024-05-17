@@ -33,7 +33,7 @@ NSString *const kGIDAppCheckPreparedKey = @"com.google.GIDAppCheckPreparedKey";
 static NSString *const kGIDConfigClientIDKey = @"GIDClientID";
 static NSString *const kGIDAppAttestServiceName = @"GoogleSignIn-iOS";
 static NSString *const kGIDAppAttestResourceNameFormat = @"oauthClients/%@";
-static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1beta";
+static NSString *const kGIDAppAttestBaseURL = @"https://firebaseappcheck.googleapis.com/v1";
 
 typedef void (^GIDAppCheckPrepareCompletion)(NSError * _Nullable);
 typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullable);
