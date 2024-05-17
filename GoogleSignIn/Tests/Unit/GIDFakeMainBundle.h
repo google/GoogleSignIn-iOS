@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @brief Initializes a GIDFakeMainBundle object with `nil` to all of the designated initializer's parameters.
  */
 - (instancetype)init;
+
 /**
  * @fn startFaking:
  * @brief Starts faking [NSBundle mainBundle]

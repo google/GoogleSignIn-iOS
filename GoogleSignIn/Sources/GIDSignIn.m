@@ -22,6 +22,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
@@ -69,20 +70,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The name of the query parameter used for logging the restart of auth from EMM callback.
 static NSString *const kEMMRestartAuthParameter = @"emmres";
 
-// The URL template for the authorization endpoint.
-static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth";
-
-// The URL template for the token endpoint.
-static NSString *const kTokenURLTemplate = @"https://%@/token";
-
 // The URL template for the URL to get user info.
 static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
 
 // The URL template for the URL to revoke the token.
 static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke?token=%@";
-
-// Expected path in the URL scheme to be handled.
-static NSString *const kBrowserCallbackPath = @"/oauth2callback";
 
 // Expected path for EMM callback.
 static NSString *const kEMMCallbackPath = @"/emmcallback";
@@ -123,14 +115,6 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
-
-// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
-// See b/11669751 .
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
-static NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
-static NSString *const kLoginHintParameter = @"login_hint";
-static NSString *const kHostedDomainParameter = @"hd";
 
 // Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;

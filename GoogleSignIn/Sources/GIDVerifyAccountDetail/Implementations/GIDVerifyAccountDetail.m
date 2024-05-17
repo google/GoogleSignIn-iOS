@@ -22,15 +22,39 @@
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
-#if TARGET_OS_IOS
+@import GTMAppAuth;
 
-@implementation GIDVerifyAccountDetail
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GTMSessionFetcherCore;
+#else
+#import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDResponseTypes.h>
+#import <AppAuth/OIDServiceConfiguration.h>
+#endif
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+@implementation GIDVerifyAccountDetail {
+  /// AppAuth configuration object.
+  OIDServiceConfiguration *_appAuthConfiguration;
+}
 
 - (instancetype)initWithConfig:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _configuration = configuration;
+
+    NSString *authorizationEndpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
+        [GIDSignInPreferences googleAuthorizationServer]];
+    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
+        [GIDSignInPreferences googleTokenServer]];
+    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
+        initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEndpointURL]
+                        tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
   }
   return self;
 }
@@ -102,7 +126,7 @@
 
   // If the application does not support the required URL schemes tell the developer so.
   GIDSignInCallbackSchemes *schemes =
-  [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
   NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
   if (unsupportedSchemes.count != 0) {
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
@@ -110,7 +134,39 @@
                 format:@"Your app is missing support for the following URL schemes: %@",
      [unsupportedSchemes componentsJoinedByString:@", "]];
   }
-  // TODO(#397): Start the incremental authorization flow.
+  NSString *redirectURI =
+      [NSString stringWithFormat:@"%@:%@", [schemes clientIdentifierScheme], kBrowserCallbackPath];
+  NSURL *redirectURL = [NSURL URLWithString:redirectURI];
+
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  if (options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
+  }
+  if (options.loginHint) {
+    additionalParameters[kLoginHintParameter] = options.loginHint;
+  }
+  if (options.configuration.hostedDomain) {
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
+  }
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  NSMutableArray *scopes;
+  for (GIDVerifiableAccountDetail *detail in options.accountDetailsToVerify) {
+    NSString *scopeString = [detail scope];
+    if (scopeString) {
+      [scopes addObject:scopeString];
+    }
+  }
+
+  // TODO(#405): Use request variable to present request and process response.
+  __unused OIDAuthorizationRequest *request =
+      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                    clientId:options.configuration.clientID
+                                                      scopes:scopes
+                                                 redirectURL:redirectURL
+                                                responseType:OIDResponseTypeCode
+                                        additionalParameters:additionalParameters];
 }
 
 #pragma mark - Helpers
@@ -144,4 +200,4 @@
 
 @end
 
-#endif // TARGET_OS_IOS
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

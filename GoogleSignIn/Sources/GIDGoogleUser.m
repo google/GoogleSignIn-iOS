@@ -23,6 +23,7 @@
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Sources/GIDToken_Private.h"
 
@@ -42,10 +43,6 @@ static NSString *const kHostedDomainIDTokenClaimKey = @"hd";
 // Key constants used for encode and decode.
 static NSString *const kProfileDataKey = @"profileData";
 static NSString *const kAuthStateKey = @"authState";
-
-// Parameters for the token exchange endpoint.
-static NSString *const kAudienceParameter = @"audience";
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 // Additional parameter names for EMM.
 static NSString *const kEMMSupportParameterName = @"emm_support";

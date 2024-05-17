@@ -14,7 +14,7 @@
 
 #import <XCTest/XCTest.h>
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
@@ -159,6 +159,8 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
   }
 }
 
+// TODO(#405): Write tests for request and response handling.
+
 - (void)testPresentingViewControllerException {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnonnull"
@@ -221,4 +223,4 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
 @end
 
-#endif // TARGET_OS_IOS
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
