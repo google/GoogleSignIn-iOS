@@ -27,3 +27,8 @@ NSString *const kOpenIDRealmParameter = @"openid.realm";
 NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
 NSString *const kLoginHintParameter = @"login_hint";
 NSString *const kHostedDomainParameter = @"hd";
+
+// Parameters in the callback URL coming back from browser.
+NSString *const kOAuth2ErrorKeyName = @"error";
+NSString *const kOAuth2AccessDenied = @"access_denied";
+NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";

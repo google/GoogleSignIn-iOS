@@ -21,11 +21,12 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
+#import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponseHelper.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -97,15 +98,9 @@ static NSString *const kBasicProfileFamilyNameKey = @"family_name";
 
 // Parameters in the callback URL coming back from browser.
 static NSString *const kAuthorizationCodeKeyName = @"code";
-static NSString *const kOAuth2ErrorKeyName = @"error";
-static NSString *const kOAuth2AccessDenied = @"access_denied";
-static NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
 
 // Error string for unavailable keychain.
 static NSString *const kKeychainError = @"keychain error";
-
-// Error string for user cancelations.
-static NSString *const kUserCanceledError = @"The user canceled the sign-in flow.";
 
 // User preference key to detect fresh install of the app.
 static NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
@@ -115,22 +110,6 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
-
-// Minimum time to expiration for a restored access token.
-static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
-
-// The callback queue used for authentication flow.
-@interface GIDAuthFlow : GIDCallbackQueue
-
-@property(nonatomic, strong, nullable) OIDAuthState *authState;
-@property(nonatomic, strong, nullable) NSError *error;
-@property(nonatomic, copy, nullable) NSString *emmSupport;
-@property(nonatomic, nullable) GIDProfileData *profileData;
-
-@end
-
-@implementation GIDAuthFlow
-@end
 
 @implementation GIDSignIn {
   // This value is used when sign-in flows are resumed via the handling of a URL. Its value is
@@ -602,55 +581,19 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     return;
   }
 
-  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
-  authFlow.emmSupport = emmSupport;
+  GIDAuthorizationResponseHelper *responseHelper = 
+  [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
+                                                             emmSupport:emmSupport
+                                                               flowName:SignIn
+                                                          configuration:
+                                                            _currentOptions.configuration];
+  GIDAuthFlow *authFlow = [responseHelper processWithError:error];
 
-  if (authorizationResponse) {
-    if (authorizationResponse.authorizationCode.length) {
-      authFlow.authState = [[OIDAuthState alloc]
-          initWithAuthorizationResponse:authorizationResponse];
-      // perform auth code exchange
-      [self maybeFetchToken:authFlow];
-    } else {
-      // There was a failure, convert to appropriate error code.
-      NSString *errorString;
-      GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
-      NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      if (authFlow.emmSupport) {
-        [authFlow wait];
-        BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
-            handleErrorFromResponse:params
-                         completion:^{
-                           [authFlow next];
-                         }];
-        if (isEMMError) {
-          errorCode = kGIDSignInErrorCodeEMM;
-        }
-      }
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      errorString = (NSString *)params[kOAuth2ErrorKeyName];
-      if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-        errorCode = kGIDSignInErrorCodeCanceled;
-      }
-
-      authFlow.error = [self errorWithString:errorString code:errorCode];
-    }
-  } else {
-    NSString *errorString = [error localizedDescription];
-    GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
-    if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
-      // The user has canceled the flow at the iOS modal dialog.
-      errorString = kUserCanceledError;
-      errorCode = kGIDSignInErrorCodeCanceled;
-    }
-    authFlow.error = [self errorWithString:errorString code:errorCode];
+  if (authFlow) {
+    [self addDecodeIdTokenCallback:authFlow];
+    [self addSaveAuthCallback:authFlow];
+    [self addCompletionCallback:authFlow];
   }
-
-  [self addDecodeIdTokenCallback:authFlow];
-  [self addSaveAuthCallback:authFlow];
-  [self addCompletionCallback:authFlow];
 }
 
 // Perform authentication with the provided options.
@@ -682,73 +625,13 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   // Complete the auth flow using saved auth in keychain.
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
   authFlow.authState = authState;
-  [self maybeFetchToken:authFlow];
+  GIDAuthorizationResponseHelper *responseHelper = [[GIDAuthorizationResponseHelper alloc] init];
+  responseHelper.configuration = _currentOptions.configuration;
+  
+  [responseHelper maybeFetchToken:authFlow];
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
   [self addCompletionCallback:authFlow];
-}
-
-// Fetches the access token if necessary as part of the auth flow.
-- (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
-  OIDAuthState *authState = authFlow.authState;
-  // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
-  if (authFlow.error ||
-      (authState.lastTokenResponse.accessToken &&
-        [authState.lastTokenResponse.accessTokenExpirationDate timeIntervalSinceNow] >
-        kMinimumRestoredAccessTokenTimeToExpire)) {
-    return;
-  }
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  if (_currentOptions.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = _currentOptions.configuration.serverClientID;
-  }
-  if (_currentOptions.configuration.openIDRealm) {
-    additionalParameters[kOpenIDRealmParameter] = _currentOptions.configuration.openIDRealm;
-  }
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  NSDictionary<NSString *, NSObject *> *params =
-      authState.lastAuthorizationResponse.additionalParameters;
-  NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:@{}
-                                   emmSupport:authFlow.emmSupport
-                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  OIDTokenRequest *tokenRequest;
-  if (!authState.lastTokenResponse.accessToken &&
-      authState.lastAuthorizationResponse.authorizationCode) {
-    tokenRequest = [authState.lastAuthorizationResponse
-        tokenExchangeRequestWithAdditionalParameters:additionalParameters];
-  } else {
-    [additionalParameters
-        addEntriesFromDictionary:authState.lastTokenResponse.request.additionalParameters];
-    tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
-  }
-
-  [authFlow wait];
-  [OIDAuthorizationService
-      performTokenRequest:tokenRequest
-                 callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                            NSError *_Nullable error) {
-    [authState updateWithTokenResponse:tokenResponse error:error];
-    authFlow.error = error;
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    if (authFlow.emmSupport) {
-      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
-        authFlow.error = error;
-        [authFlow next];
-      }];
-    } else {
-      [authFlow next];
-    }
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    [authFlow next];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  }];
 }
 
 // Adds a callback to the auth flow to save the auth object to |self| and the keychain as well.

@@ -39,3 +39,7 @@ extern NSString *const kLoginHintParameter;
 
 /// The name of the hosted domain parameter for the auth and token exchange endpoints.
 extern NSString *const kHostedDomainParameter;
+
+extern NSString *const kOAuth2ErrorKeyName;
+
+extern NSString *const kOAuth2AccessDenied;

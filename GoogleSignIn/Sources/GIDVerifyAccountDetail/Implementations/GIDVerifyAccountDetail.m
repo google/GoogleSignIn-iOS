@@ -20,8 +20,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
-#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Implementations/GIDVerifyAuthFlow.h"
-
+#import "GoogleSignIn/Sources/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
@@ -33,18 +33,14 @@
 @import AppAuth;
 @import GTMSessionFetcherCore;
 #else
-#import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
-#import <AppAuth/OIDError.h>
 #import <AppAuth/OIDExternalUserAgentSession.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
-#import <AppAuth/OIDTokenRequest.h>
-#import <AppAuth/OIDTokenResponse.h>
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
 #endif
 
@@ -54,16 +50,6 @@
 
 // The error code for Google Identity.
 NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerify";
-
-// Error string for user cancelations.
-static NSString *const kUserCanceledError = @"The user canceled the verification flow.";
-
-// Parameters in the callback URL coming back from browser.
-static NSString *const kOAuth2ErrorKeyName = @"error";
-static NSString *const kOAuth2AccessDenied = @"access_denied";
-
-// Minimum time to expiration for a restored access token.
-static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 @implementation GIDVerifyAccountDetail {
   /// AppAuth configuration object.
@@ -210,93 +196,17 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error {
-  GIDVerifyAuthFlow *authFlow = [[GIDVerifyAuthFlow alloc] init];
-
-  if (authorizationResponse) {
-    if (authorizationResponse.authorizationCode.length) {
-      authFlow.authState =
-          [[OIDAuthState alloc] initWithAuthorizationResponse:authorizationResponse];
-      // perform auth code exchange
-      [self maybeFetchToken:authFlow];
-    } else {
-      // There was a failure, convert to appropriate error code.
-      NSString *errorString;
-      GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
-      NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
-
-      errorString = (NSString *)params[kOAuth2ErrorKeyName];
-      if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-        errorCode = kGIDVerifyErrorCodeCanceled;
-      }
-
-      authFlow.error = [self errorWithString:errorString code:errorCode];
-    }
-  } else {
-    NSString *errorString = [error localizedDescription];
-    GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
-    if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
-      errorString = kUserCanceledError;
-      errorCode = kGIDVerifyErrorCodeCanceled;
-    }
-    authFlow.error = [self errorWithString:errorString code:errorCode];
-  }
+  GIDAuthorizationResponseHelper *responseHelper =
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                 emmSupport:nil
+                                                                   flowName:Verify
+                                                              configuration:_configuration];
+  GIDAuthFlow *authFlow = [responseHelper processWithError:error];
 
   // TODO: Add completion callback method (#413).
 }
 
-- (void)maybeFetchToken:(GIDVerifyAuthFlow *)authFlow {
-  OIDAuthState *authState = authFlow.authState;
-  // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
-  if (authFlow.error ||
-      (authState.lastTokenResponse.accessToken &&
-       [authState.lastTokenResponse.accessTokenExpirationDate timeIntervalSinceNow] >
-       kMinimumRestoredAccessTokenTimeToExpire)) {
-    return;
-  }
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  if (_configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = _configuration.serverClientID;
-  }
-  if (_configuration.openIDRealm) {
-    additionalParameters[kOpenIDRealmParameter] = _configuration.openIDRealm;
-  }
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  OIDTokenRequest *tokenRequest;
-  if (!authState.lastTokenResponse.accessToken &&
-      authState.lastAuthorizationResponse.authorizationCode) {
-    tokenRequest = [authState.lastAuthorizationResponse
-        tokenExchangeRequestWithAdditionalParameters:additionalParameters];
-  } else {
-    [additionalParameters
-        addEntriesFromDictionary:authState.lastTokenResponse.request.additionalParameters];
-    tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
-  }
-
-  [authFlow wait];
-  [OIDAuthorizationService
-      performTokenRequest:tokenRequest
-                 callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                            NSError *_Nullable error) {
-    [authState updateWithTokenResponse:tokenResponse error:error];
-    authFlow.error = error;
-
-    [authFlow next];
-  }];
-}
-
 #pragma mark - Helpers
-
-- (NSError *)errorWithString:(NSString *)errorString code:(GIDVerifyErrorCode)code {
-  if (errorString == nil) {
-    errorString = @"Unknown error";
-  }
-  NSDictionary<NSString *, NSString *> *errorDict = @{ NSLocalizedDescriptionKey : errorString };
-  return [NSError errorWithDomain:kGIDVerifyErrorDomain
-                             code:code
-                         userInfo:errorDict];
-}
 
 // Assert that a current user exists.
 - (void)assertValidCurrentUser {
