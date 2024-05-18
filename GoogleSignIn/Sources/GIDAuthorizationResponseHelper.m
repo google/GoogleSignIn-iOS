@@ -165,30 +165,33 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       if (authFlow.emmSupport) {
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
-                              handleErrorFromResponse:params
-                                           completion:^{
-                                             [authFlow next];
-                                           }];
+                           handleErrorFromResponse:params
+                           completion:^{
+          [authFlow next];
+        }];
         if (isEMMError) {
           errorCode = kGIDSignInErrorCodeEMM;
         }
       }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
         errorCode = kGIDSignInErrorCodeCanceled;
       }
 
       authFlow.error = [self errorWithString:errorString code:errorCode];
+    }
       break;
     case Verify: {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
         errorCode = kGIDVerifyErrorCodeCanceled;
       }
 
       authFlow.error = [self errorWithString:errorString code:errorCode];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       break;
-    }
     }
   }
 }
@@ -208,6 +211,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       break;
     }
     case Verify: {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
       if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
         errorString = kUserCanceledVerifyError;
@@ -215,6 +219,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       }
 
       authFlow.error = [self errorWithString:errorString code:errorCode];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       break;
     }
   }
@@ -232,9 +237,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                              userInfo:errorDict];
       break;
     case Verify:
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       return [NSError errorWithDomain:kGIDVerifyErrorDomain
                                  code:code
                              userInfo:errorDict];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       break;
   }
 }
