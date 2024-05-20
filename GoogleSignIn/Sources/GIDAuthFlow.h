@@ -30,7 +30,10 @@
 /// The error thrown from the OAuth session encountered for this instance.
 @property(nonatomic, strong, nullable) NSError *error;
 
+/// The EMM support version.
 @property(nonatomic, copy, nullable) NSString *emmSupport;
+
+/// The profile data extracted from the ID token.
 @property(nonatomic, nullable) GIDProfileData *profileData;
 
 

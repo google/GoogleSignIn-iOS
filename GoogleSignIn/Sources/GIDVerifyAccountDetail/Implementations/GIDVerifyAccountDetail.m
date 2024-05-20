@@ -48,8 +48,8 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-// The error code for Google Identity.
-NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerify";
+// TODO: Unify error domain across sign-in and verify flow (#425).
+NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
 
 @implementation GIDVerifyAccountDetail {
   /// AppAuth configuration object.
@@ -201,9 +201,8 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerify";
                                                                  emmSupport:nil
                                                                    flowName:Verify
                                                               configuration:_configuration];
-  GIDAuthFlow *authFlow = [responseHelper processWithError:error];
-
   // TODO: Add completion callback method (#413).
+  __unused GIDAuthFlow *authFlow = [responseHelper processWithError:error];
 }
 
 #pragma mark - Helpers

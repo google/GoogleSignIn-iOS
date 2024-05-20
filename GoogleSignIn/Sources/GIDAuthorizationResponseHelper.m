@@ -21,12 +21,10 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-
-#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-
 
 @import GTMAppAuth;
 
@@ -34,31 +32,28 @@
 @import AppAuth;
 @import GTMSessionFetcherCore;
 #else
+#import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDError.h>
+#import <AppAuth/OIDTokenRequest.h>
+#import <AppAuth/OIDTokenResponse.h>
 #endif
 
-// Error string for user cancelations.
+/// Error string for user cancelations.
 static NSString *const kUserCanceledSignInError = @"The user canceled the sign-in flow.";
 static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
 
-
-static NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
-
-// Minimum time to expiration for a restored access token.
+/// Minimum time to expiration for a restored access token.
 static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
-@implementation GIDAuthorizationResponseHelper {
-  OIDAuthorizationResponse *_authorizationResponse;
-  NSString *_emmSupport;
-  GIDFlowName _flowName;
-}
+@implementation GIDAuthorizationResponseHelper
 
 - (instancetype)
-    initWithAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
+    initWithAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
                        emmSupport:(nullable NSString *)emmSupport
                          flowName:(GIDFlowName)flowName
-                    configuration:(GIDConfiguration *)configuration {
+                    configuration:(nullable GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _authorizationResponse = authorizationResponse;
@@ -88,7 +83,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   return authFlow;
 }
 
-// Fetches the access token if necessary as part of the auth flow.
 - (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
   OIDAuthState *authState = authFlow.authState;
   // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
@@ -229,6 +223,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   if (errorString == nil) {
     errorString = @"Unknown error";
   }
+
+  if (!_flowName) {
+    errorString = @"No specified flow";
+  }
+
   NSDictionary<NSString *, NSString *> *errorDict = @{ NSLocalizedDescriptionKey : errorString };
   switch (_flowName) {
     case SignIn:
@@ -241,9 +240,14 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       return [NSError errorWithDomain:kGIDVerifyErrorDomain
                                  code:code
                              userInfo:errorDict];
+      break;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    default:
       break;
   }
+  return [NSError errorWithDomain:kGIDSignInErrorDomain
+                             code:code
+                         userInfo:errorDict];
 }
 
 @end

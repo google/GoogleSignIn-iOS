@@ -53,8 +53,6 @@
 #import <AppAuth/OIDIDToken.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
-#import <AppAuth/OIDTokenRequest.h>
-#import <AppAuth/OIDTokenResponse.h>
 #import <AppAuth/OIDURLQueryComponent.h>
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 
