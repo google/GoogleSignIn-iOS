@@ -582,11 +582,11 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
   }
 
   GIDAuthorizationResponseHelper *responseHelper = 
-  [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
-                                                             emmSupport:emmSupport
-                                                               flowName:SignIn
-                                                          configuration:
-                                                            _currentOptions.configuration];
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                 emmSupport:emmSupport
+                                                                   flowName:SignIn
+                                                              configuration:
+                                                                _currentOptions.configuration];
   GIDAuthFlow *authFlow = [responseHelper processWithError:error];
 
   if (authFlow) {

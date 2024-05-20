@@ -56,7 +56,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
 - (instancetype)
     initWithAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
-                       emmSupport:(NSString *)emmSupport
+                       emmSupport:(nullable NSString *)emmSupport
                          flowName:(GIDFlowName)flowName
                     configuration:(GIDConfiguration *)configuration {
   self = [super init];
@@ -66,6 +66,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     _flowName = flowName;
     _configuration = configuration;
   }
+  return self;
 }
 
 - (GIDAuthFlow *)processWithError:(NSError *)error {
@@ -217,7 +218,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
         errorString = kUserCanceledVerifyError;
         errorCode = kGIDVerifyErrorCodeCanceled;
       }
-
       authFlow.error = [self errorWithString:errorString code:errorCode];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       break;

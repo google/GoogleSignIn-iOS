@@ -32,7 +32,7 @@ typedef NS_ENUM(NSInteger, GIDFlowName) {
 @property(nonatomic, strong, nullable) GIDConfiguration *configuration;
 
 - (instancetype)initWithAuthorizationResponse:(OIDAuthorizationResponse *)authFlow
-                                   emmSupport:emmSupport
+                                   emmSupport:(nullable NSString *)emmSupport
                                      flowName:(GIDFlowName)flowName
                                 configuration:(GIDConfiguration *)config;
 
