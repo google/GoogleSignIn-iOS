@@ -16,5 +16,29 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+
+@import GTMAppAuth;
+
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+@import GTMSessionFetcherCore;
+#else
+#import <AppAuth/OIDTokenResponse.h>
+#endif
+
 @implementation GIDVerifiedAccountDetailResult
+
+- (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
+                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails {
+  self = [super init];
+  if (self) {
+    _expirationDate = tokenResponse.accessTokenExpirationDate;
+    _accessTokenString = tokenResponse.accessToken;
+    _refreshTokenString = tokenResponse.refreshToken;
+    _verifiedAccountDetails = accountDetails;
+  }
+  return self;
+}
+
 @end

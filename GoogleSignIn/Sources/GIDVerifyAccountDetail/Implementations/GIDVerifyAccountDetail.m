@@ -33,6 +33,7 @@
 @import AppAuth;
 @import GTMSessionFetcherCore;
 #else
+#import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
@@ -52,9 +53,13 @@
 NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
 
 @implementation GIDVerifyAccountDetail {
+  /// Represents the list of account details to verify.
+  NSArray<GIDVerifiableAccountDetail *> *_accountDetails;
+  /// Represents internal options for the verification flow.
+  GIDSignInInternalOptions *_options;
   /// AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
-  // AppAuth external user-agent session state.
+  /// AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
@@ -113,7 +118,8 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
                                               addScopesFlow:YES
                                      accountDetailsToVerify:accountDetails
                                            verifyCompletion:completion];
-
+  self->_options = options;
+  self->_accountDetails = accountDetails;
   [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
@@ -201,8 +207,11 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
                                                                  emmSupport:nil
                                                                    flowName:Verify
                                                               configuration:_configuration];
-  // TODO: Add completion callback method (#413).
-  __unused GIDAuthFlow *authFlow = [responseHelper processWithError:error];
+  GIDAuthFlow *authFlow = [responseHelper processWithError:error];
+
+  if (authFlow) {
+    [self addCompletionCallback:authFlow];
+  }
 }
 
 #pragma mark - Helpers
@@ -232,6 +241,28 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];
   }
+}
+
+- (void)addCompletionCallback:(GIDAuthFlow *)authFlow {
+  __weak GIDAuthFlow *weakAuthFlow = authFlow;
+  [authFlow addCallback:^() {
+    GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
+    if (self->_options.completion) {
+      GIDVerifyCompletion completion = self->_options.verifyCompletion;
+      self->_options = nil;
+      dispatch_async(dispatch_get_main_queue(), ^{
+        if (handlerAuthFlow.error) {
+          completion(nil, handlerAuthFlow.error);
+        } else {
+          OIDAuthState *authState = handlerAuthFlow.authState;
+          GIDVerifiedAccountDetailResult *verifiedResult = [[GIDVerifiedAccountDetailResult alloc]
+              initWithLastTokenResponse:authState.lastTokenResponse
+                         accountDetails:self->_accountDetails];
+          completion(verifiedResult, nil);
+        }
+      });
+    }
+  }];
 }
 
 @end
