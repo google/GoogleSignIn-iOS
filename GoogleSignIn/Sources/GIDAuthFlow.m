@@ -16,4 +16,26 @@
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 
 @implementation GIDAuthFlow
+
+- (instancetype)initWithAuthState:(nullable OIDAuthState *)authState
+                            error:(nullable NSError *)error
+                       emmSupport:(nullable NSString *)emmSupport
+                      profileData:(nullable GIDProfileData *)profileData {
+  self = [super init];
+  if (self) {
+    _authState = authState;
+    _error = error;
+    _emmSupport = emmSupport;
+    _profileData = profileData;
+  }
+  return self;
+}
+
+- (instancetype)init {
+  return [self initWithAuthState:nil
+                           error:nil
+                      emmSupport:nil
+                     profileData:nil];
+}
+
 @end

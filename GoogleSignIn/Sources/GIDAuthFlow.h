@@ -18,6 +18,8 @@
 
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class OIDAuthState;
 @class GIDProfileData;
 
@@ -36,6 +38,24 @@
 /// The profile data extracted from the ID token.
 @property(nonatomic, nullable) GIDProfileData *profileData;
 
+/// Initialize a `GIDAuthFlow` object by specifying all available properties.
+///
+/// @param authState The configuration to be used.
+/// @param error The configuration to be used.
+/// @param emmSupport The configuration to be used.
+/// @param profileData The configuration to be used.
+/// @return An initialized `GIDAuthFlow` instance.
+- (instancetype)initWithAuthState:(nullable OIDAuthState *)authState
+                            error:(nullable NSError *)error
+                       emmSupport:(nullable NSString *)emmSupport
+                      profileData:(nullable GIDProfileData *)profileData
+    NS_DESIGNATED_INITIALIZER;
 
+/// Initialize a `GIDAuthFlow` object by calling the designated initializer with `nil` values.
+///
+/// @return An initialized `GIDAuthFlow` instance.
+- (instancetype)init;
 
 @end
+
+NS_ASSUME_NONNULL_END
