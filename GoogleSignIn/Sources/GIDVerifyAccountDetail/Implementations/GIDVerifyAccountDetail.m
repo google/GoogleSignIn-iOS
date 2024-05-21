@@ -54,7 +54,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
 @implementation GIDVerifyAccountDetail {
   /// AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
-  // AppAuth external user-agent session state.
+  /// AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
@@ -199,7 +199,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   GIDAuthorizationResponseHelper *responseHelper =
       [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
                                                                  emmSupport:nil
-                                                                   flowName:Verify
+                                                                   flowName:GIDFlowNameVerify
                                                               configuration:_configuration];
   // TODO: Add completion callback method (#413).
   __unused GIDAuthFlow *authFlow = [responseHelper processWithError:error];

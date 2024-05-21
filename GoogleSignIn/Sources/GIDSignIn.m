@@ -582,7 +582,7 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
   GIDAuthorizationResponseHelper *responseHelper = 
       [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
                                                                  emmSupport:emmSupport
-                                                                   flowName:SignIn
+                                                                   flowName:GIDFlowNameSignIn
                                                               configuration:
                                                                 _currentOptions.configuration];
   GIDAuthFlow *authFlow = [responseHelper processWithError:error];
@@ -621,8 +621,10 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
   }
 
   // Complete the auth flow using saved auth in keychain.
-  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
-  authFlow.authState = authState;
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:authState
+                                                           error:nil
+                                                      emmSupport:nil
+                                                     profileData:nil];
   GIDAuthorizationResponseHelper *responseHelper = [[GIDAuthorizationResponseHelper alloc] init];
   responseHelper.configuration = _currentOptions.configuration;
   

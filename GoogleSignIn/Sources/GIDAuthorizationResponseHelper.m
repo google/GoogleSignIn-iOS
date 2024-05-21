@@ -40,6 +40,8 @@
 #import <AppAuth/OIDTokenResponse.h>
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// Error string for user cancelations.
 static NSString *const kUserCanceledSignInError = @"The user canceled the sign-in flow.";
 static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
@@ -50,7 +52,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 @implementation GIDAuthorizationResponseHelper
 
 - (instancetype)
-    initWithAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
+    initWithAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                        emmSupport:(nullable NSString *)emmSupport
                          flowName:(GIDFlowName)flowName
                     configuration:(nullable GIDConfiguration *)configuration {
@@ -65,8 +67,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 - (GIDAuthFlow *)processWithError:(NSError *)error {
-  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
-  authFlow.emmSupport = _emmSupport;
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:nil
+                                                           error:nil
+                                                      emmSupport:_emmSupport
+                                                     profileData:nil];
 
   if (_authorizationResponse) {
     if (_authorizationResponse.authorizationCode.length) {
@@ -74,10 +78,10 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
           [[OIDAuthState alloc] initWithAuthorizationResponse:_authorizationResponse];
       [self maybeFetchToken:authFlow];
     } else {
-      [self authorizationCodeErrorWithAuthFlow:authFlow];
+      [self authorizationCodeErrorToAuthFlow:authFlow];
     }
   } else {
-    [self authorizationResponseErrorWithAuthFlow:authFlow
+    [self authorizationResponseErrorToAuthFlow:authFlow
                                            error:error];
   }
   return authFlow;
@@ -101,7 +105,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  if (_flowName == SignIn) {
+  if (_flowName == GIDFlowNameSignIn) {
     NSDictionary<NSString *, NSObject *> *params =
         authState.lastAuthorizationResponse.additionalParameters;
     NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
@@ -148,13 +152,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }];
 }
 
-- (void)authorizationCodeErrorWithAuthFlow:(GIDAuthFlow *)authFlow {
-  // There was a failure, convert to appropriate error code.
+- (void)authorizationCodeErrorToAuthFlow:(GIDAuthFlow *)authFlow {
   NSDictionary<NSString *, NSObject *> *params = _authorizationResponse.additionalParameters;
   NSString *errorString = (NSString *)params[kOAuth2ErrorKeyName];
 
   switch (_flowName) {
-    case SignIn: {
+    case GIDFlowNameSignIn: {
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (authFlow.emmSupport) {
@@ -177,11 +180,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authFlow.error = [self errorWithString:errorString code:errorCode];
     }
       break;
-    case Verify: {
+    case GIDFlowNameVerify: {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
+      GIDVerifyErrorCode errorCode = GIDVerifyErrorCodeUnknown;
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-        errorCode = kGIDVerifyErrorCodeCanceled;
+        errorCode = GIDVerifyErrorCodeCanceled;
       }
 
       authFlow.error = [self errorWithString:errorString code:errorCode];
@@ -191,11 +194,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 }
 
-- (void)authorizationResponseErrorWithAuthFlow:(GIDAuthFlow *)authFlow
+- (void)authorizationResponseErrorToAuthFlow:(GIDAuthFlow *)authFlow
                                          error:(NSError *)error {
   NSString *errorString = [error localizedDescription];
   switch (_flowName) {
-    case SignIn: {
+    case GIDFlowNameSignIn: {
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
         // The user has canceled the flow at the iOS modal dialog.
@@ -205,12 +208,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authFlow.error = [self errorWithString:errorString code:errorCode];
       break;
     }
-    case Verify: {
+    case GIDFlowNameVerify: {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
+      GIDVerifyErrorCode errorCode = GIDVerifyErrorCodeUnknown;
       if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
         errorString = kUserCanceledVerifyError;
-        errorCode = kGIDVerifyErrorCodeCanceled;
+        errorCode = GIDVerifyErrorCodeCanceled;
       }
       authFlow.error = [self errorWithString:errorString code:errorCode];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -230,12 +233,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
   NSDictionary<NSString *, NSString *> *errorDict = @{ NSLocalizedDescriptionKey : errorString };
   switch (_flowName) {
-    case SignIn:
+    case GIDFlowNameSignIn:
       return [NSError errorWithDomain:kGIDSignInErrorDomain
                                  code:code
                              userInfo:errorDict];
       break;
-    case Verify:
+    case GIDFlowNameVerify:
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       return [NSError errorWithDomain:kGIDVerifyErrorDomain
                                  code:code
@@ -251,3 +254,5 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

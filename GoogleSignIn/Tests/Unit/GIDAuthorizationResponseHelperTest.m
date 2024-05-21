@@ -27,7 +27,6 @@
 @implementation GIDAuthorizationResponseHelperTest
 
 - (void)testInitWithAuthorizationResponse {
-  // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
                                                          errorString:nil];
@@ -39,13 +38,13 @@
   GIDAuthorizationResponseHelper *responseHelper = 
       [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authResponse
                                                                  emmSupport:nil
-                                                                   flowName:Verify
+                                                                   flowName:GIDFlowNameVerify
                                                               configuration:configuration];
 
   XCTAssertNotNil(responseHelper);
   XCTAssertNotNil(responseHelper.authorizationResponse);
   XCTAssertNil(responseHelper.emmSupport);
-  XCTAssertEqual(responseHelper.flowName, Verify);
+  XCTAssertEqual(responseHelper.flowName, GIDFlowNameVerify);
   XCTAssertNotNil(responseHelper.configuration);
 }
 

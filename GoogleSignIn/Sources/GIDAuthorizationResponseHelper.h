@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// A list of potential current flow names.
 typedef NS_ENUM(NSInteger, GIDFlowName) {
 /// The Sign In flow.
-  SignIn,
+  GIDFlowNameSignIn = 0,
 /// The Verify flow.
-  Verify,
+  GIDFlowNameVerify = 1,
 };
 
 /// A helper class to process the authorization response.
@@ -40,9 +40,9 @@ typedef NS_ENUM(NSInteger, GIDFlowName) {
 @property(nonatomic, readwrite, nullable) NSString *emmSupport;
 
 /// The name of the current flow.
-@property(nonatomic, readonly)GIDFlowName flowName;
+@property(nonatomic, readonly) GIDFlowName flowName;
 
-/// The configuration of the current flow.
+/// The configuration for the current flow.
 @property(nonatomic, readwrite) GIDConfiguration *configuration;
 
 /// Initializes a new instance of the `GIDAuthorizationResponseHelper` class with the provided fields.
@@ -53,7 +53,7 @@ typedef NS_ENUM(NSInteger, GIDFlowName) {
 /// @param configuration The configuration.
 /// @return A new initialized instance of the `GIDAuthorizationResponseHelper` class.
 - (instancetype)
-    initWithAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
+    initWithAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                        emmSupport:(nullable NSString *)emmSupport
                          flowName:(GIDFlowName)flowName
                     configuration:(nullable GIDConfiguration *)configuration;
@@ -63,8 +63,6 @@ typedef NS_ENUM(NSInteger, GIDFlowName) {
 /// @param error The error thrown if there's no authorization response.
 /// @return An instance of `GIDAuthFlow`.
 - (GIDAuthFlow *)processWithError:(NSError *)error;
-
-
 
 /// Fetches the access token if necessary as part of the auth flow.
 ///
