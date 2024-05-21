@@ -129,6 +129,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
   }
 
+  // TODO: Clean up callback flow (#427).
   [authFlow wait];
   [OIDAuthorizationService
       performTokenRequest:tokenRequest
