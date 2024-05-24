@@ -61,7 +61,6 @@ initWithAuthorizationResponseHandler:(id<GIDAuthorizationResponseHandling>)respo
 
 - (GIDAuthFlow *)fetchAuthFlowFromProcessedResponse {
   GIDAuthFlow *authFlow = [self.responseHandler generateAuthFlowFromAuthorizationResponse];
-  [self fetchTokenWithAuthFlow:authFlow];
 
   return authFlow;
 }
