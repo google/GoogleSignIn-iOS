@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Initializes a new instance of the `GIDAuthorizationResponseHelper` class with the provided field.
 ///
-/// @param responseHandler
+/// @param responseHandler The response handler with the authorization response to process.
 /// @return A new initialized instance of the `GIDAuthorizationResponseHelper` class.
 - (instancetype)
 initWithAuthorizationResponseHandler:(id<GIDAuthorizationResponseHandling>)responseHandler;
