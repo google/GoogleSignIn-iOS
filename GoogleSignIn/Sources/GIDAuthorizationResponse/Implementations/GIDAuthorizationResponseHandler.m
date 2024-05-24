@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHelper.h"
+
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
-#import "GoogleSignIn/Sources/GIDSignInConstants.h"
+
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 @import GTMAppAuth;
@@ -40,33 +43,45 @@
 #import <AppAuth/OIDTokenResponse.h>
 #endif
 
-NS_ASSUME_NONNULL_BEGIN
+@interface GIDAuthorizationResponseHandler ()
 
-/// Error string for user cancelations.
-static NSString *const kUserCanceledSignInError = @"The user canceled the sign-in flow.";
-static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
+/// The authorization response to process.
+@property(nonatomic, nullable) OIDAuthorizationResponse *authorizationResponse;
 
-/// Minimum time to expiration for a restored access token.
-static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
+/// The EMM support version.
+@property(nonatomic, nullable) NSString *emmSupport;
 
-@implementation GIDAuthorizationResponseHelper
+/// The name of the current flow.
+@property(nonatomic) GIDFlowName flowName;
+
+/// The configuration for the current flow.
+@property(nonatomic, nullable) GIDConfiguration *configuration;
+
+/// The configuration for the current flow.
+@property(nonatomic, nullable) NSError *error;
+
+@end
+
+@implementation GIDAuthorizationResponseHandler
 
 - (instancetype)
-    initWithAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
+    initWithAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
                        emmSupport:(nullable NSString *)emmSupport
                          flowName:(GIDFlowName)flowName
-                    configuration:(nullable GIDConfiguration *)configuration {
+                    configuration:(nullable GIDConfiguration *)configuration
+                            error:(nullable NSError *)error {
   self = [super init];
   if (self) {
     _authorizationResponse = authorizationResponse;
     _emmSupport = emmSupport;
     _flowName = flowName;
     _configuration = configuration;
+    _error = error;
   }
   return self;
 }
 
-- (GIDAuthFlow *)processWithError:(NSError *)error {
+- (GIDAuthFlow *)generateAuthFlowFromAuthorizationResponse {
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:nil
                                                            error:nil
                                                       emmSupport:_emmSupport
@@ -82,7 +97,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     }
   } else {
     [self authorizationResponseErrorToAuthFlow:authFlow
-                                           error:error];
+                                           error:_error];
   }
   return authFlow;
 }
@@ -254,6 +269,5 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                          userInfo:errorDict];
 }
 
-@end
 
-NS_ASSUME_NONNULL_END
+@end

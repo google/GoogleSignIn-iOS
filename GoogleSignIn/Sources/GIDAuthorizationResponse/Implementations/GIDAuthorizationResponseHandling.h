@@ -16,6 +16,9 @@
 
 #import <Foundation/Foundation.h>
 
+// ?? 
+//#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHelper.h"
+
 @class GIDAuthFlow;
 @class GIDConfiguration;
 @class OIDAuthorizationResponse;
@@ -30,44 +33,33 @@ typedef NS_ENUM(NSInteger, GIDFlowName) {
   GIDFlowNameVerify = 1,
 };
 
-/// A helper class to process the authorization response.
-@interface GIDAuthorizationResponseHelper : NSObject
+@protocol GIDAuthorizationResponseHandling
 
-/// The authorization response to process.
-@property(nonatomic, readonly) OIDAuthorizationResponse *authorizationResponse;
-
-/// The EMM support version.
-@property(nonatomic, readwrite, nullable) NSString *emmSupport;
-
-/// The name of the current flow.
-@property(nonatomic, readonly) GIDFlowName flowName;
-
-/// The configuration for the current flow.
-@property(nonatomic, readwrite) GIDConfiguration *configuration;
-
-/// Initializes a new instance of the `GIDAuthorizationResponseHelper` class with the provided fields.
+/// Initializes a new instance of the `GIDAuthorizationResponseHandling` class with the provided fields.
 ///
 /// @param authorizationResponse The authorization response to be processed.
 /// @param emmSupport The EMM support version.
 /// @param flowName The name of the current flow.
 /// @param configuration The configuration.
-/// @return A new initialized instance of the `GIDAuthorizationResponseHelper` class.
-- (instancetype)
-    initWithAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
-                       emmSupport:(nullable NSString *)emmSupport
-                         flowName:(GIDFlowName)flowName
-                    configuration:(nullable GIDConfiguration *)configuration;
-
-/// Processes the authorization response and returns an auth flow.
-///
 /// @param error The error thrown if there's no authorization response.
-/// @return An instance of `GIDAuthFlow`.
-- (GIDAuthFlow *)processWithError:(NSError *)error;
+/// @return A new initialized instance of the `GIDAuthorizationResponseHandling` class.
+- (instancetype)
+    initWithAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
+                       emmSupport:(nullable NSString *)emmSupport
+                         flowName:(enum GIDFlowName)flowName
+                    configuration:(nullable GIDConfiguration *)configuration
+                            error:(nullable NSError *)error;
 
 /// Fetches the access token if necessary as part of the auth flow.
 ///
 /// @param authFlow The auth flow to either fetch tokens or error.
 - (void)maybeFetchToken:(GIDAuthFlow *)authFlow;
+
+/// Processes the authorization response and returns an auth flow.
+///
+/// @return An instance of `GIDAuthFlow`.
+- (GIDAuthFlow *)generateAuthFlowFromAuthorizationResponse;
+
 
 @end
 

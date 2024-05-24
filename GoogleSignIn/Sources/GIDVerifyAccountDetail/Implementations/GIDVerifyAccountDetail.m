@@ -20,7 +20,9 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
+
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
@@ -196,13 +198,17 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error {
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                  emmSupport:nil
+                                                                    flowName:GIDFlowNameVerify
+                                                               configuration:_configuration
+                                                                       error:error];
   GIDAuthorizationResponseHelper *responseHelper =
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
-                                                                 emmSupport:nil
-                                                                   flowName:GIDFlowNameVerify
-                                                              configuration:_configuration];
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
+
   // TODO: Add completion callback method (#413).
-  __unused GIDAuthFlow *authFlow = [responseHelper processWithError:error];
+  __unused GIDAuthFlow *authFlow = [responseHelper fetchAuthFlowFromProcessedResponse];
 }
 
 #pragma mark - Helpers
