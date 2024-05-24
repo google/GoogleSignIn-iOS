@@ -8,10 +8,6 @@ to establish your application's integrity while signing in with Google
   - Add Privacy Manifest to App Check Release Branch ([#392](https://github.com/google/GoogleSignIn-iOS/pull/392))
   - [Add return type to init in GIDFakeFetcherService header](https://github.com/google/GoogleSignIn-iOS/commit/ebf681cac127497da55c932cb5bbf185971a29e7)
 
-# 7.1.0-fac-beta-1.0.0
-- Beta release supporting Firebase App Check tokens used
-to establish your application's integrity while signing in with Google
-
 # 7.1.0
 - Update to Swift 5.0 in `GoogleSignInSwiftSupport` pod ([#317](https://github.com/google/GoogleSignIn-iOS/pull/317))
 - Documentation updates ([#351](https://github.com/google/GoogleSignIn-iOS/pull/351), [#372](https://github.com/google/GoogleSignIn-iOS/pull/372))
