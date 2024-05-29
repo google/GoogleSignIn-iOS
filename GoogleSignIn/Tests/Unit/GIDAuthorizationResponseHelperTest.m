@@ -101,8 +101,8 @@ static NSString *const kEMMVersion = @"1";
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
   XCTAssertEqual(authFlow.error.code, expectedError.code);
-  XCTAssertEqual(authFlow.error.userInfo[NSLocalizedDescriptionKey],
-                  expectedError.userInfo[NSLocalizedDescriptionKey]);
+  XCTAssertEqualObjects(authFlow.error.userInfo[NSLocalizedDescriptionKey],
+                        expectedError.userInfo[NSLocalizedDescriptionKey]);
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
