@@ -24,6 +24,7 @@
 @import AppAuth;
 @import GTMSessionFetcherCore;
 #else
+#import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
