@@ -20,7 +20,8 @@
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
@@ -78,6 +79,7 @@ static NSString *const kEMMVersion = @"1";
 }
 
 - (void)testGenerateAuthFlowFromAuthorizationResponse_noCode {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   NSDictionary<NSString *, NSString *> *errorDict =
       @{ NSLocalizedDescriptionKey : @"Unknown error" };
   NSError *expectedError = [NSError errorWithDomain:kGIDVerifyErrorDomain
@@ -101,9 +103,11 @@ static NSString *const kEMMVersion = @"1";
   XCTAssertEqual(authFlow.error.code, expectedError.code);
   XCTAssertEqual(authFlow.error.userInfo[NSLocalizedDescriptionKey],
                   expectedError.userInfo[NSLocalizedDescriptionKey]);
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 - (void)testGenerateAuthFlowWithMissingAuthorizationResponse {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   NSError *error = [NSError errorWithDomain:kGIDVerifyErrorDomain
                                        code:GIDVerifyErrorCodeUnknown
                                    userInfo:nil];
@@ -119,6 +123,7 @@ static NSString *const kEMMVersion = @"1";
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
   XCTAssertEqual(authFlow.error.code, error.code);
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
 - (void)testMaybeFetchTokenWithAuthFlowError {
