@@ -15,7 +15,7 @@
  */
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Fake/GIDAuthorizationResponseHandlingFake.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
@@ -24,168 +24,141 @@
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
+
+// The EMM support version
+static NSString *const kEMMVersion = @"1";
 
 @interface GIDAuthorizationResponseHelperTest : XCTestCase
 @end
 
 @implementation GIDAuthorizationResponseHelperTest
 
-/*- (void)testInitWithAuthorizationResponseHandler {
-  OIDAuthorizationResponse *authResponse =
-      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
-                                                         errorString:nil];
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:nil];
-#pragma GCC diagnostic pop
-
+- (void)testInitWithAuthorizationResponseHandler {
   GIDAuthorizationResponseHandler *responseHandler =
-      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authResponse
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
                                                                   emmSupport:nil
                                                                     flowName:GIDFlowNameVerify
-                                                               configuration:configuration
+                                                               configuration:nil
                                                                        error:nil];
-
-  GIDAuthorizationResponseHelper *responseHelper = [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHelper];
-}*/
-
-/*- (void)testInitWithAuthorizationResponse {
-  OIDAuthorizationResponse *authResponse =
-      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
-                                                         errorString:nil];
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:nil];
-#pragma GCC diagnostic pop
-
-  GIDAuthorizationResponseHelper *responseHandler =
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authResponse
-                                                                 emmSupport:nil
-                                                                   flowName:GIDFlowNameVerify
-                                                              configuration:configuration];
+  GIDAuthorizationResponseHelper *responseHelper = 
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
 
   XCTAssertNotNil(responseHelper);
-  XCTAssertNotNil(responseHelper.authorizationResponse);
-  XCTAssertNil(responseHelper.emmSupport);
-  XCTAssertEqual(responseHelper.flowName, GIDFlowNameVerify);
-  XCTAssertNotNil(responseHelper.configuration);
-}*/
+  XCTAssertNotNil(responseHelper.responseHandler);
+}
 
-///processWithError
-/// 1. successful authorization code flow
-///  2. authorization code error
-///  3. authorization response error flow
-///  4. emmHandling
-/*
-- (void)testSuccessfulProcessWithError {
-  OIDAuthorizationResponse *authResponse =
-      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
-                                                         errorString:nil];
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:nil];
-#pragma GCC diagnostic pop
+- (void)testFetchTokenWithAuthFlow {
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDAuthorizationResponseHandlingFake *fakeHandler = 
+      [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
+  GIDAuthorizationResponseHelper *responseHelper =
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:fakeHandler];
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
 
-  GIDAuthorizationResponseHandlingFake *responseHandler = 
-  [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthorizationResponse:authResponse
-                                                                  emmSupport:nil
-                                                                     flowName:GIDFlowNameVerify
-                                                                configuration:configuration];
-
-  GIDAuthorizationResponseHelper *responseHelper = [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
-
-//  GIDAuthorizationResponseHelper *responseHelper =
-//      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authResponse
-//                                                                 emmSupport:nil
-//                                                                   flowName:GIDFlowNameVerify
-//                                                              configuration:configuration];
-  // Create mock for presenting the authorization request.
-  GIDAuthFlow *authFlow = [responseHelper processWithError:error];
-  // maybe fetch token checks
-
+  [responseHelper fetchTokenWithAuthFlow:authFlow];
   XCTAssertNotNil(authFlow);
   XCTAssertNotNil(authFlow.authState);
+  XCTAssertNil(authFlow.error);
 }
 
-- (void)testProcessWithError_noAuthorizationResponse {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-  GIDAuthorizationResponseHelper *helper =
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:nil
-                                                                emmSupport:nil
-                                                                  flowName:GIDFlowNameVerify
-                                                             configuration:nil];
-#pragma GCC diagnostic pop
+- (void)testSuccessfulGenerateAuthFlowFromAuthorizationResponse {
+  OIDAuthorizationResponse *authorizationResponse = [OIDAuthorizationResponse testInstance];
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                  emmSupport:nil
+                                                                    flowName:GIDFlowNameVerify
+                                                               configuration:nil
+                                                                       error:nil];
 
-  static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
+  GIDAuthFlow *authFlow = [responseHandler generateAuthFlowFromAuthorizationResponse];
+  XCTAssertNotNil(authFlow);
+  XCTAssertNotNil(authFlow.authState);
+  XCTAssertNil(authFlow.error);
+}
+
+- (void)testGenerateAuthFlowFromAuthorizationResponse_noCode {
+  NSDictionary<NSString *, NSString *> *errorDict =
+      @{ NSLocalizedDescriptionKey : @"Unknown error" };
   NSError *expectedError = [NSError errorWithDomain:kGIDVerifyErrorDomain
-                                       code:GIDVerifyErrorCodeCanceled
-                                   userInfo:nil];
-  NSError *_Nullable error;
-  GIDAuthFlow *authFlow = [helper processWithError:error];
+                                               code:GIDVerifyErrorCodeUnknown
+                                           userInfo:errorDict];
 
+  OIDAuthorizationResponse *authorizationResponse = 
+      [OIDAuthorizationResponse testInstanceNoAuthCodeWithAdditionalParameters:nil 
+                                                                   errorString:nil];
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                  emmSupport:nil
+                                                                    flowName:GIDFlowNameVerify
+                                                               configuration:nil
+                                                                       error:nil];
+
+  GIDAuthFlow *authFlow = [responseHandler generateAuthFlowFromAuthorizationResponse];
+  XCTAssertNotNil(authFlow);
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error, error);
-  XCTAssertEqual(authFlow.error.code, GIDVerifyErrorCodeUnknown);
+  XCTAssertEqual(authFlow.error.code, expectedError.code);
+  XCTAssertEqual(authFlow.error.userInfo[NSLocalizedDescriptionKey],
+                  expectedError.userInfo[NSLocalizedDescriptionKey]);
 }
 
-- (void)testProcessWithError_noAuthorizationCode {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-  GIDAuthorizationResponseHelper *helper =
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:nil
-                                                                emmSupport:nil
-                                                                  flowName:GIDFlowNameVerify
-                                                             configuration:nil];
-#pragma GCC diagnostic pop
-
-  static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
-  NSError *expectedError = [NSError errorWithDomain:kGIDVerifyErrorDomain
-                                       code:GIDVerifyErrorCodeCanceled
+- (void)testGenerateAuthFlowWithMissingAuthorizationResponse {
+  NSError *error = [NSError errorWithDomain:kGIDVerifyErrorDomain
+                                       code:GIDVerifyErrorCodeUnknown
                                    userInfo:nil];
-  NSError *_Nullable error;
-  GIDAuthFlow *authFlow = [helper processWithError:error];
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
+                                                                  emmSupport:nil
+                                                                    flowName:GIDFlowNameVerify
+                                                               configuration:nil
+                                                                       error:error];
 
+  GIDAuthFlow *authFlow = [responseHandler generateAuthFlowFromAuthorizationResponse];
+  XCTAssertNotNil(authFlow);
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error, error);
-  XCTAssertEqual(authFlow.error.code, GIDVerifyErrorCodeUnknown);
+  XCTAssertEqual(authFlow.error.code, error.code);
 }
 
-// Repeat for `GIDFlowNameSignIn`
-
-- (void)testProcessWithError_noAuthorizationCodeWithEMMSupport {
-  // The EMM support version
-  static NSString *const kEMMVersion = @"1";
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-  GIDAuthorizationResponseHelper *helper =
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:nil
-                                                                emmSupport:kEMMVersion
-                                                                  flowName:GIDFlowNameSignIn
-                                                             configuration:nil];
-#pragma GCC diagnostic pop
-
-  static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
-  NSError *expectedError = [NSError errorWithDomain:kGIDVerifyErrorDomain
-                                       code:GIDVerifyErrorCodeCanceled
+- (void)testMaybeFetchTokenWithAuthFlowError {
+  NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                       code:kGIDSignInErrorCodeUnknown
                                    userInfo:nil];
-  NSError *_Nullable error;
-  GIDAuthFlow *authFlow = [helper processWithError:error];
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:nil
+                                                           error:error
+                                                      emmSupport:nil
+                                                     profileData:nil];
+  GIDAuthorizationResponseHandler *responseHandler = 
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
+                                                                  emmSupport:kEMMVersion
+                                                                    flowName:GIDFlowNameSignIn
+                                                               configuration:nil
+                                                                       error:nil];
 
+  [responseHandler maybeFetchToken:authFlow];
   XCTAssertNil(authFlow.authState);
-  XCTAssertNotNil(authFlow.emmSupport);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error, error);
-  XCTAssertEqual(authFlow.error.code, GIDVerifyErrorCodeUnknown);
+  XCTAssertNil(authFlow.emmSupport);
 }
 
-///  maybeFetchToken
-///  1. Return if there's an auth flow error or restored access token that isn't near expiration
-///  2. Handle EMMSupport for GIDSignIn flow
-///  3. token request with additional parameters
-///
-*/
+- (void)testMaybeFetchTokenWithExpirationError {
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:authState
+                                                           error:nil
+                                                      emmSupport:nil
+                                                     profileData:nil];
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
+                                                                  emmSupport:kEMMVersion
+                                                                    flowName:GIDFlowNameSignIn
+                                                               configuration:nil
+                                                                       error:nil];
+
+  [responseHandler maybeFetchToken:authFlow];
+  XCTAssertNotNil(authFlow.authState);
+  XCTAssertNil(authFlow.error);
+  XCTAssertNil(authFlow.emmSupport);
+}
+
 @end
