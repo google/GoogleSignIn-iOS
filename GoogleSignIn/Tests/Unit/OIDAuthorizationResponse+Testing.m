@@ -49,4 +49,22 @@
                                                 parameters:parameters];
 }
 
++ (instancetype)testInstanceNoAuthCodeWithAdditionalParameters:
+    (NSDictionary<NSString *, NSString *> *)additionalParameters
+                                                   errorString:(NSString *)errorString {
+  NSMutableDictionary<NSString *, NSString *> *parameters;
+  if (errorString) {
+    parameters = [NSMutableDictionary dictionaryWithDictionary:@{ @"error" : errorString }];
+  } else {
+    parameters = [NSMutableDictionary dictionaryWithDictionary:@{
+      @"code" : @"",
+    }];
+    if (additionalParameters) {
+      [parameters addEntriesFromDictionary:additionalParameters];
+    }
+  }
+  return [[OIDAuthorizationResponse alloc] initWithRequest:[OIDAuthorizationRequest testInstance]
+                                                parameters:parameters];
+}
+
 @end

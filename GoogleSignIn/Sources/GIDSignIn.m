@@ -21,8 +21,10 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
+
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationResponseHelper.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
@@ -570,8 +572,8 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
   }];
 }
 
-- (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
-                               error:(NSError *)error
+- (void)processAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
+                               error:(nullable NSError *)error
                           emmSupport:(NSString *)emmSupport{
   if (_restarting) {
     // The auth flow is restarting, so the work here would be performed in the next round.
@@ -579,13 +581,17 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
     return;
   }
 
-  GIDAuthorizationResponseHelper *responseHelper = 
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponse:authorizationResponse
-                                                                 emmSupport:emmSupport
-                                                                   flowName:SignIn
-                                                              configuration:
-                                                                _currentOptions.configuration];
-  GIDAuthFlow *authFlow = [responseHelper processWithError:error];
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                  emmSupport:emmSupport
+                                                                    flowName:GIDFlowNameSignIn
+                                                               configuration:
+                                                                 _currentOptions.configuration
+                                                                       error:error];
+  GIDAuthorizationResponseHelper *responseHelper =
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
+
+  GIDAuthFlow *authFlow = [responseHelper fetchAuthFlowFromProcessedResponse];
 
   if (authFlow) {
     [self addDecodeIdTokenCallback:authFlow];
@@ -621,12 +627,21 @@ static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
   }
 
   // Complete the auth flow using saved auth in keychain.
-  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
-  authFlow.authState = authState;
-  GIDAuthorizationResponseHelper *responseHelper = [[GIDAuthorizationResponseHelper alloc] init];
-  responseHelper.configuration = _currentOptions.configuration;
-  
-  [responseHelper maybeFetchToken:authFlow];
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:authState
+                                                           error:nil
+                                                      emmSupport:nil
+                                                     profileData:nil];
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
+                                                                  emmSupport:nil
+                                                                    flowName:GIDFlowNameSignIn
+                                                               configuration:
+                                                                 _currentOptions.configuration
+                                                                       error:nil];
+  GIDAuthorizationResponseHelper *responseHelper =
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
+
+  [responseHelper fetchTokenWithAuthFlow:authFlow];
   [self addDecodeIdTokenCallback:authFlow];
   [self addSaveAuthCallback:authFlow];
   [self addCompletionCallback:authFlow];

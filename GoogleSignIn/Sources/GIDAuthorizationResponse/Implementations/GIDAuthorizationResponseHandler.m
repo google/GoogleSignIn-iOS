@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
+
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
-#import "GoogleSignIn/Sources/GIDSignInConstants.h"
+
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 @import GTMAppAuth;
@@ -40,33 +43,49 @@
 #import <AppAuth/OIDTokenResponse.h>
 #endif
 
-/// Error string for user cancelations.
-static NSString *const kUserCanceledSignInError = @"The user canceled the sign-in flow.";
-static NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
+@interface GIDAuthorizationResponseHandler ()
 
-/// Minimum time to expiration for a restored access token.
-static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
+/// The authorization response to process.
+@property(nonatomic, nullable) OIDAuthorizationResponse *authorizationResponse;
 
-@implementation GIDAuthorizationResponseHelper
+/// The EMM support version.
+@property(nonatomic, nullable) NSString *emmSupport;
+
+/// The name of the current flow.
+@property(nonatomic) GIDFlowName flowName;
+
+/// The configuration for the current flow.
+@property(nonatomic, nullable) GIDConfiguration *configuration;
+
+/// The configuration for the current flow.
+@property(nonatomic, nullable) NSError *error;
+
+@end
+
+@implementation GIDAuthorizationResponseHandler
 
 - (instancetype)
     initWithAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
                        emmSupport:(nullable NSString *)emmSupport
                          flowName:(GIDFlowName)flowName
-                    configuration:(nullable GIDConfiguration *)configuration {
+                    configuration:(nullable GIDConfiguration *)configuration
+                            error:(nullable NSError *)error {
   self = [super init];
   if (self) {
     _authorizationResponse = authorizationResponse;
     _emmSupport = emmSupport;
     _flowName = flowName;
     _configuration = configuration;
+    _error = error;
   }
   return self;
 }
 
-- (GIDAuthFlow *)processWithError:(NSError *)error {
-  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
-  authFlow.emmSupport = _emmSupport;
+- (GIDAuthFlow *)generateAuthFlowFromAuthorizationResponse {
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:nil
+                                                           error:nil
+                                                      emmSupport:_emmSupport
+                                                     profileData:nil];
 
   if (_authorizationResponse) {
     if (_authorizationResponse.authorizationCode.length) {
@@ -74,11 +93,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
           [[OIDAuthState alloc] initWithAuthorizationResponse:_authorizationResponse];
       [self maybeFetchToken:authFlow];
     } else {
-      [self authorizationCodeErrorWithAuthFlow:authFlow];
+      [self authorizationCodeErrorToAuthFlow:authFlow];
     }
   } else {
-    [self authorizationResponseErrorWithAuthFlow:authFlow
-                                           error:error];
+    [self authorizationResponseErrorToAuthFlow:authFlow
+                                           error:_error];
   }
   return authFlow;
 }
@@ -101,7 +120,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  if (_flowName == SignIn) {
+  if (_flowName == GIDFlowNameSignIn) {
     NSDictionary<NSString *, NSObject *> *params =
         authState.lastAuthorizationResponse.additionalParameters;
     NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
@@ -125,6 +144,7 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
     tokenRequest = [authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
   }
 
+  // TODO: Clean up callback flow (#427).
   [authFlow wait];
   [OIDAuthorizationService
       performTokenRequest:tokenRequest
@@ -148,13 +168,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }];
 }
 
-- (void)authorizationCodeErrorWithAuthFlow:(GIDAuthFlow *)authFlow {
-  // There was a failure, convert to appropriate error code.
+- (void)authorizationCodeErrorToAuthFlow:(GIDAuthFlow *)authFlow {
   NSDictionary<NSString *, NSObject *> *params = _authorizationResponse.additionalParameters;
   NSString *errorString = (NSString *)params[kOAuth2ErrorKeyName];
 
   switch (_flowName) {
-    case SignIn: {
+    case GIDFlowNameSignIn: {
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (authFlow.emmSupport) {
@@ -177,11 +196,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authFlow.error = [self errorWithString:errorString code:errorCode];
     }
       break;
-    case Verify: {
+    case GIDFlowNameVerify: {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
+      GIDVerifyErrorCode errorCode = GIDVerifyErrorCodeUnknown;
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-        errorCode = kGIDVerifyErrorCodeCanceled;
+        errorCode = GIDVerifyErrorCodeCanceled;
       }
 
       authFlow.error = [self errorWithString:errorString code:errorCode];
@@ -191,11 +210,11 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   }
 }
 
-- (void)authorizationResponseErrorWithAuthFlow:(GIDAuthFlow *)authFlow
+- (void)authorizationResponseErrorToAuthFlow:(GIDAuthFlow *)authFlow
                                          error:(NSError *)error {
   NSString *errorString = [error localizedDescription];
   switch (_flowName) {
-    case SignIn: {
+    case GIDFlowNameSignIn: {
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
         // The user has canceled the flow at the iOS modal dialog.
@@ -205,12 +224,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
       authFlow.error = [self errorWithString:errorString code:errorCode];
       break;
     }
-    case Verify: {
+    case GIDFlowNameVerify: {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      GIDVerifyErrorCode errorCode = kGIDVerifyErrorCodeUnknown;
+      GIDVerifyErrorCode errorCode = GIDVerifyErrorCodeUnknown;
       if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
         errorString = kUserCanceledVerifyError;
-        errorCode = kGIDVerifyErrorCodeCanceled;
+        errorCode = GIDVerifyErrorCodeCanceled;
       }
       authFlow.error = [self errorWithString:errorString code:errorCode];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -230,12 +249,12 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
 
   NSDictionary<NSString *, NSString *> *errorDict = @{ NSLocalizedDescriptionKey : errorString };
   switch (_flowName) {
-    case SignIn:
+    case GIDFlowNameSignIn:
       return [NSError errorWithDomain:kGIDSignInErrorDomain
                                  code:code
                              userInfo:errorDict];
       break;
-    case Verify:
+    case GIDFlowNameVerify:
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       return [NSError errorWithDomain:kGIDVerifyErrorDomain
                                  code:code
@@ -249,5 +268,6 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
                              code:code
                          userInfo:errorDict];
 }
+
 
 @end

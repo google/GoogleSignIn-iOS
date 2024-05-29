@@ -28,4 +28,8 @@
     (NSDictionary<NSString *, NSString *> *)additionalParameters
                                          errorString:(NSString *)errorString;
 
++ (instancetype)testInstanceNoAuthCodeWithAdditionalParameters:
+    (NSDictionary<NSString *, NSString *> *)additionalParameters
+                                                   errorString:(NSString *)errorString;
+
 @end
