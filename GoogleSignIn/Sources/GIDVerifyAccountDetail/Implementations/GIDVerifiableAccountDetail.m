@@ -37,4 +37,11 @@ NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/
   }
 }
 
++ (GIDAccountDetailType)detailTypeWithString:(NSString *)detailTypeString {
+  if ([detailTypeString isEqualToString:kAccountDetailTypeAgeOver18Scope]) {
+    return GIDAccountDetailTypeAgeOver18;
+  }
+  return nil;
+}
+
 @end

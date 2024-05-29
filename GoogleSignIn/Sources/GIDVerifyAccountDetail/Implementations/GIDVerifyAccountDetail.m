@@ -112,12 +112,12 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
   GIDSignInInternalOptions *options =
-  [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
-                                   presentingViewController:presentingViewController
-                                                  loginHint:hint
-                                              addScopesFlow:YES
-                                     accountDetailsToVerify:accountDetails
-                                           verifyCompletion:completion];
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+                                       presentingViewController:presentingViewController
+                                                      loginHint:hint
+                                                  addScopesFlow:YES
+                                         accountDetailsToVerify:accountDetails
+                                               verifyCompletion:completion];
   self->_options = options;
   self->_accountDetails = accountDetails;
   [self verifyAccountDetailsInteractivelyWithOptions:options];

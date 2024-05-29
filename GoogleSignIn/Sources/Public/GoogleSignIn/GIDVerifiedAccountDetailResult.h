@@ -19,6 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class GIDVerifiableAccountDetail;
+@class OIDAuthState;
 @class OIDTokenResponse;
 
 /// A helper object that contains the result of a verification flow.
@@ -28,12 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// The date when the access token expires.
 @property(nonatomic, readonly, nullable) NSDate *expirationDate;
 /// The access token string.
-@property(nonatomic, copy, readonly) NSString *accessTokenString;
+@property(nonatomic, copy, readonly, nullable) NSString *accessTokenString;
 /// The refresh token string.
-@property(nonatomic, copy, readonly) NSString *refreshTokenString;
+@property(nonatomic, copy, readonly, nullable) NSString *refreshTokenString;
 /// A list of verified account details.
 @property(nonatomic, copy, readonly) NSArray<GIDVerifiableAccountDetail *>
     *verifiedAccountDetails;
+/// The auth state to use to refresh tokens.
+@property(nonatomic, readonly) OIDAuthState *verifiedAuthState;
 
 /// Initialize a `GIDVerifiedAccountDetailResult` object by specifying all available properties.
 ///
@@ -43,6 +46,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// @return An initialized `GIDVerifyAccountDetail` instance with expiration date, access token, and refresh token.
 - (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
                            accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails;
+
+/// Refresh the access token and refresh token with the current authorization state.
+///
+/// @param completion A completion block called when the refresh operation completes with the new result or error.
+-(void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
+                                                      NSError *))completion;
 
 @end
 

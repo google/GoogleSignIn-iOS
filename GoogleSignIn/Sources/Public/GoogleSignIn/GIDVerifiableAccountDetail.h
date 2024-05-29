@@ -45,6 +45,11 @@ extern NSString *const kAccountDetailTypeAgeOver18Scope;
 /// @return A string representing the scope required to verify the account detail.
 - (nullable NSString *)scope;
 
+/// Retrieves the verified account detail type from the given scope..
+///
+/// @return The verified account detail the passed in scope maps to.
++ (GIDAccountDetailType)detailTypeWithString:(NSString *)detailTypeString;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -24,8 +24,15 @@
 @import AppAuth;
 @import GTMSessionFetcherCore;
 #else
+#import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDScopeUtilities.h>
+#import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #endif
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDVerifiedAccountDetailResult
 
@@ -41,4 +48,55 @@
   return self;
 }
 
+-(void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
+                                                      NSError *))completion {
+  OIDAuthorizationResponse *authResponse = self.verifiedAuthState.lastAuthorizationResponse;
+  OIDAuthorizationRequest *request = authResponse.request;
+
+  OIDTokenRequest *refreshRequest = 
+      [[OIDTokenRequest alloc] initWithConfiguration:request.configuration
+                                           grantType:OIDGrantTypeAuthorizationCode
+                                   authorizationCode:authResponse.authorizationCode
+                                         redirectURL:request.redirectURL
+                                            clientID:request.clientID
+                                        clientSecret:request.clientSecret
+                                               scope:request.scope                     
+                                        refreshToken:self.refreshTokenString
+                                        codeVerifier:request.codeVerifier
+                                additionalParameters:request.additionalParameters];
+
+  [OIDAuthorizationService performTokenRequest:refreshRequest
+                 originalAuthorizationResponse:authResponse
+                                      callback:^(OIDTokenResponse * _Nullable tokenResponse, 
+                                                 NSError * _Nullable error) {
+    if (tokenResponse) {
+      [self.verifiedAuthState updateWithTokenResponse:tokenResponse error:nil];
+    } else {
+      [self.verifiedAuthState updateWithAuthorizationError:error];
+    }
+    [self updateVerifiedDetailsWithTokenResponse:tokenResponse];
+    completion(self, error);
+  }];
+}
+
+- (void)updateVerifiedDetailsWithTokenResponse:(nullable OIDTokenResponse *)response {
+  if (response) {
+    NSArray<NSString *> *accountDetailsString = 
+        [OIDScopeUtilities scopesArrayWithString:response.scope];
+
+    NSMutableArray<GIDVerifiableAccountDetail *> *verifiedAccountDetails = [NSMutableArray array];
+    for (NSString *type in accountDetailsString) {
+      GIDAccountDetailType detailType = [GIDVerifiableAccountDetail detailTypeWithString:type];
+      if (detailType) {
+        [verifiedAccountDetails addObject:
+          [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:detailType]];
+      }
+    }
+    _verifiedAccountDetails = [verifiedAccountDetails copy];
+  } else {
+    _verifiedAccountDetails = @[];
+  }
+}
+
 @end
+NS_ASSUME_NONNULL_END
