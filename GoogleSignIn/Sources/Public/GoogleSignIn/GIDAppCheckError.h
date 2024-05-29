@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #import <TargetConditionals.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GIDAppCheckError.h"
-#endif
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDSignInResult.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+/// The error domain for `NSError`s returned by the Google Sign-In SDK related to App Check.
+extern NSErrorDomain const kGIDAppCheckErrorDomain;
+
+/// A list of potential error codes returned from the Google Sign-In SDK during App Check.
+typedef NS_ERROR_ENUM(kGIDAppCheckErrorDomain, GIDAppCheckErrorCode) {
+  /// An unexpected error was encountered.
+  kGIDAppCheckUnexpectedError = 1,
+};
+NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

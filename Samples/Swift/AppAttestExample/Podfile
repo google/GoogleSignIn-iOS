@@ -1,0 +1,12 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
+pod 'GoogleSignInSwiftSupport', :path => '../../../', :testspecs => ['unit']
+project 'AppAttestExampleForPod.xcodeproj'
+
+use_frameworks! :linkage => :static
+
+target 'AppAttestExampleForPod' do
+  pod 'AppCheckCore'
+  platform :ios, '14.0'
+end

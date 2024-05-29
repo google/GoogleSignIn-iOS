@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #import <TargetConditionals.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GIDAppCheckError.h"
-#endif
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDSignInResult.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+/// A `UIViewController` presented onscreen to indicate to the user that GSI is performing blocking
+/// work.
+@interface GIDActivityIndicatorViewController : UIViewController
+
+/// The indicator view spinning on screen.
+@property(nonatomic, strong, readonly) UIActivityIndicatorView *activityIndicator;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
