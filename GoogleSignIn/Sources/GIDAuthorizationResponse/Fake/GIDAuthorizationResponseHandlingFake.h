@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandling.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/API/GIDAuthorizationResponseHandling.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,10 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithAuthState:(nullable OIDAuthState *)authState
                             error:(nullable NSError *)error;
 
-/// Fill the passed in auth flow with the auth state and error initialized.
-///
-/// @param authFlow The auth flow to either fetch tokens or error.
-//- (void)maybeFetchToken:(GIDAuthFlow *)authFlow;
 @end
 
 NS_ASSUME_NONNULL_END

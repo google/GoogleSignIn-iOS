@@ -16,7 +16,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Fake/GIDAuthorizationResponseHandlingFake.h"
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandling.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/API/GIDAuthorizationResponseHandling.h"
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 
@@ -44,11 +44,6 @@
   return self;
 }
 
-- (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
-  authFlow.authState = self.authState;
-  authFlow.error = self.error;
-}
-
 - (GIDAuthFlow *)generateAuthFlowFromAuthorizationResponse {
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:self.authState
                                                            error:self.error
@@ -57,6 +52,10 @@
   return authFlow;
 }
 
+- (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
+  authFlow.authState = self.authState;
+  authFlow.error = self.error;
+}
 
 @end
 
