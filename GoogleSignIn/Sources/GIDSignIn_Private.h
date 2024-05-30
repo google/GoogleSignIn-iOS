@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
 @class GTMKeychainStore;
+@class GIDAppCheck;
 
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.
@@ -44,11 +45,15 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// Redeclare |currentUser| as readwrite for internal use.
 @property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
 
-/// Private initializer for |GIDSignIn|.
-- (instancetype)initPrivate;
-
-/// Private initializer taking a `GTMKeychainStore` to use during tests.
+/// Private initializer taking a `GTMKeychainStore`.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+/// Private initializer taking a `GTMKeychainStore` and `GIDAppCheckProvider`.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                             appCheck:(GIDAppCheck *)appCheck
+API_AVAILABLE(ios(14));
+#endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;
