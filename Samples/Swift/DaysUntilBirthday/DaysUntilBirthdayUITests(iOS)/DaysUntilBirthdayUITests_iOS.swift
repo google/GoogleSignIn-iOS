@@ -172,15 +172,8 @@ extension DaysUntilBirthdayUITests_iOS {
       sampleApp.buttons["Not Now"].tap()
     }
 
-    let currentlyShowingSignInDisclaimer = sampleApp.staticTexts[signInDisclaimerHeaderText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
-
-    if currentlyShowingSignInDisclaimer {
-      sampleApp.buttons["Continue"].tap()
-    }
-
+    // Proceed through sign-in disclaimer and/or access request view(s) if needed
+    handleSignInDisclaimerIfNeeded()
     handleAccessRequestIfNeeded()
 
     return true
@@ -196,15 +189,7 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    let currentlyShowingSignInDisclaimer = sampleApp.staticTexts[signInDisclaimerHeaderText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
-
-    if currentlyShowingSignInDisclaimer {
-      sampleApp.buttons["Continue"].tap()
-    }
-
+    handleSignInDisclaimerIfNeeded()
     handleAccessRequestIfNeeded()
     return true
   }
@@ -277,7 +262,7 @@ extension DaysUntilBirthdayUITests_iOS {
     return true
   }
 
-  /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed
+  /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
   func handleAccessRequestIfNeeded() {
     let currentlyShowingAdditionalAccessRequest = sampleApp.staticTexts[additionalAccessHeaderText]
       .waitForExistence(timeout: timeout) && sampleApp.staticTexts[appTrustWarningText]
@@ -290,7 +275,20 @@ extension DaysUntilBirthdayUITests_iOS {
     }
   }
 
-  /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it
+  /// Proceeds through the sign-in disclaimer view if needed.
+  func handleSignInDisclaimerIfNeeded() {
+    let currentlyShowingSignInDisclaimer = sampleApp.staticTexts[signInDisclaimerHeaderText]
+      .waitForExistence(timeout: timeout) &&
+    sampleApp.buttons["Continue"]
+      .waitForExistence(timeout: timeout)
+
+    if currentlyShowingSignInDisclaimer {
+      sampleApp.buttons["Continue"].tap()
+    }
+  }
+
+  /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it.
+  /// Returns true if the signed-in account was found and tapped, otherwise returns false.
   func findAndTapExistingSignedInEmail() -> Bool {
     guard sampleApp.staticTexts[Credential.email.rawValue].exists else {
       XCTFail("Email used for previous sign-in not in list")
