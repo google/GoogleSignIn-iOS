@@ -18,11 +18,11 @@ import XCTest
 
 class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInStaticText =
-  "“DaysUntilBirthday (iOS)” Wants to Use “google.com” to Sign In"
+    "“DaysUntilBirthday (iOS)” Wants to Use “google.com” to Sign In"
   private let passwordManagerPrompt =
-  "Would you like to save this password to use with apps and websites?"
+    "Would you like to save this password to use with apps and websites?"
   private let signInDisclaimerHeaderText =
-  "Sign in to Days Until Birthday"
+    "Sign in to Days Until Birthday"
   private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
   private let chooseAnAccountHeaderText = "Choose an account"
@@ -43,8 +43,8 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
     sampleApp.navigationBars.buttons["Disconnect"].tap()
 
     guard sampleApp
-      .buttons["GoogleSignInButton"]
-      .waitForExistence(timeout: timeout) else {
+            .buttons["GoogleSignInButton"]
+            .waitForExistence(timeout: timeout) else {
       return XCTFail("Disconnecting should return user to sign in view")
     }
   }
@@ -54,16 +54,16 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
     XCTAssertTrue(signIn())
 
     guard sampleApp
-      .navigationBars
-      .buttons["Sign Out"]
-      .waitForExistence(timeout: timeout) else {
+            .navigationBars
+            .buttons["Sign Out"]
+            .waitForExistence(timeout: timeout) else {
       return XCTFail("Failed to find the 'Disconnect' button")
     }
     sampleApp.buttons["Sign Out"].tap()
 
     guard sampleApp
-      .buttons["GoogleSignInButton"]
-      .waitForExistence(timeout: timeout) else {
+            .buttons["GoogleSignInButton"]
+            .waitForExistence(timeout: timeout) else {
       return XCTFail("Signing out should return user to sign in view")
     }
   }
@@ -81,23 +81,23 @@ extension DaysUntilBirthdayUITests_iOS {
     signInButton.tap()
 
     guard springboardApp
-      .staticTexts[signInStaticText]
-      .waitForExistence(timeout: timeout) else {
+            .staticTexts[signInStaticText]
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to display permission prompt")
       return false
     }
 
     guard springboardApp
-      .buttons["Continue"]
-      .waitForExistence(timeout: timeout) else {
+            .buttons["Continue"]
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find 'Continue' button")
       return false
     }
     springboardApp.buttons["Continue"].tap()
 
     if sampleApp
-      .staticTexts[Credential.email.rawValue]
-      .waitForExistence(timeout: timeout) {
+        .staticTexts[Credential.email.rawValue]
+        .waitForExistence(timeout: timeout) {
       // This email was previously used to sign in
       XCTAssertTrue(useExistingSignIn())
     } else {
@@ -109,9 +109,8 @@ extension DaysUntilBirthdayUITests_iOS {
       XCTFail("Failed to return sample app to foreground")
       return false
     }
-
     guard sampleApp.staticTexts["User Profile"]
-      .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to sign in and return to app's User Profile view.")
       return false
     }
@@ -125,15 +124,15 @@ extension DaysUntilBirthdayUITests_iOS {
   /// password to sign in with.
   func signInForTheFirstTime() -> Bool {
     guard sampleApp.textFields["Email or phone"]
-      .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find email textfield")
       return false
     }
     guard sampleApp
-      .keyboards
-      .element
-      .buttons["return"]
-      .waitForExistence(timeout: timeout) else {
+            .keyboards
+            .element
+            .buttons["return"]
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find 'return' button")
       return false
     }
@@ -142,15 +141,15 @@ extension DaysUntilBirthdayUITests_iOS {
     sampleApp.keyboards.element.buttons["return"].tap()
 
     guard sampleApp.secureTextFields["Enter your password"]
-      .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find password textfield")
       return false
     }
     guard sampleApp
-      .keyboards
-      .element
-      .buttons["return"]
-      .waitForExistence(timeout: timeout) else {
+            .keyboards
+            .element
+            .buttons["return"]
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find 'return' button")
       return false
     }
@@ -191,6 +190,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     handleSignInDisclaimerIfNeeded()
     handleAccessRequestIfNeeded()
+
     return true
   }
 
@@ -200,23 +200,22 @@ extension DaysUntilBirthdayUITests_iOS {
   /// sign in with Google.
   func navigateToDaysUntilBirthday() -> Bool {
     guard sampleApp.buttons["View Days Until Birthday"]
-      .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find button navigating to days until birthday view")
       return false
     }
     sampleApp.buttons["View Days Until Birthday"].tap()
 
     if springboardApp
-      .staticTexts[signInStaticText]
-      .waitForExistence(timeout: timeout) {
+        .staticTexts[signInStaticText]
+        .waitForExistence(timeout: timeout) {
       guard springboardApp
-        .buttons["Continue"]
-        .waitForExistence(timeout: timeout) else {
+              .buttons["Continue"]
+              .waitForExistence(timeout: timeout) else {
         XCTFail("Failed to find 'Continue' button")
         return false
       }
       springboardApp.buttons["Continue"].tap()
-
 
       if sampleApp
         .staticTexts[chooseAnAccountHeaderText]
@@ -231,7 +230,7 @@ extension DaysUntilBirthdayUITests_iOS {
     }
 
     guard sampleApp.staticTexts["Days Until Birthday"]
-      .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to show days until birthday view")
       return false
     }
@@ -243,18 +242,18 @@ extension DaysUntilBirthdayUITests_iOS {
   /// - returns: `true` if the navigation was successfully performed.
   func navigateBackToUserProfileView() -> Bool {
     guard sampleApp
-      .navigationBars
-      .buttons["User Profile"]
-      .waitForExistence(timeout: timeout) else {
+            .navigationBars
+            .buttons["User Profile"]
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to show navigation button back to user profile view")
       return false
     }
     sampleApp.navigationBars.buttons["User Profile"].tap()
 
     guard sampleApp
-      .navigationBars
-      .buttons["Disconnect"]
-      .waitForExistence(timeout: timeout) else {
+            .navigationBars
+            .buttons["Disconnect"]
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find the 'Disconnect' button")
       return false
     }
