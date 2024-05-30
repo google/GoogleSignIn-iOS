@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
   /// User account detail for age over 18.
   GIDAccountDetailTypeAgeOver18,
+  /// Unknown or unspecified verification error.
+  GIDAccountDetailTypeUnknown,
 };
 
 /// String scope representing the account detail type for age over 18.

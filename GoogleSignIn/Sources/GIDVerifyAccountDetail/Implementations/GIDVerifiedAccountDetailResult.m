@@ -88,9 +88,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<GIDVerifiableAccountDetail *> *verifiedAccountDetails = [NSMutableArray array];
     for (NSString *type in accountDetailsString) {
       GIDAccountDetailType detailType = [GIDVerifiableAccountDetail detailTypeWithString:type];
-      if (detailType) {
+      if (detailType != GIDAccountDetailTypeUnknown) {
         [verifiedAccountDetails addObject:
-          [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:detailType]];
+         [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:detailType]];
       }
     }
     _verifiedAccountDetails = [verifiedAccountDetails copy];
