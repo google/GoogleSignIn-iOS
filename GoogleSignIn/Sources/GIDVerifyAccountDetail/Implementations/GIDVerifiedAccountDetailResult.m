@@ -38,18 +38,20 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDVerifiedAccountDetailResult
 
 - (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
-                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails {
+                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+                                authState:(OIDAuthState *)authState {
   self = [super init];
   if (self) {
     _expirationDate = tokenResponse.accessTokenExpirationDate;
     _accessTokenString = tokenResponse.accessToken;
     _refreshTokenString = tokenResponse.refreshToken;
     _verifiedAccountDetails = accountDetails;
+    _verifiedAuthState = authState;
   }
   return self;
 }
 
--(void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
+- (void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
                                                       NSError *))completion {
   OIDAuthorizationResponse *authResponse = self.verifiedAuthState.lastAuthorizationResponse;
   OIDAuthorizationRequest *request = authResponse.request;

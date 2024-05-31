@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/API/GIDVerifiedAccountDetailResultHandling.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class GIDVerifiableAccountDetail;
@@ -24,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// A helper object that contains the result of a verification flow.
 /// This will pass back the necessary tokens to the requesting party.
-@interface GIDVerifiedAccountDetailResult : NSObject
+@interface GIDVerifiedAccountDetailResult : NSObject <GIDVerifiedAccountDetailResultHandling>
 
 /// The date when the access token expires.
 @property(nonatomic, readonly, nullable) NSDate *expirationDate;
@@ -44,14 +46,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param accountDetails A list of verified account details.
 ///
 /// @return An initialized `GIDVerifyAccountDetail` instance with expiration date, access token, and refresh token.
-- (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
-                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails;
+//- (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
+//                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+//                                authState:(OIDAuthState *)authState;
 
 /// Refresh the access token and refresh token with the current authorization state.
 ///
 /// @param completion A completion block called when the refresh operation completes with the new result or error.
--(void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
-                                                      NSError *))completion;
+//-(void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
+//                                                      NSError *))completion;
 
 @end
 
