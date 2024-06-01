@@ -24,6 +24,7 @@
 #import "GIDVerifyAccountDetail.h"
 #import "GIDVerifiableAccountDetail.h"
 #import "GIDVerifiedAccountDetailResult.h"
+#import "GIDVerifiedAccountDetailResultHandling.h"
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import "GIDSignInButton.h"
 #endif
