@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/GIDAuthorizationResponse/API/GIDVerifiedAccountDetailResultHandling.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResultHandling.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -20,6 +20,9 @@
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
+
+NSString *const kAccountDetailTypeAgeOver18Scopey = @"https://www.googleapis.com/auth/verified.age.over18.standard";
 
 @interface GIDVerifiedAccountDetailResultTest : XCTestCase
 @end
@@ -27,23 +30,35 @@
 @implementation GIDVerifiedAccountDetailResultTest : XCTestCase
 
 - (void)testInit {
+  OIDAuthState *authState = [OIDAuthState testInstance];
+
+  GIDVerifiableAccountDetail *verifiedAccountDetail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+
+  NSArray<GIDVerifiableAccountDetail *> *verifiedList =
+  @[verifiedAccountDetail, verifiedAccountDetail];
+
+  GIDVerifiedAccountDetailResult *result = [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:authState.lastTokenResponse accountDetails:verifiedList authState:authState];
+
+  XCTAssertEqual(result.verifiedAuthState, authState);
+  XCTAssertEqual(result.verifiedAccountDetails, verifiedList);
+  XCTAssertEqual(result.expirationDate, authState.lastTokenResponse.accessTokenExpirationDate);
+  XCTAssertEqual(result.accessTokenString, authState.lastTokenResponse.accessToken);
+  XCTAssertEqual(result.refreshTokenString, authState.lastTokenResponse.refreshToken);
 
 }
 
 - (void)testRefreshTokensWithCompletion_success {
+  GIDVerifiableAccountDetail *verifiedAccountDetail = 
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
 
-}
+  NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
+  @[verifiedAccountDetail, verifiedAccountDetail];
 
-- (void)testRefreshTokensWithCompletion_noTokenResponse {
-  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:nil];
-  NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                       code:kGIDSignInErrorCodeUnknown
-                                   userInfo:nil];
+  NSString *accountDetailString = @"https://www.googleapis.com/auth/verified.age.over18.standard  https://www.googleapis.com/auth/verified.age.over18.standard";
 
-//  GIDVerifiedAccountDetailResult *result =
-//      [[GIDVerifiedAccountDetailResult alloc] initWithTokenResponse:authState.lastTokenResponse
-//                                                              authState:authState
-//                                                                  error:nil];
+  OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:accountDetailString];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDVerifiedAccountDetailResultFake *result =
       [[GIDVerifiedAccountDetailResultFake alloc] initWithTokenResponse:authState.lastTokenResponse
@@ -53,10 +68,35 @@
   XCTestExpectation *expectation = [self expectationWithDescription:@"Completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
                                       NSError * _Nullable error) {
+    XCTAssertNil(error);
+    XCTAssertNotNil(refreshedResult);
+    XCTAssertNotNil(refreshedResult.verifiedAccountDetails);
+    XCTAssertTrue([refreshedResult.verifiedAccountDetails isEqualToArray:expectedVerifiedList]);
+    [expectation fulfill];
+  }];
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testRefreshTokensWithCompletion_noTokenResponse {
+  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:nil];
+  NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                       code:kGIDSignInErrorCodeUnknown
+                                   userInfo:nil];
+
+  GIDVerifiedAccountDetailResultFake *result =
+      [[GIDVerifiedAccountDetailResultFake alloc] initWithTokenResponse:authState.lastTokenResponse
+                                                      verifiedAuthState:authState
+                                                                  error:expectedError];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Completion called"];
+  [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
+                                      NSError * _Nullable error) {
     XCTAssertNotNil(error);
-    XCTAssertNil(refreshedResult);
-    XCTAssertNil(refreshedResult.verifiedAccountDetails);
+    XCTAssertEqual(error, expectedError);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeUnknown);
+    XCTAssertNotNil(refreshedResult);
+    XCTAssertEqual(refreshedResult.verifiedAccountDetails, @[]);
     [expectation fulfill];
   }];
 

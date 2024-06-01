@@ -35,7 +35,11 @@
 - (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
                            accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
                                 authState:(OIDAuthState *)authState {
-  // dont use
+  self = [super init];
+  if (self) {
+    NSAssert(false, @"This class is only to be used in testing. Do not use.");
+  }
+  return self;
 }
 
 - (instancetype)initWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse

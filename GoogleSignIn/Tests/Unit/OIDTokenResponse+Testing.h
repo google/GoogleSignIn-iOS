@@ -51,6 +51,8 @@ extern NSString * const kFatPictureURL;
 
 + (instancetype)testInstance;
 
++ (instancetype)testInstanceWithScope:(NSString *)scope;
+
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken;
 
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
