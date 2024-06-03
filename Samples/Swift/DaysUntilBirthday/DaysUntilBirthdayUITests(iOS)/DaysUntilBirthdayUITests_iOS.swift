@@ -26,6 +26,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
   private let chooseAnAccountHeaderText = "Choose an account"
+  private let nowNowText = "Not Now"
   private let timeout: TimeInterval = 5
 
   private let sampleApp = XCUIApplication()
@@ -163,12 +164,12 @@ extension DaysUntilBirthdayUITests_iOS {
       .staticTexts[passwordManagerPrompt]
       .waitForExistence(timeout: timeout) {
       guard sampleApp
-        .buttons["Not Now"]
+        .buttons[nowNowText]
         .waitForExistence(timeout: timeout) else {
-        XCTFail("Failed to find 'Not Now' button")
+        XCTFail(String(format: "Failed to find '%@' button", nowNowText))
         return false
       }
-      sampleApp.buttons["Not Now"].tap()
+      sampleApp.buttons[nowNowText].tap()
     }
 
     // Proceed through sign-in disclaimer and/or access request view(s) if needed
@@ -287,14 +288,14 @@ extension DaysUntilBirthdayUITests_iOS {
   }
 
   /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it.
-  /// Returns true if the signed-in account was found and tapped, otherwise returns false.
+  /// - returns: true if the signed-in account was found and tapped, otherwise returns false.
   func findAndTapExistingSignedInEmail() -> Bool {
     guard sampleApp.staticTexts[Credential.email.rawValue].exists else {
-      XCTFail("Email used for previous sign-in not in list")
+      XCTFail(String(format: "Could not find %@ in list of previously-used accounts.", Credential.email.rawValue))
       return false
     }
     guard sampleApp.staticTexts[Credential.email.rawValue].isHittable else {
-      XCTFail("Email used for previous sign-in not tappable")
+      XCTFail(String(format: "%@ used for previous sign-in not tappable", Credential.email.rawValue))
       return false
     }
     sampleApp.staticTexts[Credential.email.rawValue].tap()
