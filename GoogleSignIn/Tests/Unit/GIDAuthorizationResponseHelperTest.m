@@ -55,7 +55,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
 
 - (void)testFetchTokenWithAuthFlow {
   OIDTokenResponse *tokenResponse = 
-      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kAccessTokenExpiresIn)];
+      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kExpiringAccessToken)];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDAuthorizationResponseHandlingFake *responseHandler =
@@ -75,7 +75,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
 
 - (void)testSuccessfulGenerateAuthFlowFromAuthorizationResponse {
   OIDTokenResponse *tokenResponse = 
-      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kAccessTokenExpiresIn)];
+      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kExpiringAccessToken)];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDAuthorizationResponseHandlingFake *responseHandler =
@@ -150,7 +150,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
                                    userInfo:nil];
 
   OIDTokenResponse *tokenResponse = 
-      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kAccessTokenExpiresIn)];
+      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kExpiringAccessToken)];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDAuthorizationResponseHandlingFake *responseHandler = 
