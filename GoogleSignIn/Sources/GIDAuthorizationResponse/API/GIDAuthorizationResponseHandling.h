@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, GIDFlowName) {
 /// The Sign In flow.
   GIDFlowNameSignIn = 0,
 /// The Verify flow.
-  GIDFlowNameVerify = 1,
+  GIDFlowNameVerifyAccountDetail = 1,
 };
 
 @protocol GIDAuthorizationResponseHandling

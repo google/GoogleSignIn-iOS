@@ -26,9 +26,13 @@
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
 // The EMM support version
 static NSString *const kEMMVersion = @"1";
+
+// Time interval to use for an expiring access token.
+static NSTimeInterval kExpiringAccessToken = 20;
 
 @interface GIDAuthorizationResponseHelperTest : XCTestCase
 @end
@@ -39,7 +43,7 @@ static NSString *const kEMMVersion = @"1";
   GIDAuthorizationResponseHandler *responseHandler =
       [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
                                                                   emmSupport:nil
-                                                                    flowName:GIDFlowNameVerify
+                                                                    flowName:GIDFlowNameVerifyAccountDetail
                                                                configuration:nil
                                                                        error:nil];
   GIDAuthorizationResponseHelper *responseHelper = 
@@ -50,36 +54,41 @@ static NSString *const kEMMVersion = @"1";
 }
 
 - (void)testFetchTokenWithAuthFlow {
-  OIDAuthState *authState = [OIDAuthState testInstance];
-  GIDAuthorizationResponseHandlingFake *fakeHandler = 
+  OIDTokenResponse *tokenResponse = 
+      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kAccessTokenExpiresIn)];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
+
+  GIDAuthorizationResponseHandlingFake *responseHandler =
       [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
   GIDAuthorizationResponseHelper *responseHelper =
-      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:fakeHandler];
-  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] init];
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
+  GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:authState 
+                                                           error:nil
+                                                      emmSupport:nil
+                                                     profileData:nil];
 
   [responseHelper fetchTokenWithAuthFlow:authFlow];
   XCTAssertNotNil(authFlow);
-  XCTAssertNotNil(authFlow.authState);
+  XCTAssertEqual(authFlow.authState, authState);
   XCTAssertNil(authFlow.error);
 }
 
 - (void)testSuccessfulGenerateAuthFlowFromAuthorizationResponse {
-  OIDAuthorizationResponse *authorizationResponse = [OIDAuthorizationResponse testInstance];
-  GIDAuthorizationResponseHandler *responseHandler =
-      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
-                                                                  emmSupport:nil
-                                                                    flowName:GIDFlowNameVerify
-                                                               configuration:nil
-                                                                       error:nil];
+  OIDTokenResponse *tokenResponse = 
+      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kAccessTokenExpiresIn)];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
+
+  GIDAuthorizationResponseHandlingFake *responseHandler =
+      [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
 
   GIDAuthFlow *authFlow = [responseHandler generateAuthFlowFromAuthorizationResponse];
   XCTAssertNotNil(authFlow);
-  XCTAssertNotNil(authFlow.authState);
+  XCTAssertEqual(authFlow.authState, authState);
   XCTAssertNil(authFlow.error);
 }
 
-- (void)testGenerateAuthFlowFromAuthorizationResponse_noCode {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)testGenerateAuthFlowFromAuthorizationResponse_noCode {
   NSDictionary<NSString *, NSString *> *errorDict =
       @{ NSLocalizedDescriptionKey : @"Unknown error" };
   NSError *expectedError = [NSError errorWithDomain:kGIDVerifyErrorDomain
@@ -92,7 +101,7 @@ static NSString *const kEMMVersion = @"1";
   GIDAuthorizationResponseHandler *responseHandler =
       [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
                                                                   emmSupport:nil
-                                                                    flowName:GIDFlowNameVerify
+                                                                    flowName:GIDFlowNameVerifyAccountDetail
                                                                configuration:nil
                                                                        error:nil];
 
@@ -100,21 +109,28 @@ static NSString *const kEMMVersion = @"1";
   XCTAssertNotNil(authFlow);
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
+  XCTAssertEqual(authFlow.error.domain, expectedError.domain);
   XCTAssertEqual(authFlow.error.code, expectedError.code);
-  XCTAssertEqualObjects(authFlow.error.userInfo[NSLocalizedDescriptionKey],
-                        expectedError.userInfo[NSLocalizedDescriptionKey]);
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  XCTAssertEqualObjects(authFlow.error.userInfo, expectedError.userInfo);
 }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-- (void)testGenerateAuthFlowWithMissingAuthorizationResponse {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)testGenerateAuthFlowWithMissingAuthorizationResponse {
   NSError *error = [NSError errorWithDomain:kGIDVerifyErrorDomain
                                        code:GIDVerifyErrorCodeUnknown
                                    userInfo:nil];
+
+  NSString *errorString = [error localizedDescription];
+  NSDictionary<NSString *, NSString *> *errorDict = @{ NSLocalizedDescriptionKey : errorString };
+  NSError *expectedError = [NSError errorWithDomain:kGIDVerifyErrorDomain
+                                               code:GIDVerifyErrorCodeUnknown
+                                           userInfo:errorDict];
+
   GIDAuthorizationResponseHandler *responseHandler =
       [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
                                                                   emmSupport:nil
-                                                                    flowName:GIDFlowNameVerify
+                                                                    flowName:GIDFlowNameVerifyAccountDetail
                                                                configuration:nil
                                                                        error:error];
 
@@ -122,48 +138,52 @@ static NSString *const kEMMVersion = @"1";
   XCTAssertNotNil(authFlow);
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error.code, error.code);
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  XCTAssertEqual(authFlow.error.domain, expectedError.domain);
+  XCTAssertEqual(authFlow.error.code, expectedError.code);
+  XCTAssertEqualObjects(authFlow.error.userInfo, expectedError.userInfo);
 }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-- (void)testMaybeFetchTokenWithAuthFlowError {
+- (void)testMaybeFetchToken_authFlowError {
   NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                        code:kGIDSignInErrorCodeUnknown
                                    userInfo:nil];
+
+  OIDTokenResponse *tokenResponse = 
+      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kAccessTokenExpiresIn)];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
+
+  GIDAuthorizationResponseHandlingFake *responseHandler = 
+      [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:nil
                                                            error:error
                                                       emmSupport:nil
                                                      profileData:nil];
-  GIDAuthorizationResponseHandler *responseHandler = 
-      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
-                                                                  emmSupport:kEMMVersion
-                                                                    flowName:GIDFlowNameSignIn
-                                                               configuration:nil
-                                                                       error:nil];
 
   [responseHandler maybeFetchToken:authFlow];
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertNil(authFlow.emmSupport);
+  XCTAssertEqual(authFlow.error, error);
 }
 
-- (void)testMaybeFetchTokenWithExpirationError {
+- (void)testMaybeFetchToken_noRefresh {
+  NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                       code:kGIDSignInErrorCodeUnknown
+                                   userInfo:nil];
+
   OIDAuthState *authState = [OIDAuthState testInstance];
+  GIDAuthorizationResponseHandlingFake *responseHandler = 
+      [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:authState
-                                                           error:nil
+                                                           error:error
                                                       emmSupport:nil
                                                      profileData:nil];
-  GIDAuthorizationResponseHandler *responseHandler =
-      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:nil
-                                                                  emmSupport:kEMMVersion
-                                                                    flowName:GIDFlowNameSignIn
-                                                               configuration:nil
-                                                                       error:nil];
 
   [responseHandler maybeFetchToken:authFlow];
   XCTAssertNotNil(authFlow.authState);
-  XCTAssertNil(authFlow.error);
-  XCTAssertNil(authFlow.emmSupport);
+  XCTAssertEqual(authFlow.authState, authState);
+  XCTAssertNotNil(authFlow.error);
+  XCTAssertEqual(authFlow.error, error);
 }
 
 @end

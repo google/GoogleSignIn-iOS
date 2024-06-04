@@ -53,6 +53,8 @@ extern NSString * const kFatPictureURL;
 
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken;
 
++ (instancetype)testInstanceWithAccessTokenExpiresIn:(NSNumber *)accessTokenExpiresIn;
+
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
                             accessToken:(NSString *)accessToken
                               expiresIn:(NSNumber *)expiresIn

@@ -35,10 +35,10 @@
                                                      profileData:profileData];
 
   XCTAssertNotNil(authFlow);
-  XCTAssertNotNil(authFlow.authState);
+  XCTAssertEqual(authFlow.authState, authState);
   XCTAssertNil(authFlow.error);
   XCTAssertNil(authFlow.emmSupport);
-  XCTAssertNotNil(authFlow.profileData);
+  XCTAssertEqual(authFlow.profileData, profileData);
 }
 
 - (void)testInit {
