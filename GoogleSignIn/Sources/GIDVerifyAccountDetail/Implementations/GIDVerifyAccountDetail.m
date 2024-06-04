@@ -29,11 +29,8 @@
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
-@import GTMAppAuth;
-
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthorizationRequest.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
@@ -201,7 +198,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   GIDAuthorizationResponseHandler *responseHandler =
       [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
                                                                   emmSupport:nil
-                                                                    flowName:GIDFlowNameVerify
+                                                                    flowName:GIDFlowNameVerifyAccountDetail
                                                                configuration:_configuration
                                                                        error:error];
   GIDAuthorizationResponseHelper *responseHelper =

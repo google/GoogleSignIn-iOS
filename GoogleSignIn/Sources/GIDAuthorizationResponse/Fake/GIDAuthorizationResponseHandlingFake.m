@@ -19,6 +19,13 @@
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/API/GIDAuthorizationResponseHandling.h"
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
+
+#ifdef SWIFT_PACKAGE
+@import AppAuth;
+#else
+#import <AppAuth/OIDAuthState.h>
+#endif
 
 @implementation GIDAuthorizationResponseHandlingFake
 
@@ -53,6 +60,13 @@
 }
 
 - (void)maybeFetchToken:(GIDAuthFlow *)authFlow {
+  if (authFlow.error ||
+      (_authState.lastTokenResponse.accessToken &&
+       [_authState.lastTokenResponse.accessTokenExpirationDate timeIntervalSinceNow] >
+       kMinimumRestoredAccessTokenTimeToExpire)) {
+    return;
+  }
+
   authFlow.authState = self.authState;
   authFlow.error = self.error;
 }

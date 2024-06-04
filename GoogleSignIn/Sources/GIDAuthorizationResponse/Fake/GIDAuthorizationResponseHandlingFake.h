@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class OIDAuthState;
 
+/// A fake implementation of `GIDAuthorizationResponseHandling` for testing purposes.
 @interface GIDAuthorizationResponseHandlingFake : NSObject <GIDAuthorizationResponseHandling>
 
 /// The auth state to be used to fetch tokens.
