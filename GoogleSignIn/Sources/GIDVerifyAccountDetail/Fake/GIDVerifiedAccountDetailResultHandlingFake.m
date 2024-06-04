@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-#import "GIDVerifiedAccountDetailResultFake.h"
+#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailResultHandlingFake.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
-
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
-
-@import GTMAppAuth;
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDTokenResponse.h>

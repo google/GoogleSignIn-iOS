@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class OIDAuthState;
 @class OIDTokenResponse;
 
+/// A fake implementation of `GIDVerifiedAccountDetailResultHandling` for testing purposes.
 @interface GIDVerifiedAccountDetailResultFake : NSObject <GIDVerifiedAccountDetailResultHandling>
 
 /// The token response to be updated in the auth state.
@@ -40,7 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSArray<GIDVerifiableAccountDetail *>
     *verifiedAccountDetails;
 
-
+/// Creates an instance conforming to `GIDVerifiedAccountDetailResultHandling` with the provided
+/// token response, auth state, and error.
+///
+/// @param tokenResponse The `OIDTokenResponse` instance to update the auth state.
+/// @param verifiedAuthState The `OIDAuthState` instance to refresh tokens.
+/// @param error Error to indicate failure getting the token response.
 - (instancetype)initWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse
                     verifiedAuthState:(nullable OIDAuthState *)verifiedAuthState
                                 error:(nullable NSError *)error;
