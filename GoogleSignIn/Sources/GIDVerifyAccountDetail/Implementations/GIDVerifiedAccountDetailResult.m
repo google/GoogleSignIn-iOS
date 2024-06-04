@@ -18,11 +18,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
-@import GTMAppAuth;
-
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>

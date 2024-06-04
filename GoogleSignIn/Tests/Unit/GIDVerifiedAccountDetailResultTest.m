@@ -14,15 +14,13 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailResultFake.h"
+#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailResultHandlingFake.h"
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
-#import "GoogleSignIn/Tests/Unit/OIDAuthorizationResponse+Testing.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
-
-NSString *const kAccountDetailTypeAgeOver18Scopey = @"https://www.googleapis.com/auth/verified.age.over18.standard";
 
 @interface GIDVerifiedAccountDetailResultTest : XCTestCase
 @end
@@ -36,9 +34,12 @@ NSString *const kAccountDetailTypeAgeOver18Scopey = @"https://www.googleapis.com
       [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
 
   NSArray<GIDVerifiableAccountDetail *> *verifiedList =
-  @[verifiedAccountDetail, verifiedAccountDetail];
+      @[verifiedAccountDetail, verifiedAccountDetail];
 
-  GIDVerifiedAccountDetailResult *result = [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:authState.lastTokenResponse accountDetails:verifiedList authState:authState];
+  GIDVerifiedAccountDetailResult *result = 
+      [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:authState.lastTokenResponse
+                                                         accountDetails:verifiedList
+                                                              authState:authState];
 
   XCTAssertEqual(result.verifiedAuthState, authState);
   XCTAssertEqual(result.verifiedAccountDetails, verifiedList);
@@ -52,18 +53,18 @@ NSString *const kAccountDetailTypeAgeOver18Scopey = @"https://www.googleapis.com
   GIDVerifiableAccountDetail *verifiedAccountDetail = 
       [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
 
-  NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
-  @[verifiedAccountDetail, verifiedAccountDetail];
-
-  NSString *accountDetailString = @"https://www.googleapis.com/auth/verified.age.over18.standard  https://www.googleapis.com/auth/verified.age.over18.standard";
-
-  OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:accountDetailString];
+  NSString *kAccountDetailList = [NSString stringWithFormat:@"%@ %@",
+                                  kAccountDetailTypeAgeOver18Scope,
+                                  kAccountDetailTypeAgeOver18Scope];
+  OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:kAccountDetailList];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
-
   GIDVerifiedAccountDetailResultFake *result =
       [[GIDVerifiedAccountDetailResultFake alloc] initWithTokenResponse:authState.lastTokenResponse
                                                       verifiedAuthState:authState
                                                                   error:nil];
+
+  NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
+      @[verifiedAccountDetail, verifiedAccountDetail];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
@@ -71,7 +72,7 @@ NSString *const kAccountDetailTypeAgeOver18Scopey = @"https://www.googleapis.com
     XCTAssertNil(error);
     XCTAssertNotNil(refreshedResult);
     XCTAssertNotNil(refreshedResult.verifiedAccountDetails);
-    XCTAssertTrue([refreshedResult.verifiedAccountDetails isEqualToArray:expectedVerifiedList]);
+    XCTAssertTrue([refreshedResult.verifiedAccountDetails isEqual:expectedVerifiedList]);
     [expectation fulfill];
   }];
 
@@ -81,8 +82,8 @@ NSString *const kAccountDetailTypeAgeOver18Scopey = @"https://www.googleapis.com
 - (void)testRefreshTokensWithCompletion_noTokenResponse {
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:nil];
   NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                       code:kGIDSignInErrorCodeUnknown
-                                   userInfo:nil];
+                                               code:kGIDSignInErrorCodeUnknown
+                                           userInfo:nil];
 
   GIDVerifiedAccountDetailResultFake *result =
       [[GIDVerifiedAccountDetailResultFake alloc] initWithTokenResponse:authState.lastTokenResponse

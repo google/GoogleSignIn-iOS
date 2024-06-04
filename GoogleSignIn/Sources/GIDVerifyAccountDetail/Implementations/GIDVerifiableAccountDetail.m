@@ -37,6 +37,13 @@ NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/
   }
 }
 
+- (BOOL)isEqual:(id)object {
+  if (![object isKindOfClass:[GIDVerifiableAccountDetail class]]) {
+    return NO;
+  }
+  return self.accountDetailType == ((GIDVerifiableAccountDetail *)object).accountDetailType;
+}
+
 + (GIDAccountDetailType)detailTypeWithString:(NSString *)detailTypeString {
   if ([detailTypeString isEqualToString:kAccountDetailTypeAgeOver18Scope]) {
     return GIDAccountDetailTypeAgeOver18;
