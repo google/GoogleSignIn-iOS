@@ -25,6 +25,7 @@
 @import AppAuth;
 #else
 #import <AppAuth/OIDAuthState.h>
+#import <AppAuth/OIDTokenResponse.h>
 #endif
 
 @implementation GIDAuthorizationResponseHandlingFake
