@@ -24,6 +24,7 @@
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDTokenResponse.h>
+#import <AppAuth/OIDScopeUtilities.h>
 #endif
 
 @implementation GIDVerifiedAccountDetailResultFake
