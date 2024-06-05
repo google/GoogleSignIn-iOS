@@ -444,6 +444,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqual(_signIn.currentUser.userID, kFakeGaiaID);
 
   [idTokenDecoded stopMocking];
+//  [_authState stopMocking];
 }
 
 - (void)testRestoredPreviousSignInNoRefresh_hasNoPreviousUser {
@@ -464,6 +465,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
   XCTAssertNil(_authError, @"should have no error");
+//  [_authState stopMocking];
 }
 
 - (void)testHasPreviousSignIn_HasNotBeenAuthenticated {
@@ -474,6 +476,7 @@ static NSString *const kNewScope = @"newScope";
   [_authState verify];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
+//  [_authState stopMocking];
 }
 
 - (void)testRestorePreviousSignInWhenSignedOut {
@@ -494,6 +497,7 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertEqual(error.code,
                    kGIDSignInErrorCodeHasNoAuthInKeychain,
                    @"error code should have been the 'NoAuthInKeychain' error code.");
+//    [_authState stopMocking];
   }];
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -508,6 +512,7 @@ static NSString *const kNewScope = @"newScope";
   [_signIn restorePreviousSignInWithCompletion:nil];
 
   XCTAssertNil(_signIn.currentUser);
+//  [_authState stopMocking];
 }
 
 - (void)testRestorePreviousSignInWhenCompletionIsNil {
@@ -533,6 +538,7 @@ static NSString *const kNewScope = @"newScope";
   [_signIn restorePreviousSignInWithCompletion:nil];
 
   XCTAssertNotNil(_signIn.currentUser);
+//  [_authState stopMocking];
 }
 
 - (void)testOAuthLogin {
@@ -889,6 +895,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 // Verifies disconnect if access token is present.
@@ -902,6 +909,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 // Verifies disconnect calls callback with no errors if refresh token is present.
@@ -925,6 +933,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 // Verifies disconnect errors are passed along to the callback.
@@ -948,6 +957,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 // Verifies disconnect with errors
@@ -964,6 +974,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 
@@ -987,6 +998,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 // Verifies disconnect clears keychain if no tokens are present.
@@ -1002,6 +1014,7 @@ static NSString *const kNewScope = @"newScope";
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
+//  [_authState stopMocking];
 }
 
 - (void)testPresentingViewControllerException {
@@ -1217,7 +1230,9 @@ static NSString *const kNewScope = @"newScope";
   
   completion(handledError);
 
-  [self waitForExpectationsWithTimeout:1 handler:nil];
+  [self waitForExpectationsWithTimeout:1 handler:^(NSError * _Nullable error) {
+    [_authState stopMocking];
+  }];
 
   [emmSupport verify];
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
@@ -1568,6 +1583,7 @@ static NSString *const kNewScope = @"newScope";
     OCMVerify((void)[_keychainStore retrieveAuthSessionWithError:OCMArg.anyObjectRef]);
     OCMVerify([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]);
   }
+//  [_authState stopMocking];
 }
 
 @end

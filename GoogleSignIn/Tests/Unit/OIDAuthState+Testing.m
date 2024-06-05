@@ -29,8 +29,10 @@
 }
 
 + (instancetype)testInstanceWithTokenResponse:(OIDTokenResponse *)tokenResponse {
-  return [[OIDAuthState alloc] initWithAuthorizationResponse:[OIDAuthorizationResponse testInstance]
-                                               tokenResponse:tokenResponse];
+  OIDAuthorizationResponse *response = [OIDAuthorizationResponse testInstance];
+  OIDAuthState *authState = [[OIDAuthState alloc] initWithAuthorizationResponse:response
+                                                                  tokenResponse:tokenResponse];
+  return authState;
 }
 
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
