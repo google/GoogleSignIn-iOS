@@ -24,10 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// A list of potential current flow names.
 typedef NS_ENUM(NSInteger, GIDFlowName) {
-/// The Sign In flow.
+  /// The Sign In flow.
   GIDFlowNameSignIn = 0,
-/// The Verify flow.
-  GIDFlowNameVerify = 1,
+  /// The Verify flow.
+  GIDFlowNameVerifyAccountDetail = 1,
 };
 
 @protocol GIDAuthorizationResponseHandling

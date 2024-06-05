@@ -63,9 +63,6 @@
 // TODO: Unify error domain across sign-in and verify flow (#425).
 NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
 
-// TODO: Unify error domain across sign-in and verify flow (#425).
-NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
-
 @implementation GIDVerifyAccountDetail {
   /// Represents the list of account details to verify.
   NSArray<GIDVerifiableAccountDetail *> *_accountDetails;
@@ -75,8 +72,6 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   OIDServiceConfiguration *_appAuthConfiguration;
   /// AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
-  /// AppAuth external user-agent session state.
-  id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
 - (instancetype)initWithConfig:(GIDConfiguration *)configuration {
@@ -84,11 +79,6 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   if (self) {
     _configuration = configuration;
 
-    NSString *authorizationEndpointURL = 
-        [NSString stringWithFormat:kAuthorizationURLTemplate,
-         [GIDSignInPreferences googleAuthorizationServer]];
-    NSString *tokenEndpointURL =
-        [NSString stringWithFormat:kTokenURLTemplate, [GIDSignInPreferences googleTokenServer]];
     NSString *authorizationEndpointURL = 
         [NSString stringWithFormat:kAuthorizationURLTemplate,
          [GIDSignInPreferences googleAuthorizationServer]];
@@ -205,7 +195,6 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   }
 
   OIDAuthorizationRequest *request =
-  OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
                                                       scopes:scopes
@@ -228,7 +217,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   GIDAuthorizationResponseHandler *responseHandler =
       [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
                                                                   emmSupport:nil
-                                                                    flowName:GIDFlowNameVerify
+                                                                    flowName:GIDFlowNameVerifyAccountDetail
                                                                configuration:_configuration
                                                                        error:error];
   GIDAuthorizationResponseHelper *responseHelper =
