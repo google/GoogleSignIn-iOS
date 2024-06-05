@@ -141,9 +141,9 @@ static NSTimeInterval kAccessTokenExpiration = 20;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testMaybeFetchToken_authFlowError {
-  NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                       code:kGIDSignInErrorCodeUnknown
-                                   userInfo:nil];
+  NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                               code:kGIDSignInErrorCodeUnknown
+                                           userInfo:nil];
 
   OIDTokenResponse *tokenResponse = 
       [OIDTokenResponse testInstanceWithAccessTokenExpiration:@(kAccessTokenExpiration)];
@@ -152,26 +152,26 @@ static NSTimeInterval kAccessTokenExpiration = 20;
   GIDAuthorizationResponseHandlingFake *responseHandler = 
       [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:nil
-                                                           error:error
+                                                           error:expectedError
                                                       emmSupport:nil
                                                      profileData:nil];
 
   [responseHandler maybeFetchToken:authFlow];
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqualObjects(authFlow.error, error);
+  XCTAssertEqualObjects(authFlow.error, expectedError);
 }
 
 - (void)testMaybeFetchToken_noRefresh {
-  NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                       code:kGIDSignInErrorCodeUnknown
-                                   userInfo:nil];
+  NSError *expectedError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                               code:kGIDSignInErrorCodeUnknown
+                                           userInfo:nil];
 
   OIDAuthState *authState = [OIDAuthState testInstance];
   GIDAuthorizationResponseHandlingFake *responseHandler = 
       [[GIDAuthorizationResponseHandlingFake alloc] initWithAuthState:authState error:nil];
   GIDAuthFlow *authFlow = [[GIDAuthFlow alloc] initWithAuthState:authState
-                                                           error:error
+                                                           error:expectedError
                                                       emmSupport:nil
                                                      profileData:nil];
 
@@ -179,7 +179,7 @@ static NSTimeInterval kAccessTokenExpiration = 20;
   XCTAssertNotNil(authFlow.authState);
   XCTAssertEqualObjects(authFlow.authState, authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqualObjects(authFlow.error, error);
+  XCTAssertEqualObjects(authFlow.error, expectedError);
 }
 
 @end
