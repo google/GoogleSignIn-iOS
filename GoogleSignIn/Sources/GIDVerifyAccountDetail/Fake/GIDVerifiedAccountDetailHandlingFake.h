@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResultHandling.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailHandling.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class OIDAuthState;
 @class OIDTokenResponse;
 
-/// A fake implementation of `GIDVerifiedAccountDetailResultHandling` for testing purposes.
-@interface GIDVerifiedAccountDetailResultFake : NSObject <GIDVerifiedAccountDetailResultHandling>
+/// A fake implementation of `GIDVerifiedAccountDetailHandling` for testing purposes.
+@interface GIDVerifiedAccountDetailHandlingFake : NSObject <GIDVerifiedAccountDetailHandling>
 
 /// The token response to be updated in the auth state.
 @property (nonatomic, nullable) OIDTokenResponse *tokenResponse;
@@ -41,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSArray<GIDVerifiableAccountDetail *>
     *verifiedAccountDetails;
 
-/// Creates an instance conforming to `GIDVerifiedAccountDetailResultHandling` with the provided
+/// Creates an instance conforming to `GIDVerifiedAccountDetailHandling` with the provided
 /// token response, auth state, and error.
 ///
 /// @param tokenResponse The `OIDTokenResponse` instance to update the auth state.
@@ -54,3 +58,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
 
 @class GIDVerifiableAccountDetail;
@@ -23,15 +27,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol GIDVerifiedAccountDetailResultHandling
+@protocol GIDVerifiedAccountDetailHandling
 
-/// Initialize a `GIDVerifiedAccountDetailResultHandling` object by specifying all available properties.
+/// Initialize a `GIDVerifiedAccountDetailHandling` object by specifying all available properties.
 ///
 /// @param tokenResponse The last token response with expiration date, access token, and refresh token.
 /// @param accountDetails A list of verified account details.
 /// @param authState An updated to update the token response or authorization error.
 ///
-/// @return An initialized `GIDVerifiedAccountDetailResultHandling` instance with expiration date, access token, and refresh token.
+/// @return An initialized `GIDVerifiedAccountDetailHandling` instance with expiration date, access token, and refresh token.
 - (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
                            accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
                                 authState:(OIDAuthState *)authState;
@@ -45,3 +49,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

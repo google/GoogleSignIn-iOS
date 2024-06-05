@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailResultHandlingFake.h"
+#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailHandlingFake.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
@@ -27,7 +27,9 @@
 #import <AppAuth/OIDScopeUtilities.h>
 #endif
 
-@implementation GIDVerifiedAccountDetailResultFake
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+@implementation GIDVerifiedAccountDetailHandlingFake
 
 - (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
                            accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
@@ -88,3 +90,5 @@
 }
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

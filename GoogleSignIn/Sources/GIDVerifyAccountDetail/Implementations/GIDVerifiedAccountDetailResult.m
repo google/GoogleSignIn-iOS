@@ -30,6 +30,8 @@
 #import <AppAuth/OIDTokenResponse.h>
 #endif
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDVerifiedAccountDetailResult
@@ -99,4 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 @end
+
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

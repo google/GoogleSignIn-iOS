@@ -14,10 +14,11 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailResultHandlingFake.h"
-
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+
+#import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailHandlingFake.h"
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
@@ -61,10 +62,10 @@
                                   kAccountDetailTypeAgeOver18Scope];
   OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:kAccountDetailList];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
-  GIDVerifiedAccountDetailResultFake *result =
-      [[GIDVerifiedAccountDetailResultFake alloc] initWithTokenResponse:authState.lastTokenResponse
-                                                      verifiedAuthState:authState
-                                                                  error:nil];
+  GIDVerifiedAccountDetailHandlingFake *result =
+      [[GIDVerifiedAccountDetailHandlingFake alloc] initWithTokenResponse:authState.lastTokenResponse
+                                                        verifiedAuthState:authState
+                                                                    error:nil];
 
   NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
       @[verifiedAccountDetail, verifiedAccountDetail];
@@ -88,10 +89,10 @@
                                                code:kGIDSignInErrorCodeUnknown
                                            userInfo:nil];
 
-  GIDVerifiedAccountDetailResultFake *result =
-      [[GIDVerifiedAccountDetailResultFake alloc] initWithTokenResponse:authState.lastTokenResponse
-                                                      verifiedAuthState:authState
-                                                                  error:expectedError];
+  GIDVerifiedAccountDetailHandlingFake *result =
+      [[GIDVerifiedAccountDetailHandlingFake alloc] initWithTokenResponse:authState.lastTokenResponse
+                                                        verifiedAuthState:authState
+                                                                    error:expectedError];
 
   XCTestExpectation *expectation = [self expectationWithDescription:@"Completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
@@ -108,3 +109,5 @@
 }
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

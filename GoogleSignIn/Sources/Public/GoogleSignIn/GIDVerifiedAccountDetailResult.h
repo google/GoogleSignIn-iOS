@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
 
-#import "GoogleSignIn/GIDVerifiedAccountDetailResultHandling.h"
+#import "GIDVerifiedAccountDetailHandling.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// A helper object that contains the result of a verification flow.
 /// This will pass back the necessary tokens to the requesting party.
-@interface GIDVerifiedAccountDetailResult : NSObject <GIDVerifiedAccountDetailResultHandling>
+@interface GIDVerifiedAccountDetailResult : NSObject <GIDVerifiedAccountDetailHandling>
 
 /// The date when the access token expires.
 @property(nonatomic, readonly, nullable) NSDate *expirationDate;
@@ -43,3 +47,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

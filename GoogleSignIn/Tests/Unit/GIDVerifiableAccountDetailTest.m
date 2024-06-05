@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
 @interface GIDVerifiableAccountDetailTests : XCTestCase
@@ -41,3 +42,5 @@
 }
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
