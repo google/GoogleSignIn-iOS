@@ -92,8 +92,7 @@
       [self authorizationCodeErrorToAuthFlow:authFlow];
     }
   } else {
-    [self authorizationResponseErrorToAuthFlow:authFlow
-                                         error:_error];
+    [self authorizationResponseErrorToAuthFlow:authFlow error:_error];
   }
   return authFlow;
 }
@@ -175,7 +174,7 @@
       if (authFlow.emmSupport) {
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
-                           handleErrorFromResponse:params 
+                           handleErrorFromResponse:params
                                         completion:^{
                                           [authFlow next];
                                         }];

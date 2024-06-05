@@ -28,11 +28,11 @@
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDTokenResponse+Testing.h"
 
-// The EMM support version
+/// The EMM support version
 static NSString *const kEMMVersion = @"1";
 
-// Time interval to use for an expiring access token.
-static NSTimeInterval kExpiringAccessToken = 20;
+/// Time interval to use for an expiring access token.
+static NSTimeInterval kAccessTokenExpiration = 20;
 
 @interface GIDAuthorizationResponseHelperTest : XCTestCase
 @end
@@ -55,7 +55,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
 
 - (void)testFetchTokenWithAuthFlow {
   OIDTokenResponse *tokenResponse = 
-      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kExpiringAccessToken)];
+      [OIDTokenResponse testInstanceWithAccessTokenExpiration:@(kAccessTokenExpiration)];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDAuthorizationResponseHandlingFake *responseHandler =
@@ -75,7 +75,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
 
 - (void)testSuccessfulGenerateAuthFlowFromAuthorizationResponse {
   OIDTokenResponse *tokenResponse = 
-      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kExpiringAccessToken)];
+      [OIDTokenResponse testInstanceWithAccessTokenExpiration:@(kAccessTokenExpiration)];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDAuthorizationResponseHandlingFake *responseHandler =
@@ -109,9 +109,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
   XCTAssertNotNil(authFlow);
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error.domain, expectedError.domain);
-  XCTAssertEqual(authFlow.error.code, expectedError.code);
-  XCTAssertEqualObjects(authFlow.error.userInfo, expectedError.userInfo);
+  XCTAssertEqualObjects(authFlow.error, expectedError);
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -138,9 +136,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
   XCTAssertNotNil(authFlow);
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error.domain, expectedError.domain);
-  XCTAssertEqual(authFlow.error.code, expectedError.code);
-  XCTAssertEqualObjects(authFlow.error.userInfo, expectedError.userInfo);
+  XCTAssertEqualObjects(authFlow.error, expectedError);
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -150,7 +146,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
                                    userInfo:nil];
 
   OIDTokenResponse *tokenResponse = 
-      [OIDTokenResponse testInstanceWithAccessTokenExpiresIn:@(kExpiringAccessToken)];
+      [OIDTokenResponse testInstanceWithAccessTokenExpiration:@(kAccessTokenExpiration)];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 
   GIDAuthorizationResponseHandlingFake *responseHandler = 
@@ -163,7 +159,7 @@ static NSTimeInterval kExpiringAccessToken = 20;
   [responseHandler maybeFetchToken:authFlow];
   XCTAssertNil(authFlow.authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error, error);
+  XCTAssertEqualObjects(authFlow.error, error);
 }
 
 - (void)testMaybeFetchToken_noRefresh {
@@ -181,9 +177,9 @@ static NSTimeInterval kExpiringAccessToken = 20;
 
   [responseHandler maybeFetchToken:authFlow];
   XCTAssertNotNil(authFlow.authState);
-  XCTAssertEqual(authFlow.authState, authState);
+  XCTAssertEqualObjects(authFlow.authState, authState);
   XCTAssertNotNil(authFlow.error);
-  XCTAssertEqual(authFlow.error, error);
+  XCTAssertEqualObjects(authFlow.error, error);
 }
 
 @end

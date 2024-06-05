@@ -65,10 +65,10 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
                                       tokenRequest:nil];
 }
 
-+ (instancetype)testInstanceWithAccessTokenExpiresIn:(NSNumber *)accessTokenExpiresIn {
++ (instancetype)testInstanceWithAccessTokenExpiration:(NSNumber *)expiration {
   return [OIDTokenResponse testInstanceWithIDToken:[self idToken]
                                        accessToken:nil
-                                         expiresIn:accessTokenExpiresIn
+                                         expiresIn:expiration
                                       refreshToken:nil
                                       tokenRequest:nil];
 }

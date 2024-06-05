@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A class that handles the authorization response and fetch tokens.
+/// A class that handles the authorization response and fetches tokens.
 @interface GIDAuthorizationResponseHandler : NSObject <GIDAuthorizationResponseHandling>
 @end
 
