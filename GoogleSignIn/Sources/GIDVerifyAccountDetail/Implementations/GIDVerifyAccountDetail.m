@@ -20,27 +20,41 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
 
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
+
+#import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
-@import GTMAppAuth;
-
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDExternalUserAgentSession.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <AppAuth/OIDAuthorizationService+IOS.h>
+#endif
+
 #endif
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+// TODO: Unify error domain across sign-in and verify flow (#425).
+NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
+
 @implementation GIDVerifyAccountDetail {
   /// AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
+  /// AppAuth external user-agent session state.
+  id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
 - (instancetype)initWithConfig:(GIDConfiguration *)configuration {
@@ -48,10 +62,11 @@
   if (self) {
     _configuration = configuration;
 
-    NSString *authorizationEndpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
-        [GIDSignInPreferences googleAuthorizationServer]];
-    NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
-        [GIDSignInPreferences googleTokenServer]];
+    NSString *authorizationEndpointURL = 
+        [NSString stringWithFormat:kAuthorizationURLTemplate,
+         [GIDSignInPreferences googleAuthorizationServer]];
+    NSString *tokenEndpointURL =
+        [NSString stringWithFormat:kTokenURLTemplate, [GIDSignInPreferences googleTokenServer]];
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
         initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEndpointURL]
                         tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
@@ -148,6 +163,7 @@
   if (options.configuration.hostedDomain) {
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
+
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
@@ -159,14 +175,37 @@
     }
   }
 
-  // TODO(#405): Use request variable to present request and process response.
-  __unused OIDAuthorizationRequest *request =
+  OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
                                                       scopes:scopes
                                                  redirectURL:redirectURL
                                                 responseType:OIDResponseTypeCode
                                         additionalParameters:additionalParameters];
+
+   _currentAuthorizationFlow = [OIDAuthorizationService
+       presentAuthorizationRequest:request
+          presentingViewController:options.presentingViewController
+                          callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                     NSError *_Nullable error) {
+     [self processAuthorizationResponse:authorizationResponse
+                                  error:error];
+  }];
+}
+
+- (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
+                               error:(NSError *)error {
+  GIDAuthorizationResponseHandler *responseHandler =
+      [[GIDAuthorizationResponseHandler alloc] initWithAuthorizationResponse:authorizationResponse
+                                                                  emmSupport:nil
+                                                                    flowName:GIDFlowNameVerifyAccountDetail
+                                                               configuration:_configuration
+                                                                       error:error];
+  GIDAuthorizationResponseHelper *responseHelper =
+      [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
+
+  // TODO: Add completion callback method (#413).
+  __unused GIDAuthFlow *authFlow = [responseHelper fetchAuthFlowFromProcessedResponse];
 }
 
 #pragma mark - Helpers

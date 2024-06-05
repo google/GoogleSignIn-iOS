@@ -32,6 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDVerifiableAccountDetail;
 @class GIDVerifiedAccountDetailResult;
 
+/// The error domain for `NSError`s returned by the Google Sign-In SDK.
+extern NSErrorDomain const kGIDVerifyErrorDomain;
+
+/// A list of potential error codes returned from the Google Sign-In SDK.
+typedef NS_ERROR_ENUM(kGIDVerifyErrorDomain, GIDVerifyErrorCode) {
+  /// Indicates an unknown error has occurred.
+  GIDVerifyErrorCodeUnknown = 0,
+  /// Indicates the user canceled the verification request.
+  GIDVerifyErrorCodeCanceled = 1,
+};
+
 /// Represents a completion block that takes a `GIDVerifiedAccountDetailResult` on success or an
 /// error if the operation was unsuccessful.
 typedef void (^GIDVerifyCompletion)(GIDVerifiedAccountDetailResult *_Nullable verifiedResult,

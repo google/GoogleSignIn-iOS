@@ -27,3 +27,12 @@ NSString *const kOpenIDRealmParameter = @"openid.realm";
 NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
 NSString *const kLoginHintParameter = @"login_hint";
 NSString *const kHostedDomainParameter = @"hd";
+
+NSString *const kOAuth2ErrorKeyName = @"error";
+NSString *const kOAuth2AccessDenied = @"access_denied";
+NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
+
+NSString *const kUserCanceledSignInError = @"The user canceled the sign-in flow.";
+NSString *const kUserCanceledVerifyError = @"The user canceled the verification flow.";
+
+const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;

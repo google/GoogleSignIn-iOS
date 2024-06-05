@@ -39,3 +39,21 @@ extern NSString *const kLoginHintParameter;
 
 /// The name of the hosted domain parameter for the auth and token exchange endpoints.
 extern NSString *const kHostedDomainParameter;
+
+/// The name of the error key that occurred during the authorization or token exchange process.
+extern NSString *const kOAuth2ErrorKeyName;
+
+/// The value of the error key when the user cancels the authorization or token exchange process.
+extern NSString *const kOAuth2AccessDenied;
+
+/// The name of the key that indicates whether a passocde is required for EMM.
+extern NSString *const kEMMPasscodeInfoRequiredKeyName;
+
+/// The error string for user cancelation in the sign-in flow.
+extern NSString *const kUserCanceledSignInError;
+
+/// The error string for user cancelation in the verify flow.
+extern NSString *const kUserCanceledVerifyError;
+
+/// Minimum time to expiration for a restored access token.
+extern const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire;
