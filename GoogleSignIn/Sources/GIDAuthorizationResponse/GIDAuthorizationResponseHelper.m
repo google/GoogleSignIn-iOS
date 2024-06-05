@@ -28,11 +28,8 @@
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
-@import GTMAppAuth;
-
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationResponse.h>

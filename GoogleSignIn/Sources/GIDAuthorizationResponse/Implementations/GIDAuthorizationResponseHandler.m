@@ -26,14 +26,10 @@
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
-
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-
-@import GTMAppAuth;
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMSessionFetcherCore;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
@@ -96,8 +92,7 @@
       [self authorizationCodeErrorToAuthFlow:authFlow];
     }
   } else {
-    [self authorizationResponseErrorToAuthFlow:authFlow
-                                           error:_error];
+    [self authorizationResponseErrorToAuthFlow:authFlow error:_error];
   }
   return authFlow;
 }
@@ -180,9 +175,9 @@
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
                            handleErrorFromResponse:params
-                           completion:^{
-          [authFlow next];
-        }];
+                                        completion:^{
+                                          [authFlow next];
+                                        }];
         if (isEMMError) {
           errorCode = kGIDSignInErrorCodeEMM;
         }
@@ -196,7 +191,7 @@
       authFlow.error = [self errorWithString:errorString code:errorCode];
     }
       break;
-    case GIDFlowNameVerify: {
+    case GIDFlowNameVerifyAccountDetail: {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       GIDVerifyErrorCode errorCode = GIDVerifyErrorCodeUnknown;
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
@@ -211,7 +206,7 @@
 }
 
 - (void)authorizationResponseErrorToAuthFlow:(GIDAuthFlow *)authFlow
-                                         error:(NSError *)error {
+                                       error:(NSError *)error {
   NSString *errorString = [error localizedDescription];
   switch (_flowName) {
     case GIDFlowNameSignIn: {
@@ -224,7 +219,7 @@
       authFlow.error = [self errorWithString:errorString code:errorCode];
       break;
     }
-    case GIDFlowNameVerify: {
+    case GIDFlowNameVerifyAccountDetail: {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       GIDVerifyErrorCode errorCode = GIDVerifyErrorCodeUnknown;
       if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
@@ -254,7 +249,7 @@
                                  code:code
                              userInfo:errorDict];
       break;
-    case GIDFlowNameVerify:
+    case GIDFlowNameVerifyAccountDetail:
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       return [NSError errorWithDomain:kGIDVerifyErrorDomain
                                  code:code

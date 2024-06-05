@@ -24,6 +24,10 @@
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
+
+#import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
@@ -37,8 +41,16 @@
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
 #import <AppAuth/OIDExternalUserAgentSession.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDExternalUserAgentSession.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <AppAuth/OIDAuthorizationService+IOS.h>
+#endif
+
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
@@ -47,6 +59,9 @@
 #endif
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+// TODO: Unify error domain across sign-in and verify flow (#425).
+NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
 
 // TODO: Unify error domain across sign-in and verify flow (#425).
 NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
@@ -60,6 +75,8 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   OIDServiceConfiguration *_appAuthConfiguration;
   /// AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
+  /// AppAuth external user-agent session state.
+  id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
 }
 
 - (instancetype)initWithConfig:(GIDConfiguration *)configuration {
@@ -67,6 +84,11 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   if (self) {
     _configuration = configuration;
 
+    NSString *authorizationEndpointURL = 
+        [NSString stringWithFormat:kAuthorizationURLTemplate,
+         [GIDSignInPreferences googleAuthorizationServer]];
+    NSString *tokenEndpointURL =
+        [NSString stringWithFormat:kTokenURLTemplate, [GIDSignInPreferences googleTokenServer]];
     NSString *authorizationEndpointURL = 
         [NSString stringWithFormat:kAuthorizationURLTemplate,
          [GIDSignInPreferences googleAuthorizationServer]];
@@ -170,6 +192,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
 
+
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
@@ -181,6 +204,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
     }
   }
 
+  OIDAuthorizationRequest *request =
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
                                                     clientId:options.configuration.clientID
