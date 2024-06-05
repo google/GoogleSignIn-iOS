@@ -16,6 +16,9 @@
 
 #import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailResultHandlingFake.h"
 
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiedAccountDetailResult.h"
+
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
