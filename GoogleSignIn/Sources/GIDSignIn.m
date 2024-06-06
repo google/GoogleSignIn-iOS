@@ -733,6 +733,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                       scopes:options.scopes
                                                  redirectURL:[self redirectURLWithOptions:options]
                                                 responseType:OIDResponseTypeCode
+                                                       nonce:options.nonce
                                         additionalParameters:additionalParameters];
   return request;
 }

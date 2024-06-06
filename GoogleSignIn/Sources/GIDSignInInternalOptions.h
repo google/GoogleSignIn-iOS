@@ -64,8 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// The login hint to be used during the flow.
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
-/// A cryptographically random value used to associate a Client session with an ID Token, and to mitigate replay attacks.
-@property(nonatomic, copy, nullable) NSString *nonce;
+/// A cryptographically random value used to associate a Client session with an ID Token,
+/// and to mitigate replay attacks.
+@property(nonatomic, readonly, copy, nullable) NSString *nonce;
 
 /// Creates the default options.
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST

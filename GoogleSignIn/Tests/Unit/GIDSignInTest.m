@@ -824,7 +824,9 @@ static NSString *const kNewScope = @"newScope";
                    additionalScopes:@[]
                         manualNonce:manualNonce];
 
-  XCTAssertEqualObjects(_savedAuthorizationRequest.nonce, manualNonce, @"nonce provided to signInWithPresenting[ViewController/Window] should be the same as the one in the authorization request.");
+  XCTAssertEqualObjects(_savedAuthorizationRequest.nonce,
+                        manualNonce,
+                        @"nonce provided to signInWithPresenting[ViewController/Window] should be the same as the one in the authorization request.");
 }
 
 - (void)testOAuthLogin_LoginHint {
@@ -1421,7 +1423,7 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:(BOOL)modalCancel
                 useAdditionalScopes:(BOOL)useAdditionalScopes
                    additionalScopes:(NSArray *)additionalScopes 
-                        manualNonce:(NSString*)nonce {
+                        manualNonce:(NSString *)nonce {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];

@@ -26,7 +26,7 @@
 
 + (instancetype)testInstanceWithAdditionalParameters:
     (NSDictionary<NSString *, NSString *> *)additionalParameters
-                                               nonce:(NSString*) nonce
+                                               nonce:(NSString *)nonce
                                          errorString:(NSString *)errorString;
 
 @end
