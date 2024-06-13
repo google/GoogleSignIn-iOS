@@ -182,7 +182,6 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
 
-
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 

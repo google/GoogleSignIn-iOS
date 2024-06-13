@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
   return self;
 }
 
+// TODO: Migrate refresh logic to `GIDGoogleuser` (#441).
 - (void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
                                                       NSError *))completion {
   OIDAuthorizationResponse *authResponse = self.verifiedAuthState.lastAuthorizationResponse;
@@ -81,11 +82,14 @@ NS_ASSUME_NONNULL_BEGIN
   }];
 }
 
-- (void)updateVerifiedDetailsWithTokenResponse:(nullable OIDTokenResponse *)response {
-  if (response) {
-    NSArray<NSString *> *accountDetailsString = 
-        [OIDScopeUtilities scopesArrayWithString:response.scope];
+- (void)updateVerifiedDetailsWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse {
+  if (tokenResponse) {
+    _expirationDate = tokenResponse.accessTokenExpirationDate;
+    _accessTokenString = tokenResponse.accessToken;
+    _refreshTokenString = tokenResponse.refreshToken;
 
+    NSArray<NSString *> *accountDetailsString =
+        [OIDScopeUtilities scopesArrayWithString:tokenResponse.scope];
     NSMutableArray<GIDVerifiableAccountDetail *> *verifiedAccountDetails = [NSMutableArray array];
     for (NSString *type in accountDetailsString) {
       GIDAccountDetailType detailType = [GIDVerifiableAccountDetail detailTypeWithString:type];
@@ -98,6 +102,25 @@ NS_ASSUME_NONNULL_BEGIN
   } else {
     _verifiedAccountDetails = @[];
   }
+}
+
+- (BOOL)isEqual:(id)object {
+  if (![object isKindOfClass:[GIDVerifiedAccountDetailResult class]]) {
+    return NO;
+  }
+
+  GIDVerifiedAccountDetailResult *other = (GIDVerifiedAccountDetailResult *)object;
+  return [self.expirationDate isEqual:other.expirationDate] &&
+         [self.accessTokenString isEqualToString:other.accessTokenString] &&
+         [self.refreshTokenString isEqualToString:other.refreshTokenString] &&
+         [self.verifiedAccountDetails isEqual:other.verifiedAccountDetails] &&
+         [self.verifiedAuthState isEqual:other.verifiedAuthState];
+}
+
+- (NSUInteger)hash {
+  return [self.expirationDate hash] ^ [self.accessTokenString hash] ^ 
+         [self.refreshTokenString hash] ^ [self.verifiedAccountDetails hash] ^
+         [self.verifiedAuthState hash];
 }
 
 @end

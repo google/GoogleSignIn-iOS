@@ -50,15 +50,13 @@
   XCTAssertEqual(result.expirationDate, authState.lastTokenResponse.accessTokenExpirationDate);
   XCTAssertEqual(result.accessTokenString, authState.lastTokenResponse.accessToken);
   XCTAssertEqual(result.refreshTokenString, authState.lastTokenResponse.refreshToken);
-
 }
 
 - (void)testRefreshTokensWithCompletion_success {
   GIDVerifiableAccountDetail *verifiedAccountDetail = 
       [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
 
-  NSString *kAccountDetailList = [NSString stringWithFormat:@"%@ %@",
-                                  kAccountDetailTypeAgeOver18Scope,
+  NSString *kAccountDetailList = [NSString stringWithFormat:@"%@",
                                   kAccountDetailTypeAgeOver18Scope];
   OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:kAccountDetailList];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
@@ -68,15 +66,19 @@
                                                                     error:nil];
 
   NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
-      @[verifiedAccountDetail, verifiedAccountDetail];
+      @[verifiedAccountDetail];
+  GIDVerifiedAccountDetailResult *expectedResult =
+      [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:authState.lastTokenResponse
+                                                         accountDetails:expectedVerifiedList
+                                                              authState:authState];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Completion called"];
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Refreshed verified account details completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
                                       NSError * _Nullable error) {
     XCTAssertNil(error);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertNotNil(refreshedResult.verifiedAccountDetails);
-    XCTAssertTrue([refreshedResult.verifiedAccountDetails isEqual:expectedVerifiedList]);
+    XCTAssertTrue([refreshedResult isEqual:expectedResult]);
     [expectation fulfill];
   }];
 
@@ -94,14 +96,16 @@
                                                         verifiedAuthState:authState
                                                                     error:expectedError];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Completion called"];
+  XCTestExpectation *expectation = 
+    [self expectationWithDescription:@"Refreshed verified account details completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
                                       NSError * _Nullable error) {
     XCTAssertNotNil(error);
     XCTAssertEqual(error, expectedError);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeUnknown);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertEqual(refreshedResult.verifiedAccountDetails, @[]);
+    XCTAssertTrue([refreshedResult.verifiedAccountDetails count] == 0,
+                  @"verifiedAccountDetails should have a count of 0");
     [expectation fulfill];
   }];
 
