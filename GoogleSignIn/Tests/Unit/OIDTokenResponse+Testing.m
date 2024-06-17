@@ -57,6 +57,22 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   return [self testInstanceWithIDToken:[self idToken]];
 }
 
++ (instancetype)testInstanceWithScope:(NSString *)scope {
+  NSMutableDictionary<NSString *, NSString *> *parameters;
+  parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
+    @"access_token" : kAccessToken,
+    @"expires_in" : @(kAccessTokenExpiresIn),
+    @"token_type" : @"example_token_type",
+    @"refresh_token" : kRefreshToken,
+    @"scope" : scope,
+    @"server_code" : kServerAuthCode,
+  }];
+  parameters[@"id_token"] = [self idToken];
+
+  return [[OIDTokenResponse alloc] initWithRequest:[OIDTokenRequest testInstance]
+                                        parameters:parameters];
+}
+
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken {
   return [OIDTokenResponse testInstanceWithIDToken:idToken
                                        accessToken:nil

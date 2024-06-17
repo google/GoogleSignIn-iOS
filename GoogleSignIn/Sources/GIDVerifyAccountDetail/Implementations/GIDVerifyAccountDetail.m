@@ -24,6 +24,10 @@
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
+
+#import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
@@ -32,12 +36,21 @@
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
+#import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
+#import <AppAuth/OIDAuthorizationResponse.h>
+#import <AppAuth/OIDAuthorizationService.h>
+#import <AppAuth/OIDExternalUserAgentSession.h>
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
 #import <AppAuth/OIDExternalUserAgentSession.h>
 #import <AppAuth/OIDResponseTypes.h>
 #import <AppAuth/OIDServiceConfiguration.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <AppAuth/OIDAuthorizationService+IOS.h>
+#endif
+
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
@@ -51,6 +64,10 @@
 NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail";
 
 @implementation GIDVerifyAccountDetail {
+  /// Represents the list of account details to verify.
+  NSArray<GIDVerifiableAccountDetail *> *_accountDetails;
+  /// Represents internal options for the verification flow.
+  GIDSignInInternalOptions *_options;
   /// AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
   /// AppAuth external user-agent session state.
@@ -106,13 +123,14 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
                   completion:(nullable void (^)(GIDVerifiedAccountDetailResult *_Nullable verifyResult,
                                                 NSError *_Nullable error))completion {
   GIDSignInInternalOptions *options =
-  [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
-                                   presentingViewController:presentingViewController
-                                                  loginHint:hint
-                                              addScopesFlow:YES
-                                     accountDetailsToVerify:accountDetails
-                                           verifyCompletion:completion];
-
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+                                       presentingViewController:presentingViewController
+                                                      loginHint:hint
+                                                  addScopesFlow:YES
+                                         accountDetailsToVerify:accountDetails
+                                               verifyCompletion:completion];
+  self->_options = options;
+  self->_accountDetails = accountDetails;
   [self verifyAccountDetailsInteractivelyWithOptions:options];
 }
 
@@ -204,8 +222,11 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   GIDAuthorizationResponseHelper *responseHelper =
       [[GIDAuthorizationResponseHelper alloc] initWithAuthorizationResponseHandler:responseHandler];
 
-  // TODO: Add completion callback method (#413).
-  __unused GIDAuthFlow *authFlow = [responseHelper fetchAuthFlowFromProcessedResponse];
+  GIDAuthFlow *authFlow = [responseHelper fetchAuthFlowFromProcessedResponse];
+
+  if (authFlow) {
+    [self addCompletionCallback:authFlow];
+  }
 }
 
 #pragma mark - Helpers
@@ -235,6 +256,29 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];
   }
+}
+
+- (void)addCompletionCallback:(GIDAuthFlow *)authFlow {
+  __weak GIDAuthFlow *weakAuthFlow = authFlow;
+  [authFlow addCallback:^() {
+    GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
+    if (self->_options.completion) {
+      GIDVerifyCompletion completion = self->_options.verifyCompletion;
+      self->_options = nil;
+      dispatch_async(dispatch_get_main_queue(), ^{
+        if (handlerAuthFlow.error) {
+          completion(nil, handlerAuthFlow.error);
+        } else {
+          OIDAuthState *authState = handlerAuthFlow.authState;
+          GIDVerifiedAccountDetailResult *verifiedResult = [[GIDVerifiedAccountDetailResult alloc]
+              initWithLastTokenResponse:authState.lastTokenResponse
+                         accountDetails:self->_accountDetails
+                              authState:authState];
+          completion(verifiedResult, nil);
+        }
+      });
+    }
+  }];
 }
 
 @end

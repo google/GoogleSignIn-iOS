@@ -14,9 +14,38 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
+
+#import "GIDVerifiedAccountDetailHandling.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@class GIDVerifiableAccountDetail;
+@class OIDAuthState;
+@class OIDTokenResponse;
 
 /// A helper object that contains the result of a verification flow.
 /// This will pass back the necessary tokens to the requesting party.
-@interface GIDVerifiedAccountDetailResult : NSObject
+@interface GIDVerifiedAccountDetailResult : NSObject <GIDVerifiedAccountDetailHandling>
+
+/// The date when the access token expires.
+@property(nonatomic, readonly, nullable) NSDate *expirationDate;
+/// The access token string.
+@property(nonatomic, copy, readonly, nullable) NSString *accessTokenString;
+/// The refresh token string.
+@property(nonatomic, copy, readonly, nullable) NSString *refreshTokenString;
+/// A list of verified account details.
+@property(nonatomic, copy, readonly) NSArray<GIDVerifiableAccountDetail *>
+    *verifiedAccountDetails;
+/// The auth state to use to refresh tokens.
+@property(nonatomic, readonly) OIDAuthState *verifiedAuthState;
+
 @end
+
+NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

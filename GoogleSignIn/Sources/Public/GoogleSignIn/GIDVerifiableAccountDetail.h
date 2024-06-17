@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// An enumeration defining the types of account details Google can verify.
 typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
+  /// Used when the account detail type is unspecified or cannot be matched.
+  GIDAccountDetailTypeUnknown,
   /// User account detail for age over 18.
   GIDAccountDetailTypeAgeOver18,
 };
@@ -45,6 +51,13 @@ extern NSString *const kAccountDetailTypeAgeOver18Scope;
 /// @return A string representing the scope required to verify the account detail.
 - (nullable NSString *)scope;
 
+/// Retrieves the verified account detail type from the given scope.
+///
+/// @return The verified account detail the passed in scope maps to.
++ (GIDAccountDetailType)detailTypeWithString:(NSString *)detailTypeString;
+
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
