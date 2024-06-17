@@ -133,8 +133,17 @@ static NSString *const kNewScope = @"newScope";
 - (void)testLegacyCoding {
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
                                                      profileData:[GIDProfileData testInstance]];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user];
-  GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  
+  NSError *archiveError;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user
+                                       requiringSecureCoding:NO
+                                                       error:&archiveError];
+  XCTAssertNil(archiveError);
+  NSError *unarchiveError;
+  GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDGoogleUser class]
+                                                             fromData:data
+                                                                error:&unarchiveError];
+  XCTAssertNil(unarchiveError);
   XCTAssertEqualObjects(user, newUser);
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
