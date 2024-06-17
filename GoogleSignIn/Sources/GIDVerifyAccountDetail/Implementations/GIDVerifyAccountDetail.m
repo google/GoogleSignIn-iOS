@@ -185,7 +185,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
-  NSMutableArray *scopes;
+  NSMutableArray *scopes = [[NSMutableArray alloc] init];
   for (GIDVerifiableAccountDetail *detail in options.accountDetailsToVerify) {
     NSString *scopeString = [detail scope];
     if (scopeString) {
@@ -262,7 +262,7 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
   __weak GIDAuthFlow *weakAuthFlow = authFlow;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
-    if (self->_options.completion) {
+    if (self->_options.verifyCompletion) {
       GIDVerifyCompletion completion = self->_options.verifyCompletion;
       self->_options = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
