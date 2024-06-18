@@ -138,8 +138,16 @@ static NSString *const kFIFEAvatarURL2WithDimension =
 // Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDProfileData *profileData = [self profileData];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:profileData];
-  GIDProfileData *newProfileData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSError *archiveError;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:profileData
+                                       requiringSecureCoding:NO
+                                                       error:&archiveError];
+  XCTAssertNil(archiveError);
+  NSError *unarchiveError;
+  GIDProfileData *newProfileData = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDProfileData class]
+                                                                     fromData:data
+                                                                        error:&unarchiveError];
+  XCTAssertNil(unarchiveError);
   XCTAssertEqualObjects(profileData, newProfileData);
   XCTAssertTrue(GIDProfileData.supportsSecureCoding);
 }
@@ -149,8 +157,16 @@ static NSString *const kFIFEAvatarURL2WithDimension =
                                                                       name:kName
                                                                   imageURL:kFIFEImageURL];
   [NSKeyedArchiver setClassName:@"GIDProfileData" forClass:[GIDProfileDataOld class]];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:oldProfile];
-  GIDProfileData *profileData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSError *archiveError;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:oldProfile
+                                       requiringSecureCoding:NO
+                                                       error:&archiveError];
+  XCTAssertNil(archiveError);
+  NSError *unarchiveError;
+  GIDProfileData *profileData = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDProfileData class]
+                                                                  fromData:data
+                                                                     error:&unarchiveError];
+  XCTAssertNil(unarchiveError);
   XCTAssertEqualObjects(profileData.email, kEmail);
   XCTAssertEqualObjects(profileData.name, kName);
   XCTAssertNil(profileData.givenName);
