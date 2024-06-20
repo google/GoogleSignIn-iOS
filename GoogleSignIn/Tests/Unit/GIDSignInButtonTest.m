@@ -73,8 +73,16 @@ static NSString * const kAppBundleId = @"FakeBundleID";
   GIDSignInButton *button = [[GIDSignInButton alloc] init];
   button.style = kGIDSignInButtonStyleIconOnly;
   button.colorScheme = kGIDSignInButtonColorSchemeLight;
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:button];
-  GIDSignInButton *newButton = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSError *archiveError;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:button
+                                       requiringSecureCoding:NO
+                                                       error:&archiveError];
+  XCTAssertNil(archiveError);
+  NSError *unarchiveError;
+  GIDSignInButton *newButton = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDSignInButton class]
+                                                                 fromData:data
+                                                                    error:&unarchiveError];
+  XCTAssertNil(unarchiveError);
   XCTAssertEqual(button.style, newButton.style);
   XCTAssertEqual(button.colorScheme, newButton.colorScheme);
 }
