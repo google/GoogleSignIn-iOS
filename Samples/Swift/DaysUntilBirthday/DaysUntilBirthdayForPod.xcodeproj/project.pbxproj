@@ -3,11 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		4C6A2BA2321434ACBD2AF201 /* Pods_DaysUntilBirthdayForPod__macOS_.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 926A15D393D684C68E09FB0F /* Pods_DaysUntilBirthdayForPod__macOS_.framework */; };
+		641495072C3C90E100C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495062C3C90E100C9A613 /* VerificationView.swift */; };
+		641495082C3C90E100C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495062C3C90E100C9A613 /* VerificationView.swift */; };
 		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
@@ -45,6 +47,7 @@
 		1A129363EBB5DF1F41FAAB14 /* Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).release.xcconfig"; sourceTree = "<group>"; };
 		29BEB027A694593FA0450863 /* Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(iOS)/Pods-DaysUntilBirthdayForPod(iOS).debug.xcconfig"; sourceTree = "<group>"; };
 		5CF615341A61D92D89389D44 /* Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (macOS)/Pods-DaysUntilBirthdayForPod (macOS).release.xcconfig"; sourceTree = "<group>"; };
+		641495062C3C90E100C9A613 /* VerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
 		7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod (iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -195,6 +198,7 @@
 			children = (
 				7345AD042703D9470020AFB1 /* ContentView.swift */,
 				739FCC45270E467600C92042 /* BirthdayView.swift */,
+				641495062C3C90E100C9A613 /* VerificationView.swift */,
 				7345AD112703D9C30020AFB1 /* SignInView.swift */,
 				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
 			);
@@ -413,6 +417,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				739FCC48270E659A00C92042 /* Birthday.swift in Sources */,
+				641495072C3C90E100C9A613 /* VerificationView.swift in Sources */,
 				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
 				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
 				7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */,
@@ -432,6 +437,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				73DB41912805FBFD0028B8D3 /* SignInView.swift in Sources */,
+				641495082C3C90E100C9A613 /* VerificationView.swift in Sources */,
 				73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */,
 				73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */,
 				73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */,
@@ -577,6 +583,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = JA85M8JD4Z;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -584,7 +591,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
+				PRODUCT_BUNDLE_IDENTIFIER = "testing-com.google.DaysUntilBirthday";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -599,6 +606,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = JA85M8JD4Z;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -606,7 +614,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.DaysUntilBirthday;
+				PRODUCT_BUNDLE_IDENTIFIER = "testing-com.google.DaysUntilBirthday";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

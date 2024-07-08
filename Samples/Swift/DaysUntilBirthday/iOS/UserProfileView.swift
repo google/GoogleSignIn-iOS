@@ -50,6 +50,13 @@ struct UserProfileView: View {
               return
             }
           })
+#if os(iOS)
+          NavigationLink(NSLocalizedString("Verify My Age", comment: "Verify Age"),
+                         destination: VerificationView(authViewModel: authViewModel)
+          .onAppear {
+            authViewModel.verifyAccountDetails()
+          })
+#endif
           Spacer()
         }
         .toolbar {
