@@ -36,14 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDVerifiedAccountDetailResult
 
-- (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
-                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
-                                authState:(OIDAuthState *)authState {
+- (instancetype)initWithAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+                             authState:(OIDAuthState *)authState {
   self = [super init];
   if (self) {
-    _expirationDate = tokenResponse.accessTokenExpirationDate;
-    _accessTokenString = tokenResponse.accessToken;
-    _refreshTokenString = tokenResponse.refreshToken;
     _verifiedAccountDetails = accountDetails;
     _verifiedAuthState = authState;
   }
@@ -53,9 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 // TODO: Migrate refresh logic to `GIDGoogleuser` (#441).
 - (void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
                                                       NSError *))completion {
-  NSDictionary<NSString *, NSString *> *additionalParameters = self.verifiedAuthState.lastAuthorizationResponse.request.additionalParameters;
+  NSDictionary<NSString *, NSString *> *additionalParameters = 
+      self.verifiedAuthState.lastAuthorizationResponse.request.additionalParameters;
   OIDTokenRequest *refreshRequest =
-    [self.verifiedAuthState tokenRefreshRequestWithAdditionalHeaders:additionalParameters];
+      [self.verifiedAuthState tokenRefreshRequestWithAdditionalHeaders:additionalParameters];
 
   [OIDAuthorizationService performTokenRequest:refreshRequest
                                       callback:^(OIDTokenResponse * _Nullable tokenResponse, 
@@ -72,12 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateVerifiedDetailsWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse {
   if (tokenResponse) {
-    _expirationDate = tokenResponse.accessTokenExpirationDate;
-    _accessTokenString = tokenResponse.accessToken;
-    if (tokenResponse.refreshToken) {
-      _refreshTokenString = tokenResponse.refreshToken;
-    }
-
     NSArray<NSString *> *accountDetailsString =
         [OIDScopeUtilities scopesArrayWithString:tokenResponse.scope];
     NSMutableArray<GIDVerifiableAccountDetail *> *verifiedAccountDetails = [NSMutableArray array];
@@ -92,6 +83,18 @@ NS_ASSUME_NONNULL_BEGIN
   } else {
     _verifiedAccountDetails = @[];
   }
+}
+
+- (nullable NSString *)accessTokenString {
+  return self.verifiedAuthState.lastTokenResponse.accessToken;
+}
+
+- (nullable NSString *)refreshTokenString {
+  return self.verifiedAuthState.refreshToken;
+}
+
+- (nullable NSDate *)expirationDate {
+  return self.verifiedAuthState.lastTokenResponse.accessTokenExpirationDate;
 }
 
 - (BOOL)isEqual:(id)object {

@@ -31,9 +31,8 @@
 
 @implementation GIDVerifiedAccountDetailHandlingFake
 
-- (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
-                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
-                                authState:(OIDAuthState *)authState {
+- (instancetype)initWithAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+                             authState:(OIDAuthState *)authState {
   self = [super init];
   if (self) {
     NSAssert(false, @"This class is only to be used in testing. Do not use.");
@@ -64,9 +63,8 @@
   [self updateVerifiedDetailsWithTokenResponse:_tokenResponse];
 
   GIDVerifiedAccountDetailResult *result =
-      [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:_tokenResponse
-                                                         accountDetails:_verifiedAccountDetails
-                                                              authState:_verifiedAuthState];
+      [[GIDVerifiedAccountDetailResult alloc] initWithAccountDetails:_verifiedAccountDetails
+                                                           authState:_verifiedAuthState];
   completion(result, _error);
 }
 

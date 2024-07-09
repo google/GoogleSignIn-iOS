@@ -41,9 +41,8 @@
       @[verifiedAccountDetail, verifiedAccountDetail];
 
   GIDVerifiedAccountDetailResult *result = 
-      [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:authState.lastTokenResponse
-                                                         accountDetails:verifiedList
-                                                              authState:authState];
+      [[GIDVerifiedAccountDetailResult alloc] initWithAccountDetails:verifiedList
+                                                           authState:authState];
 
   XCTAssertEqual(result.verifiedAuthState, authState);
   XCTAssertEqual(result.verifiedAccountDetails, verifiedList);
@@ -68,9 +67,8 @@
   NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
       @[verifiedAccountDetail];
   GIDVerifiedAccountDetailResult *expectedResult =
-      [[GIDVerifiedAccountDetailResult alloc] initWithLastTokenResponse:authState.lastTokenResponse
-                                                         accountDetails:expectedVerifiedList
-                                                              authState:authState];
+      [[GIDVerifiedAccountDetailResult alloc] initWithAccountDetails:expectedVerifiedList
+                                                           authState:authState];
 
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Refreshed verified account details completion called"];
@@ -97,7 +95,7 @@
                                                                     error:expectedError];
 
   XCTestExpectation *expectation = 
-    [self expectationWithDescription:@"Refreshed verified account details completion called"];
+      [self expectationWithDescription:@"Refreshed verified account details completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
                                       NSError * _Nullable error) {
     XCTAssertNotNil(error);
