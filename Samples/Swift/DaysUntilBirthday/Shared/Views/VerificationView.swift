@@ -46,6 +46,12 @@ struct VerificationView: View {
         Spacer()
       }
       .navigationTitle("Verified Account!")
+      .toolbar {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+          Button(NSLocalizedString("Refresh", comment: "Refresh button"), 
+                 action:{refresh(results: result)})
+        }
+      }
     case .unverified:
       ProgressView()
         .navigationTitle(NSLocalizedString("Unverified account",
@@ -58,5 +64,11 @@ struct VerificationView: View {
       dateFormatter.dateStyle = .medium
       dateFormatter.timeStyle = .short
       return dateFormatter.string(from: date)
+  }
+
+  func refresh(results: GIDVerifiedAccountDetailResult) {
+    results.refreshTokens { (result, error) in
+      authViewModel.verificationState = .verified(result)
+    }
   }
 }

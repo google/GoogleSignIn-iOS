@@ -53,23 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 // TODO: Migrate refresh logic to `GIDGoogleuser` (#441).
 - (void)refreshTokensWithCompletion:(nullable void (^)(GIDVerifiedAccountDetailResult *,
                                                       NSError *))completion {
-  OIDAuthorizationResponse *authResponse = self.verifiedAuthState.lastAuthorizationResponse;
-  OIDAuthorizationRequest *request = authResponse.request;
-
-  OIDTokenRequest *refreshRequest = 
-      [[OIDTokenRequest alloc] initWithConfiguration:request.configuration
-                                           grantType:OIDGrantTypeAuthorizationCode
-                                   authorizationCode:authResponse.authorizationCode
-                                         redirectURL:request.redirectURL
-                                            clientID:request.clientID
-                                        clientSecret:request.clientSecret
-                                               scope:request.scope                     
-                                        refreshToken:self.refreshTokenString
-                                        codeVerifier:request.codeVerifier
-                                additionalParameters:request.additionalParameters];
+  NSDictionary<NSString *, NSString *> *additionalParameters = self.verifiedAuthState.lastAuthorizationResponse.request.additionalParameters;
+  OIDTokenRequest *refreshRequest =
+    [self.verifiedAuthState tokenRefreshRequestWithAdditionalHeaders:additionalParameters];
 
   [OIDAuthorizationService performTokenRequest:refreshRequest
-                 originalAuthorizationResponse:authResponse
                                       callback:^(OIDTokenResponse * _Nullable tokenResponse, 
                                                  NSError * _Nullable error) {
     if (tokenResponse) {
@@ -86,7 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
   if (tokenResponse) {
     _expirationDate = tokenResponse.accessTokenExpirationDate;
     _accessTokenString = tokenResponse.accessToken;
-    _refreshTokenString = tokenResponse.refreshToken;
+    if (tokenResponse.refreshToken) {
+      _refreshTokenString = tokenResponse.refreshToken;
+    }
 
     NSArray<NSString *> *accountDetailsString =
         [OIDScopeUtilities scopesArrayWithString:tokenResponse.scope];
