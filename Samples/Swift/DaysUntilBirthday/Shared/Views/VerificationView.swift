@@ -18,10 +18,10 @@ import SwiftUI
 import GoogleSignIn
 
 struct VerificationView: View {
-  @ObservedObject var authViewModel: AuthenticationViewModel
+  @ObservedObject var verifiedAgeViewModel: VerifiedAgeViewModel
 
   var body: some View {
-    switch authViewModel.verificationState {
+    switch verifiedAgeViewModel.verificationState {
     case .verified(let result):
       VStack(alignment:.leading) {
         Text("List of result object properties:")
