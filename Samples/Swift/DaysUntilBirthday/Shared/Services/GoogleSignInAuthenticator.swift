@@ -43,11 +43,11 @@ final class GoogleSignInAuthenticator: ObservableObject {
     let verifyAccountDetail = GIDVerifyAccountDetail()
     verifyAccountDetail.verifyAccountDetails(accountDetails, presenting: rootViewController) {
       verifyResult, error in
-            guard let verifyResult = verifyResult else {
-              self.authViewModel.verificationState = .unverified
-              print("Error! \(String(describing: error))")
-              return
-            }
+      guard let verifyResult = verifyResult else {
+        self.authViewModel.verificationState = .unverified
+        print("Error! \(String(describing: error))")
+        return
+      }
       self.authViewModel.verificationState = .verified(verifyResult)
     }
   }

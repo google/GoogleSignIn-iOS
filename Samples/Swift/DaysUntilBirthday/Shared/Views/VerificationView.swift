@@ -54,9 +54,9 @@ struct VerificationView: View {
   }
 
   func formatDateWithDateFormatter(_ date: Date) -> String {
-      let dateFormatter = DateFormatter()
-      dateFormatter.dateStyle = .medium
-      dateFormatter.timeStyle = .short
-      return dateFormatter.string(from: date)
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateStyle = .medium
+    dateFormatter.timeStyle = .short
+    return dateFormatter.string(from: date)
   }
 }
