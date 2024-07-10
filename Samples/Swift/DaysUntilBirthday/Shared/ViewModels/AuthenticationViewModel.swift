@@ -22,7 +22,6 @@ final class AuthenticationViewModel: ObservableObject {
   /// The user's log in status.
   /// - note: This will publish updates when its value changes.
   @Published var state: State
-
   private var authenticator: GoogleSignInAuthenticator {
     return GoogleSignInAuthenticator(authViewModel: self)
   }
