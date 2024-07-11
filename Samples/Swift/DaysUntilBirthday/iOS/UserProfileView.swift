@@ -19,8 +19,9 @@ import GoogleSignIn
 
 struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
-
+#if os(iOS)
   @StateObject var verifiedAgeViewModel = VerifiedAgeViewModel()
+#endif
   @StateObject var birthdayViewModel = BirthdayViewModel()
   private var user: GIDGoogleUser? {
     return GIDSignIn.sharedInstance.currentUser

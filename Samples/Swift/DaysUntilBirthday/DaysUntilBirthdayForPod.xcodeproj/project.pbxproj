@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		4C6A2BA2321434ACBD2AF201 /* Pods_DaysUntilBirthdayForPod__macOS_.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 926A15D393D684C68E09FB0F /* Pods_DaysUntilBirthdayForPod__macOS_.framework */; };
 		641495072C3C90E100C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495062C3C90E100C9A613 /* VerificationView.swift */; };
-		641495082C3C90E100C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495062C3C90E100C9A613 /* VerificationView.swift */; };
 		6414950A2C3E094B00C9A613 /* VerifiedAgeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495092C3E094B00C9A613 /* VerifiedAgeViewModel.swift */; };
 		6414950C2C3E0C7A00C9A613 /* VerificationLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6414950B2C3E0C7A00C9A613 /* VerificationLoader.swift */; };
 		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
