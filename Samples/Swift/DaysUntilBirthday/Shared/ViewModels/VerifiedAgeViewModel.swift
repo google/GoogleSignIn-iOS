@@ -19,14 +19,15 @@ import GoogleSignIn
 
 #if os(iOS)
 
+/// A class conforming to `ObservableObject` used to  represent a user's verification status.
 final class VerifiedAgeViewModel: ObservableObject {
   /// The user's account verification status.
   /// - note: This will publish updates when its value changes.
   @Published var verificationState: VerificationState
 
-  private var loader: VerificationLoader {
+  private lazy var loader: VerificationLoader = {
     return VerificationLoader(verifiedViewAgeModel: self)
-  }
+  }()
 
   /// Creates an instance of this view model.
   init() {

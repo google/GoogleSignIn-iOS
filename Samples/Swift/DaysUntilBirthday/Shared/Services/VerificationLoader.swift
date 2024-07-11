@@ -30,10 +30,11 @@ final class VerificationLoader: ObservableObject {
   }
 
   /// Verifies the user's age based upon the selected account.
-  /// - note: Successful calls to this will set the `verifiedAgeViewModel`'s `verificationState` property.
+  /// - note: Successful calls to this method will set the `verificationState` property of the
+  /// `verifiedAgeViewModel` instance passed to the initializer.
   func verifyAccountDetails() {
     let accountDetails: [GIDVerifiableAccountDetail] = [
-      GIDVerifiableAccountDetail(accountDetailType:.ageOver18)
+      GIDVerifiableAccountDetail(accountDetailType: .ageOver18)
     ]
 
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
@@ -44,7 +45,7 @@ final class VerificationLoader: ObservableObject {
     let verifyAccountDetail = GIDVerifyAccountDetail()
     verifyAccountDetail.verifyAccountDetails(accountDetails, presenting: rootViewController) {
       verifyResult, error in
-      guard let verifyResult = verifyResult else {
+      guard let verifyResult else {
         self.verifiedAgeViewModel.verificationState = .unverified
         print("Error! \(String(describing: error))")
         return
