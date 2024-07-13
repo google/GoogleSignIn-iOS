@@ -34,14 +34,9 @@ final class VerifiedAgeViewModel: ObservableObject {
     self.verificationState = .unverified
   }
 
-  /// Verifies the user.
-  func verifyAccountDetails() {
-    switch self.verificationState {
-    case .unverified:
-      loader.verifyAccountDetails()
-    case .verified:
-      return
-    }
+  /// Verifies the user's age over 18.
+  func verifyUserAge() {
+    loader.verifyUserAge()
   }
 }
 

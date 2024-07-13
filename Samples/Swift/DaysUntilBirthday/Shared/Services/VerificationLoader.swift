@@ -32,7 +32,7 @@ final class VerificationLoader: ObservableObject {
   /// Verifies the user's age based upon the selected account.
   /// - note: Successful calls to this method will set the `verificationState` property of the
   /// `verifiedAgeViewModel` instance passed to the initializer.
-  func verifyAccountDetails() {
+  func verifyUserAge() {
     let accountDetails: [GIDVerifiableAccountDetail] = [
       GIDVerifiableAccountDetail(accountDetailType: .ageOver18)
     ]
