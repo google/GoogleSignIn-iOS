@@ -3,6 +3,7 @@
 application's integrity while signing in with Google
 - Update minimum iOS support to iOS 12 ([#445](https://github.com/google/GoogleSignIn-iOS/pull/445))
 - Internal
+  - Update AppCheckCore dependency to v11.0 ([#454](https://github.com/google/GoogleSignIn-iOS/pull/454))
   - Add instancetype return to test helper ([#393](https://github.com/google/GoogleSignIn-iOS/pull/393))
   - Remove GTMSessionFetcher modular import ([#403](https://github.com/google/GoogleSignIn-iOS/pull/403))
   - Bump activesupport from 5.2.5 to 5.2.8.1 in the bundler group ([#429](https://github.com/google/GoogleSignIn-iOS/pull/429))
