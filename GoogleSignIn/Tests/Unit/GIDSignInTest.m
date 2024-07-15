@@ -826,7 +826,7 @@ static NSString *const kNewScope = @"newScope";
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.nonce,
                         manualNonce,
-                        @"nonce provided to signInWithPresenting[ViewController/Window] should be the same as the one in the authorization request.");
+                        @"Provided nonce should match nonce in authorization request.");
 }
 
 - (void)testOAuthLogin_LoginHint {
@@ -1427,7 +1427,7 @@ static NSString *const kNewScope = @"newScope";
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
-    BOOL isAuthorized = restoredSignIn ? YES : NO;
+    BOOL isAuthorized = restoredSignIn;
     [[[_authState expect] andReturnValue:[NSNumber numberWithBool:isAuthorized]] isAuthorized];
   }
 

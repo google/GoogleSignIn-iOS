@@ -599,7 +599,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (!_configuration) {
       // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
       [NSException raise:NSInvalidArgumentException
-                  format:@"No active configuration.  Make sure GIDClientID is set in Info.plist."];
+                  format:@"No active configuration. Make sure GIDClientID is set in Info.plist."];
       return;
     }
 
@@ -693,7 +693,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [_timedLoader startTiming];
       [self->_appCheck getLimitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                           NSError * _Nullable error) {
-        OIDAuthorizationRequest *request = nil;
         if (token) {
           additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
           additionalParameters[kClientAssertionParameter] = token.token;
@@ -703,7 +702,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
           NSLog(@"[Google Sign-In iOS]: Error retrieving App Check limited use token: %@", error);
         }
         #endif
-        request = [self authorizationRequestWithOptions:options
+        OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
                                    additionalParameters:additionalParameters];
         if (self->_timedLoader.animationStatus == GIDTimedLoaderAnimationStatusAnimating) {
           [self->_timedLoader stopTimingWithCompletion:^{
@@ -785,7 +784,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error
-                          emmSupport:(NSString *)emmSupport{
+                          emmSupport:(NSString *)emmSupport {
   if (_restarting) {
     // The auth flow is restarting, so the work here would be performed in the next round.
     _restarting = NO;
