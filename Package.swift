@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // Copyright 2021 Google LLC
@@ -17,14 +17,14 @@
 
 import PackageDescription
 
-let googleSignInVersion = "7.2.0"
+let googleSignInVersion = "8.0.0"
 
 let package = Package(
   name: "GoogleSignIn",
   defaultLocalization: "en",
   platforms: [
     .macOS(.v10_15),
-    .iOS(.v11)
+    .iOS(.v12)
   ],
   products: [
     .library(
@@ -48,7 +48,7 @@ let package = Package(
     .package(
       name: "AppCheck",
       url: "https://github.com/google/app-check.git",
-      "10.19.1" ..< "11.0.0"),
+      from: "11.0.0"),
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
@@ -64,7 +64,7 @@ let package = Package(
     .package(
       name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
-      from: "7.13.0"),
+      from: "8.0.0"),
   ],
   targets: [
     .target(

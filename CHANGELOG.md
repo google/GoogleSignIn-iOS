@@ -1,10 +1,13 @@
-# 7.2.0
+# 8.0.0
 - General release adding Firebase App Check support to establish your
 application's integrity while signing in with Google
+- Update minimum iOS support to iOS 12 ([#445](https://github.com/google/GoogleSignIn-iOS/pull/445))
 - Internal
   - Add instancetype return to test helper ([#393](https://github.com/google/GoogleSignIn-iOS/pull/393))
   - Remove GTMSessionFetcher modular import ([#403](https://github.com/google/GoogleSignIn-iOS/pull/403))
   - Bump activesupport from 5.2.5 to 5.2.8.1 in the bundler group ([#429](https://github.com/google/GoogleSignIn-iOS/pull/429))
+  - Remove deprecated macos-11 runner ([#447](https://github.com/google/GoogleSignIn-iOS/pull/447))
+  - Update deprecated archiving API usage in tests ([#449](https://github.com/google/GoogleSignIn-iOS/pull/449))
 
 # 7.1.0-fac-beta-1.1.0
 - Beta release supporting Firebase App Check tokens used
