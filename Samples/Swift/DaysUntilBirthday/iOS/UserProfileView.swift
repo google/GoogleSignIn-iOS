@@ -57,7 +57,7 @@ struct UserProfileView: View {
           NavigationLink(NSLocalizedString("Verify My Age", comment: "Verify Age"),
                          destination: VerificationView(verifiedAgeViewModel: verifiedAgeViewModel)
           .onAppear {
-            verifiedAgeViewModel.verifyUserAge()
+            verifiedAgeViewModel.verifyUserAgeOver18()
           }
           .onDisappear {
             verifiedAgeViewModel.verificationState = .unverified

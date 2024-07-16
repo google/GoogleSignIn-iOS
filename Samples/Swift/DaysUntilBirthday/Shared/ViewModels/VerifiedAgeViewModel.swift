@@ -34,9 +34,9 @@ final class VerifiedAgeViewModel: ObservableObject {
     self.verificationState = .unverified
   }
 
-  /// Verifies the user's age over 18.
-  func verifyUserAge() {
-    loader.verifyUserAge()
+  /// Verifies the user's age is over 18.
+  func verifyUserAgeOver18() {
+    loader.verifyUserAgeOver18()
   }
 }
 
