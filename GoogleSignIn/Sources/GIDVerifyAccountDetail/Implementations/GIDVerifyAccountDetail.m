@@ -271,9 +271,8 @@ NSErrorDomain const kGIDVerifyErrorDomain = @"com.google.GIDVerifyAccountDetail"
         } else {
           OIDAuthState *authState = handlerAuthFlow.authState;
           GIDVerifiedAccountDetailResult *verifiedResult = [[GIDVerifiedAccountDetailResult alloc]
-              initWithLastTokenResponse:authState.lastTokenResponse
-                         accountDetails:self->_accountDetails
-                              authState:authState];
+              initWithAccountDetails:self->_accountDetails
+                           authState:authState];
           completion(verifiedResult, nil);
         }
       });

@@ -31,14 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Initialize a `GIDVerifiedAccountDetailHandling` object by specifying all available properties.
 ///
-/// @param tokenResponse The last token response with expiration date, access token, and refresh token.
 /// @param accountDetails A list of verified account details.
 /// @param authState An updated to update the token response or authorization error.
 ///
 /// @return An initialized `GIDVerifiedAccountDetailHandling` instance with expiration date, access token, and refresh token.
-- (instancetype)initWithLastTokenResponse:(OIDTokenResponse *)tokenResponse
-                           accountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
-                                authState:(OIDAuthState *)authState;
+- (instancetype)initWithAccountDetails:(NSArray<GIDVerifiableAccountDetail *> *)accountDetails
+                             authState:(OIDAuthState *)authState;
 
 /// Refresh the access token and refresh token with the current authorization state.
 ///
