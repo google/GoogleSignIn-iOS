@@ -18,10 +18,10 @@ import SwiftUI
 import GoogleSignIn
 
 struct VerificationView: View {
-  @ObservedObject var authViewModel: AuthenticationViewModel
+  @ObservedObject var verifiedAgeViewModel: VerifiedAgeViewModel
 
   var body: some View {
-    switch authViewModel.verificationState {
+    switch verifiedAgeViewModel.verificationState {
     case .verified(let result):
       VStack(alignment:.leading) {
         Text("List of result object properties:")
@@ -60,15 +60,15 @@ struct VerificationView: View {
   }
 
   func formatDateWithDateFormatter(_ date: Date) -> String {
-      let dateFormatter = DateFormatter()
-      dateFormatter.dateStyle = .medium
-      dateFormatter.timeStyle = .short
-      return dateFormatter.string(from: date)
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateStyle = .medium
+    dateFormatter.timeStyle = .short
+    return dateFormatter.string(from: date)
   }
 
   func refresh(results: GIDVerifiedAccountDetailResult) {
     results.refreshTokens { (result, error) in
-      authViewModel.verificationState = .verified(result)
+      verifiedAgeViewModel.verificationState = .verified(result)
     }
   }
 }
