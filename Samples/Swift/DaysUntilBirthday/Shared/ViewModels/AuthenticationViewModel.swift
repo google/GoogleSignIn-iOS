@@ -47,7 +47,30 @@ final class AuthenticationViewModel: ObservableObject {
 
   /// Signs the user in.
   func signIn() {
-    authenticator.signIn()
+#if os(iOS)
+    guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
+      print("There is no root view controller!")
+      return
+    }
+#elseif os(macOS)
+    guard let presentingWindow = NSApplication.shared.windows.first else {
+      print("There is no presenting window!")
+      return
+    }
+#endif
+
+    Task { @MainActor in
+      do {
+#if os(iOS)
+        let signInResult = try await authenticator.signIn(with: rootViewController)
+#elseif os(macOS)
+        let signInResult = try await authenticator.signIn(with: presentingWindow)
+#endif
+        self.state = .signedIn(signInResult.user)
+      } catch {
+        print("Error signing in: \(error)")
+      }
+    }
   }
 
   /// Signs the user out.
@@ -55,21 +78,41 @@ final class AuthenticationViewModel: ObservableObject {
     authenticator.signOut()
   }
 
-  /// Disconnects the previously granted scope and logs the user out.
+  /// Disconnects the previously granted scope and signs the user out.
   func disconnect() {
-    authenticator.disconnect()
+    Task { @MainActor in
+      do {
+        try await authenticator.disconnect()
+      } catch {
+        print("Error disconnecting: \(error)")
+      }
+    }
   }
 
   var hasBirthdayReadScope: Bool {
     return authorizedScopes.contains(BirthdayLoader.birthdayReadScope)
   }
 
+#if os(iOS)
   /// Adds the requested birthday read scope.
-  /// - parameter completion: An escaping closure that is called upon successful completion.
-  func addBirthdayReadScope(completion: @escaping () -> Void) {
-    authenticator.addBirthdayReadScope(completion: completion)
+  /// - parameter viewController: A `UIViewController` to use while presenting the flow.
+  /// - returns: The `GIDSignInResult`.
+  /// - throws: Any error that may arise while adding the read birthday scope.
+  func addBirthdayReadScope(viewController: UIViewController) async throws -> GIDSignInResult {
+    return try await authenticator.addBirthdayReadScope(viewController: viewController)
   }
+#endif
 
+
+#if os(macOS)
+  /// adds the requested birthday read scope.
+  /// - parameter window: An `NSWindow` to use while presenting the flow.
+  /// - returns: The `GIDSignInResult`.
+  /// - throws: Any error that may arise while adding the read birthday scope.
+  func addBirthdayReadScope(window: NSWindow) async throws -> GIDSignInResult {
+    return try await authenticator.addBirthdayReadScope(window: window)
+  }
+#endif
 }
 
 extension AuthenticationViewModel {
