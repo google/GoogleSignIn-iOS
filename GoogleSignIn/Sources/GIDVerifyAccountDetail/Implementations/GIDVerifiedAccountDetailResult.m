@@ -18,6 +18,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
+#import "GoogleSignIn/Sources/GIDToken_Private.h"
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
@@ -85,16 +87,15 @@ NS_ASSUME_NONNULL_BEGIN
   }
 }
 
-- (nullable NSString *)accessTokenString {
-  return self.verifiedAuthState.lastTokenResponse.accessToken;
+- (nullable GIDToken *)accessToken {
+  return [[GIDToken alloc]
+          initWithTokenString:self.verifiedAuthState.lastTokenResponse.accessToken
+               expirationDate:self.verifiedAuthState.lastTokenResponse.accessTokenExpirationDate];
 }
 
-- (nullable NSString *)refreshTokenString {
-  return self.verifiedAuthState.refreshToken;
-}
-
-- (nullable NSDate *)expirationDate {
-  return self.verifiedAuthState.lastTokenResponse.accessTokenExpirationDate;
+- (nullable GIDToken *)refreshToken {
+  return [[GIDToken alloc] initWithTokenString:self.verifiedAuthState.refreshToken
+                                expirationDate:nil];
 }
 
 - (BOOL)isEqual:(id)object {
@@ -103,16 +104,16 @@ NS_ASSUME_NONNULL_BEGIN
   }
 
   GIDVerifiedAccountDetailResult *other = (GIDVerifiedAccountDetailResult *)object;
-  return [self.expirationDate isEqual:other.expirationDate] &&
-         [self.accessTokenString isEqualToString:other.accessTokenString] &&
-         [self.refreshTokenString isEqualToString:other.refreshTokenString] &&
+  return [self.accessToken.expirationDate isEqual:other.accessToken.expirationDate] &&
+         [self.accessToken.tokenString isEqualToString:other.accessToken.tokenString] &&
+         [self.refreshToken.tokenString isEqualToString:other.refreshToken.tokenString] &&
          [self.verifiedAccountDetails isEqual:other.verifiedAccountDetails] &&
          [self.verifiedAuthState isEqual:other.verifiedAuthState];
 }
 
 - (NSUInteger)hash {
-  return [self.expirationDate hash] ^ [self.accessTokenString hash] ^ 
-         [self.refreshTokenString hash] ^ [self.verifiedAccountDetails hash] ^
+  return [self.accessToken.expirationDate hash] ^ [self.accessToken.tokenString hash] ^
+         [self.refreshToken.tokenString hash] ^ [self.verifiedAccountDetails hash] ^
          [self.verifiedAuthState hash];
 }
 

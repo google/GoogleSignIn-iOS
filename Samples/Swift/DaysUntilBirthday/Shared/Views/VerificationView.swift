@@ -29,15 +29,15 @@ struct VerificationView: View {
 
         HStack(alignment: .top) {
           Text("Access Token:")
-          Text(result.accessTokenString ?? "Not available")
+          Text(result.accessToken?.tokenString ?? "Not available")
         }
         HStack(alignment: .top) {
           Text("Refresh Token:")
-          Text(result.refreshTokenString ?? "Not available")
+          Text(result.refreshToken?.tokenString ?? "Not available")
         }
         HStack {
           Text("Expiration:")
-          if let expirationDate = result.expirationDate {
+          if let expirationDate = result.accessToken?.expirationDate {
             Text(formatDateWithDateFormatter(expirationDate))
           } else {
             Text("Not available")

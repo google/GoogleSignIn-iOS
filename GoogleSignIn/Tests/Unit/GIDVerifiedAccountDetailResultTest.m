@@ -46,9 +46,9 @@
 
   XCTAssertEqual(result.verifiedAuthState, authState);
   XCTAssertEqual(result.verifiedAccountDetails, verifiedList);
-  XCTAssertEqual(result.expirationDate, authState.lastTokenResponse.accessTokenExpirationDate);
-  XCTAssertEqual(result.accessTokenString, authState.lastTokenResponse.accessToken);
-  XCTAssertEqual(result.refreshTokenString, authState.lastTokenResponse.refreshToken);
+  XCTAssertEqual(result.accessToken.expirationDate, authState.lastTokenResponse.accessTokenExpirationDate);
+  XCTAssertEqual(result.accessToken.tokenString, authState.lastTokenResponse.accessToken);
+  XCTAssertEqual(result.refreshToken.tokenString, authState.lastTokenResponse.refreshToken);
 }
 
 - (void)testRefreshTokensWithCompletion_success {
