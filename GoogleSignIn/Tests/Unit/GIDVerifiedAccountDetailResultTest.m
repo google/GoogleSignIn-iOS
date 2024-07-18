@@ -21,6 +21,7 @@
 #import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailHandlingFake.h"
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/GIDToken_Private.h"
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
