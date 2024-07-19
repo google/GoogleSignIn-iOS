@@ -44,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
   if (self) {
     _verifiedAccountDetails = accountDetails;
     _verifiedAuthState = authState;
+    _accessToken = 
+        [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                               expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
+    _refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+                                           expirationDate:nil];
   }
   return self;
 }
@@ -71,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateVerifiedDetailsWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse {
   if (tokenResponse) {
+    _accessToken = [[GIDToken alloc] initWithTokenString:tokenResponse.accessToken
+                                          expirationDate:tokenResponse.accessTokenExpirationDate];
+
     NSArray<NSString *> *accountDetailsString =
         [OIDScopeUtilities scopesArrayWithString:tokenResponse.scope];
     NSMutableArray<GIDVerifiableAccountDetail *> *verifiedAccountDetails = [NSMutableArray array];
@@ -85,17 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
   } else {
     _verifiedAccountDetails = @[];
   }
-}
-
-- (nullable GIDToken *)accessToken {
-  return [[GIDToken alloc]
-          initWithTokenString:self.verifiedAuthState.lastTokenResponse.accessToken
-               expirationDate:self.verifiedAuthState.lastTokenResponse.accessTokenExpirationDate];
-}
-
-- (nullable GIDToken *)refreshToken {
-  return [[GIDToken alloc] initWithTokenString:self.verifiedAuthState.refreshToken
-                                expirationDate:nil];
 }
 
 - (BOOL)isEqual:(id)object {
