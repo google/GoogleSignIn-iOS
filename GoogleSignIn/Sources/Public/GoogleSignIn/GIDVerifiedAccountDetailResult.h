@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The access token object holding the string and expiration.
 @property(nonatomic, copy, readonly, nullable) GIDToken *accessToken;
-/// The refresh token object holding the string and no expiration.
+/// The refresh token object holding the string and expiration.
 @property(nonatomic, copy, readonly, nullable) GIDToken *refreshToken;
 /// A list of verified account details.
 @property(nonatomic, copy, readonly) NSArray<GIDVerifiableAccountDetail *>
