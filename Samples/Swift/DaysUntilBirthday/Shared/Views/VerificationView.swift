@@ -23,6 +23,16 @@ struct VerificationView: View {
   var body: some View {
     switch verifiedAgeViewModel.verificationState {
     case .verified(let result):
+      Button("Fetch Age Verification Signal") {
+        verifiedAgeViewModel.fetchAgeVerificationSignal(verifyResult: result)
+      }
+      .padding(10)
+      .overlay(
+          RoundedRectangle(cornerRadius: 30)
+              .stroke(Color.gray)
+      )
+      .padding(.bottom)
+
       VStack(alignment:.leading) {
         Text("List of result object properties:")
           .font(.headline)
@@ -52,6 +62,16 @@ struct VerificationView: View {
                  action:{refresh(results: result)})
         }
       }
+      .sheet(isPresented: $verifiedAgeViewModel.isShowingAgeVerificationSignal) {
+          AgeVerificationResultView(ageVerificationSignal: verifiedAgeViewModel.ageVerificationSignal)
+      }
+      .alert(isPresented: $verifiedAgeViewModel.isShowingAgeVerificationAlert, content: {
+        Alert(
+            title: Text("Oh no! User is not verified over 18."),
+            message: Text("Age Verification Signal: \(verifiedAgeViewModel.ageVerificationSignal)"),
+            dismissButton: .cancel()
+        )
+      })
     case .unverified:
       ProgressView()
         .navigationTitle(NSLocalizedString("Unverified account",
