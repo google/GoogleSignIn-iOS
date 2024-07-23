@@ -28,9 +28,7 @@ struct Verification: Decodable {
     self.signal = signal
   }
 
-  static var noVerificationSignal: Verification? {
-    return Verification(signal: "No signal found")
-  }
+  static let noVerificationSignal: Verification = Verification(signal: "No signal found")
 }
 
 struct VerificationResponse: Decodable {

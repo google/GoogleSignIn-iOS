@@ -49,7 +49,7 @@ final class VerificationLoader: ObservableObject {
 
   private func createSession(verifyResult: GIDVerifiedAccountDetailResult,
                              completion: @escaping (Result<URLSession, Error>) -> Void) {
-    guard let token = verifyResult.accessTokenString else {
+    guard let token = verifyResult.accessToken?.tokenString else {
       completion(.failure(.couldNotCreateURLSession))
       return
     }

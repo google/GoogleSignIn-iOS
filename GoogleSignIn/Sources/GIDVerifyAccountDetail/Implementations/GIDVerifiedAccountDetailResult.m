@@ -18,6 +18,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
+#import "GoogleSignIn/Sources/GIDToken_Private.h"
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
@@ -42,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
   if (self) {
     _verifiedAccountDetails = accountDetails;
     _verifiedAuthState = authState;
+    _accessToken = 
+        [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                               expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
+    _refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+                                           expirationDate:nil];
   }
   return self;
 }
@@ -69,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateVerifiedDetailsWithTokenResponse:(nullable OIDTokenResponse *)tokenResponse {
   if (tokenResponse) {
+    _accessToken = [[GIDToken alloc] initWithTokenString:tokenResponse.accessToken
+                                          expirationDate:tokenResponse.accessTokenExpirationDate];
+
     NSArray<NSString *> *accountDetailsString =
         [OIDScopeUtilities scopesArrayWithString:tokenResponse.scope];
     NSMutableArray<GIDVerifiableAccountDetail *> *verifiedAccountDetails = [NSMutableArray array];
@@ -85,34 +95,22 @@ NS_ASSUME_NONNULL_BEGIN
   }
 }
 
-- (nullable NSString *)accessTokenString {
-  return self.verifiedAuthState.lastTokenResponse.accessToken;
-}
-
-- (nullable NSString *)refreshTokenString {
-  return self.verifiedAuthState.refreshToken;
-}
-
-- (nullable NSDate *)expirationDate {
-  return self.verifiedAuthState.lastTokenResponse.accessTokenExpirationDate;
-}
-
 - (BOOL)isEqual:(id)object {
   if (![object isKindOfClass:[GIDVerifiedAccountDetailResult class]]) {
     return NO;
   }
 
   GIDVerifiedAccountDetailResult *other = (GIDVerifiedAccountDetailResult *)object;
-  return [self.expirationDate isEqual:other.expirationDate] &&
-         [self.accessTokenString isEqualToString:other.accessTokenString] &&
-         [self.refreshTokenString isEqualToString:other.refreshTokenString] &&
+  return [self.accessToken.expirationDate isEqual:other.accessToken.expirationDate] &&
+         [self.accessToken.tokenString isEqualToString:other.accessToken.tokenString] &&
+         [self.refreshToken.tokenString isEqualToString:other.refreshToken.tokenString] &&
          [self.verifiedAccountDetails isEqual:other.verifiedAccountDetails] &&
          [self.verifiedAuthState isEqual:other.verifiedAuthState];
 }
 
 - (NSUInteger)hash {
-  return [self.expirationDate hash] ^ [self.accessTokenString hash] ^ 
-         [self.refreshTokenString hash] ^ [self.verifiedAccountDetails hash] ^
+  return [self.accessToken.expirationDate hash] ^ [self.accessToken.tokenString hash] ^
+         [self.refreshToken.tokenString hash] ^ [self.verifiedAccountDetails hash] ^
          [self.verifiedAuthState hash];
 }
 
