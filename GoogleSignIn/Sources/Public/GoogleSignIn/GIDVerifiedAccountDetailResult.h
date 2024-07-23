@@ -25,6 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class GIDVerifiableAccountDetail;
+@class GIDToken;
 @class OIDAuthState;
 @class OIDTokenResponse;
 
@@ -32,12 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// This will pass back the necessary tokens to the requesting party.
 @interface GIDVerifiedAccountDetailResult : NSObject <GIDVerifiedAccountDetailHandling>
 
-/// The date when the access token expires.
-@property(nonatomic, readonly, nullable) NSDate *expirationDate;
-/// The access token string.
-@property(nonatomic, copy, readonly, nullable) NSString *accessTokenString;
-/// The refresh token string.
-@property(nonatomic, copy, readonly, nullable) NSString *refreshTokenString;
+/// The access token object holding the string and expiration.
+@property(nonatomic, copy, readonly, nullable) GIDToken *accessToken;
+/// The refresh token object holding the string and expiration.
+@property(nonatomic, copy, readonly, nullable) GIDToken *refreshToken;
 /// A list of verified account details.
 @property(nonatomic, copy, readonly) NSArray<GIDVerifiableAccountDetail *>
     *verifiedAccountDetails;
