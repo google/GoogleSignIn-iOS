@@ -38,10 +38,20 @@ final class VerifiedAgeViewModel: ObservableObject {
     return VerificationLoader(verifiedViewAgeModel: self)
   }()
 
+  /// An enumeration representing possible states of an age verification signal.
+  enum AgeVerificationSignal: String {
+    /// The user's age has been verified to be over 18.
+    case ageOver18Standard = "AGE_OVER_18_STANDARD"
+    /// The user's age verification is pending.
+    case agePending = "AGE_PENDING"
+    /// Indicates there was no age verification signal found.
+    case noAgeVerificationSignal = "Signal Unavailable"
+  }
+
   /// Creates an instance of this view model.
   init() {
     self.verificationState = .unverified
-    self.ageVerificationSignal = "Signal Unavailable"
+    self.ageVerificationSignal = AgeVerificationSignal.noAgeVerificationSignal.rawValue
   }
 
   /// Verifies the user's age is over 18.
@@ -53,9 +63,10 @@ final class VerifiedAgeViewModel: ObservableObject {
   func fetchAgeVerificationSignal(verifyResult: GIDVerifiedAccountDetailResult) {
     loader.fetchAgeVerificationSignal(verifyResult: verifyResult) {
       self.ageVerificationSignal =
-        self.loader.verification?.signal ?? "Error: No verification details found"
+        self.loader.verification?.signal ?? AgeVerificationSignal.noAgeVerificationSignal.rawValue
 
-      if (self.ageVerificationSignal == "AGE_OVER_18_STANDARD"){
+      let signal = AgeVerificationSignal(rawValue: self.ageVerificationSignal)
+      if (signal == .ageOver18Standard) {
         self.isShowingAgeVerificationSignal = true
         self.isShowingAgeVerificationAlert = false
       } else {
