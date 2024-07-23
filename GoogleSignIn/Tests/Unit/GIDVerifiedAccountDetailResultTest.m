@@ -21,6 +21,7 @@
 #import "GoogleSignIn/Sources/GIDVerifyAccountDetail/Fake/GIDVerifiedAccountDetailHandlingFake.h"
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Sources/GIDToken_Private.h"
 
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthorizationRequest+Testing.h"
@@ -46,9 +47,9 @@
 
   XCTAssertEqual(result.verifiedAuthState, authState);
   XCTAssertEqual(result.verifiedAccountDetails, verifiedList);
-  XCTAssertEqual(result.expirationDate, authState.lastTokenResponse.accessTokenExpirationDate);
-  XCTAssertEqual(result.accessTokenString, authState.lastTokenResponse.accessToken);
-  XCTAssertEqual(result.refreshTokenString, authState.lastTokenResponse.refreshToken);
+  XCTAssertEqual(result.accessToken.expirationDate, authState.lastTokenResponse.accessTokenExpirationDate);
+  XCTAssertEqual(result.accessToken.tokenString, authState.lastTokenResponse.accessToken);
+  XCTAssertEqual(result.refreshToken.tokenString, authState.lastTokenResponse.refreshToken);
 }
 
 - (void)testRefreshTokensWithCompletion_success {
