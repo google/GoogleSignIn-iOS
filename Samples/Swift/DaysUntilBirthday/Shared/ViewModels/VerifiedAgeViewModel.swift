@@ -42,8 +42,6 @@ final class VerifiedAgeViewModel: ObservableObject {
   init() {
     self.verificationState = .unverified
     self.ageVerificationSignal = "Signal Unavailable"
-    self.isShowingAgeVerificationSignal = false
-    self.isShowingAgeVerificationAlert = false
   }
 
   /// Verifies the user's age is over 18.
