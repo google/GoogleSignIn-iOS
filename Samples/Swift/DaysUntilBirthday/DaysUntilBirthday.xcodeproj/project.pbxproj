@@ -10,6 +10,7 @@
 		641495132C405D0200C9A613 /* VerifiedAgeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495122C405D0200C9A613 /* VerifiedAgeViewModel.swift */; };
 		641495152C405E1400C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495142C405E1400C9A613 /* VerificationView.swift */; };
 		641495172C405E3600C9A613 /* VerificationLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495162C405E3600C9A613 /* VerificationLoader.swift */; };
+		6499D22A2C4B2F4200825B30 /* Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6499D2292C4B2F4200825B30 /* Verification.swift */; };
 		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
@@ -59,6 +60,7 @@
 		641495122C405D0200C9A613 /* VerifiedAgeViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiedAgeViewModel.swift; sourceTree = "<group>"; };
 		641495142C405E1400C9A613 /* VerificationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
 		641495162C405E3600C9A613 /* VerificationLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerificationLoader.swift; sourceTree = "<group>"; };
+		6499D2292C4B2F4200825B30 /* Verification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Verification.swift; sourceTree = "<group>"; };
 		7345ACFF2703D9470020AFB1 /* DaysUntilBirthday (iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday (iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				739FCC47270E659A00C92042 /* Birthday.swift */,
+				6499D2292C4B2F4200825B30 /* Verification.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -383,6 +386,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6499D22A2C4B2F4200825B30 /* Verification.swift in Sources */,
 				739FCC48270E659A00C92042 /* Birthday.swift in Sources */,
 				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
 				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
