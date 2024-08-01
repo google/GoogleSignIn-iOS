@@ -25,6 +25,9 @@ final class VerifiedAgeViewModel: ObservableObject {
   /// - note: This will publish updates when its value changes.
   @Published var verificationState: VerificationState
 
+  /// Minimum time to expiration for a restored access token (10 minutes).
+  let kMinimumRestoredAccessTokenTimeToExpire: TimeInterval = 600.0
+
   private lazy var loader: VerificationLoader = {
     return VerificationLoader(verifiedViewAgeModel: self)
   }()
@@ -36,7 +39,17 @@ final class VerifiedAgeViewModel: ObservableObject {
 
   /// Verifies the user's age is over 18.
   func verifyUserAgeOver18() {
-    loader.verifyUserAgeOver18()
+    switch self.verificationState {
+    case .verified(let result):
+      if let expirationDate = result.accessToken?.expirationDate,
+         expirationDate.timeIntervalSinceNow <= kMinimumRestoredAccessTokenTimeToExpire {
+        result.refreshTokens { (result, error) in
+          self.verificationState = .verified(result)
+        }
+      }
+    case .unverified:
+      loader.verifyUserAgeOver18()
+    }
   }
 }
 

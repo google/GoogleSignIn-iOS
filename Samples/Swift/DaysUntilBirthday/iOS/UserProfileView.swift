@@ -58,9 +58,6 @@ struct UserProfileView: View {
                          destination: VerificationView(verifiedAgeViewModel: verifiedAgeViewModel)
           .onAppear {
             verifiedAgeViewModel.verifyUserAgeOver18()
-          }
-          .onDisappear {
-            verifiedAgeViewModel.verificationState = .unverified
           })
 #endif
           Spacer()
