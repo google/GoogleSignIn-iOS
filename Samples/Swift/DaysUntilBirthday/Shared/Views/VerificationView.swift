@@ -63,13 +63,13 @@ struct VerificationView: View {
           }
         }
         .sheet(isPresented: $verifiedAgeViewModel.isShowingAgeVerificationSignal) {
-          AgeVerificationResultView(ageVerificationSignal: verifiedAgeViewModel.ageVerificationSignal)
+          AgeVerificationResultView(ageVerificationSignal: verifiedAgeViewModel.ageVerificationSignal.rawValue)
         }
         .alert("Oh no! User is not verified over 18.",
                isPresented: $verifiedAgeViewModel.isShowingAgeVerificationAlert) {
           Button("OK", role: .cancel) { }
         } message: {
-          Text("Age Verification Signal: \(verifiedAgeViewModel.ageVerificationSignal)")
+          Text("Age Verification Signal: \(verifiedAgeViewModel.ageVerificationSignal.rawValue)")
         }
       }
     case .unverified:

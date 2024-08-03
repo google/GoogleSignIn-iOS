@@ -26,7 +26,7 @@ final class VerifiedAgeViewModel: ObservableObject {
   @Published var verificationState: VerificationState
   /// The age verification signal telling whether the user's age is over 18 or pending.
   /// - note: This will publish updates when its value changes.
-  @Published var ageVerificationSignal: String
+  @Published var ageVerificationSignal: AgeVerificationSignal
   /// Indicates whether the view to display the user's age is over 18 should be shown.
   /// - note: This will publish updates when its value changes.
   @Published var isShowingAgeVerificationSignal = false
@@ -51,7 +51,7 @@ final class VerifiedAgeViewModel: ObservableObject {
   /// Creates an instance of this view model.
   init() {
     self.verificationState = .unverified
-    self.ageVerificationSignal = AgeVerificationSignal.noAgeVerificationSignal.rawValue
+    self.ageVerificationSignal = .noAgeVerificationSignal
   }
 
   /// Verifies the user's age is over 18.
@@ -62,11 +62,11 @@ final class VerifiedAgeViewModel: ObservableObject {
   /// Fetches the age verification signal representing whether the user's age is over 18 or pending.
   func fetchAgeVerificationSignal(verifyResult: GIDVerifiedAccountDetailResult) {
     loader.fetchAgeVerificationSignal(verifyResult: verifyResult) {
-      self.ageVerificationSignal =
-        self.loader.verification?.signal ?? AgeVerificationSignal.noAgeVerificationSignal.rawValue
+      let signal =  self.loader.verification?.signal ?? ""
+      self.ageVerificationSignal = AgeVerificationSignal(rawValue: signal) ??
+        .noAgeVerificationSignal
 
-      let signal = AgeVerificationSignal(rawValue: self.ageVerificationSignal)
-      if (signal == .ageOver18Standard) {
+      if (self.ageVerificationSignal == .ageOver18Standard) {
         self.isShowingAgeVerificationSignal = true
         self.isShowingAgeVerificationAlert = false
       } else {
