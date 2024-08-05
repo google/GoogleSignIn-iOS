@@ -124,14 +124,11 @@ final class VerificationLoader: ObservableObject {
                                   completion: @escaping () -> Void) {
     self.verificationPublisher(verifyResult: verifyResult) { publisher in
       self.cancellable = publisher.sink { sinkCompletion in
-        switch sinkCompletion {
-        case .finished:
-          break
-        case .failure(let error):
+        if case .failure(let error) = sinkCompletion {
           self.verification = Verification.noVerificationSignal
           print("Error retrieving age verification: \(error)")
-          completion()
         }
+        completion()
       } receiveValue: { verification in
         self.verification = verification
         completion()
