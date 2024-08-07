@@ -23,33 +23,53 @@ struct VerificationView: View {
   var body: some View {
     switch verifiedAgeViewModel.verificationState {
     case .verified(let result):
-      VStack(alignment:.leading) {
-        Text("List of result object properties:")
-          .font(.headline)
+      Button("Fetch Age Verification Signal") {
+        verifiedAgeViewModel.fetchAgeVerificationSignal(verifyResult: result)
+      }
+      .padding(10)
+      .overlay(
+        RoundedRectangle(cornerRadius: 30)
+          .stroke(Color.gray)
+      )
+      .padding(.bottom)
+      if #available(iOS 15, *) {
+        VStack(alignment:.leading) {
+          Text("List of result object properties:")
+            .font(.headline)
 
-        HStack(alignment: .top) {
-          Text("Access Token:")
-          Text(result.accessToken?.tokenString ?? "Not available")
+          HStack(alignment: .top) {
+            Text("Access Token:")
+            Text(result.accessToken?.tokenString ?? "Not available")
+          }
+          HStack(alignment: .top) {
+            Text("Refresh Token:")
+            Text(result.refreshToken?.tokenString ?? "Not available")
+          }
+          HStack {
+            Text("Expiration:")
+            if let expirationDate = result.accessToken?.expirationDate {
+              Text(formatDateWithDateFormatter(expirationDate))
+            } else {
+              Text("Not available")
+            }
+          }
+          Spacer()
         }
-        HStack(alignment: .top) {
-          Text("Refresh Token:")
-          Text(result.refreshToken?.tokenString ?? "Not available")
-        }
-        HStack {
-          Text("Expiration:")
-          if let expirationDate = result.accessToken?.expirationDate {
-            Text(formatDateWithDateFormatter(expirationDate))
-          } else {
-            Text("Not available")
+        .navigationTitle("Verified Account!")
+        .toolbar {
+          ToolbarItemGroup(placement: .navigationBarTrailing) {
+            Button(NSLocalizedString("Refresh", comment: "Refresh button"),
+                   action:{refresh(results: result)})
           }
         }
-        Spacer()
-      }
-      .navigationTitle("Verified Account!")
-      .toolbar {
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-          Button(NSLocalizedString("Refresh", comment: "Refresh button"), 
-                 action:{refresh(results: result)})
+        .sheet(isPresented: $verifiedAgeViewModel.isShowingAgeVerificationSignal) {
+          AgeVerificationResultView(ageVerificationSignal: verifiedAgeViewModel.ageVerificationSignal.rawValue)
+        }
+        .alert("Oh no! User is not verified over 18.",
+               isPresented: $verifiedAgeViewModel.isShowingAgeVerificationAlert) {
+          Button("OK", role: .cancel) { }
+        } message: {
+          Text("Age Verification Signal: \(verifiedAgeViewModel.ageVerificationSignal.rawValue)")
         }
       }
     case .unverified:

@@ -24,6 +24,15 @@ final class VerifiedAgeViewModel: ObservableObject {
   /// The user's account verification status.
   /// - note: This will publish updates when its value changes.
   @Published var verificationState: VerificationState
+  /// The age verification signal telling whether the user's age is over 18 or pending.
+  /// - note: This will publish updates when its value changes.
+  @Published var ageVerificationSignal: AgeVerificationSignal
+  /// Indicates whether the view to display the user's age is over 18 should be shown.
+  /// - note: This will publish updates when its value changes.
+  @Published var isShowingAgeVerificationSignal = false
+  /// Indicates whether an alert should be displayed to inform the user that they are not verified as over 18.
+  /// - note: This will publish updates when its value changes.
+  @Published var isShowingAgeVerificationAlert = false
 
   /// Minimum time to expiration for a restored access token (10 minutes).
   let kMinimumRestoredAccessTokenTimeToExpire: TimeInterval = 600.0
@@ -32,9 +41,20 @@ final class VerifiedAgeViewModel: ObservableObject {
     return VerificationLoader(verifiedViewAgeModel: self)
   }()
 
+  /// An enumeration representing possible states of an age verification signal.
+  enum AgeVerificationSignal: String {
+    /// The user's age has been verified to be over 18.
+    case ageOver18Standard = "AGE_OVER_18_STANDARD"
+    /// The user's age verification is pending.
+    case agePending = "AGE_PENDING"
+    /// Indicates there was no age verification signal found.
+    case noAgeVerificationSignal = "Signal Unavailable"
+  }
+
   /// Creates an instance of this view model.
   init() {
     self.verificationState = .unverified
+    self.ageVerificationSignal = .noAgeVerificationSignal
   }
 
   /// Verifies the user's age is over 18.
@@ -49,6 +69,23 @@ final class VerifiedAgeViewModel: ObservableObject {
       }
     case .unverified:
       loader.verifyUserAgeOver18()
+    }
+  }
+
+  /// Fetches the age verification signal representing whether the user's age is over 18 or pending.
+  func fetchAgeVerificationSignal(verifyResult: GIDVerifiedAccountDetailResult) {
+    loader.fetchAgeVerificationSignal(verifyResult: verifyResult) {
+      let signal =  self.loader.verification?.signal ?? ""
+      self.ageVerificationSignal = AgeVerificationSignal(rawValue: signal) ??
+        .noAgeVerificationSignal
+
+      if (self.ageVerificationSignal == .ageOver18Standard) {
+        self.isShowingAgeVerificationSignal = true
+        self.isShowingAgeVerificationAlert = false
+      } else {
+        self.isShowingAgeVerificationSignal = false
+        self.isShowingAgeVerificationAlert = true
+      }
     }
   }
 }

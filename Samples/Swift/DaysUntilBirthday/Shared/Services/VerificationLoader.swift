@@ -123,19 +123,19 @@ final class VerificationLoader: ObservableObject {
   func fetchAgeVerificationSignal(verifyResult: GIDVerifiedAccountDetailResult,
                                   completion: @escaping () -> Void) {
     self.verificationPublisher(verifyResult: verifyResult) { publisher in
-      self.cancellable = publisher.sink { sinkCompletion in
-        switch sinkCompletion {
-        case .finished:
-          break
-        case .failure(let error):
-          self.verification = Verification.noVerificationSignal
-          print("Error retrieving age verification: \(error)")
+      self.cancellable = publisher.sink(
+        receiveCompletion: { sinkCompletion in
+          if case .failure(let error) = sinkCompletion {
+            self.verification = Verification.noVerificationSignal
+            print("Error retrieving age verification: \(error)")
+            completion()
+          }
+        },
+        receiveValue: { verification in
+          self.verification = verification
           completion()
         }
-      } receiveValue: { verification in
-        self.verification = verification
-        completion()
-      }
+      )
     }
   }
 }
