@@ -247,7 +247,11 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 #pragma mark - IBActions
 
 - (IBAction)signIn:(id)sender {
+  NSString* nonce = [[NSUUID UUID] UUIDString];
   [GIDSignIn.sharedInstance signInWithPresentingViewController:self
+                                                          hint:nil
+                                              additionalScopes:@[]
+                                                         nonce:nonce
                                                     completion:^(GIDSignInResult *signInResult,
                                                                  NSError *error) {
     if (error) {
