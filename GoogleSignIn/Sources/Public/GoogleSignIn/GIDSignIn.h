@@ -191,6 +191,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                          additionalParams:(nullable NSDictionary *)extraParams
                                 completion:
 (nullable void (^)(GIDSignInResult *_Nullable signInResult,
                    NSError *_Nullable error))completion
