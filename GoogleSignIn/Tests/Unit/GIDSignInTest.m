@@ -1300,9 +1300,6 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
-
-  // TODO: Keep mocks from carrying forward to subsequent tests. (#410)
-  [_authState stopMocking];
 }
 
 - (void)testValidScopesException {
@@ -1324,6 +1321,9 @@ presentingViewController:_presentingViewController
   } @finally {
   }
   XCTAssert(threw);
+
+  // TODO: Keep mocks from carrying forward to subsequent tests. (#410)
+  [_authState stopMocking];
 }
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
