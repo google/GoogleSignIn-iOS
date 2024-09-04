@@ -1305,6 +1305,27 @@ static NSString *const kNewScope = @"newScope";
   [_authState stopMocking];
 }
 
+- (void)testValidScopesException {
+  NSArray *requestedScopes = @[@"https://www.googleapis.com/auth/verified.age.over18.standard"];
+  BOOL threw = NO;
+  @try {
+    [_signIn addScopes:requestedScopes
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+presentingViewController:_presentingViewController
+#elif TARGET_OS_OSX
+      presentingWindow:_presentingWindow
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+            completion:_completion];
+  } @catch (NSException *exception) {
+    threw = YES;
+    XCTAssertEqualObjects(exception.description,
+                          @"Do not use `addScopes` on `GIDSignIn`. "
+                           "Instead, utilize `GIDVerifyAccountDetail` for age verification.");
+  } @finally {
+  }
+  XCTAssert(threw);
+}
+
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Helpers
