@@ -257,6 +257,10 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                   addScopesFlow:YES
                                                      completion:completion];
 
+  // Explicitly throw an exception for invalid or restricted scopes in the request.
+  // This should be done in class GIDVerifyAccountDetail.
+  [self assertValidScopes:scopes];
+
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
       [NSMutableSet setWithArray:self.currentUser.grantedScopes];
@@ -327,6 +331,10 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
                                                      completion:completion];
+
+  // Explicitly throw an exception for invalid or restricted scopes in the request.
+  // This should be done in class GIDVerifyAccountDetail.
+  [self assertValidScopes:scopes];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -986,6 +994,16 @@ static NSString *const kClientAssertionTypeParameterValue =
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];
+  }
+}
+
+// Asserts the requested scopes are valid.
+- (void)assertValidScopes:(NSArray<NSString *> *)scopes {
+  if ([scopes containsObject:@"https://www.googleapis.com/auth/verified.age.over18.standard"]) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"Do not use `addScopes` on `GIDSignIn`. "
+                        "Instead, utilize `GIDVerifyAccountDetail` for age verification."];
   }
 }
 
