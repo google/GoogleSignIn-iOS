@@ -20,6 +20,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
@@ -258,7 +259,6 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                      completion:completion];
 
   // Explicitly throw an exception for invalid or restricted scopes in the request.
-  // This should be done in class GIDVerifyAccountDetail.
   [self assertValidScopes:scopes];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
@@ -333,7 +333,6 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                      completion:completion];
 
   // Explicitly throw an exception for invalid or restricted scopes in the request.
-  // This should be done in class GIDVerifyAccountDetail.
   [self assertValidScopes:scopes];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
@@ -999,11 +998,18 @@ static NSString *const kClientAssertionTypeParameterValue =
 
 // Asserts the requested scopes are valid.
 - (void)assertValidScopes:(NSArray<NSString *> *)scopes {
-  if ([scopes containsObject:@"https://www.googleapis.com/auth/verified.age.over18.standard"]) {
-    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
-    [NSException raise:NSInvalidArgumentException
-                format:@"Do not use `addScopes` on `GIDSignIn`. "
-                        "Instead, utilize `GIDVerifyAccountDetail` for age verification."];
+  NSDictionary *scopeToClassMapping = @{
+    kAccountDetailTypeAgeOver18Scope : [GIDVerifyAccountDetail class],
+  };
+  for (NSString *scope in scopes) {
+    Class scopeClass = scopeToClassMapping[scope];
+    if (scopeClass) {
+      // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+      [NSException raise:NSInvalidArgumentException
+                  format:@"Scope %@ requires using %@. "
+                         "Do not pass in through add scopes flow in `GIDSignIn`.",
+                         scope, NSStringFromClass(scopeClass)];
+    }
   }
 }
 

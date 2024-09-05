@@ -1303,21 +1303,22 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testValidScopesException {
-  NSArray *requestedScopes = @[@"https://www.googleapis.com/auth/verified.age.over18.standard"];
+  NSString *requestedScope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
+  NSString *expectedException = [NSString stringWithFormat:@"Scope %@ requires using %@. "
+                                 "Do not pass in through add scopes flow in `GIDSignIn`.",
+                                 requestedScope, NSStringFromClass([GIDVerifyAccountDetail class])];
   BOOL threw = NO;
   @try {
-    [_signIn addScopes:requestedScopes
+    [_signIn addScopes:@[requestedScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-presentingViewController:_presentingViewController
+      presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
       presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
             completion:_completion];
   } @catch (NSException *exception) {
     threw = YES;
-    XCTAssertEqualObjects(exception.description,
-                          @"Do not use `addScopes` on `GIDSignIn`. "
-                           "Instead, utilize `GIDVerifyAccountDetail` for age verification.");
+    XCTAssertEqualObjects(exception.description, expectedException);
   } @finally {
   }
   XCTAssert(threw);
