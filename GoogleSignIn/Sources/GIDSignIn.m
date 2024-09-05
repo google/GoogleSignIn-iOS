@@ -258,9 +258,10 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
                                                      completion:completion];
-
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // Explicitly throw an exception for invalid or restricted scopes in the request.
   [self assertValidScopes:scopes];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -332,9 +333,6 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
                                                      completion:completion];
-
-  // Explicitly throw an exception for invalid or restricted scopes in the request.
-  [self assertValidScopes:scopes];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -997,6 +995,7 @@ static NSString *const kClientAssertionTypeParameterValue =
   }
 }
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 // Asserts the requested scopes are valid.
 - (void)assertValidScopes:(NSArray<NSString *> *)scopes {
   NSDictionary *scopeToClassMapping = @{
@@ -1013,6 +1012,7 @@ static NSString *const kClientAssertionTypeParameterValue =
     }
   }
 }
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Checks whether or not this is the first time the app runs.
 - (BOOL)isFreshInstall {
