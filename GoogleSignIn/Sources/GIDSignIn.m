@@ -1001,15 +1001,22 @@ static NSString *const kClientAssertionTypeParameterValue =
   NSDictionary *scopeToClassMapping = @{
     kAccountDetailTypeAgeOver18Scope : [GIDVerifyAccountDetail class],
   };
+  NSMutableString *errorMessage =
+    [NSMutableString stringWithString:@"The following scopes are not supported in the 'addScopes' flow. "
+                                       "Please use the appropriate classes to handle these:\n"];
+  Boolean unsupportedScopeFound = NO;
+
   for (NSString *scope in scopes) {
     Class scopeClass = scopeToClassMapping[scope];
     if (scopeClass) {
-      // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
-      [NSException raise:NSInvalidArgumentException
-                  format:@"Scope %@ requires using %@. "
-                         "Do not pass in through add scopes flow in `GIDSignIn`.",
-                         scope, NSStringFromClass(scopeClass)];
+      unsupportedScopeFound = YES;
+      [errorMessage appendFormat:@"%@ -> %@\n", scope, NSStringFromClass(scopeClass)];
     }
+  }
+  if (unsupportedScopeFound) {
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@", errorMessage];
   }
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

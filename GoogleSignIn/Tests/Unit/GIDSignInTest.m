@@ -1304,9 +1304,10 @@ static NSString *const kNewScope = @"newScope";
 
 - (void)testValidScopesException {
   NSString *requestedScope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
-  NSString *expectedException = [NSString stringWithFormat:@"Scope %@ requires using %@. "
-                                 "Do not pass in through add scopes flow in `GIDSignIn`.",
-                                 requestedScope, NSStringFromClass([GIDVerifyAccountDetail class])];
+  NSString *expectedException = 
+    [NSString stringWithFormat:@"The following scopes are not supported in the 'addScopes' flow. "
+                                "Please use the appropriate classes to handle these:\n%@ -> %@\n",
+                                requestedScope, NSStringFromClass([GIDVerifyAccountDetail class])];
   BOOL threw = NO;
   @try {
     [_signIn addScopes:@[requestedScope]
