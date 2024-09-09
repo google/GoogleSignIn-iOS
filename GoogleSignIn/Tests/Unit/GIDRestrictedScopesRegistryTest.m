@@ -18,6 +18,7 @@
 #import "GoogleSignIn/Sources/GIDRestrictedScopesRegistry.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
 @interface GIDRestrictedScopesRegistryTest : XCTestCase
 @end
