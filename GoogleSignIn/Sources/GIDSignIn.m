@@ -28,6 +28,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDRestrictedScopesRegistry.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -996,24 +997,19 @@ static NSString *const kClientAssertionTypeParameterValue =
 }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-// Asserts the requested scopes are valid.
 - (void)assertValidScopes:(NSArray<NSString *> *)scopes {
-  NSDictionary *scopeToClassMapping = @{
-    kAccountDetailTypeAgeOver18Scope : [GIDVerifyAccountDetail class],
-  };
-  NSMutableString *errorMessage =
+  GIDRestrictedScopesRegistry *registry = [[GIDRestrictedScopesRegistry alloc] init];
+  NSDictionary<NSString *, Class> *restrictedScopesMapping = [registry restrictedScopeToClassMappingInSet:[NSSet setWithArray:scopes]];
+
+  if (restrictedScopesMapping.count > 0) {
+    NSMutableString *errorMessage =
     [NSMutableString stringWithString:@"The following scopes are not supported in the 'addScopes' flow. "
                                        "Please use the appropriate classes to handle these:\n"];
-  Boolean unsupportedScopeFound = NO;
-
-  for (NSString *scope in scopes) {
-    Class scopeClass = scopeToClassMapping[scope];
-    if (scopeClass) {
-      unsupportedScopeFound = YES;
-      [errorMessage appendFormat:@"%@ -> %@\n", scope, NSStringFromClass(scopeClass)];
+    for (NSString *restrictedScope in restrictedScopesMapping) {
+      Class handlingClass = restrictedScopesMapping[restrictedScope];
+      [errorMessage appendFormat:@"%@ -> %@\n", restrictedScope, NSStringFromClass(handlingClass)];
     }
-  }
-  if (unsupportedScopeFound) {
+
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"%@", errorMessage];
