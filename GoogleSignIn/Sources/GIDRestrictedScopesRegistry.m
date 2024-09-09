@@ -17,6 +17,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 @implementation GIDRestrictedScopesRegistry
 
 - (instancetype)init {
@@ -46,3 +48,5 @@
 }
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

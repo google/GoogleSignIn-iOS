@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+#import <TargetConditionals.h>
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #import <Foundation/Foundation.h>
 
 /// A registry to manage restricted scopes and their associated handling classes to track scopes
@@ -45,3 +49,5 @@
 - (NSDictionary<NSString *, Class> *)restrictedScopeToClassMappingInSet:(NSSet<NSString *> *)scopes;
 
 @end
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
