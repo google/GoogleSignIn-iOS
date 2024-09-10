@@ -43,10 +43,10 @@
 
 /// Retrieves a dictionary mapping restricted scopes to their handling classes within a given set of scopes.
 ///
-/// @param scopes A set of scopes.
+/// @param scopes A set of scopes to lookup their handling class.
 /// @return A dictionary where restricted scopes found in the input set are mapped to their corresponding handling classes.
 ///     If no restricted scopes are found, an empty dictionary is returned.
-- (NSDictionary<NSString *, Class> *)restrictedScopeToClassMappingInSet:(NSSet<NSString *> *)scopes;
+- (NSDictionary<NSString *, Class> *)restrictedScopesToClassMappingInSet:(NSSet<NSString *> *)scopes;
 
 @end
 

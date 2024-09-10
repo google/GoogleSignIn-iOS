@@ -36,7 +36,7 @@
   return [self.restrictedScopes containsObject:scope];
 }
 
-- (NSDictionary<NSString *, Class> *)restrictedScopeToClassMappingInSet:(NSSet<NSString *> *)scopes {
+- (NSDictionary<NSString *, Class> *)restrictedScopesToClassMappingInSet:(NSSet<NSString *> *)scopes {
   NSMutableDictionary<NSString *, Class> *mapping = [NSMutableDictionary dictionary];
   for (NSString *scope in scopes) {
     if ([self isScopeRestricted:scope]) {
