@@ -145,6 +145,8 @@ static NSString *const kClientAssertionTypeParameterValue =
   GIDTimedLoader *_timedLoader;
   // Flag indicating developer's intent to use App Check.
   BOOL _configureAppCheckCalled;
+  // The class used to manage restricted scopes and their associated handling classes.
+  GIDRestrictedScopesRegistry *_registry;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
@@ -998,18 +1000,19 @@ static NSString *const kClientAssertionTypeParameterValue =
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)assertValidScopes:(NSArray<NSString *> *)scopes {
-  GIDRestrictedScopesRegistry *registry = [[GIDRestrictedScopesRegistry alloc] init];
-  NSDictionary<NSString *, Class> *restrictedScopesMapping = [registry restrictedScopeToClassMappingInSet:[NSSet setWithArray:scopes]];
+  _registry = [[GIDRestrictedScopesRegistry alloc] init];
+  NSDictionary<NSString *, Class> *restrictedScopesMapping =
+      [_registry restrictedScopesToClassMappingInSet:[NSSet setWithArray:scopes]];
 
   if (restrictedScopesMapping.count > 0) {
     NSMutableString *errorMessage =
     [NSMutableString stringWithString:@"The following scopes are not supported in the 'addScopes' flow. "
                                        "Please use the appropriate classes to handle these:\n"];
-    for (NSString *restrictedScope in restrictedScopesMapping) {
-      Class handlingClass = restrictedScopesMapping[restrictedScope];
+    [restrictedScopesMapping enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull restrictedScope,
+                                                                 Class  _Nonnull handlingClass,
+                                                                 BOOL * _Nonnull stop) {
       [errorMessage appendFormat:@"%@ -> %@\n", restrictedScope, NSStringFromClass(handlingClass)];
-    }
-
+    }];
     // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
     [NSException raise:NSInvalidArgumentException
                 format:@"%@", errorMessage];
