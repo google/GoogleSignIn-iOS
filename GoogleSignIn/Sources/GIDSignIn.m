@@ -508,6 +508,7 @@ static NSString *const kClientAssertionTypeParameterValue =
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
+    _registry = [[GIDRestrictedScopesRegistry alloc] init];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
@@ -1000,7 +1001,6 @@ static NSString *const kClientAssertionTypeParameterValue =
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)assertValidScopes:(NSArray<NSString *> *)scopes {
-  _registry = [[GIDRestrictedScopesRegistry alloc] init];
   NSDictionary<NSString *, Class> *restrictedScopesMapping =
       [_registry restrictedScopesToClassMappingInSet:[NSSet setWithArray:scopes]];
 
