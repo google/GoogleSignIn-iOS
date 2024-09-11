@@ -20,12 +20,15 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifiableAccountDetail.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h"
 
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/GIDAuthorizationResponseHelper.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationResponse/Implementations/GIDAuthorizationResponseHandler.h"
 
 #import "GoogleSignIn/Sources/GIDAuthFlow.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDRestrictedScopesRegistry.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -142,6 +145,8 @@ static NSString *const kClientAssertionTypeParameterValue =
   GIDTimedLoader *_timedLoader;
   // Flag indicating developer's intent to use App Check.
   BOOL _configureAppCheckCalled;
+  // The class used to manage restricted scopes and their associated handling classes.
+  GIDRestrictedScopesRegistry *_registry;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
@@ -256,6 +261,10 @@ static NSString *const kClientAssertionTypeParameterValue =
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
                                                      completion:completion];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  // Explicitly throw an exception for invalid or restricted scopes in the request.
+  [self assertValidScopes:scopes];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -499,6 +508,7 @@ static NSString *const kClientAssertionTypeParameterValue =
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
+    _registry = [[GIDRestrictedScopesRegistry alloc] init];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
@@ -988,6 +998,27 @@ static NSString *const kClientAssertionTypeParameterValue =
                 format:@"|presentingViewController| must be set."];
   }
 }
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)assertValidScopes:(NSArray<NSString *> *)scopes {
+  NSDictionary<NSString *, Class> *restrictedScopesMapping =
+      [_registry restrictedScopesToClassMappingInSet:[NSSet setWithArray:scopes]];
+
+  if (restrictedScopesMapping.count > 0) {
+    NSMutableString *errorMessage =
+    [NSMutableString stringWithString:@"The following scopes are not supported in the 'addScopes' flow. "
+                                       "Please use the appropriate classes to handle these:\n"];
+    [restrictedScopesMapping enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull restrictedScope,
+                                                                 Class  _Nonnull handlingClass,
+                                                                 BOOL * _Nonnull stop) {
+      [errorMessage appendFormat:@"%@ -> %@\n", restrictedScope, NSStringFromClass(handlingClass)];
+    }];
+    // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@", errorMessage];
+  }
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 // Checks whether or not this is the first time the app runs.
 - (BOOL)isFreshInstall {
