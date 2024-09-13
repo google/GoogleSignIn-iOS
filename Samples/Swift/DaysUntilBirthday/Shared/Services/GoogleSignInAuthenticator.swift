@@ -52,7 +52,9 @@ final class GoogleSignInAuthenticator: ObservableObject {
       guard let idToken = signInResult.user.idToken?.tokenString,
             let returnedNonce = self.decodeNonce(fromJWT: idToken),
             returnedNonce == manualNonce else {
-        print("ERROR: Returned nonce doesn't match manual nonce!")
+        // Assert a failure for convenience so that integration tests with thissample app fail upon
+        // `nonce` mismatch
+        assertionFailure("ERROR: Returned nonce doesn't match manual nonce!")
         return
       }
       self.authViewModel.state = .signedIn(signInResult.user)
