@@ -70,8 +70,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
                               expiresIn:(NSNumber *)expiresIn
                            refreshToken:(NSString *)refreshToken
                            tokenRequest:(OIDTokenRequest *)tokenRequest {
-  NSMutableDictionary<NSString *, NSString *> *parameters;
-  parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
+  NSMutableDictionary<NSString *, NSString *> *parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
     @"access_token" : accessToken ?: kAccessToken,
     @"expires_in" : expiresIn ?: @(kAccessTokenExpiresIn),
     @"token_type" : @"example_token_type",

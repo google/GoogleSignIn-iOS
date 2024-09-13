@@ -272,12 +272,25 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                 completion:(nullable GIDSignInCompletion)completion {
+  [self signInWithPresentingViewController:presentingViewController 
+                                      hint:hint
+                          additionalScopes:additionalScopes
+                                     nonce:nil
+                                completion:completion];
+}
+
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                          additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                                     nonce:(nullable NSString *)nonce
+                                completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                      presentingViewController:presentingViewController
                                                     loginHint:hint
                                                 addScopesFlow:NO
                                                        scopes:additionalScopes
+                                                        nonce:nonce
                                                    completion:completion];
   [self signInWithOptions:options];
 }
@@ -350,12 +363,25 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                         completion:(nullable GIDSignInCompletion)completion {
+  [self signInWithPresentingWindow:presentingWindow
+                              hint:hint
+                  additionalScopes:additionalScopes
+                             nonce:nil
+                        completion:completion];
+}
+
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                  additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                             nonce:(nullable NSString *)nonce
+                        completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
     [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
                                              presentingWindow:presentingWindow
                                                     loginHint:hint
                                                 addScopesFlow:NO
                                                        scopes:additionalScopes
+                                                        nonce:nonce
                                                    completion:completion];
   [self signInWithOptions:options];
 }
@@ -573,7 +599,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     if (!_configuration) {
       // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
       [NSException raise:NSInvalidArgumentException
-                  format:@"No active configuration.  Make sure GIDClientID is set in Info.plist."];
+                  format:@"No active configuration. Make sure GIDClientID is set in Info.plist."];
       return;
     }
 
@@ -667,7 +693,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [_timedLoader startTiming];
       [self->_appCheck getLimitedUseTokenWithCompletion:^(GACAppCheckToken * _Nullable token,
                                                           NSError * _Nullable error) {
-        OIDAuthorizationRequest *request = nil;
         if (token) {
           additionalParameters[kClientAssertionTypeParameter] = kClientAssertionTypeParameterValue;
           additionalParameters[kClientAssertionParameter] = token.token;
@@ -677,7 +702,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
           NSLog(@"[Google Sign-In iOS]: Error retrieving App Check limited use token: %@", error);
         }
         #endif
-        request = [self authorizationRequestWithOptions:options
+        OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
                                    additionalParameters:additionalParameters];
         if (self->_timedLoader.animationStatus == GIDTimedLoaderAnimationStatusAnimating) {
           [self->_timedLoader stopTimingWithCompletion:^{
@@ -707,6 +732,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                       scopes:options.scopes
                                                  redirectURL:[self redirectURLWithOptions:options]
                                                 responseType:OIDResponseTypeCode
+                                                       nonce:options.nonce
                                         additionalParameters:additionalParameters];
   return request;
 }
@@ -758,7 +784,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)processAuthorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                                error:(NSError *)error
-                          emmSupport:(NSString *)emmSupport{
+                          emmSupport:(NSString *)emmSupport {
   if (_restarting) {
     // The auth flow is restarting, so the work here would be performed in the next round.
     _restarting = NO;
