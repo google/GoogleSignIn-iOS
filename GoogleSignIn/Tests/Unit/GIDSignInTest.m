@@ -297,7 +297,7 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
   _presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  _authState = OCMStrictClassMock([OIDAuthState class]);
+  _authState = OCMClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
@@ -327,7 +327,8 @@ static NSString *const kNewScope = @"newScope";
                          callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
-                 callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
+      originalAuthorizationResponse:[OCMArg any]
+      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
   _fetcherService = [[GIDFakeFetcherService alloc] init];
