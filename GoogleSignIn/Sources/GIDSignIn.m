@@ -283,15 +283,9 @@ static NSString *const kClientAssertionTypeParameterValue =
     }
     return;
   }
-
-  // Use the union of granted and requested scopes.
-  if ([grantedScopes containsObject:kAccountDetailTypeAgeOver18Scope] && grantedScopes.count > 1) {
-    options.scopes = [requestedScopes allObjects];
-  } else {
-    [grantedScopes unionSet:requestedScopes];
-    options.scopes = [grantedScopes allObjects];
-  }
-
+  
+  options.scopes = [requestedScopes allObjects];
+  
   [self signInWithOptions:options];
 }
 

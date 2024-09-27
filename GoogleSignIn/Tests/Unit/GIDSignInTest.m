@@ -765,7 +765,7 @@ static NSString *const kNewScope = @"newScope";
     grantedScopes = [parsedScopes copy];
   }
   
-  NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
+  NSArray<NSString *> *expectedScopes = @[kNewScope];
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
 
   [_user verify];
