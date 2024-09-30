@@ -284,6 +284,7 @@ static NSString *const kClientAssertionTypeParameterValue =
     return;
   }
   
+  // Previously granted scopes will still be included since we pass `include_granted_scopes=true`.
   options.scopes = [requestedScopes allObjects];
   
   [self signInWithOptions:options];
