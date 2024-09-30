@@ -283,11 +283,10 @@ static NSString *const kClientAssertionTypeParameterValue =
     }
     return;
   }
-
-  // Use the union of granted and requested scopes.
-  [grantedScopes unionSet:requestedScopes];
-  options.scopes = [grantedScopes allObjects];
-
+  
+  // Previously granted scopes will still be included since we pass `include_granted_scopes=true`.
+  options.scopes = [requestedScopes allObjects];
+  
   [self signInWithOptions:options];
 }
 

@@ -764,8 +764,13 @@ static NSString *const kNewScope = @"newScope";
     [parsedScopes removeObject:@""];
     grantedScopes = [parsedScopes copy];
   }
-  
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  NSArray<NSString *> *expectedScopes = @[kNewScope];
+#elif TARGET_OS_OSX
   NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
+#endif // TARGET_OS_OSX
+
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
 
   [_user verify];
