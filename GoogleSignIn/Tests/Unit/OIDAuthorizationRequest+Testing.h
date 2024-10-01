@@ -20,13 +20,15 @@
 #import <AppAuth/OIDAuthorizationRequest.h>
 #endif
 
-extern NSString *const OIDAuthorizationRequestTestingClientID;
-extern NSString *const OIDAuthorizationRequestTestingScope;
-extern NSString *const OIDAuthorizationRequestTestingScope2;
-extern NSString *const OIDAuthorizationRequestTestingCodeVerifier;
+extern NSString * _Nonnull const OIDAuthorizationRequestTestingClientID;
+extern NSString * _Nonnull const OIDAuthorizationRequestTestingScope;
+extern NSString * _Nonnull const OIDAuthorizationRequestTestingScope2;
+extern NSString * _Nonnull const OIDAuthorizationRequestTestingCodeVerifier;
 
 @interface OIDAuthorizationRequest (Testing)
 
-+ (instancetype)testInstance;
++ (instancetype _Nonnull)testInstance;
+
++ (instancetype _Nonnull)testInstanceWithNonce:(nullable NSString *)nonce;
 
 @end

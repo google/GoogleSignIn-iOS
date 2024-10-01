@@ -18,7 +18,7 @@ open SignInSampleForPod.xcworkspace
 
 3. Run the 'SampleForPod' target.
 
-## Swift Pacakage Manager
+## Swift Package Manager
 
 1. In the `../Sample/ObjC/SignInSample/` folder, open the
 [Swift Package Manager](https://swift.org/package-manager/) project:
