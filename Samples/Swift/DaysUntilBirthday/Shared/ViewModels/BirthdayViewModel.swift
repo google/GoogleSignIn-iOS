@@ -17,7 +17,8 @@
 import Combine
 import Foundation
 
-/// An observable class representing the current user's `Birthday` and the number of days until that date.
+/// An observable class representing the current user's `Birthday` and the number of days until that
+/// date.
 final class BirthdayViewModel: ObservableObject {
   /// The `Birthday` of the current user.
   /// - note: Changes to this property will be published to observers.
@@ -40,17 +41,12 @@ final class BirthdayViewModel: ObservableObject {
 
   /// Fetches the birthday of the current user.
   func fetchBirthday() {
-    birthdayLoader.birthdayPublisher { publisher in
-      self.cancellable = publisher.sink { completion in
-        switch completion {
-        case .finished:
-          break
-        case .failure(let error):
-          self.birthday = Birthday.noBirthday
-          print("Error retrieving birthday: \(error)")
-        }
-      } receiveValue: { birthday in
-        self.birthday = birthday
+    Task { @MainActor in
+      do {
+        self.birthday = try await birthdayLoader.loadBirthday()
+      } catch {
+        print("Error retrieving birthday: \(error)")
+        self.birthday = .noBirthday
       }
     }
   }
