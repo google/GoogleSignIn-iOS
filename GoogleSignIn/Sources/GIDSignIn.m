@@ -926,11 +926,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 
   [authFlow wait];
-  [OIDAuthorizationService
-   performTokenRequest:tokenRequest
-   originalAuthorizationResponse:authFlow.authState.lastAuthorizationResponse
-   callback:^(OIDTokenResponse *_Nullable tokenResponse,
-              NSError *_Nullable error) {
+  [OIDAuthorizationService performTokenRequest:tokenRequest
+                 originalAuthorizationResponse:authFlow.authState.lastAuthorizationResponse
+                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                                 NSError *_Nullable error) {
     [authState updateWithTokenResponse:tokenResponse error:error];
     authFlow.error = error;
 
