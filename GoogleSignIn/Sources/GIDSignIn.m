@@ -838,7 +838,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   } else {
     NSString *errorString = [error localizedDescription];
     GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
-    if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
+    if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow ||
+        error.code == OIDErrorCodeProgramCanceledAuthorizationFlow) {
       // The user has canceled the flow at the iOS modal dialog.
       errorString = kUserCanceledError;
       errorCode = kGIDSignInErrorCodeCanceled;
