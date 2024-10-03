@@ -726,14 +726,23 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (OIDAuthorizationRequest *)
     authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
                additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
-  OIDAuthorizationRequest *request =
-      [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                    clientId:options.configuration.clientID
-                                                      scopes:options.scopes
-                                                 redirectURL:[self redirectURLWithOptions:options]
-                                                responseType:OIDResponseTypeCode
-                                                       nonce:options.nonce
-                                        additionalParameters:additionalParameters];
+  OIDAuthorizationRequest *request;
+  if (options.nonce) {
+    request = [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                            clientId:options.configuration.clientID
+                                                              scopes:options.scopes
+                                                         redirectURL:[self redirectURLWithOptions:options]
+                                                        responseType:OIDResponseTypeCode
+                                                               nonce:options.nonce
+                                                additionalParameters:additionalParameters];
+  } else {
+    request = [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
+                                                            clientId:options.configuration.clientID
+                                                              scopes:options.scopes
+                                                         redirectURL:[self redirectURLWithOptions:options]
+                                                        responseType:OIDResponseTypeCode
+                                                additionalParameters:additionalParameters];
+  }
   return request;
 }
 
@@ -918,10 +927,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 
   [authFlow wait];
-  [OIDAuthorizationService
-      performTokenRequest:tokenRequest
-                 callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                            NSError *_Nullable error) {
+  [OIDAuthorizationService performTokenRequest:tokenRequest
+                 originalAuthorizationResponse:authFlow.authState.lastAuthorizationResponse
+                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                                 NSError *_Nullable error) {
     [authState updateWithTokenResponse:tokenResponse error:error];
     authFlow.error = error;
 
