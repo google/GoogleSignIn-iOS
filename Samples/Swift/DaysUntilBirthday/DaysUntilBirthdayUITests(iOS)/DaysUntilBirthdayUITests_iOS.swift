@@ -124,11 +124,13 @@ extension DaysUntilBirthdayUITests_iOS {
   /// This will assumme the full flow where a user must type in an email and
   /// password to sign in with.
   func signInForTheFirstTime() -> Bool {
+    print("BOO: it's the first time")
     guard sampleApp.textFields["Email or phone"]
             .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find email textfield")
       return false
     }
+    print("BOO: before the return button")
     guard sampleApp
             .keyboards
             .element
@@ -137,15 +139,17 @@ extension DaysUntilBirthdayUITests_iOS {
       XCTFail("Failed to find 'return' button")
       return false
     }
-
+    print("BOO: before typing in email or phone text")
     sampleApp.textFields["Email or phone"].typeText(Credential.email.rawValue)
+    print("BOO: before tapping on return for email or phone")
     sampleApp.keyboards.element.buttons["return"].tap()
-
+    print("BOO: before entering password")
     guard sampleApp.secureTextFields["Enter your password"]
             .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find password textfield")
       return false
     }
+    print("BOO: before checking existence of return for password")
     guard sampleApp
             .keyboards
             .element
@@ -154,12 +158,12 @@ extension DaysUntilBirthdayUITests_iOS {
       XCTFail("Failed to find 'return' button")
       return false
     }
-
+    print("BOO: before entering return on password")
     sampleApp
       .secureTextFields["Enter your password"]
       .typeText(Credential.password.rawValue)
     sampleApp.keyboards.element.buttons["return"].tap()
-
+    print("BOO: before password manager prompt existence")
     if sampleApp
       .staticTexts[passwordManagerPrompt]
       .waitForExistence(timeout: timeout) {
@@ -169,7 +173,9 @@ extension DaysUntilBirthdayUITests_iOS {
         XCTFail("Failed to find \(notNowText) button")
         return false
       }
+      print("BOO: before not now text tap")
       sampleApp.buttons[notNowText].tap()
+      print("BOO: after not now text tap")
     }
 
     // Proceed through sign-in disclaimer and/or access request view(s) if needed
