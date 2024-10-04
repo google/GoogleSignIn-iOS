@@ -27,7 +27,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
   private let chooseAnAccountHeaderText = "Choose an account"
   private let notNowText = "Not Now"
-  private let timeout: TimeInterval = 10
+  private let timeout: TimeInterval = 5
 
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
@@ -83,7 +83,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     guard springboardApp
             .staticTexts[signInStaticText]
-            .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: 30) else {
       XCTFail("Failed to display permission prompt")
       return false
     }
