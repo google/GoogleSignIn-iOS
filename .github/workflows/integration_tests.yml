@@ -47,7 +47,7 @@ jobs:
         fi
 
   swift-button-functional-test:
-    runs-on: macOS-12
+    runs-on: macos-latest
     needs: check-pr-body-for-key
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' && !github.event.pull_request.head.repo.fork }}
@@ -64,7 +64,7 @@ jobs:
           build-for-testing \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11'
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4'
     - name: Run test target for Google Sign-in button for Swift
       env:
         EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
@@ -75,7 +75,7 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
 
