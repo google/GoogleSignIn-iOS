@@ -11,6 +11,8 @@
 		641495072C3C90E100C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495062C3C90E100C9A613 /* VerificationView.swift */; };
 		6414950A2C3E094B00C9A613 /* VerifiedAgeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495092C3E094B00C9A613 /* VerifiedAgeViewModel.swift */; };
 		6414950C2C3E0C7A00C9A613 /* VerificationLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6414950B2C3E0C7A00C9A613 /* VerificationLoader.swift */; };
+		6499D22A2C4B2F4200825B30 /* Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6499D2292C4B2F4200825B30 /* Verification.swift */; };
+		6499D22C2C4B3B1500825B30 /* AgeVerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6499D22B2C4B3B1500825B30 /* AgeVerificationView.swift */; };
 		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
@@ -51,6 +53,8 @@
 		641495062C3C90E100C9A613 /* VerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
 		641495092C3E094B00C9A613 /* VerifiedAgeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiedAgeViewModel.swift; sourceTree = "<group>"; };
 		6414950B2C3E0C7A00C9A613 /* VerificationLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationLoader.swift; sourceTree = "<group>"; };
+		6499D2292C4B2F4200825B30 /* Verification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Verification.swift; sourceTree = "<group>"; };
+		6499D22B2C4B3B1500825B30 /* AgeVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgeVerificationView.swift; sourceTree = "<group>"; };
 		7345ACFF2703D9470020AFB1 /* DaysUntilBirthdayForPod (iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthdayForPod (iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -201,6 +205,7 @@
 			children = (
 				7345AD042703D9470020AFB1 /* ContentView.swift */,
 				739FCC45270E467600C92042 /* BirthdayView.swift */,
+				6499D22B2C4B3B1500825B30 /* AgeVerificationView.swift */,
 				641495062C3C90E100C9A613 /* VerificationView.swift */,
 				7345AD112703D9C30020AFB1 /* SignInView.swift */,
 				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
@@ -212,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				739FCC47270E659A00C92042 /* Birthday.swift */,
+				6499D2292C4B2F4200825B30 /* Verification.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -421,7 +427,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6499D22A2C4B2F4200825B30 /* Verification.swift in Sources */,
 				739FCC48270E659A00C92042 /* Birthday.swift in Sources */,
+				6499D22C2C4B3B1500825B30 /* AgeVerificationView.swift in Sources */,
 				641495072C3C90E100C9A613 /* VerificationView.swift in Sources */,
 				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
 				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
@@ -444,7 +452,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				73DB41912805FBFD0028B8D3 /* SignInView.swift in Sources */,
-				641495082C3C90E100C9A613 /* VerificationView.swift in Sources */,
 				73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */,
 				73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */,
 				73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */,
