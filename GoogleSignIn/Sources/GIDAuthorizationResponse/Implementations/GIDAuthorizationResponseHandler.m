@@ -141,10 +141,10 @@
 
   // TODO: Clean up callback flow (#427).
   [authFlow wait];
-  [OIDAuthorizationService
-      performTokenRequest:tokenRequest
-                 callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                            NSError *_Nullable error) {
+  [OIDAuthorizationService performTokenRequest:tokenRequest
+                 originalAuthorizationResponse:authFlow.authState.lastAuthorizationResponse
+                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                                 NSError *_Nullable error) {
     [authState updateWithTokenResponse:tokenResponse error:error];
     authFlow.error = error;
 
@@ -211,7 +211,8 @@
   switch (_flowName) {
     case GIDFlowNameSignIn: {
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
-      if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow) {
+      if (error.code == OIDErrorCodeUserCanceledAuthorizationFlow ||
+          error.code == OIDErrorCodeProgramCanceledAuthorizationFlow) {
         // The user has canceled the flow at the iOS modal dialog.
         errorString = kUserCanceledSignInError;
         errorCode = kGIDSignInErrorCodeCanceled;

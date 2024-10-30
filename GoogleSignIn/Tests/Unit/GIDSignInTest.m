@@ -329,7 +329,8 @@ static NSString *const kNewScope = @"newScope";
                          callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
-                 callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
+      originalAuthorizationResponse:[OCMArg any]
+      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
   _fetcherService = [[GIDFakeFetcherService alloc] init];
@@ -502,8 +503,7 @@ static NSString *const kNewScope = @"newScope";
   
   // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
   OIDAuthorizationResponse *authResponse =
-      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
-                                                         errorString:nil];
+      [OIDAuthorizationResponse testInstance];
   
   OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
   OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
@@ -678,7 +678,8 @@ static NSString *const kNewScope = @"newScope";
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
-                   additionalScopes:nil];
+                   additionalScopes:nil
+                        manualNonce:nil];
 
   expectedScopeString = [@[ @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -692,7 +693,8 @@ static NSString *const kNewScope = @"newScope";
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
-                   additionalScopes:@[ kScope ]];
+                   additionalScopes:@[ kScope ]
+                        manualNonce:nil];
 
   expectedScopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -706,7 +708,8 @@ static NSString *const kNewScope = @"newScope";
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
-                   additionalScopes:@[ kScope, kScope2 ]];
+                   additionalScopes:@[ kScope, kScope2 ]
+                        manualNonce:nil];
 
   expectedScopeString = [@[ kScope, kScope2, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -801,6 +804,37 @@ static NSString *const kNewScope = @"newScope";
 
   NSDictionary<NSString *, NSString *> *params = _savedTokenRequest.additionalParameters;
   XCTAssertEqual(params[kOpenIDRealmKey], kOpenIDRealm, @"OpenID Realm should match.");
+}
+
+- (void)testManualNonce {
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                      serverClientID:nil
+                                                        hostedDomain:nil
+                                                         openIDRealm:kOpenIDRealm];
+
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  NSString* manualNonce = @"manual_nonce";
+  
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:@[]
+                        manualNonce:manualNonce];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.nonce,
+                        manualNonce,
+                        @"Provided nonce should match nonce in authorization request.");
 }
 
 - (void)testOAuthLogin_LoginHint {
@@ -1408,7 +1442,8 @@ static NSString *const kNewScope = @"newScope";
                      oldAccessToken:oldAccessToken
                         modalCancel:modalCancel
                 useAdditionalScopes:NO
-                   additionalScopes:nil];
+                   additionalScopes:nil
+                        manualNonce:nil];
 }
 
 // The authorization flow with parameters to control which branches to take.
@@ -1421,11 +1456,12 @@ static NSString *const kNewScope = @"newScope";
                      oldAccessToken:(BOOL)oldAccessToken
                         modalCancel:(BOOL)modalCancel
                 useAdditionalScopes:(BOOL)useAdditionalScopes
-                   additionalScopes:(NSArray *)additionalScopes {
+                   additionalScopes:(NSArray *)additionalScopes 
+                        manualNonce:(NSString *)nonce {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
-    BOOL isAuthorized = restoredSignIn ? YES : NO;
+    BOOL isAuthorized = restoredSignIn;
     [[[_authState expect] andReturnValue:[NSNumber numberWithBool:isAuthorized]] isAuthorized];
   }
 
@@ -1433,6 +1469,7 @@ static NSString *const kNewScope = @"newScope";
       @{ @"emm_passcode_info_required" : @"1" } : nil;
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstanceWithAdditionalParameters:additionalParameters
+                                                               nonce:nonce
                                                          errorString:authError];
 
   OIDTokenResponse *tokenResponse =
@@ -1508,6 +1545,8 @@ static NSString *const kNewScope = @"newScope";
         [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        hint:_hint
+                           additionalScopes:nil
+                                      nonce:nonce
                                  completion:completion];
       }
     }

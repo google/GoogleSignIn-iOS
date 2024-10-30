@@ -78,6 +78,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// The login hint to be used during the flow.
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
+/// A cryptographically random value used to associate a Client session with an ID Token,
+/// and to mitigate replay attacks.
+@property(nonatomic, readonly, copy, nullable) NSString *nonce;
+
 /// Creates the default options.
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
@@ -100,6 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
+                                          nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion;
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
@@ -113,6 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
+                                          nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
