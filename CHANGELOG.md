@@ -1,3 +1,11 @@
+# 8.1.0-vwg-eap-1.0.0
+- Early Access Program supporting Verify with Google.
+  - Use [`-[GIDVerifyAccountDetail verifyAccountDetails:presentingViewController:completion:]`](https://github.com/google/GoogleSignIn-iOS/blob/6998b744055dc6c027b84ce6651626e0b88294d6/GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h#L72-L83) to initate the verification flow.
+- Internal
+  - Update error code for user cancelation ([#472](https://github.com/google/GoogleSignIn-iOS/pull/472))
+  - Allow providing a custom `nonce` via GSI to AppAuth ([#402](https://github.com/google/GoogleSignIn-iOS/pull/402))
+  - Fix passing `nil` for `nonce` parameter ([#476](https://github.com/google/GoogleSignIn-iOS/pull/476))
+
 # 8.0.0
 - General release adding Firebase App Check support to establish your
 application's integrity while signing in with Google
