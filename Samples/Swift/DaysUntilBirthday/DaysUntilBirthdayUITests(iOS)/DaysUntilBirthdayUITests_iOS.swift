@@ -129,6 +129,8 @@ extension DaysUntilBirthdayUITests_iOS {
       XCTFail("Failed to find email textfield")
       return false
     }
+//    sleep(10)
+
     guard sampleApp
             .keyboards
             .element
@@ -138,14 +140,24 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
+//    sleep(10)
+
     sampleApp.textFields["Email or phone"].typeText(Credential.email.rawValue)
-    sampleApp.keyboards.element.buttons["return"].tap()
+
+//    sleep(10)
+
+    sampleApp.buttons["Done"].tap()
+    sampleApp.buttons["Next"].tap()
+//    sampleApp.keyboards.element.buttons["return"].tap()
+
+//    sleep(10)
 
     guard sampleApp.secureTextFields["Enter your password"]
             .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find password textfield")
       return false
     }
+//    sleep(10)
     guard sampleApp
             .keyboards
             .element
@@ -154,11 +166,18 @@ extension DaysUntilBirthdayUITests_iOS {
       XCTFail("Failed to find 'return' button")
       return false
     }
+//    sleep(10)
 
     sampleApp
       .secureTextFields["Enter your password"]
       .typeText(Credential.password.rawValue)
-    sampleApp.keyboards.element.buttons["return"].tap()
+
+//    sleep(10)
+    sampleApp.buttons["Done"].tap()
+    sampleApp.buttons["Next"].tap()
+//    sampleApp.keyboards.element.buttons["return"].tap()
+
+//    sleep(10)
 
     if sampleApp
       .staticTexts[passwordManagerPrompt]
