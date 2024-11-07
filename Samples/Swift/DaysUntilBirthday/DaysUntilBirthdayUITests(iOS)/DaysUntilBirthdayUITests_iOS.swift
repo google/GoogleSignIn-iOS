@@ -146,9 +146,9 @@ extension DaysUntilBirthdayUITests_iOS {
 
 //    sleep(10)
 
-    sampleApp.buttons["Done"].tap()
-    sampleApp.buttons["Next"].tap()
-//    sampleApp.keyboards.element.buttons["return"].tap()
+    // sampleApp.buttons["Done"].tap()
+    // sampleApp.buttons["Next"].tap()
+   sampleApp.keyboards.element.buttons["return"].tap()
 
 //    sleep(10)
 
@@ -173,9 +173,9 @@ extension DaysUntilBirthdayUITests_iOS {
       .typeText(Credential.password.rawValue)
 
 //    sleep(10)
-    sampleApp.buttons["Done"].tap()
-    sampleApp.buttons["Next"].tap()
-//    sampleApp.keyboards.element.buttons["return"].tap()
+//     sampleApp.buttons["Done"].tap()
+//     sampleApp.buttons["Next"].tap()
+   sampleApp.keyboards.element.buttons["return"].tap()
 
 //    sleep(10)
 
