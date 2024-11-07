@@ -83,7 +83,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     guard springboardApp
             .staticTexts[signInStaticText]
-            .waitForExistence(timeout: 30) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to display permission prompt")
       return false
     }
