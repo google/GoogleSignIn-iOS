@@ -111,7 +111,7 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
     guard sampleApp.staticTexts["User Profile"]
-            .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: 30) else {
       XCTFail("Failed to sign in and return to app's User Profile view.")
       return false
     }
