@@ -126,7 +126,7 @@ extension DaysUntilBirthdayUITests_iOS {
   func signInForTheFirstTime() -> Bool {
     print("BOO: it's the first time")
     guard sampleApp.textFields["Email or phone"]
-            .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: 30) else {
       XCTFail("Failed to find email textfield")
       return false
     }
