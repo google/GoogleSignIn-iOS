@@ -75,7 +75,7 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
 
