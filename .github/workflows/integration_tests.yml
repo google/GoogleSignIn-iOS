@@ -78,10 +78,10 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET \
-          -resultBundlePath DaysUntilBirthday.xcresult
+          -resultBundlePath DaysUntilBirthday.xcresult test
     - name: Upload xcresult file 
       uses: actions/upload-artifact@v4
-      if: ${{ failure() }}
+      if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
         path: DaysUntilBirthday.xcresult
