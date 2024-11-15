@@ -76,19 +76,24 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' \
           EMAIL_SECRET=$EMAIL_SECRET \
-          PASSWORD_SECRET=$PASSWORD_SECRET
+          PASSWORD_SECRET=$PASSWORD_SECRET \ 
+          -resultBundlePath DaysUntilBirthday.xcresult
     - name: Wait for xcresult file
       run: sleep 30
+    - name: Create path for artifacts
+      run: mkdir DaysUntilBirthday.xcresult
     - name: List files
       run: ls -R 
+    - name: Current path
+      run: pwd
     - name: Upload xcresult file 
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
-        path: Samples/Swift/DaysUntilBirthday
+        path: Samples/Swift/DaysUntilBirthday/DaysUntilBirthday.xcresult
 
   app-check-api-token-tests:
     runs-on: macOS-13
