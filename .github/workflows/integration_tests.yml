@@ -88,6 +88,7 @@ jobs:
       if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
+        path: Samples/Swift/DaysUntilBirthday
 
   app-check-api-token-tests:
     runs-on: macOS-13
