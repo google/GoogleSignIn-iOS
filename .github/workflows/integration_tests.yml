@@ -47,7 +47,7 @@ jobs:
         fi
 
   swift-button-functional-test:
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: check-pr-body-for-key
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' && !github.event.pull_request.head.repo.fork }}
@@ -64,7 +64,7 @@ jobs:
           build-for-testing \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4'
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
     - name: Run test target for Google Sign-in button for Swift
       continue-on-error: true
       env:
@@ -78,8 +78,7 @@ jobs:
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
-          PASSWORD_SECRET=$PASSWORD_SECRET \
-          -resultBundlePath Samples/Swift/DaysUntilBirthday/DaysUntilBirthday.xcresult
+          PASSWORD_SECRET=$PASSWORD_SECRET
     - name: Wait for xcresult file
       run: sleep 30
     - name: List files
@@ -89,7 +88,7 @@ jobs:
       if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
-        path: Samples/Swift/DaysUntilBirthday/DaysUntilBirthday.xcresult
+        path: Samples/Swift/DaysUntilBirthday
 
   app-check-api-token-tests:
     runs-on: macOS-13
