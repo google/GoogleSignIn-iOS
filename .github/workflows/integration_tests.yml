@@ -64,7 +64,7 @@ jobs:
           build-for-testing \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4'
     - name: Run test target for Google Sign-in button for Swift
       continue-on-error: true
       env:
@@ -76,14 +76,15 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
-          PASSWORD_SECRET=$PASSWORD_SECRET \ 
-          -resultBundlePath DaysUntilBirthday.xcresult
+          PASSWORD_SECRET=$PASSWORD_SECRET
     - name: Wait for xcresult file
       run: sleep 30
     - name: Create path for artifacts
-      run: mkdir DaysUntilBirthday.xcresult
+      run: mkdir -p DaysUntilBirthdayArtifacts
+    - name: Make fake file.
+      run: echo hello > ./DaysUntilBirthdayArtifacts/world.txt
     - name: List files
       run: ls -R 
     - name: Current path
@@ -93,7 +94,7 @@ jobs:
       if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
-        path: /Users/runner/work/GoogleSignIn-iOS/GoogleSignIn-iOS/Samples/Swift/DaysUntilBirthday/DaysUntilBirthday.xcresult
+        path: Samples/Swift/DaysUntilBirthday/DaysUntilBirthdayArtifacts
 
   app-check-api-token-tests:
     runs-on: macOS-13
