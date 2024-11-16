@@ -79,7 +79,7 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET \
-          -resultBundlePath Samples/Swift/DaysUntilBirthday/TestArtifacts
+          -resultBundlePath TestArtifacts
     - name: Wait for xcresult file
       run: sleep 30
     - name: List files
@@ -88,6 +88,8 @@ jobs:
       run: pwd
     - name: List TestArtifacts files
       run: ls -R ./Samples/Swift/DaysUntilBirthday/TestArtifacts
+    - name: List TestArtifacts files pt2
+      run: ls -R TestArtifacts
     - name: List TestArtifacts.xcresult files
       run: ls -R ./Samples/Swift/DaysUntilBirthday/TestArtifacts.xcresult
     - name: Wait to upload xcresult file
@@ -97,7 +99,7 @@ jobs:
       if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
-        path: ./Samples/Swift/DaysUntilBirthday/TestArtifacts
+        path: TestArtifacts
 
   app-check-api-token-tests:
     runs-on: macOS-13
