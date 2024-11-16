@@ -82,14 +82,14 @@ jobs:
           -resultBundlePath Samples/Swift/DaysUntilBirthday/TestArtifacts
     - name: Wait for xcresult file
       run: sleep 30
-    - name: Create path for artifacts
-      run: mkdir -p TestArtifacts
-    - name: Make fake file.
-      run: echo hello > ./TestArtifacts/world.txt
     - name: List files
       run: ls -R 
     - name: Current path
       run: pwd
+    - name: List TestArtifacts files
+      run: ls -R ./Samples/Swift/DaysUntilBirthday/TestArtifacts.xcresult
+    - name: Wait to upload xcresult file
+      run: sleep 30
     - name: Upload xcresult file 
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
