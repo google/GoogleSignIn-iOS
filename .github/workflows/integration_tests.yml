@@ -78,7 +78,8 @@ jobs:
           -sdk iphonesimulator \
           -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
-          PASSWORD_SECRET=$PASSWORD_SECRET
+          PASSWORD_SECRET=$PASSWORD_SECRET \
+          -resultBundlePath Samples/Swift/DaysUntilBirthday/DaysUntilBirthdayArtifacts
     - name: Wait for xcresult file
       run: sleep 30
     - name: Create path for artifacts
