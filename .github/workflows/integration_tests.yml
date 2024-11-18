@@ -79,7 +79,7 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET \
-          -resultBundlePath Artifacts.xcresult
+          -resultBundlePath Artifacts2.xcresult
     - name: Wait for xcresult file
       run: sleep 30
     - name: List files
@@ -87,7 +87,7 @@ jobs:
     - name: Current path
       run: pwd
     - name: Make fake file.
-      run: echo hello > Artifacts.xcresult/world.txt    
+      run: echo hello > Artifacts2.xcresult/world.txt    
     - name: Wait to upload xcresult file
       run: sleep 30
     - name: Upload xcresult file 
@@ -95,7 +95,7 @@ jobs:
       if: ${{ always() }}
       with:
         name: DaysUntilBirthday-${{ github.run_number }}.xcresult
-        path: Samples/Swift/DaysUntilBirthday/Artifacts.xcresult
+        path: Samples/Swift/DaysUntilBirthday/Artifacts2.xcresult
     - name: List files again
       run: ls -R 
 
