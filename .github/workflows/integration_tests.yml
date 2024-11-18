@@ -47,7 +47,7 @@ jobs:
         fi
 
   swift-button-functional-test:
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: check-pr-body-for-key
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' && !github.event.pull_request.head.repo.fork }}
