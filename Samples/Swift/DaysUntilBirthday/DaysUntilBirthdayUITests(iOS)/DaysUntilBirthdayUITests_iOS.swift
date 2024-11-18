@@ -83,7 +83,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     guard springboardApp
             .staticTexts[signInStaticText]
-            .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: 30) else {
       XCTFail("Failed to display permission prompt")
       return false
     }
@@ -145,7 +145,7 @@ extension DaysUntilBirthdayUITests_iOS {
     sampleApp.keyboards.element.buttons["return"].tap()
     print("BOO: before entering password")
     guard sampleApp.secureTextFields["Enter your password"]
-            .waitForExistence(timeout: timeout) else {
+            .waitForExistence(timeout: 30) else {
       XCTFail("Failed to find password textfield")
       return false
     }
