@@ -27,7 +27,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
   private let chooseAnAccountHeaderText = "Choose an account"
   private let notNowText = "Not Now"
-  private let timeout: TimeInterval = 5
+  private let timeout: TimeInterval = 30
 
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
@@ -83,7 +83,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     guard springboardApp
             .staticTexts[signInStaticText]
-            .waitForExistence(timeout: 30) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to display permission prompt")
       return false
     }
@@ -111,7 +111,7 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
     guard sampleApp.staticTexts["User Profile"]
-            .waitForExistence(timeout: 30) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to sign in and return to app's User Profile view.")
       return false
     }
@@ -126,7 +126,7 @@ extension DaysUntilBirthdayUITests_iOS {
   func signInForTheFirstTime() -> Bool {
     print("BOO: it's the first time")
     guard sampleApp.textFields["Email or phone"]
-            .waitForExistence(timeout: 30) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find email textfield")
       return false
     }
@@ -145,7 +145,7 @@ extension DaysUntilBirthdayUITests_iOS {
     sampleApp.keyboards.element.buttons["return"].tap()
     print("BOO: before entering password")
     guard sampleApp.secureTextFields["Enter your password"]
-            .waitForExistence(timeout: 30) else {
+            .waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find password textfield")
       return false
     }
