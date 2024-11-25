@@ -32,6 +32,10 @@ NSString *const OIDAuthorizationRequestTestingCodeVerifier = @"codeVerifier";
 @implementation OIDAuthorizationRequest (Testing)
 
 + (instancetype)testInstance {
+  return [self testInstanceWithNonce:nil];
+}
+
++ (instancetype)testInstanceWithNonce:(nullable NSString *)nonce {
   return [[OIDAuthorizationRequest alloc]
       initWithConfiguration:[OIDServiceConfiguration testInstance]
                    clientId:OIDAuthorizationRequestTestingClientID
@@ -39,6 +43,7 @@ NSString *const OIDAuthorizationRequestTestingCodeVerifier = @"codeVerifier";
                                OIDAuthorizationRequestTestingScope2 ]
                 redirectURL:[NSURL URLWithString:@"http://test.com"]
                responseType:OIDResponseTypeCode
+                      nonce:nonce
        additionalParameters:nil];
 }
 
