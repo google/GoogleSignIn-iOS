@@ -1,6 +1,11 @@
 name: Build GSI for Valid Architectures	
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '0 8 * * *' # Cron uses UTC; run at nightly at midnight PST
 
@@ -10,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, macos-12]
+        os: [macos-latest]
   
     steps:
     - uses: actions/checkout@v3

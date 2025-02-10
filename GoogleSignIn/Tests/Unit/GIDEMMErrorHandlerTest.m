@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #import <TargetConditionals.h>
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -20,6 +21,7 @@
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDSignInStrings.h"
+#import "GoogleSignIn/Tests/Unit/UIAlertAction+Testing.h"
 
 #ifdef SWIFT_PACKAGE
 @import GoogleUtilities_MethodSwizzler;
@@ -32,22 +34,6 @@
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
-
-// Addtional methods added to UIAlertAction for testing.
-@interface UIAlertAction (Testing)
-
-// Returns the handler block for this alert action.
-- (void (^)(UIAlertAction *))actionHandler;
-
-@end
-
-@implementation UIAlertAction (Testing)
-
-- (void (^)(UIAlertAction *))actionHandler {
-  return [self valueForKey:@"handler"];
-}
-
-@end
 
 // Unit test for GIDEMMErrorHandler.
 @interface GIDEMMErrorHandlerTest : XCTestCase
@@ -113,11 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
                    selector:@selector(sharedApplication)
             isClassSelector:YES
                   withBlock:^() { return mockApplication; }];
-  if (@available(iOS 10, *)) {
-    [[mockApplication expect] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
-  } else {
-    [[mockApplication expect] openURL:[NSURL URLWithString:urlString]];
-  }
+  [[mockApplication expect] openURL:[NSURL URLWithString:urlString] options:@{} completionHandler:nil];
   action();
   [mockApplication verify];
   [GULSwizzler unswizzleClass:[UIApplication class]

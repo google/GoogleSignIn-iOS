@@ -1,12 +1,10 @@
-name: tests
+name: unit_tests
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -16,11 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, macos-12]
+        os: [macos-13]
         podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
         flag: [
-          "", 
-          "--use-libraries", 
+          "",
           "--use-static-frameworks"
         ]
         include:
@@ -33,22 +30,22 @@ jobs:
     - name: Install Ruby gems with Bundler
       run: bundle install
     - name: Lint podspec using local source
+      # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
-           ${{ matrix.includePodspecFlag }}  ${{ matrix.flag }}
-
+          ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
   spm-build-test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, macos-12]
+        os: [macos-latest]
         sdk: ['macosx', 'iphonesimulator']
         include:
           - sdk: 'macosx'
             destination: '"platform=OS X,arch=x86_64"'
           - sdk: 'iphonesimulator'
-            destination: '"platform=iOS Simulator,name=iPhone 11"'
+            destination: '"platform=iOS Simulator,name=iPhone 15"'
     steps:
     - uses: actions/checkout@v3
     - name: Build unit test target

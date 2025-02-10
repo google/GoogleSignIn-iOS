@@ -17,15 +17,13 @@
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
+@import GTMAppAuth;
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GTMAppAuth;
 @import OCMock;
 #else
 #import <AppAuth/AppAuth.h>
-#import <GTMAppAuth/GTMAppAuthFetcherAuthorization+Keychain.h>
-#import <GTMAppAuth/GTMKeychain.h>
-#import <GTMAppAuth/GTMOAuth2KeychainCompatibility.h>
 #import <OCMock/OCMock.h>
 #endif
 
@@ -58,10 +56,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDAuthStateMigration ()
 
-+ (nullable GTMAppAuthFetcherAuthorization *)
-    extractAuthorizationWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
-
 + (nullable NSString *)passwordForService:(NSString *)service;
+
+/// Returns a `GTMAuthSession` given the provided token URL.
+///
+/// This method enables using an instance of `GIDAuthStateMigration` that is created with a fake
+/// `GTMKeychainStore` and thereby minimizes mocking.
+- (nullable GTMAuthSession *)
+    extractAuthSessionWithTokenURL:(NSURL *)tokenURL callbackPath:(NSString *)callbackPath;
 
 @end
 
@@ -72,22 +74,24 @@ NS_ASSUME_NONNULL_BEGIN
   id _mockUserDefaults;
   id _mockGTMAppAuthFetcherAuthorization;
   id _mockGIDAuthStateMigration;
-  id _mockGTMKeychain;
+  id _mockGTMKeychainStore;
+  id _mockKeychainHelper;
   id _mockNSBundle;
   id _mockGIDSignInCallbackSchemes;
-  id _mockGTMOAuth2KeychainCompatibility;
+  id _mockGTMOAuth2Compatibility;
 }
 
 - (void)setUp {
   [super setUp];
 
-  _mockUserDefaults = OCMStrictClassMock([NSUserDefaults class]);
-  _mockGTMAppAuthFetcherAuthorization = OCMStrictClassMock([GTMAppAuthFetcherAuthorization class]);
+  _mockUserDefaults = OCMClassMock([NSUserDefaults class]);
+  _mockGTMAppAuthFetcherAuthorization = OCMStrictClassMock([GTMAuthSession class]);
   _mockGIDAuthStateMigration = OCMStrictClassMock([GIDAuthStateMigration class]);
-  _mockGTMKeychain = OCMStrictClassMock([GTMKeychain class]);
+  _mockGTMKeychainStore = OCMStrictClassMock([GTMKeychainStore class]);
+  _mockKeychainHelper = OCMProtocolMock(@protocol(GTMKeychainHelper));
   _mockNSBundle = OCMStrictClassMock([NSBundle class]);
   _mockGIDSignInCallbackSchemes = OCMStrictClassMock([GIDSignInCallbackSchemes class]);
-  _mockGTMOAuth2KeychainCompatibility = OCMStrictClassMock([GTMOAuth2KeychainCompatibility class]);
+  _mockGTMOAuth2Compatibility = OCMStrictClassMock([GTMOAuth2Compatibility class]);
 }
 
 - (void)tearDown {
@@ -97,14 +101,16 @@ NS_ASSUME_NONNULL_BEGIN
   [_mockGTMAppAuthFetcherAuthorization stopMocking];
   [_mockGIDAuthStateMigration verify];
   [_mockGIDAuthStateMigration stopMocking];
-  [_mockGTMKeychain verify];
-  [_mockGTMKeychain stopMocking];
+  [_mockGTMKeychainStore verify];
+  [_mockGTMKeychainStore stopMocking];
+  [_mockKeychainHelper verify];
+  [_mockKeychainHelper stopMocking];
   [_mockNSBundle verify];
   [_mockNSBundle stopMocking];
   [_mockGIDSignInCallbackSchemes verify];
   [_mockGIDSignInCallbackSchemes stopMocking];
-  [_mockGTMOAuth2KeychainCompatibility verify];
-  [_mockGTMOAuth2KeychainCompatibility stopMocking];
+  [_mockGTMOAuth2Compatibility verify];
+  [_mockGTMOAuth2Compatibility stopMocking];
 
   [super tearDown];
 }
@@ -113,44 +119,49 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)testMigrateIfNeeded_NoPreviousMigration {
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
-  [[[_mockUserDefaults expect] andReturnValue:@NO]
-      boolForKey:kMigrationCheckPerformedKey];
-  [[[_mockGIDAuthStateMigration expect] andReturn:_mockGTMAppAuthFetcherAuthorization]
-      extractAuthorizationWithTokenURL:[NSURL URLWithString:kTokenURL] callbackPath:kCallbackPath];
-  [[[_mockGTMAppAuthFetcherAuthorization expect] andReturnValue:@YES]
-      saveAuthorization:_mockGTMAppAuthFetcherAuthorization toKeychainForName:kKeychainName];
+  [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kMigrationCheckPerformedKey];
   [[_mockUserDefaults expect] setBool:YES forKey:kMigrationCheckPerformedKey];
 
-  [GIDAuthStateMigration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                        callbackPath:kCallbackPath
-                                        keychainName:kKeychainName
-                                      isFreshInstall:NO];
+  [[_mockGTMKeychainStore expect] saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef];
+
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
+                            callbackPath:kCallbackPath
+                            keychainName:kKeychainName
+                          isFreshInstall:NO];
 }
 
 - (void)testMigrateIfNeeded_HasPreviousMigration {
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
-  [[[_mockUserDefaults expect] andReturnValue:@YES]
-      boolForKey:kMigrationCheckPerformedKey];
+  [[[_mockUserDefaults expect] andReturnValue:@YES] boolForKey:kMigrationCheckPerformedKey];
+  [[_mockUserDefaults reject] setBool:YES forKey:kMigrationCheckPerformedKey];
 
-  [GIDAuthStateMigration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                        callbackPath:kCallbackPath
-                                        keychainName:kKeychainName
-                                      isFreshInstall:NO];
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
+                            callbackPath:kCallbackPath
+                            keychainName:kKeychainName
+                          isFreshInstall:NO];
 }
 
 - (void)testMigrateIfNeeded_KeychainFailure {
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
-  [[[_mockUserDefaults expect] andReturnValue:@NO]
-      boolForKey:kMigrationCheckPerformedKey];
-  [[[_mockGIDAuthStateMigration expect] andReturn:_mockGTMAppAuthFetcherAuthorization]
-      extractAuthorizationWithTokenURL:[NSURL URLWithString:kTokenURL] callbackPath:kCallbackPath];
-  [[[_mockGTMAppAuthFetcherAuthorization expect] andReturnValue:[NSNumber numberWithBool:NO]]
-      saveAuthorization:_mockGTMAppAuthFetcherAuthorization toKeychainForName:kKeychainName];
+  [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kMigrationCheckPerformedKey];
 
-  [GIDAuthStateMigration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                        callbackPath:kCallbackPath
-                                        keychainName:kKeychainName
-                                      isFreshInstall:NO];
+  NSError *keychainSaveError = [NSError new];
+  OCMStub([_mockGTMKeychainStore saveAuthSession:OCMOCK_ANY error:[OCMArg setTo:keychainSaveError]]);
+
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
+                            callbackPath:kCallbackPath
+                            keychainName:kKeychainName
+                          isFreshInstall:NO];
 }
 
 - (void)testMigrateIfNeeded_isFreshInstall {
@@ -159,18 +170,36 @@ NS_ASSUME_NONNULL_BEGIN
       boolForKey:kMigrationCheckPerformedKey];
   [[_mockUserDefaults expect] setBool:YES forKey:kMigrationCheckPerformedKey];
 
-  [GIDAuthStateMigration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                        callbackPath:kCallbackPath
-                                        keychainName:kKeychainName
-                                      isFreshInstall:YES];
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
+                            callbackPath:kCallbackPath
+                            keychainName:kKeychainName
+                          isFreshInstall:YES];
 }
 
 - (void)testExtractAuthorization {
-  [self extractAuthorizationWithFingerprint:kSavedFingerprint];
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  GTMAuthSession *authorization =
+      [migration extractAuthSessionWithTokenURL:[NSURL URLWithString:kTokenURL]
+                                   callbackPath:kCallbackPath];
+
+  XCTAssertNotNil(authorization);
 }
 
 - (void)testExtractAuthorization_HostedDomain {
-  [self extractAuthorizationWithFingerprint:kSavedFingerprint_HostedDomain];
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint_HostedDomain];
+
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  GTMAuthSession *authorization =
+      [migration extractAuthSessionWithTokenURL:[NSURL URLWithString:kTokenURL]
+                                   callbackPath:kCallbackPath];
+
+  XCTAssertNotNil(authorization);
 }
 
 #pragma mark - Helpers
@@ -180,12 +209,12 @@ NS_ASSUME_NONNULL_BEGIN
   return [NSString stringWithFormat:@"%@%@", fingerprint, kAdditionalTokenRequestParametersPostfix];
 }
 
-// The parameterized extractAuthorization test.
-- (void)extractAuthorizationWithFingerprint:(NSString *)fingerprint {
+- (void)setUpCommonExtractAuthorizationMocksWithFingerPrint:(NSString *)fingerprint {
   [[[_mockGIDAuthStateMigration expect] andReturn:fingerprint]
       passwordForService:kFingerprintService];
-  [[[_mockGTMKeychain expect] andReturn:kGTMOAuth2PersistenceString]
-      passwordFromKeychainForName:fingerprint];
+  (void)[[[_mockKeychainHelper expect] andReturn:kGTMOAuth2PersistenceString]
+      passwordForService:fingerprint error:OCMArg.anyObjectRef];
+  [[[_mockGTMKeychainStore expect] andReturn:_mockKeychainHelper] keychainHelper];
   [[[_mockNSBundle expect] andReturn:_mockNSBundle] mainBundle];
   [[[_mockNSBundle expect] andReturn:kBundleID] bundleIdentifier];
   [[[_mockGIDSignInCallbackSchemes expect] andReturn:_mockGIDSignInCallbackSchemes] alloc];
@@ -194,18 +223,6 @@ NS_ASSUME_NONNULL_BEGIN
   [[[_mockGIDSignInCallbackSchemes expect] andReturn:kDotReversedClientID] clientIdentifierScheme];
   [[[_mockGIDAuthStateMigration expect] andReturn:kAdditionalTokenRequestParameters]
       passwordForService:[self additionalTokenRequestParametersKeyFromFingerprint:fingerprint]];
-  [[[_mockGTMOAuth2KeychainCompatibility expect] andReturn:_mockGTMAppAuthFetcherAuthorization]
-      authorizeFromPersistenceString:kFinalPersistenceString
-                            tokenURL:[NSURL URLWithString:kTokenURL]
-                         redirectURI:kRedirectURI
-                            clientID:kClientID
-                        clientSecret:nil];
-
-  GTMAppAuthFetcherAuthorization *authorization =
-      [GIDAuthStateMigration extractAuthorizationWithTokenURL:[NSURL URLWithString:kTokenURL]
-                                                 callbackPath:kCallbackPath];
-
-  XCTAssertNotNil(authorization);
 }
 
 @end

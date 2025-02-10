@@ -21,6 +21,7 @@
 #import "AuthInspectorViewController.h"
 #import "DataPickerState.h"
 #import "DataPickerViewController.h"
+#import <AppAuth/OIDTokenUtilities.h>
 
 static NSString *const kSignInViewTitle = @"Sign-In Sample";
 static NSString *const kPlaceholderUserName = @"<Name>";
@@ -175,7 +176,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 
 - (void)reportAuthStatus {
   GIDGoogleUser *googleUser = [GIDSignIn.sharedInstance currentUser];
-  if (googleUser.authentication) {
+  if (googleUser) {
     _signInAuthStatus.text = @"Status: Authenticated";
   } else {
     // To authenticate, use Google Sign-In button.
@@ -188,7 +189,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 // Update the interface elements containing user data to reflect the
 // currently signed in user.
 - (void)refreshUserInfo {
-  if (GIDSignIn.sharedInstance.currentUser.authentication == nil) {
+  if (!GIDSignIn.sharedInstance.currentUser) {
     self.userName.text = kPlaceholderUserName;
     self.userEmailAddress.text = kPlaceholderEmailAddress;
     self.userAvatar.image = [UIImage imageNamed:kPlaceholderAvatarImageName];
@@ -247,8 +248,12 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 #pragma mark - IBActions
 
 - (IBAction)signIn:(id)sender {
+  NSString* nonce = [OIDTokenUtilities randomURLSafeStringWithSize:32];
   [GIDSignIn.sharedInstance signInWithPresentingViewController:self
-                                                    completion:^(GIDGoogleUser *user,
+                                                          hint:nil
+                                              additionalScopes:nil
+                                                         nonce:nonce
+                                                    completion:^(GIDSignInResult *signInResult,
                                                                  NSError *error) {
     if (error) {
       self->_signInAuthStatus.text =
@@ -280,9 +285,11 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 }
 
 - (IBAction)addScopes:(id)sender {
-  [GIDSignIn.sharedInstance addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
-             presentingViewController:self
-                           completion:^(GIDGoogleUser *user, NSError *error) {
+  GIDGoogleUser *currentUser = GIDSignIn.sharedInstance.currentUser;
+  [currentUser addScopes:@[ @"https://www.googleapis.com/auth/user.birthday.read" ]
+      presentingViewController:self
+                    completion:^(GIDSignInResult *_Nullable signInResult,
+                                 NSError *_Nullable error) {
     if (error) {
       self->_signInAuthStatus.text = [NSString stringWithFormat:@"Status: Failed to add scopes: %@",
                                       error];

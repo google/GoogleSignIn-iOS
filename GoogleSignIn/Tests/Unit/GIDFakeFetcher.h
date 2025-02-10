@@ -20,14 +20,20 @@
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
 #endif
 
-// A fake |GTMHTTPFetcher| for testing.
+/// A fake |GTMHTTPFetcher| for testing.
 @interface GIDFakeFetcher : GTMSessionFetcher
 
-// The URL of the fetching request.
+/// The URL of the fetching request.
 - (NSURL *)requestURL;
 
 // Emulates server returning with data and/or error.
 - (void)didFinishWithData:(NSData *)data error:(NSError *)error;
 
 - (instancetype)initWithRequest:(NSURLRequest *)request;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+- (instancetype)initWithRequest:(NSURLRequest *)request
+                     authorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer;
+#pragma clang diagnostic pop
 @end

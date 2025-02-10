@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
+                                          nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
@@ -38,9 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
+                                          nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
   if (options) {
     options->_interactive = YES;
@@ -55,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_loginHint = loginHint;
     options->_completion = completion;
     options->_scopes = [GIDScopes scopesWithBasicProfile:scopes];
+    options->_nonce = nonce;
   }
   return options;
 }
@@ -81,6 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                     loginHint:loginHint
                                                                 addScopesFlow:addScopesFlow
                                                                        scopes:@[]
+                                                                        nonce:nil
                                                                    completion:completion];
   return options;
 }

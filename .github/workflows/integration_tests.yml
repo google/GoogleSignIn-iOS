@@ -5,14 +5,52 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
 
+  grab-pr-body:
+    runs-on: ubuntu-latest
+    outputs:
+      PR_BODY: ${{ steps.body.outputs.PR_BODY }}
+    steps:
+    - id: body
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }} 
+      run: |
+        {
+          echo "PR_BODY<<EOF"
+          echo "$PR_BODY" 
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+  check-pr-body-for-key:
+    runs-on: ubuntu-latest
+    needs: grab-pr-body
+    outputs:
+      RUN_INTEGRATION: ${{ steps.check_key.outputs.RUN_INTEGRATION }}
+    steps:
+    - id: check_key
+      env:
+        PR_BODY: ${{ needs.grab-pr-body.outputs.PR_BODY }}
+        SKIP_KEY: "SKIP_INTEGRATION_TESTS=YES"
+      name: Check for key and set bool to skip integration tests
+      run: |
+        if [[ "$PR_BODY" == *"$SKIP_KEY"* ]]; then
+          echo "Skipping integration tests for PR body:"
+          echo "$PR_BODY"
+          echo "RUN_INTEGRATION=no" >> "$GITHUB_OUTPUT"
+        else
+          echo "Running integration tests for PR body:"
+          echo "$PR_BODY"
+          echo "RUN_INTEGRATION=yes" >> "$GITHUB_OUTPUT"
+        fi
+
   swift-button-functional-test:
-    runs-on: macOS-latest
+    runs-on: macos-latest
+    needs: check-pr-body-for-key
+    # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
+    if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' && !github.event.pull_request.head.repo.fork }}
     defaults:
       run:
         working-directory: Samples/Swift/DaysUntilBirthday
@@ -26,7 +64,7 @@ jobs:
           build-for-testing \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11'
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4'
     - name: Run test target for Google Sign-in button for Swift
       env:
         EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
@@ -37,6 +75,41 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 11' \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
+
+  app-check-api-token-tests:
+    runs-on: macOS-13
+    # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
+    if: "!github.event.pull_request.head.repo.fork"
+    defaults:
+      run:
+        working-directory: Samples/Swift/AppAttestExample
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Use Xcode 15.0.1
+      run: |
+        sudo xcode-select -s /Applications/Xcode_15.0.1.app
+    - name: Build test target for App Check Example
+      run: |
+        xcodebuild \
+          -project AppAttestExample.xcodeproj \
+          build-for-testing \
+          -scheme AppAttestExample \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 15'
+    - name: Run test target for App Check Example
+      env:
+        AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
+        APP_CHECK_WEB_API_KEY : ${{ secrets.APP_CHECK_WEB_API_KEY }}
+      run: |
+        xcodebuild \
+          -project AppAttestExample.xcodeproj \
+          test-without-building \
+          -scheme AppAttestExample \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 15' \
+          AppCheckDebugToken=$AppCheckDebugToken \
+          APP_CHECK_WEB_API_KEY=$APP_CHECK_WEB_API_KEY
