@@ -26,6 +26,12 @@ static NSString *const kHostedDomainKey = @"hostedDomain";
 // The key for the openIDRealm property to be used with NSSecureCoding.
 static NSString *const kOpenIDRealmKey = @"openIDRealm";
 
+// Info.plist config keys
+static NSString *const kConfigClientIDKey = @"GIDClientID";
+static NSString *const kConfigServerClientIDKey = @"GIDServerClientID";
+static NSString *const kConfigHostedDomainKey = @"GIDHostedDomain";
+static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDConfiguration
@@ -106,6 +112,36 @@ NS_ASSUME_NONNULL_BEGIN
   [coder encodeObject:_serverClientID forKey:kServerClientIDKey];
   [coder encodeObject:_hostedDomain forKey:kHostedDomainKey];
   [coder encodeObject:_openIDRealm forKey:kOpenIDRealmKey];
+}
+
++ (nullable NSString *)configValueFromBundle:(NSBundle *)bundle forKey:(NSString *)key {
+  NSString *value;
+  id configValue = [bundle objectForInfoDictionaryKey:key];
+  if ([configValue isKindOfClass:[NSString class]]) {
+    value = configValue;
+  }
+  return value;
+}
+
++ (nullable GIDConfiguration *)configurationFromBundle:(NSBundle *)bundle {
+  GIDConfiguration *configuration;
+
+  // Retrieve any valid config parameters from the bundle's Info.plist.
+  NSString *clientID = [self.class configValueFromBundle:bundle forKey:kConfigClientIDKey];
+  NSString *serverClientID = [self.class configValueFromBundle:bundle
+                                                       forKey:kConfigServerClientIDKey];
+  NSString *hostedDomain = [self.class configValueFromBundle:bundle forKey:kConfigHostedDomainKey];
+  NSString *openIDRealm = [self.class configValueFromBundle:bundle forKey:kConfigOpenIDRealmKey];
+    
+  // If we have at least a client ID, try to construct a configuration.
+  if (clientID) {
+    configuration = [[GIDConfiguration alloc] initWithClientID:clientID
+                                                 serverClientID:serverClientID
+                                                   hostedDomain:hostedDomain
+                                                    openIDRealm:openIDRealm];
+  }
+  
+  return configuration;
 }
 
 @end
