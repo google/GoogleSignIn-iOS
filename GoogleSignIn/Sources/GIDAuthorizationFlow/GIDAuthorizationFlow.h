@@ -26,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDAuthorizationFlow : GIDCallbackQueue <GIDAuthorizationFlowCoordinator>
+@interface GIDAuthorizationFlow : NSObject <GIDAuthorizationFlowCoordinator>
 
 @property(nonatomic, strong, nullable) OIDAuthState *authState;
 @property(nonatomic, strong, nullable) GIDProfileData *profileData;

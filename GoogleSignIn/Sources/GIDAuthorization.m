@@ -202,7 +202,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
                                          code:kGIDSignInErrorCodeHasNoAuthInKeychain
                                      userInfo:nil];
     if (options.completion) {
-      _currentOptions = nil;
+      self.currentOptions = nil;
       dispatch_async(dispatch_get_main_queue(), ^{
         options.completion(nil, error);
       });
@@ -217,10 +217,8 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
                                              externalUserAgentSession:nil
                                                            emmSupport:nil
                                                                 error:nil];
-  [self.authFlow maybeFetchToken];
-  [self.authFlow addDecodeIdTokenCallback];
-  [self.authFlow addSaveAuthCallback];
-  [self.authFlow addCompletionCallback];
+  // TODO: Implement the interactive version with operations as well
+  [self.authFlow authorize];
 }
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {

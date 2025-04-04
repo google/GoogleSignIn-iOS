@@ -16,13 +16,21 @@
 
 #import "GIDAuthorizationFlow.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDSaveAuthOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDTokenFetchOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDDecodeIDTokenOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDAuthorizationCompletionOperation.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
 #import <AppAuth/OIDAuthState.h>
-#import <AppAuth/OIDAuthorizationResponse.h>
 #endif
 
 // TODO: Move these constants to their own spot
@@ -34,6 +42,12 @@ static NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_req
 
 /// Error string for user cancelations.
 static NSString *const kUserCanceledError = @"The user canceled the sign-in flow.";
+
+/// Minimum time to expiration for a restored access token.
+static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
+/// Parameters for the auth and token exchange endpoints.
+static NSString *const kAudienceParameter = @"audience";
+static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 @interface GIDAuthorizationFlow ()
 
@@ -63,10 +77,91 @@ static NSString *const kUserCanceledError = @"The user canceled the sign-in flow
   return self;
 }
 
+#pragma mark - Authorize
+
+- (void)authorize {
+  GIDTokenFetchOperation *tokenFetch =
+    [[GIDTokenFetchOperation alloc] initWithAuthState:self.authState
+                                              options:self.options
+                                           emmSupport:self.emmSupport
+                                                error:self.error];
+  GIDDecodeIDTokenOperation *idToken = [[GIDDecodeIDTokenOperation alloc] init];
+  [idToken addDependency:tokenFetch];
+  GIDSaveAuthOperation *saveAuth = [[GIDSaveAuthOperation alloc] init];
+  [saveAuth addDependency:idToken];
+  GIDAuthorizationCompletionOperation *authCompletion =
+    [[GIDAuthorizationCompletionOperation alloc] initWithAuthorizationFlow:self];
+  
+  NSArray *operations = @[tokenFetch, idToken, saveAuth, authCompletion];
+  [NSOperationQueue.mainQueue addOperations:operations waitUntilFinished:NO];
+}
+
+- (void)authorizeInteractively {
+  // TODO: Implement me
+}
+
 #pragma mark - Token Fetching
 
+// TODO: Remove the next four methods
 - (void)maybeFetchToken {
-  
+  // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
+  if (self.error ||
+      (self.authState.lastTokenResponse.accessToken &&
+        [self.authState.lastTokenResponse.accessTokenExpirationDate timeIntervalSinceNow] >
+        kMinimumRestoredAccessTokenTimeToExpire)) {
+    return;
+  }
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  if (self.options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = self.options.configuration.serverClientID;
+  }
+  if (self.options.configuration.openIDRealm) {
+    additionalParameters[kOpenIDRealmParameter] = self.options.configuration.openIDRealm;
+  }
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  NSDictionary<NSString *, NSObject *> *params =
+      self.authState.lastAuthorizationResponse.additionalParameters;
+  NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport parametersWithParameters:@{}
+                                   emmSupport:self.emmSupport
+                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  OIDTokenRequest *tokenRequest;
+  if (!self.authState.lastTokenResponse.accessToken &&
+      self.authState.lastAuthorizationResponse.authorizationCode) {
+    tokenRequest = [self.authState.lastAuthorizationResponse
+        tokenExchangeRequestWithAdditionalParameters:additionalParameters];
+  } else {
+    [additionalParameters
+        addEntriesFromDictionary:self.authState.lastTokenResponse.request.additionalParameters];
+    tokenRequest = [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  }
+
+//  [self wait];
+  [OIDAuthorizationService performTokenRequest:tokenRequest
+                 originalAuthorizationResponse:self.authState.lastAuthorizationResponse
+                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                                 NSError *_Nullable error) {
+    [self.authState updateWithTokenResponse:tokenResponse error:error];
+    self.error = error;
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (self.emmSupport) {
+      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
+        self.error = error;
+//        [self next];
+      }];
+    } else {
+//      [self next];
+    }
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    [authFlow next];
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  }];
 }
 
 #pragma mark - Decode ID Token
@@ -112,10 +207,10 @@ static NSString *const kUserCanceledError = @"The user canceled the sign-in flow
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (self.emmSupport) {
-        [self wait];
+//        [self wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params
                                                                             completion:^{
-          [self next];
+//          [self next];
         }];
         if (isEMMError) {
           errorCode = kGIDSignInErrorCodeEMM;

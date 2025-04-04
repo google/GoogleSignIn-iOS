@@ -34,6 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString *emmSupport;
 @property(nonatomic, strong, nullable) NSError *error;
 
+- (void)authorize;
+- (void)authorizeInteractively;
+// The next four methods should be represented as operations and called by the above two methods
 - (void)maybeFetchToken;
 - (void)addDecodeIdTokenCallback;
 - (void)addSaveAuthCallback;
