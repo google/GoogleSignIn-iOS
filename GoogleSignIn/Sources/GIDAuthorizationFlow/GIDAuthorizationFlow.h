@@ -18,10 +18,12 @@
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationFlow/GIDAuthorizationFlowCoordinator.h"
 
-@class GIDSignInInternalOptions;
-@class OIDAuthState;
+@class GIDConfiguration;
 @class GIDProfileData;
 @class GIDGoogleUser;
+@class GIDSignInInternalOptions;
+@class OIDAuthState;
+@class OIDServiceConfiguration;
 @protocol OIDExternalUserAgentSession;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,6 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) id<OIDExternalUserAgentSession> currentUserAgentSession;
 @property(nonatomic, copy, nullable) NSString *emmSupport;
 @property(nonatomic, strong, nullable) NSError *error;
+
+@property(nonatomic, strong, nullable) GIDConfiguration *configuration;
+@property(nonatomic, strong, nullable) OIDServiceConfiguration *serviceConfiguration;
 
 - (instancetype)initWithSignInOptions:(nullable GIDSignInInternalOptions *)options
                             authState:(nullable OIDAuthState *)authState

@@ -102,9 +102,13 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
                                          [GIDSignInPreferences googleAuthorizationServer]];
     NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
                                   [GIDSignInPreferences googleTokenServer]];
-    _appAuthConfiguration = [[OIDServiceConfiguration alloc]
-                              initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
-                                              tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
+    NSURL *authEndpoint = [NSURL URLWithString:authorizationEnpointURL];
+    NSURL *tokenEndpoint = [NSURL URLWithString:tokenEndpointURL];
+    _appAuthConfiguration =
+      [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authEndpoint
+                                                       tokenEndpoint:tokenEndpoint];
+    _authFlow.configuration = _currentConfiguration;
+    _authFlow.serviceConfiguration = _appAuthConfiguration;
   }
   return self;
 }
@@ -189,7 +193,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
 - (void)authenticateWithOptions:(GIDSignInInternalOptions *)options {
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {
-    [self authenticateInteractivelyWithOptions:options];
+    [self.authFlow authorizeInteractively];
     return;
   }
 
@@ -221,107 +225,6 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
   [self.authFlow authorize];
 }
 
-- (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
-  NSString *emmSupport;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
-  emmSupport = nil;
-#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
-
-  [self authorizationRequestWithOptions:options
-                             completion:^(OIDAuthorizationRequest * _Nullable request,
-                                          NSError * _Nullable error) {
-    self->_authFlow.currentUserAgentSession =
-      [OIDAuthorizationService presentAuthorizationRequest:request
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                  presentingViewController:options.presentingViewController
-#elif TARGET_OS_OSX
-                                          presentingWindow:options.presentingWindow
-#endif // TARGET_OS_OSX
-                                                  callback:
-                                                    ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                                      NSError *_Nullable error) {
-        [self->_authFlow processAuthorizationResponse:authorizationResponse
-                                                error:error
-                                           emmSupport:emmSupport];
-    }];
-  }];
-}
-
-#pragma mark - Authorization Request
-
-- (void)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-                             completion:
-(void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
-      [self additionalParametersFromOptions:options];
-  OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
-                                                      additionalParameters:additionalParameters];
-  // TODO: Add app check steps as well
-  completion(request, nil);
-}
-
-- (OIDAuthorizationRequest *)
-authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
-           additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
-  OIDAuthorizationRequest *request;
-  if (options.nonce) {
-    request = [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                            clientId:options.configuration.clientID
-                                                              scopes:options.scopes
-                                                         redirectURL:[self redirectURLWithOptions:options]
-                                                        responseType:OIDResponseTypeCode
-                                                               nonce:options.nonce
-                                                additionalParameters:additionalParameters];
-  } else {
-    request = [[OIDAuthorizationRequest alloc] initWithConfiguration:_appAuthConfiguration
-                                                            clientId:options.configuration.clientID
-                                                              scopes:options.scopes
-                                                         redirectURL:[self redirectURLWithOptions:options]
-                                                        responseType:OIDResponseTypeCode
-                                                additionalParameters:additionalParameters];
-  }
-  return request;
-}
-
-- (NSMutableDictionary<NSString *, NSString *> *)
-    additionalParametersFromOptions:(GIDSignInInternalOptions *)options {
-  NSString *emmSupport;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
-#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
-  emmSupport = nil;
-#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
-
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
-      [[NSMutableDictionary alloc] init];
-  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
-  if (options.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
-  }
-  if (options.loginHint) {
-    additionalParameters[kLoginHintParameter] = options.loginHint;
-  }
-  if (options.configuration.hostedDomain) {
-    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
-  }
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:options.extraParams];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  return additionalParameters;
-}
-
-
 #pragma mark - Validity Assertions
 
 - (void)assertValidParameters {
@@ -343,23 +246,6 @@ authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
     [NSException raise:NSInvalidArgumentException
                 format:@"`presentingViewController` must be set."];
   }
-}
-
-#pragma mark - Utilities
-
-+ (BOOL)isOperatingSystemAtLeast9 {
-  NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-  return [processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] &&
-      [processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){.majorVersion = 9}];
-}
-
-- (NSURL *)redirectURLWithOptions:(GIDSignInInternalOptions *)options {
-  GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
-  NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
-                                             [schemes clientIdentifierScheme],
-                                             kBrowserCallbackPath]];
-  return redirectURL;
 }
 
 @end

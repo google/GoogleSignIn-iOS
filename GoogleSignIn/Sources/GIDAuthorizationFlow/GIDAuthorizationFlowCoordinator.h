@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-@class OIDAuthState;
+@class GIDConfiguration;
 @class GIDProfileData;
-@class GIDSignInInternalOptions;
 @class GIDGoogleUser;
-@class OIDAuthorizationResponse;
-
+@class GIDSignInInternalOptions;
+@class OIDAuthState;
+@class OIDServiceConfiguration;
 @protocol OIDExternalUserAgentSession;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,17 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) id<OIDExternalUserAgentSession> currentUserAgentSession;
 @property(nonatomic, copy, nullable) NSString *emmSupport;
 @property(nonatomic, strong, nullable) NSError *error;
+@property(nonatomic, strong, nullable) GIDConfiguration *configuration;
+@property(nonatomic, strong, nullable) OIDServiceConfiguration *serviceConfiguration;
 
 - (void)authorize;
 - (void)authorizeInteractively;
-// The next four methods should be represented as operations and called by the above two methods
-- (void)maybeFetchToken;
-- (void)addDecodeIdTokenCallback;
-- (void)addSaveAuthCallback;
-- (void)addCompletionCallback;
-- (void)processAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
-                               error:(nullable NSError *)error
-                          emmSupport:(nullable NSString *)emmSupport;
+//- (void)processAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
+//                               error:(nullable NSError *)error
+//                          emmSupport:(nullable NSString *)emmSupport;
 
 @end
 

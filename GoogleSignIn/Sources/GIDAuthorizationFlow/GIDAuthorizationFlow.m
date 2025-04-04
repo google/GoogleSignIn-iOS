@@ -17,37 +17,24 @@
 #import "GIDAuthorizationFlow.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
-#import "GoogleSignIn/Sources/GIDEMMSupport.h"
-#import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
-#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
 #import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDSaveAuthOperation.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDTokenFetchOperation.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDDecodeIDTokenOperation.h"
 #import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDAuthorizationCompletionOperation.h"
 
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+#import "GoogleSignIn/Sources/GIDSignInConstants.h"
+#import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 #else
 #import <AppAuth/OIDAuthState.h>
 #endif
-
-// TODO: Move these constants to their own spot
-#pragma mark - Parameters in the callback URL coming back from browser.
-static NSString *const kAuthorizationCodeKeyName = @"code";
-static NSString *const kOAuth2ErrorKeyName = @"error";
-static NSString *const kOAuth2AccessDenied = @"access_denied";
-static NSString *const kEMMPasscodeInfoRequiredKeyName = @"emm_passcode_info_required";
-
-/// Error string for user cancelations.
-static NSString *const kUserCanceledError = @"The user canceled the sign-in flow.";
-
-/// Minimum time to expiration for a restored access token.
-static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
-/// Parameters for the auth and token exchange endpoints.
-static NSString *const kAudienceParameter = @"audience";
-static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 @interface GIDAuthorizationFlow ()
 
@@ -81,105 +68,83 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
 
 - (void)authorize {
   GIDTokenFetchOperation *tokenFetch =
-    [[GIDTokenFetchOperation alloc] initWithAuthState:self.authState
-                                              options:self.options
-                                           emmSupport:self.emmSupport
-                                                error:self.error];
+  [[GIDTokenFetchOperation alloc] initWithAuthState:self.authState
+                                            options:self.options
+                                         emmSupport:self.emmSupport
+                                              error:self.error];
   GIDDecodeIDTokenOperation *idToken = [[GIDDecodeIDTokenOperation alloc] init];
   [idToken addDependency:tokenFetch];
   GIDSaveAuthOperation *saveAuth = [[GIDSaveAuthOperation alloc] init];
   [saveAuth addDependency:idToken];
   GIDAuthorizationCompletionOperation *authCompletion =
-    [[GIDAuthorizationCompletionOperation alloc] initWithAuthorizationFlow:self];
+  [[GIDAuthorizationCompletionOperation alloc] initWithAuthorizationFlow:self];
   
-  NSArray *operations = @[tokenFetch, idToken, saveAuth, authCompletion];
+  NSArray<NSOperation *> *operations = @[tokenFetch, idToken, saveAuth, authCompletion];
   [NSOperationQueue.mainQueue addOperations:operations waitUntilFinished:NO];
 }
 
 - (void)authorizeInteractively {
-  // TODO: Implement me
-}
-
-#pragma mark - Token Fetching
-
-// TODO: Remove the next four methods
-- (void)maybeFetchToken {
-  // Do nothing if we have an auth flow error or a restored access token that isn't near expiration.
-  if (self.error ||
-      (self.authState.lastTokenResponse.accessToken &&
-        [self.authState.lastTokenResponse.accessTokenExpirationDate timeIntervalSinceNow] >
-        kMinimumRestoredAccessTokenTimeToExpire)) {
-    return;
-  }
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
-  if (self.options.configuration.serverClientID) {
-    additionalParameters[kAudienceParameter] = self.options.configuration.serverClientID;
-  }
-  if (self.options.configuration.openIDRealm) {
-    additionalParameters[kOpenIDRealmParameter] = self.options.configuration.openIDRealm;
-  }
+  NSString *emmSupport;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  NSDictionary<NSString *, NSObject *> *params =
-      self.authState.lastAuthorizationResponse.additionalParameters;
-  NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
-  [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:@{}
-                                   emmSupport:self.emmSupport
-                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  OIDTokenRequest *tokenRequest;
-  if (!self.authState.lastTokenResponse.accessToken &&
-      self.authState.lastAuthorizationResponse.authorizationCode) {
-    tokenRequest = [self.authState.lastAuthorizationResponse
-        tokenExchangeRequestWithAdditionalParameters:additionalParameters];
-  } else {
-    [additionalParameters
-        addEntriesFromDictionary:self.authState.lastTokenResponse.request.additionalParameters];
-    tokenRequest = [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
-  }
-
-//  [self wait];
-  [OIDAuthorizationService performTokenRequest:tokenRequest
-                 originalAuthorizationResponse:self.authState.lastAuthorizationResponse
-                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                                                 NSError *_Nullable error) {
-    [self.authState updateWithTokenResponse:tokenResponse error:error];
-    self.error = error;
-
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    if (self.emmSupport) {
-      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
-        self.error = error;
-//        [self next];
-      }];
-    } else {
-//      [self next];
-    }
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    [authFlow next];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  
+  [self authorizationRequestWithOptions:self.options
+                             completion:^(OIDAuthorizationRequest * _Nullable request,
+                                          NSError * _Nullable error) {
+    self->_currentUserAgentSession =
+    [OIDAuthorizationService presentAuthorizationRequest:request
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                presentingViewController:self.options.presentingViewController
+#elif TARGET_OS_OSX
+                                        presentingWindow:options.presentingWindow
+#endif // TARGET_OS_OSX
+                                                callback:
+     ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+       NSError *_Nullable error) {
+      [self processAuthorizationResponse:authorizationResponse
+                                   error:error
+                              emmSupport:emmSupport];
+    }];
   }];
 }
 
-#pragma mark - Decode ID Token
+#pragma mark - Authorization Request
 
-- (void)addDecodeIdTokenCallback {
-  
+- (void)authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+                             completion:
+(void (^)(OIDAuthorizationRequest *_Nullable request, NSError *_Nullable error))completion {
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+    [self additionalParametersFromOptions:options];
+  OIDAuthorizationRequest *request = [self authorizationRequestWithOptions:options
+                                                      additionalParameters:additionalParameters];
+  // TODO: Add app check steps as well
+  completion(request, nil);
 }
 
-#pragma mark - Saving Authorization
-
-- (void)addSaveAuthCallback {
-  
-}
-
-#pragma mark - Completion Callback
-
-- (void)addCompletionCallback {
-  
+- (OIDAuthorizationRequest *)
+authorizationRequestWithOptions:(GIDSignInInternalOptions *)options
+additionalParameters:(NSDictionary<NSString *, NSString *> *)additionalParameters {
+  OIDAuthorizationRequest *request;
+  if (options.nonce) {
+    request = [[OIDAuthorizationRequest alloc] initWithConfiguration:self.serviceConfiguration
+                                                            clientId:options.configuration.clientID
+                                                              scopes:options.scopes
+                                                         redirectURL:[self redirectURLWithOptions:options]
+                                                        responseType:OIDResponseTypeCode
+                                                               nonce:options.nonce
+                                                additionalParameters:additionalParameters];
+  } else {
+    request = [[OIDAuthorizationRequest alloc] initWithConfiguration:self.serviceConfiguration
+                                                            clientId:options.configuration.clientID
+                                                              scopes:options.scopes
+                                                         redirectURL:[self redirectURLWithOptions:options]
+                                                        responseType:OIDResponseTypeCode
+                                                additionalParameters:additionalParameters];
+  }
+  return request;
 }
 
 #pragma mark - Authorization Response
@@ -192,25 +157,23 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
     self.restarting = NO;
     return;
   }
-
+  
   self.emmSupport = emmSupport;
-
+  
   if (authorizationResponse) {
     if (authorizationResponse.authorizationCode.length) {
       self.authState = [[OIDAuthState alloc] initWithAuthorizationResponse:authorizationResponse];
-      [self maybeFetchToken];
     } else {
       // There was a failure; convert to appropriate error code.
       NSString *errorString;
       GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
-
+      
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (self.emmSupport) {
-//        [self wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params
                                                                             completion:^{
-//          [self next];
+          // TODO: What to do here?
         }];
         if (isEMMError) {
           errorCode = kGIDSignInErrorCodeEMM;
@@ -221,7 +184,7 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
       if ([errorString isEqualToString:kOAuth2AccessDenied]) {
         errorCode = kGIDSignInErrorCodeCanceled;
       }
-
+      
       self.error = [self errorWithString:errorString code:errorCode];
     }
   } else {
@@ -235,10 +198,21 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
     }
     self.error = [self errorWithString:errorString code:errorCode];
   }
-
-  [self addDecodeIdTokenCallback];
-  [self addSaveAuthCallback];
-  [self addCompletionCallback];
+  
+  GIDTokenFetchOperation *tokenFetch =
+    [[GIDTokenFetchOperation alloc] initWithAuthState:self.authState
+                                              options:self.options
+                                           emmSupport:self.emmSupport
+                                                error:self.error];
+  GIDDecodeIDTokenOperation *decodeID = [[GIDDecodeIDTokenOperation alloc] init];
+  [decodeID addDependency:tokenFetch];
+  GIDSaveAuthOperation *saveAuth = [[GIDSaveAuthOperation alloc] init];
+  [saveAuth addDependency:decodeID];
+  GIDAuthorizationCompletionOperation *authCompletion =
+    [[GIDAuthorizationCompletionOperation alloc] initWithAuthorizationFlow:self];
+  [authCompletion addDependency:saveAuth];
+  NSArray<NSOperation *> *operations = @[tokenFetch, decodeID, saveAuth, authCompletion];
+  [NSOperationQueue.mainQueue addOperations:operations waitUntilFinished:NO];
 }
 
 #pragma mark - Errors
@@ -252,6 +226,59 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   return [NSError errorWithDomain:kGIDSignInErrorDomain
                              code:code
                          userInfo:errorDict];
+}
+
+#pragma mark - Utilities
+
+- (NSMutableDictionary<NSString *, NSString *> *)
+    additionalParametersFromOptions:(GIDSignInInternalOptions *)options {
+  NSString *emmSupport;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  emmSupport = [[self class] isOperatingSystemAtLeast9] ? kEMMVersion : nil;
+#elif TARGET_OS_MACCATALYST || TARGET_OS_OSX
+  emmSupport = nil;
+#endif // TARGET_OS_MACCATALYST || TARGET_OS_OSX
+
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+      [[NSMutableDictionary alloc] init];
+  additionalParameters[kIncludeGrantedScopesParameter] = @"true";
+  if (options.configuration.serverClientID) {
+    additionalParameters[kAudienceParameter] = options.configuration.serverClientID;
+  }
+  if (options.loginHint) {
+    additionalParameters[kLoginHintParameter] = options.loginHint;
+  }
+  if (options.configuration.hostedDomain) {
+    additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
+  }
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport parametersWithParameters:options.extraParams
+                                   emmSupport:emmSupport
+                       isPasscodeInfoRequired:NO]];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:options.extraParams];
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
+  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  return additionalParameters;
+}
+
++ (BOOL)isOperatingSystemAtLeast9 {
+  NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+  return [processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] &&
+  [processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){.majorVersion = 9}];
+}
+
+- (NSURL *)redirectURLWithOptions:(GIDSignInInternalOptions *)options {
+  GIDSignInCallbackSchemes *schemes =
+    [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+  NSString *redirect =
+    [NSString stringWithFormat:@"%@:%@", [schemes clientIdentifierScheme], kBrowserCallbackPath];
+  NSURL *redirectURL = [NSURL URLWithString:redirect];
+  return redirectURL;
 }
 
 @end

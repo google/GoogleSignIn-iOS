@@ -46,6 +46,18 @@ extern NSErrorDomain const kGIDSignInErrorDomain;
 extern NSString *const kKeychainError;
 extern NSString *const kGTMAppAuthKeychainName;
 
+/// The EMM support version
+extern NSString *const kEMMVersion;
+
+/// Browser callback path
+extern NSString *const kBrowserCallbackPath;
+
+extern NSString *const kAudienceParameter;
+extern NSString *const kOpenIDRealmParameter;
+extern NSString *const kIncludeGrantedScopesParameter;
+extern NSString *const kLoginHintParameter;
+extern NSString *const kHostedDomainParameter;
+
 @interface GIDSignInConstants : NSObject
 
 @end

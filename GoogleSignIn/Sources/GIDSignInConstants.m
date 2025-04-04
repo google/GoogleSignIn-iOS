@@ -44,6 +44,13 @@ const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 NSString *const kKeychainError = @"keychain error";
 NSString *const kGTMAppAuthKeychainName = @"auth";
 
+NSString *const kEMMVersion = @"1";
+
+NSString *const kBrowserCallbackPath = @"/oauth2callback";
+NSString *const kIncludeGrantedScopesParameter = @"include_granted_scopes";
+NSString *const kLoginHintParameter = @"login_hint";
+NSString *const kHostedDomainParameter = @"hd";
+
 @implementation GIDSignInConstants
 
 @end
