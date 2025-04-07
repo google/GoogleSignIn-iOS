@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12]
+        os: [macos-13]
         podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
         flag: [
           "",
@@ -45,7 +45,7 @@ jobs:
           - sdk: 'macosx'
             destination: '"platform=OS X,arch=x86_64"'
           - sdk: 'iphonesimulator'
-            destination: '"platform=iOS Simulator,name=iPhone 14"'
+            destination: '"platform=iOS Simulator,name=iPhone 15"'
     steps:
     - uses: actions/checkout@v3
     - name: Build unit test target
