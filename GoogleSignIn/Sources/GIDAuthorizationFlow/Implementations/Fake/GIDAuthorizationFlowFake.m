@@ -21,40 +21,6 @@
 
 @implementation GIDAuthorizationFlowFake
 
-+ (instancetype)fakeWithDefaultOptions {
-  UIViewController *vc = [[UIViewController alloc] init];
-  GIDSignInInternalOptions *options = [GIDSignInInternalOptions defaultOptionsWithConfiguration:nil
-                                                                       presentingViewController:vc
-                                                                                      loginHint:nil
-                                                                                  addScopesFlow:NO
-                                                                                     completion:nil];
-  return [[self alloc] initWithSignInOptions:options
-                                   authState:nil
-                                 profileData:nil
-                                  googleUser:nil
-                    externalUserAgentSession:nil
-                                  emmSupport:nil
-                                       error:nil];
-}
-
-+ (instancetype)fakeWithDefaultOptionsConfiguration:(GIDConfiguration *)configuration {
-  UIViewController *vc = [[UIViewController alloc] init];
-  GIDSignInInternalOptions *options =
-    [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
-                                     presentingViewController:vc
-                                                    loginHint:nil
-                                                addScopesFlow:NO
-                                                   completion:nil];
-  return [[self alloc] initWithSignInOptions:options
-                                   authState:nil
-                                 profileData:nil
-                                  googleUser:nil
-                    externalUserAgentSession:nil
-                                  emmSupport:nil
-                                       error:nil];
-
-}
-
 - (instancetype)initWithSignInOptions:(GIDSignInInternalOptions *)options
                             authState:(OIDAuthState *)authState
                           profileData:(nullable GIDProfileData *)profileData

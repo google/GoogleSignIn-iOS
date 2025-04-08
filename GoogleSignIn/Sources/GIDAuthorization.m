@@ -100,7 +100,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
     GIDConfiguration *defaultConfiguration = [GIDConfiguration configurationFromBundle:mainBundle];
     _currentConfiguration = configuration ?: defaultConfiguration;
     _authFlow = authFlow;
-    // FIXME: This should be cleaner
+    // FIXME: This should be cleaner; i.e., the options has a configuration too...
     _authFlow.configuration = _currentConfiguration;
     _currentOptions = _authFlow.options;
     

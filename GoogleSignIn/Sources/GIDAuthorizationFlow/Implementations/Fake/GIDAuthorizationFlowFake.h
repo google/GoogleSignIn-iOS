@@ -30,12 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) id<OIDExternalUserAgentSession> currentUserAgentSession;
 @property(nonatomic, copy, nullable) NSString *emmSupport;
 @property(nonatomic, strong, nullable) NSError *error;
-
 @property(nonatomic, strong, nullable) GIDConfiguration *configuration;
 @property(nonatomic, strong, nullable) OIDServiceConfiguration *serviceConfiguration;
-
-+ (instancetype)fakeWithDefaultOptions;
-+ (instancetype)fakeWithDefaultOptionsConfiguration:(GIDConfiguration *)configuration;
 
 @end
 
