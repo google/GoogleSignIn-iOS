@@ -10,7 +10,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDDecodeIDTokenOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDDecodeIDTokenOperation.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"

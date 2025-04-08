@@ -8,7 +8,7 @@
 #import "GIDDecodeIDTokenOperation.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDTokenFetchOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDTokenFetchOperation.h"
 #import "GoogleSignIn/Sources/GIDProfileData_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInConstants.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"

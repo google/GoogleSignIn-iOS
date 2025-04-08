@@ -32,15 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Private initializer taking a `GTMKeychainStore` and a `GIDConfiguration`.
 ///
-/// If `configuration` is nil, then a default configuration is generated from values in the `Info.plist`.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+/// If `keychainStore` or `configuration` are nil, then a default is generated.
+- (instancetype)initWithKeychainStore:(nullable GTMKeychainStore *)keychainStore
                         configuration:(nullable GIDConfiguration *)configuration;
 
 /// Private initializer taking a `GTMKeychainStore`, `GIDConfiguration` and a `GIDAuthorizationFlowCoordinator`.
 ///
-/// If `configuration` is nil, then a default configuration is generated from values in the `Info.plist`. If a nil
+/// If `keychainStore` or `configuration` are nil, then a default is generated. If a nil
 /// `GIDAuthorizationFlowCoordinator` conforming instance is provided, then one will be created during the authorization flow.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(nullable GTMKeychainStore *)keychainStore
                         configuration:(nullable GIDConfiguration *)configuration
          authorizationFlowCoordinator:(nullable id<GIDAuthorizationFlowCoordinator>)authFlow;
 
@@ -54,6 +54,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// Authenticates in with the provided options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;
 
+/// Asserts that the current `GIDConfiguration` contains a a client ID.
+///
+/// Throws an exception if no client ID is found in the configuration.
+- (void)assertValidParameters;
+
+/// Asserts that the current `GIDSignInInternalOptions` has a valid presenting controller.
+///
+/// Throws an exception if the current options do not contain a presenting controller.
+- (void)assertValidPresentingController;
+
 /// The current configuration used for authorization.
 @property(nonatomic, nullable) GIDConfiguration *currentConfiguration;
 
@@ -62,7 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Options used when sign-in flows are resumed via the handling of a URL.
 ///
-/// Options are set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't represent a sign in continuation.
+/// Options are set when a sign-in flow is begun via `signInWithOptions:` when the options passed don't represent a sign in
+/// continuation.
 @property(nonatomic, nullable) GIDSignInInternalOptions *currentOptions;
 
 /// The `GIDAuthorizationFlowCoordinator` conforming type managing the authorization flow.

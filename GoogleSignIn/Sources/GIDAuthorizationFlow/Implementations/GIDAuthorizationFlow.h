@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+#import <Foundation/Foundation.h>
+#import "GoogleSignIn/Sources/GIDCallbackQueue.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/API/GIDAuthorizationFlowCoordinator.h"
+
 @class GIDConfiguration;
 @class GIDProfileData;
 @class GIDGoogleUser;
@@ -24,7 +28,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol GIDAuthorizationFlowCoordinator <NSObject>
+@interface GIDAuthorizationFlow : NSObject <GIDAuthorizationFlowCoordinator>
 
 @property(nonatomic, strong, nullable) OIDAuthState *authState;
 @property(nonatomic, strong, nullable) GIDProfileData *profileData;
@@ -33,14 +37,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) id<OIDExternalUserAgentSession> currentUserAgentSession;
 @property(nonatomic, copy, nullable) NSString *emmSupport;
 @property(nonatomic, strong, nullable) NSError *error;
+
 @property(nonatomic, strong, nullable) GIDConfiguration *configuration;
 @property(nonatomic, strong, nullable) OIDServiceConfiguration *serviceConfiguration;
 
-- (void)authorize;
-- (void)authorizeInteractively;
-//- (void)processAuthorizationResponse:(nullable OIDAuthorizationResponse *)authorizationResponse
-//                               error:(nullable NSError *)error
-//                          emmSupport:(nullable NSString *)emmSupport;
+- (instancetype)initWithSignInOptions:(nullable GIDSignInInternalOptions *)options
+                            authState:(nullable OIDAuthState *)authState
+                          profileData:(nullable GIDProfileData *)profileData
+                           googleUser:(nullable GIDGoogleUser *)googleUser
+             externalUserAgentSession:(nullable id<OIDExternalUserAgentSession>)userAgentSession
+                           emmSupport:(nullable NSString *)emmSupport
+                                error:(nullable NSError *)error;
 
 @end
 

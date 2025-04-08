@@ -15,20 +15,13 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "GoogleSignIn/Sources/GIDCallbackQueue.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/GIDAuthorizationFlowCoordinator.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/API/GIDAuthorizationFlowCoordinator.h"
 
 @class GIDConfiguration;
-@class GIDProfileData;
-@class GIDGoogleUser;
-@class GIDSignInInternalOptions;
-@class OIDAuthState;
-@class OIDServiceConfiguration;
-@protocol OIDExternalUserAgentSession;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface GIDAuthorizationFlow : NSObject <GIDAuthorizationFlowCoordinator>
+@interface GIDAuthorizationFlowFake : NSObject <GIDAuthorizationFlowCoordinator>
 
 @property(nonatomic, strong, nullable) OIDAuthState *authState;
 @property(nonatomic, strong, nullable) GIDProfileData *profileData;
@@ -41,13 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) GIDConfiguration *configuration;
 @property(nonatomic, strong, nullable) OIDServiceConfiguration *serviceConfiguration;
 
-- (instancetype)initWithSignInOptions:(nullable GIDSignInInternalOptions *)options
-                            authState:(nullable OIDAuthState *)authState
-                          profileData:(nullable GIDProfileData *)profileData
-                           googleUser:(nullable GIDGoogleUser *)googleUser
-             externalUserAgentSession:(nullable id<OIDExternalUserAgentSession>)userAgentSession
-                           emmSupport:(nullable NSString *)emmSupport
-                                error:(nullable NSError *)error;
++ (instancetype)fakeWithDefaultOptions;
++ (instancetype)fakeWithDefaultOptionsConfiguration:(GIDConfiguration *)configuration;
 
 @end
 

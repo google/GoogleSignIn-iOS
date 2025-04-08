@@ -18,10 +18,10 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDSaveAuthOperation.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDTokenFetchOperation.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDDecodeIDTokenOperation.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDAuthorizationCompletionOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDSaveAuthOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDTokenFetchOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDDecodeIDTokenOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDAuthorizationCompletionOperation.h"
 
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
@@ -68,10 +68,10 @@
 
 - (void)authorize {
   GIDTokenFetchOperation *tokenFetch =
-  [[GIDTokenFetchOperation alloc] initWithAuthState:self.authState
-                                            options:self.options
-                                         emmSupport:self.emmSupport
-                                              error:self.error];
+    [[GIDTokenFetchOperation alloc] initWithAuthState:self.authState
+                                              options:self.options
+                                           emmSupport:self.emmSupport
+                                                error:self.error];
   GIDDecodeIDTokenOperation *idToken = [[GIDDecodeIDTokenOperation alloc] init];
   [idToken addDependency:tokenFetch];
   GIDSaveAuthOperation *saveAuth = [[GIDSaveAuthOperation alloc] init];

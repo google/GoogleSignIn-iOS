@@ -18,7 +18,8 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDGoogleUser.h"
 
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/GIDAuthorizationFlow.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/API/GIDAuthorizationFlowCoordinator.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/GIDAuthorizationFlow.h"
 #import "GoogleSignIn/Sources/GIDAuthorization_Private.h"
 #import "GoogleSignIn/Sources/GIDConfiguration_Private.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
@@ -80,23 +81,28 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
   return [self initWithKeychainStore:keychainStore configuration:nil];
 }
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(nullable GTMKeychainStore *)keychainStore
                         configuration:(nullable GIDConfiguration *)configuration {
   return [self initWithKeychainStore:keychainStore
                        configuration:configuration
         authorizationFlowCoordinator:nil];
 }
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(nullable GTMKeychainStore *)keychainStore
                         configuration:(nullable GIDConfiguration *)configuration
          authorizationFlowCoordinator:(nullable id<GIDAuthorizationFlowCoordinator>)authFlow {
   self = [super init];
   if (self) {
-    _keychainStore = keychainStore;
+    GTMKeychainStore *defaultStore = [[GTMKeychainStore alloc] initWithItemName:kGSIServiceName];
+    GTMKeychainStore *store = keychainStore ?: defaultStore;
+    _keychainStore = store;
     NSBundle *mainBundle = [NSBundle mainBundle];
     GIDConfiguration *defaultConfiguration = [GIDConfiguration configurationFromBundle:mainBundle];
     _currentConfiguration = configuration ?: defaultConfiguration;
     _authFlow = authFlow;
+    // FIXME: This should be cleaner
+    _authFlow.configuration = _currentConfiguration;
+    _currentOptions = _authFlow.options;
     
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
                                          [GIDSignInPreferences googleAuthorizationServer]];
@@ -107,7 +113,6 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
     _appAuthConfiguration =
       [[OIDServiceConfiguration alloc] initWithAuthorizationEndpoint:authEndpoint
                                                        tokenEndpoint:tokenEndpoint];
-    _authFlow.configuration = _currentConfiguration;
     _authFlow.serviceConfiguration = _appAuthConfiguration;
   }
   return self;
@@ -132,6 +137,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
 
 #pragma mark - Signing In
 
+// FIXME: Do not pass options here; put this on `GIDAuthorizationFlow`
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options {
   // Options for continuation are not the options we want to cache. The purpose of caching the
   // options in the first place is to provide continuation flows with a starting place from which to
@@ -190,6 +196,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
 
 #pragma mark - Authorization Flow
 
+// FIXME: Do not pass options here
 - (void)authenticateWithOptions:(GIDSignInInternalOptions *)options {
   // If this is an interactive flow, we're not going to try to restore any saved auth state.
   if (options.interactive) {

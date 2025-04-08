@@ -9,9 +9,9 @@
 
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Operations/GIDSaveAuthOperation.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/Operations/GIDSaveAuthOperation.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
-#import "GoogleSignIn/Sources/GIDAuthorizationFlow/GIDAuthorizationFlow.h"
+#import "GoogleSignIn/Sources/GIDAuthorizationFlow/Implementations/GIDAuthorizationFlow.h"
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
