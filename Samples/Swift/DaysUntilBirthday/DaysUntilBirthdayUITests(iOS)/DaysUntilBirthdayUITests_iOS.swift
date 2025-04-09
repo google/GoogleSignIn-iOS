@@ -24,6 +24,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInDisclaimerHeaderText =
     "Sign in to Days Until Birthday"
   private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
+  private let infoSharingHeaderText = "Share some info with Days Until Birthday"
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
   private let chooseAnAccountHeaderText = "Choose an account"
   private let notNowText = "Not Now"
@@ -33,6 +34,22 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let springboardApp = XCUIApplication(
     bundleIdentifier: "com.apple.springboard"
   )
+
+  func testSignInFetchVerificationSignalAndDisconnect() {
+    sampleApp.launch()
+    XCTAssertTrue(signIn())
+    XCTAssertTrue(navigateToVerifyMyAge())
+
+    XCTAssertTrue(navigateBackToUserProfileView())
+
+    sampleApp.navigationBars.buttons["Disconnect"].tap()
+
+    guard sampleApp
+            .buttons["GoogleSignInButton"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Disconnecting should return user to sign in view")
+    }
+  }
 
   func testSignInNavigateToDaysUntilBirthdayAndDisconnect() {
     sampleApp.launch()
@@ -195,6 +212,75 @@ extension DaysUntilBirthdayUITests_iOS {
     return true
   }
 
+  func navigateToVerifyMyAge() -> Bool {
+    guard sampleApp.buttons["Verify My Age"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to find button navigating to verify my age view")
+      return false
+    }
+    sampleApp.buttons["Verify My Age"].tap()
+
+    if springboardApp
+        .staticTexts[signInStaticText]
+        .waitForExistence(timeout: timeout) {
+      guard springboardApp
+              .buttons["Continue"]
+              .waitForExistence(timeout: timeout) else {
+        XCTFail("Failed to find 'Continue' button")
+        return false
+      }
+      springboardApp.buttons["Continue"].tap()
+
+      if sampleApp
+        .staticTexts[chooseAnAccountHeaderText]
+        .waitForExistence(timeout: timeout) {
+        guard findAndTapExistingSignedInEmail() else {
+          XCTFail("Failed to find signed-in account")
+          return false
+        }
+      }
+
+      handleInfoSharingRequestIfNeeded()
+    }
+
+    guard sampleApp.staticTexts["Verified Account!"]
+            .waitForExistence(timeout: 30) else {
+      XCTFail("Failed to show age verification view")
+      return false
+    }
+
+    let currentAccessTokenIdentifier = sampleApp.staticTexts["Access Token:"]
+
+    guard currentAccessTokenIdentifier.waitForExistence(timeout: timeout) else {
+        XCTFail("Access Token element did not appear")
+        return false
+    }
+
+    guard sampleApp.buttons["Fetch Age Verification Signal"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to find button to refresh access token")
+      return false
+    }
+    sampleApp.buttons["Fetch Age Verification Signal"].tap()
+
+    guard sampleApp.staticTexts["User is verified over 18!"]
+            .waitForExistence(timeout: 30) else {
+      XCTFail("Failed to show age verification signal view")
+      return false
+    }
+
+    guard sampleApp
+            .navigationBars
+            .buttons["Close"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to show close button back to age signal view")
+      return false
+    }
+    sampleApp.navigationBars.buttons["Close"].tap()
+
+    return true
+  }
+
   /// Navigates to the days until birthday view from the user profile view.
   /// - returns: `true` if the navigation was performed successfully.
   /// - note: This method will attempt to find a pop up asking for permission to
@@ -260,6 +346,17 @@ extension DaysUntilBirthdayUITests_iOS {
     }
 
     return true
+  }
+
+  func handleInfoSharingRequestIfNeeded(){
+    let currentlyShowingInfoSharingRequest = sampleApp.staticTexts[infoSharingHeaderText]
+      .waitForExistence(timeout: timeout) &&
+    sampleApp.buttons["Agree"]
+      .waitForExistence(timeout: timeout)
+
+    if currentlyShowingInfoSharingRequest {
+      sampleApp.buttons["Agree"].tap()
+    }
   }
 
   /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
