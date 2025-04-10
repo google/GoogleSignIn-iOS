@@ -26,6 +26,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
   private let chooseAnAccountHeaderText = "Choose an account"
+  private let consentRequestHeaderText = "Share some info with Days Until Birthday"
   private let notNowText = "Not Now"
   private let timeout: TimeInterval = 30
 
@@ -66,6 +67,23 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
             .buttons["GoogleSignInButton"]
             .waitForExistence(timeout: timeout) else {
       return XCTFail("Signing out should return user to sign in view")
+    }
+  }
+
+  func testFetchVerificationSignalAndDisconnect() {
+    sampleApp.launch()
+
+    XCTAssertTrue(signIn())
+    XCTAssertTrue(navigateToVerifyMyAge())
+    XCTAssertTrue(displayVerificationSignal())
+    XCTAssertTrue(navigateBackToUserProfileView())
+
+    sampleApp.navigationBars.buttons["Disconnect"].tap()
+
+    guard sampleApp
+            .buttons["GoogleSignInButton"]
+            .waitForExistence(timeout: timeout) else {
+      return XCTFail("Disconnecting should return user to sign in view")
     }
   }
 }
@@ -262,6 +280,84 @@ extension DaysUntilBirthdayUITests_iOS {
     return true
   }
 
+  /// Navigates to the verification view from the user profile view.
+  /// - returns: `true` if the navigation was performed successfully.
+  /// - note: This method will attempt to find a pop up asking for permission to
+  /// sign in with Google.
+  func navigateToVerifyMyAge() -> Bool {
+    guard sampleApp.buttons["Verify My Age"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to find button navigating to verify my age view")
+      return false
+    }
+    sampleApp.buttons["Verify My Age"].tap()
+
+    if springboardApp
+      .staticTexts[signInStaticText]
+      .waitForExistence(timeout: timeout) {
+      guard springboardApp
+              .buttons["Continue"]
+              .waitForExistence(timeout: timeout) else {
+        XCTFail("Failed to find 'Continue' button")
+        return false
+      }
+      springboardApp.buttons["Continue"].tap()
+
+      if sampleApp
+        .staticTexts[chooseAnAccountHeaderText]
+        .waitForExistence(timeout: timeout) {
+        guard findAndTapExistingSignedInEmail() else {
+          XCTFail("Failed to find signed-in account")
+          return false
+        }
+      }
+
+      handleConsentRequestIfNeeded()
+    }
+
+    guard sampleApp.staticTexts["Verified Account!"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to show age verification view")
+      return false
+    }
+
+    guard sampleApp.staticTexts["Access Token:"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Access Token element did not appear")
+      return false
+    }
+
+    return true
+  }
+
+  /// Displays a sheet over the Verification view with the fetched verification signal..
+  /// - returns: `true` if the display was performed successfully.
+  func displayVerificationSignal() -> Bool {
+    guard sampleApp.buttons["Fetch Age Verification Signal"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to find button to refresh access token")
+      return false
+    }
+    sampleApp.buttons["Fetch Age Verification Signal"].tap()
+
+    guard sampleApp.staticTexts["User is verified over 18!"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to show age verification signal view")
+      return false
+    }
+
+    guard sampleApp
+            .navigationBars
+            .buttons["Close"]
+            .waitForExistence(timeout: timeout) else {
+      XCTFail("Failed to show close button back to age signal view")
+      return false
+    }
+    sampleApp.navigationBars.buttons["Close"].tap()
+
+    return true
+  }
+
   /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
   func handleAccessRequestIfNeeded() {
     let currentlyShowingAdditionalAccessRequest = sampleApp.staticTexts[additionalAccessHeaderText]
@@ -274,6 +370,17 @@ extension DaysUntilBirthdayUITests_iOS {
       sampleApp.buttons["Continue"].tap()
     }
   }
+
+  /// Proceeds through the view with header "Share some info with Days Until Birthday" if needed.
+    func handleConsentRequestIfNeeded() {
+      let currentlyShowingConsentRequest =
+        sampleApp.staticTexts[consentRequestHeaderText].waitForExistence(timeout: timeout)
+        && sampleApp.buttons["Agree"].waitForExistence(timeout: timeout)
+
+      if currentlyShowingConsentRequest {
+        sampleApp.buttons["Agree"].tap()
+      }
+    }
 
   /// Proceeds through the sign-in disclaimer view if needed.
   func handleSignInDisclaimerIfNeeded() {
