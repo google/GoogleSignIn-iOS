@@ -1,3 +1,10 @@
+# 8.1.0-vwg-eap-1.1.0
+- Early Access Program supporting VwG.
+  - Remove requirement for current user in verification flow.([#512](https://github.com/google/GoogleSignIn-iOS/pull/512))
+- Internal
+  - Fix undefined symbols issue ([#470](https://github.com/google/GoogleSignIn-iOS/pull/470))
+  - Fix swift integration tests ([#494](https://github.com/google/GoogleSignIn-iOS/pull/494), [#497](https://github.com/google/GoogleSignIn-iOS/pull/497), [#498](https://github.com/google/GoogleSignIn-iOS/pull/498))
+
 # 8.1.0-vwg-eap-1.0.0
 - Early Access Program supporting Verify with Google.
   - Use [`-[GIDVerifyAccountDetail verifyAccountDetails:presentingViewController:completion:]`](https://github.com/google/GoogleSignIn-iOS/blob/6998b744055dc6c027b84ce6651626e0b88294d6/GoogleSignIn/Sources/Public/GoogleSignIn/GIDVerifyAccountDetail.h#L72-L83) to initate the verification flow.
