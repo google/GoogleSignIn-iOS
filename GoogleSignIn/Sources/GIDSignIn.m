@@ -264,6 +264,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                        presentingViewController:presentingViewController
                                                       loginHint:hint
                                                   addScopesFlow:NO
+                                                         bundle:nil
                                                      completion:completion];
   [self signInWithOptions:options];
 }
@@ -289,6 +290,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                      presentingViewController:presentingViewController
                                                     loginHint:hint
                                                 addScopesFlow:NO
+                                                       bundle:nil
                                                        scopes:additionalScopes
                                                         nonce:nonce
                                                    completion:completion];
@@ -311,6 +313,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                        presentingViewController:presentingViewController
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
+                                                         bundle:nil
                                                      completion:completion];
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];

@@ -27,6 +27,8 @@
 @class GIDConfiguration;
 @class GIDSignInResult;
 
+@protocol GIDBundle;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// The options used internally for aspects of the sign-in flow.
@@ -68,18 +70,23 @@ NS_ASSUME_NONNULL_BEGIN
 /// and to mitigate replay attacks.
 @property(nonatomic, readonly, copy, nullable) NSString *nonce;
 
+/// The bundle used for the sign in flow.
+@property(nonatomic, readonly, nonnull) id<GIDBundle> bundle;
+
 /// Creates the default options.
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                      completion:(nullable GIDSignInCompletion)completion;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion;
@@ -89,12 +96,14 @@ NS_ASSUME_NONNULL_BEGIN
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                      completion:(nullable GIDSignInCompletion)completion;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion;

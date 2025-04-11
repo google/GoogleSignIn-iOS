@@ -13,11 +13,13 @@
 // limitations under the License.
 
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Tests/Unit/GIDAuthorizationTests/GIDBundleFake.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInCallbackSchemes {
   NSString *_clientIdentifier;
+  id<GIDBundle> _bundle;
 }
 
 /**
@@ -27,10 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
  *     support for.
  * @remarks Branched from google3/googlemac/iPhone/Firebase/Source/GGLBundleUtil.m
  */
-+ (NSArray *)relevantURLSchemes {
+- (NSArray *)relevantURLSchemes {
   NSMutableArray *result = [NSMutableArray array];
-  NSBundle *bundle = [NSBundle mainBundle];
-  NSArray *urlTypes = [bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+  NSArray *urlTypes = [_bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
   for (NSDictionary *urlType in urlTypes) {
     NSArray *urlTypeSchemes = urlType[@"CFBundleURLSchemes"];
     for (NSString *urlTypeScheme in urlTypeSchemes) {
@@ -41,9 +42,20 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier {
+  return [self initWithClientIdentifier:clientIdentifier bundle:nil];
+}
+
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier
+                                  bundle:(nullable id<GIDBundle>)bundle {
   self = [super init];
   if (self) {
-    _clientIdentifier = [clientIdentifier copy];
+    _clientIdentifier = clientIdentifier;
+    if (!bundle) {
+      _bundle = [NSBundle mainBundle];
+    } else {
+      _bundle = bundle;
+    }
+//    _bundle = bundle ?: [NSBundle mainBundle];
   }
   return self;
 }
@@ -66,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSMutableArray *)unsupportedSchemes {
   NSMutableArray *unsupportedSchemes = [NSMutableArray arrayWithArray:[self allSchemes]];
-  NSArray *supportedSchemes = [[self class] relevantURLSchemes];
+  NSArray *supportedSchemes = [self relevantURLSchemes];
   [unsupportedSchemes removeObjectsInArray:supportedSchemes];
   return unsupportedSchemes;
 }

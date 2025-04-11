@@ -51,7 +51,8 @@
         kMinimumRestoredAccessTokenTimeToExpire)) {
     return;
   }
-  NSMutableDictionary<NSString *, NSString *> *additionalParameters = [@{} mutableCopy];
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+    [[NSMutableDictionary alloc] init];
   if (self.options.configuration.serverClientID) {
     additionalParameters[kAudienceParameter] = self.options.configuration.serverClientID;
   }

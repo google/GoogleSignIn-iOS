@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 #if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
@@ -30,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion {
@@ -38,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
                                      completion:(nullable GIDSignInCompletion)completion {
@@ -55,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     options->_loginHint = loginHint;
     options->_completion = completion;
+    options->_bundle = bundle ?: [NSBundle mainBundle];
     options->_scopes = [GIDScopes scopesWithBasicProfile:scopes];
     options->_nonce = nonce;
   }
@@ -66,12 +70,14 @@ NS_ASSUME_NONNULL_BEGIN
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                      completion:(nullable GIDSignInCompletion)completion {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
+                                         bundle:(nullable id<GIDBundle>)bundle
                                      completion:(nullable GIDSignInCompletion)completion {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
     GIDSignInInternalOptions *options = [self defaultOptionsWithConfiguration:configuration
@@ -82,6 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                                     loginHint:loginHint
                                                                 addScopesFlow:addScopesFlow
+                                                                       bundle:bundle
                                                                        scopes:@[]
                                                                         nonce:nil
                                                                    completion:completion];
@@ -97,6 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                                   loginHint:nil
                                                               addScopesFlow:NO
+                                                                     bundle:nil
                                                                  completion:completion];
   if (options) {
     options->_interactive = NO;
@@ -121,6 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_completion = _completion;
     options->_scopes = _scopes;
     options->_extraParams = [extraParams copy];
+    options->_bundle = _bundle ?: [NSBundle mainBundle];
   }
   return options;
 }

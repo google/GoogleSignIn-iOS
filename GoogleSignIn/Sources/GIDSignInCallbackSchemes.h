@@ -18,25 +18,38 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// A utility class for dealing with callback schemes.
+@protocol GIDBundle <NSObject>
+
+- (nullable id)objectForInfoDictionaryKey:(NSString *)key;
+
+@end
+
+@interface NSBundle (NSBundleGIDBundle) <GIDBundle>
+@end
+
+/// A utility class for dealing with callback schemes.
 @interface GIDSignInCallbackSchemes : NSObject
 
-// Please call the designated initializer.
+/// Please call the designated initializer.
 - (instancetype)init NS_UNAVAILABLE;
 
-// The designated initializer.
-- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier NS_DESIGNATED_INITIALIZER;
+/// The designated initializer.
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier;
 
-// The canonical client identifier callback scheme. Requires clientId to be set on GIDSignIn.
+/// The designated initializer.
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier
+                                  bundle:(nullable id<GIDBundle>)bundle NS_DESIGNATED_INITIALIZER;
+
+/// The canonical client identifier callback scheme. Requires clientId to be set on GIDSignIn.
 - (NSString *)clientIdentifierScheme;
 
-// An array of all schemes used for sign-in callbacks.
+/// An array of all schemes used for sign-in callbacks.
 - (NSArray *)allSchemes;
 
-// Returns a list of URL schemes the current app host should support for Google Sign-In to work.
+/// Returns a list of URL schemes the current app host should support for Google Sign-In to work.
 - (NSMutableArray *)unsupportedSchemes;
 
-// Indicates the scheme of an NSURL is a sign-in callback scheme.
+/// Indicates the scheme of an NSURL is a sign-in callback scheme.
 - (BOOL)URLSchemeIsCallbackScheme:(NSURL *)URL;
 
 @end

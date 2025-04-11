@@ -138,6 +138,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
 #pragma mark - Signing In
 
 // FIXME: Do not pass options here; put this on `GIDAuthorizationFlow`
+// But perhaps `options` are needed because the presenting vc could change
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options {
   // Options for continuation are not the options we want to cache. The purpose of caching the
   // options in the first place is to provide continuation flows with a starting place from which to
@@ -161,9 +162,12 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
     
     [self assertValidPresentingController];
     
+    id<GIDBundle> bundle = self.authFlow.options.bundle;
+    NSString *clientID = self.currentOptions.configuration.clientID;
+    
     // If the application does not support the required URL schemes tell the developer so.
     GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:clientID bundle:bundle];
     NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
     if (unsupportedSchemes.count != 0) {
       // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
@@ -183,7 +187,7 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
           self->_currentOptions = nil;
           dispatch_async(dispatch_get_main_queue(), ^{
             GIDSignInResult *signInResult =
-            [[GIDSignInResult alloc] initWithGoogleUser:self->_currentUser serverAuthCode:nil];
+              [[GIDSignInResult alloc] initWithGoogleUser:[self currentUser] serverAuthCode:nil];
             options.completion(signInResult, nil);
           });
         }
@@ -253,6 +257,12 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
     [NSException raise:NSInvalidArgumentException
                 format:@"`presentingViewController` must be set."];
   }
+}
+
+#pragma mark - Current User
+
+- (nullable GIDGoogleUser *)currentUser {
+  return self.authFlow.googleUser;
 }
 
 @end

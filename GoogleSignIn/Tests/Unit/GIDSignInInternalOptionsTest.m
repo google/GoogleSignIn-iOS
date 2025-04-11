@@ -49,6 +49,7 @@
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                                       loginHint:loginHint
                                                   addScopesFlow:NO
+                                                         bundle:nil
                                                      completion:completion];
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);

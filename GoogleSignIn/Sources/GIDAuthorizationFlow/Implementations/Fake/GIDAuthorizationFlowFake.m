@@ -16,6 +16,8 @@
 
 #import "GIDAuthorizationFlowFake.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
+#import "GoogleSignIn/Sources/GIDSignInResult_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDConfiguration_Private.h"
 
@@ -45,7 +47,9 @@
 }
 
 - (void)authorizeInteractively {
-  // TODO: Implement
+  GIDSignInResult *result = [[GIDSignInResult alloc] initWithGoogleUser:self.googleUser
+                                                         serverAuthCode:@"abcd"];
+  self.options.completion(result, self.error);
 }
 
 @end

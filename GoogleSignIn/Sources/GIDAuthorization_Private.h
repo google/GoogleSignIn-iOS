@@ -16,6 +16,7 @@
 
 #import <Foundation/Foundation.h>
 #import <TargetConditionals.h>
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAuthorization.h"
 
 @class GIDConfiguration;
 @class GTMKeychainStore;
