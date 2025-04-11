@@ -19,9 +19,6 @@ import GoogleSignIn
 
 struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
-#if os(iOS)
-  @StateObject var verifiedAgeViewModel = VerifiedAgeViewModel()
-#endif
   @StateObject var birthdayViewModel = BirthdayViewModel()
   private var user: GIDGoogleUser? {
     return GIDSignIn.sharedInstance.currentUser
@@ -53,13 +50,6 @@ struct UserProfileView: View {
               return
             }
           })
-#if os(iOS)
-          NavigationLink(NSLocalizedString("Verify My Age", comment: "Verify Age"),
-                         destination: VerificationView(verifiedAgeViewModel: verifiedAgeViewModel)
-          .onAppear {
-            verifiedAgeViewModel.verifyUserAgeOver18()
-          })
-#endif
           Spacer()
         }
         .toolbar {
