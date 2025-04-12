@@ -29,6 +29,7 @@ static NSString *const kAccountName = @"OAuthTest";
   if (self) {
     _keychainAttributes = keychainAttributes;
     _accountName = kAccountName;
+    _passwordStore = [NSMutableDictionary dictionary];
   }
   return self;
 }
