@@ -225,14 +225,17 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
     return;
   }
 
-  self.authFlow = [[GIDAuthorizationFlow alloc] initWithSignInOptions:self.currentOptions
-                                                            authState:authState
-                                                          profileData:nil
-                                                           googleUser:self.currentUser
-                                             externalUserAgentSession:nil
-                                                           emmSupport:nil
-                                                                error:nil];
-  // TODO: Implement the interactive version with operations as well
+  // If we have an `authFlow`, then it was injected and we are testing; don't overwrite
+  if (!self.authFlow) {
+    self.authFlow = [[GIDAuthorizationFlow alloc] initWithSignInOptions:self.currentOptions
+                                                              authState:authState
+                                                            profileData:nil
+                                                             googleUser:self.currentUser
+                                               externalUserAgentSession:nil
+                                                             emmSupport:nil
+                                                                  error:nil];
+  }
+  
   [self.authFlow authorize];
 }
 

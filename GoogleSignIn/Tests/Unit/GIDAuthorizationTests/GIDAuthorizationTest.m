@@ -99,7 +99,7 @@ static NSString *const kKeychainItemName = @"test_keychain_name";
 }
 
 - (void)testThatAuthorizeInteractivelySetsCurrentUser {
-  XCTestExpectation *currentUserExpectation =
+  XCTestExpectation *authorizeInteractivelyExpectation =
     [self expectationWithDescription:@"Current user expectation"];
   GIDKeychainHelperFake *keychainFake =
     [[GIDKeychainHelperFake alloc] initWithKeychainAttributes:[NSSet setWithArray:@[]]];
@@ -124,7 +124,7 @@ static NSString *const kKeychainItemName = @"test_keychain_name";
     XCTAssertEqualObjects(expectedGoogleUser, result.user);
     XCTAssertEqualObjects(expectedAuthState, result.user.authState);
     XCTAssertEqualObjects(expectedProfileData, result.user.profile);
-    [currentUserExpectation fulfill];
+    [authorizeInteractivelyExpectation fulfill];
   };
   
   GIDBundleFake *bFake = [[GIDBundleFake alloc] init];
@@ -147,7 +147,64 @@ static NSString *const kKeychainItemName = @"test_keychain_name";
                                                              configuration:config
                                               authorizationFlowCoordinator:fakeFlow];
   [auth signInWithOptions:opts];
-  [self waitForExpectations:@[currentUserExpectation] timeout:5];
+  [self waitForExpectations:@[authorizeInteractivelyExpectation] timeout:5];
+  XCTAssertNotNil(auth.currentUser);
+  XCTAssertEqualObjects(expectedGoogleUser, auth.currentUser);
+}
+
+- (void)testThatAuthorizeSilentlySetsCurrentUser {
+  XCTestExpectation *authorizeExpectation =
+    [self expectationWithDescription:@"Current user expectation"];
+  GIDKeychainHelperFake *keychainFake =
+    [[GIDKeychainHelperFake alloc] initWithKeychainAttributes:[NSSet setWithArray:@[]]];
+  GTMKeychainStore *keychainStore = [[GTMKeychainStore alloc] initWithItemName:kKeychainItemName
+                                                                keychainHelper:keychainFake];
+  GIDConfiguration *config =
+    [[GIDConfiguration alloc] initWithClientID:OIDAuthorizationRequestTestingClientID
+                                serverClientID:kServerClientID
+                                  hostedDomain:kHostedDomain
+                                   openIDRealm:kOpenIDRealm];
+  UIViewController *vc = [[UIViewController alloc] init];
+  
+  OIDAuthState *expectedAuthState = [OIDAuthState testInstance];
+  GIDProfileData *expectedProfileData = [GIDProfileData testInstanceWithImageURL:@"test.com"];
+  GIDGoogleUser *expectedGoogleUser = [[GIDGoogleUser alloc] initWithAuthState:expectedAuthState
+                                                                   profileData:expectedProfileData];
+  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:expectedAuthState];
+  NSError *error;
+  [keychainStore saveAuthSession:authSession error:&error];
+  XCTAssertNil(error);
+  
+  GIDSignInCompletion comp = ^(GIDSignInResult *_Nullable result, NSError *_Nullable error) {
+    XCTAssertNotNil(result, @"The sign in result should be non-nil.");
+    XCTAssertNil(error, @"There should be no error from authorizing.");
+    XCTAssertEqualObjects(expectedGoogleUser, result.user);
+    XCTAssertEqualObjects(expectedAuthState, result.user.authState);
+    XCTAssertEqualObjects(expectedProfileData, result.user.profile);
+    [authorizeExpectation fulfill];
+  };
+  
+  GIDBundleFake *bFake = [[GIDBundleFake alloc] init];
+  GIDSignInInternalOptions *options = [GIDSignInInternalOptions silentOptionsWithCompletion:comp];
+  
+  // Pass `nil` for `googleUser` below to simulate loading a saved `authSession` from keychain and
+  // refreshing that to
+  GIDAuthorizationFlowFake *fakeFlow =
+    [[GIDAuthorizationFlowFake alloc] initWithSignInOptions:options
+                                                  authState:expectedAuthState
+                                                profileData:expectedProfileData
+                                                 googleUser:nil
+                                   externalUserAgentSession:nil
+                                                 emmSupport:nil
+                                                      error:nil];
+  
+  GIDAuthorization *auth = [[GIDAuthorization alloc] initWithKeychainStore:keychainStore
+                                                             configuration:config
+                                              authorizationFlowCoordinator:fakeFlow];
+  [auth signInWithOptions:options];
+  // FIXME: Fails for now because the current user check on `GIDAuthorization` goes thru
+  // `GIDAuthorizationFlowFoke, which has an injected `currentUser` to fake the request
+  [self waitForExpectations:@[authorizeExpectation] timeout:5];
   XCTAssertNotNil(auth.currentUser);
   XCTAssertEqualObjects(expectedGoogleUser, auth.currentUser);
 }
