@@ -44,15 +44,15 @@ let package = Package(
     .package(
       name: "AppAuth",
       url: "https://github.com/openid/AppAuth-iOS.git",
-      from: "1.7.3"),
+      from: "2.0.0"),
     .package(
       name: "AppCheck",
       url: "https://github.com/google/app-check.git",
       from: "11.0.0"),
     .package(
       name: "GTMAppAuth",
-      url: "https://github.com/google/GTMAppAuth.git",
-      from: "4.1.1"),
+      url: "https://github.com/brnnmrls/GTMAppAuth.git",
+      from: "5.0.0"),
     .package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
