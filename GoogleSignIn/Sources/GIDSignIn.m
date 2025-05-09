@@ -27,11 +27,11 @@
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
-#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDTimedLoader/GIDTimedLoader.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -560,7 +560,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                              initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                              tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
     _keychainStore = keychainStore;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
     GIDAuthStateMigration *migration =
         [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore];
@@ -568,7 +567,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               callbackPath:kBrowserCallbackPath
                               keychainName:kGTMAppAuthKeychainName
                             isFreshInstall:isFreshInstall];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
 }
