@@ -1,0 +1,13 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+	ignorecase = true
+	precomposeunicode = true
+	symlinks = true
+	fsmonitor = false
+	longpaths = true
+[remote "origin"]
+	url = https://github.com/google/gtm-session-fetcher.git
+	fetch = +refs/*:refs/*
+	mirror = true
