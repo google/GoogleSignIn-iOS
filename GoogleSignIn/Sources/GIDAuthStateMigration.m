@@ -73,7 +73,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   // action and go on to mark the migration check as having been performed.
   if (!isFreshInstall) {
     GTMAuthSession *authSession = nil;
-#if TARGET_OS_MAC || TARGET_OS_MACCATALYST
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
     // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
     GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
     NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
@@ -81,7 +81,7 @@ static NSString *const kFingerprintService = @"fingerprint";
         [[GTMKeychainStore alloc] initWithItemName:self.keychainStore.itemName
         keychainAttributes:attributes];
     authSession = [keychainStoreLegacy retrieveAuthSessionWithError:nil];
-#else // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#elif TARGET_OS_IOS
     // Migrate from GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the GTMAppAuth storage introduced in
     // GIDSignIn 5.0.
     authSession = [self extractAuthSessionWithTokenURL:tokenURL callbackPath:callbackPath];
@@ -94,7 +94,7 @@ static NSString *const kFingerprintService = @"fingerprint";
       if (err) {
         return;
       };
-#if TARGET_OS_MAC || TARGET_OS_MACCATALYST
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
       [keychainStoreLegacy removeAuthSessionWithError:nil];
 #endif
     }

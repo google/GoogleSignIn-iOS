@@ -16,6 +16,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
+#import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
 
 @import GTMAppAuth;
 
@@ -122,12 +123,23 @@ NS_ASSUME_NONNULL_BEGIN
   [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kMigrationCheckPerformedKey];
   [[_mockUserDefaults expect] setBool:YES forKey:kMigrationCheckPerformedKey];
 
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [[[_mockGTMKeychainStore expect] andReturn:@"auth"] itemName];
+  [[[_mockGTMKeychainStore expect] andReturn:_mockGTMKeychainStore] initWithItemName:OCMOCK_ANY
+                                                                  keychainAttributes:OCMOCK_ANY];
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
+  [[[_mockGTMKeychainStore expect] andReturn:authSession] retrieveAuthSessionWithError:nil];
+//  [[[_mockGTMKeychainStore initWithKeychainStore:OCMOCK_ANY] andReturn:_mockGTMKeychainStore];
+//  [[OCMStub([_mockGTMKeychainStore retrieveAuthSessionWithError:OCMOCK_ANY]) andReturn:(id)];
+#endif
+
   [[_mockGTMKeychainStore expect] saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef];
 
-  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+//  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 
   GIDAuthStateMigration *migration =
-      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
                             keychainName:kKeychainName
