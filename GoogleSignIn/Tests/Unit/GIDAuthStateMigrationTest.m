@@ -80,6 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
   id _mockNSBundle;
   id _mockGIDSignInCallbackSchemes;
   id _mockGTMOAuth2Compatibility;
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  id _realLegacyGTMKeychainStore;
+#endif
 }
 
 - (void)setUp {
@@ -93,6 +96,12 @@ NS_ASSUME_NONNULL_BEGIN
   _mockNSBundle = OCMStrictClassMock([NSBundle class]);
   _mockGIDSignInCallbackSchemes = OCMStrictClassMock([GIDSignInCallbackSchemes class]);
   _mockGTMOAuth2Compatibility = OCMStrictClassMock([GTMOAuth2Compatibility class]);
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
+  NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
+  _realLegacyGTMKeychainStore = [[GTMKeychainStore alloc] initWithItemName:kKeychainName
+                                                       keychainAttributes:attributes];
+#endif
 }
 
 - (void)tearDown {
@@ -112,6 +121,9 @@ NS_ASSUME_NONNULL_BEGIN
   [_mockGIDSignInCallbackSchemes stopMocking];
   [_mockGTMOAuth2Compatibility verify];
   [_mockGTMOAuth2Compatibility stopMocking];
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [_realLegacyGTMKeychainStore removeAuthSessionWithError:nil];
+#endif
 
   [super tearDown];
 }
@@ -124,19 +136,17 @@ NS_ASSUME_NONNULL_BEGIN
   [[_mockUserDefaults expect] setBool:YES forKey:kMigrationCheckPerformedKey];
 
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [[[_mockGTMKeychainStore expect] andReturn:@"auth"] itemName];
-  [[[_mockGTMKeychainStore expect] andReturn:_mockGTMKeychainStore] initWithItemName:OCMOCK_ANY
-                                                                  keychainAttributes:OCMOCK_ANY];
+  [[[_mockGTMKeychainStore expect] andReturn:kKeychainName] itemName];
   OIDAuthState *authState = [OIDAuthState testInstance];
   GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
-  [[[_mockGTMKeychainStore expect] andReturn:authSession] retrieveAuthSessionWithError:nil];
-//  [[[_mockGTMKeychainStore initWithKeychainStore:OCMOCK_ANY] andReturn:_mockGTMKeychainStore];
-//  [[OCMStub([_mockGTMKeychainStore retrieveAuthSessionWithError:OCMOCK_ANY]) andReturn:(id)];
+  NSError *err;
+  [_realLegacyGTMKeychainStore saveAuthSession:authSession error:&err];
+  XCTAssertNil(err);
+#else
+    [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 #endif
 
   [[_mockGTMKeychainStore expect] saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef];
-
-//  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 
   GIDAuthStateMigration *migration =
        [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
@@ -144,6 +154,9 @@ NS_ASSUME_NONNULL_BEGIN
                             callbackPath:kCallbackPath
                             keychainName:kKeychainName
                           isFreshInstall:NO];
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  XCTAssertNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
+#endif
 }
 
 - (void)testMigrateIfNeeded_HasPreviousMigration {
@@ -166,7 +179,16 @@ NS_ASSUME_NONNULL_BEGIN
   NSError *keychainSaveError = [NSError new];
   OCMStub([_mockGTMKeychainStore saveAuthSession:OCMOCK_ANY error:[OCMArg setTo:keychainSaveError]]);
 
-  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [[[_mockGTMKeychainStore expect] andReturn:kKeychainName] itemName];
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
+  NSError *err;
+  [_realLegacyGTMKeychainStore saveAuthSession:authSession error:&err];
+  XCTAssertNil(err);
+#else
+    [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+#endif
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
@@ -174,6 +196,9 @@ NS_ASSUME_NONNULL_BEGIN
                             callbackPath:kCallbackPath
                             keychainName:kKeychainName
                           isFreshInstall:NO];
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  XCTAssertNotNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
+#endif
 }
 
 - (void)testMigrateIfNeeded_isFreshInstall {
