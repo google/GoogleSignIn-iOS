@@ -135,6 +135,8 @@ NS_ASSUME_NONNULL_BEGIN
   [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kMigrationCheckPerformedKey];
   [[_mockUserDefaults expect] setBool:YES forKey:kMigrationCheckPerformedKey];
 
+  [[_mockGTMKeychainStore expect] saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef];
+
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [[[_mockGTMKeychainStore expect] andReturn:kKeychainName] itemName];
   OIDAuthState *authState = [OIDAuthState testInstance];
@@ -146,10 +148,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 #endif
 
-  [[_mockGTMKeychainStore expect] saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef];
-
   GIDAuthStateMigration *migration =
-       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
                             keychainName:kKeychainName

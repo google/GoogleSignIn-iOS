@@ -560,7 +560,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                              initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                              tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
     _keychainStore = keychainStore;
-    // Perform migration of auth state from old (before 5.0) versions of the SDK if needed.
+    // Perform migration of auth state from old versions of the SDK if needed.
     GIDAuthStateMigration *migration =
         [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore];
     [migration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint

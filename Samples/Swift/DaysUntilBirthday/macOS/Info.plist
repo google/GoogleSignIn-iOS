@@ -15,7 +15,8 @@
 			</array>
 		</dict>
 	</array>
-	<key>GIDClientID</key>
-	<string>687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com</string>
+  <!-- Do not use this client ID in your own app, it will only work for this sample. -->
+  <key>GIDClientID</key>
+  <string>687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com</string>
 </dict>
 </plist>
