@@ -79,7 +79,7 @@ static NSString *const kFingerprintService = @"fingerprint";
     NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
     GTMKeychainStore *keychainStoreLegacy =
         [[GTMKeychainStore alloc] initWithItemName:self.keychainStore.itemName
-        keychainAttributes:attributes];
+                                keychainAttributes:attributes];
     authSession = [keychainStoreLegacy retrieveAuthSessionWithError:nil];
 #elif TARGET_OS_IOS
     // Migrate from GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the GTMAppAuth storage introduced in
