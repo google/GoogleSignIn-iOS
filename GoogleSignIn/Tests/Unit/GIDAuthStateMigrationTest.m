@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
   GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
   NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
   _realLegacyGTMKeychainStore = [[GTMKeychainStore alloc] initWithItemName:kKeychainName
-                                                       keychainAttributes:attributes];
+                                                        keychainAttributes:attributes];
 #endif
 }
 
@@ -147,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
   [_realLegacyGTMKeychainStore saveAuthSession:authSession error:&err];
   XCTAssertNil(err);
 #else
-    [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 #endif
 
   GIDAuthStateMigration *migration =
@@ -189,7 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
   [_realLegacyGTMKeychainStore saveAuthSession:authSession error:&err];
   XCTAssertNil(err);
 #else
-    [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 #endif
 
   GIDAuthStateMigration *migration =
