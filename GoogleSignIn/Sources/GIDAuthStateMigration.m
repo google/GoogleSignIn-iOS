@@ -26,8 +26,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// User preference key to detect whether or not the migration check has been performed.
-static NSString *const kMigrationCheckPerformedKey = @"GID_MigrationCheckPerformed";
+// User preference key to detect whether or not the migration to GTMAppAuth has been performed.
+static NSString *const kGTMAppAuthMigrationCheckPerformedKey = @"GID_MigrationCheckPerformed";
+
+// User preference key to detect whether or not the data protected migration has been performed.
+static NSString *const kDataProtectedMigrationCheckPerformedKey =
+                                                      @"GID_DataProtectedMigrationCheckPerformed";
+
 
 // Keychain account used to store additional state in SDKs previous to v5, including GPPSignIn.
 static NSString *const kOldKeychainAccount = @"GooglePlus";
@@ -63,45 +68,85 @@ static NSString *const kFingerprintService = @"fingerprint";
                        callbackPath:(NSString *)callbackPath
                        keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall {
-  // See if we've performed the migration check previously.
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  if ([defaults boolForKey:kMigrationCheckPerformedKey]) {
+  // If this is a fresh install, take no action and mark the migration checks as having been
+  // performed.
+  if (isFreshInstall) {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
+#elif TARGET_OS_IOS
+    [defaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
+#endif
     return;
   }
 
-  // If this is not a fresh install, attempt to migrate state.  If this is a fresh install, take no
-  // action and go on to mark the migration check as having been performed.
-  if (!isFreshInstall) {
-    GTMAuthSession *authSession = nil;
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
-    GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
-    NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
-    GTMKeychainStore *keychainStoreLegacy =
-        [[GTMKeychainStore alloc] initWithItemName:self.keychainStore.itemName
-                                keychainAttributes:attributes];
-    authSession = [keychainStoreLegacy retrieveAuthSessionWithError:nil];
+  [self performDataProtectedMigrationIfNeeded];
 #elif TARGET_OS_IOS
-    // Migrate from GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the GTMAppAuth storage introduced in
-    // GIDSignIn 5.0.
-    authSession = [self extractAuthSessionWithTokenURL:tokenURL callbackPath:callbackPath];
+  [self performGIDMigrationIfNeededWithTokenURL:tokenURL
+                                   callbackPath:callbackPath
+                                   keychainName:keychainName]
 #endif
-    // If migration was successful, save our migrated state to the keychain.
-    if (authSession) {
-      NSError *err;
-      [self.keychainStore saveAuthSession:authSession error:&err];
-      // If we're unable to save to the keychain, return without marking migration performed.
-      if (err) {
-        return;
-      };
+}
+
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
-      [keychainStoreLegacy removeAuthSessionWithError:nil];
-#endif
-    }
+// Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
+- (void)performDataProtectedMigrationIfNeeded {
+  // See if we've performed the migration check previously.
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  if ([defaults boolForKey:kDataProtectedMigrationCheckPerformedKey]) {
+    return;
+  }
+  // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
+  GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
+  NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
+  GTMKeychainStore *keychainStoreLegacy =
+      [[GTMKeychainStore alloc] initWithItemName:self.keychainStore.itemName
+                              keychainAttributes:attributes];
+  GTMAuthSession *authSession = [keychainStoreLegacy retrieveAuthSessionWithError:nil];
+  // If migration was successful, save our migrated state to the keychain.
+  if (authSession) {
+    NSError *err;
+    [self.keychainStore saveAuthSession:authSession error:&err];
+    // If we're unable to save to the keychain, return without marking migration performed.
+    if (err) {
+      return;
+    };
+    [keychainStoreLegacy removeAuthSessionWithError:nil];
   }
 
   // Mark the migration check as having been performed.
-  [defaults setBool:YES forKey:kMigrationCheckPerformedKey];
+  [defaults setBool:YES forKey:kDataProtectgedMigrationCheckPerformedKey];
+}
+
+#elif TARGET_OS_IOS
+// Migrate from GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the GTMAppAuth storage introduced in
+// GIDSignIn 5.0.
+- (void)performGIDMigrationIfNeededWithTokenURL:(NSURL *)tokenURL
+                                   callbackPath:(NSString *)callbackPath
+                                   keychainName:(NSString *)keychainName {
+  // See if we've performed the migration check previously.
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  if ([defaults boolForKey:kGTMAppAuthMigrationCheckPerformedKey]) {
+    return;
+  }
+
+  // Attempt migration
+  GTMAuthSession *authSession =
+      [self extractAuthSessionWithTokenURL:tokenURL callbackPath:callbackPath];
+
+  // If migration was successful, save our migrated state to the keychain.
+  if (authSession) {
+    NSError *err;
+    [self.keychainStore saveAuthSession:authSession error:&err];
+    // If we're unable to save to the keychain, return without marking migration performed.
+    if (err) {
+      return;
+    };
+  }
+
+  // Mark the migration check as having been performed.
+  [defaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
 }
 
 // Returns a |GTMAuthSession| object containing any old auth state or |nil| if none
@@ -202,6 +247,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   NSString *password = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
   return password;
 }
+#endif
 
 @end
 
