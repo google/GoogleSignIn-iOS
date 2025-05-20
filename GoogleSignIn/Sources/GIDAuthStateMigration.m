@@ -76,7 +76,7 @@ static NSString *const kFingerprintService = @"fingerprint";
     [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
 #elif TARGET_OS_IOS
     [defaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
     return;
   }
 
@@ -85,8 +85,8 @@ static NSString *const kFingerprintService = @"fingerprint";
 #elif TARGET_OS_IOS
   [self performGIDMigrationIfNeededWithTokenURL:tokenURL
                                    callbackPath:callbackPath
-                                   keychainName:keychainName]
-#endif
+                                   keychainName:keychainName];
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
 }
 
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
@@ -116,7 +116,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   }
 
   // Mark the migration check as having been performed.
-  [defaults setBool:YES forKey:kDataProtectgedMigrationCheckPerformedKey];
+  [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
 }
 
 #elif TARGET_OS_IOS
@@ -247,7 +247,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   NSString *password = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
   return password;
 }
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
 
 @end
 
