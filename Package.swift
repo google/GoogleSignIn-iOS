@@ -51,7 +51,7 @@ let package = Package(
       from: "11.0.0"),
     .package(
       name: "GTMAppAuth",
-      url: "https://github.com/brnnmrls/GTMAppAuth.git",
+      url: "https://github.com/google/GTMAppAuth.git",
       from: "5.0.0"),
     .package(
       name: "GTMSessionFetcher",

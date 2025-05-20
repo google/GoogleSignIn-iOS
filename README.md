@@ -47,15 +47,15 @@ If you would like to see a Swift example, take a look at
 Google Sign-In allows your users to sign-in to your native macOS app using their Google account
 and default browser.  When building for macOS, the `signInWithConfiguration:` and `addScopes:`
 methods take a `presentingWindow:` parameter in place of `presentingViewController:`.  Note that
-in order for your macOS app to store credientials via the Keychain on macOS, you will need to
-[sign your app](https://developer.apple.com/support/code-signing/).
+in order for your macOS app to store credentials via the Keychain on macOS, you will need to add
+`$(AppIdentifierPrefix)$(CFBundleIdentifier)` to its keychain access group.
 
 ### Mac Catalyst
 
 Google Sign-In also supports iOS apps that are built for macOS via
 [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for your Mac Catalyst app
-to store credientials via the Keychain on macOS, you will need to
-[sign your app](https://developer.apple.com/support/code-signing/).
+to store credentials via the Keychain on macOS, you will need to add
+`$(AppIdentifierPrefix)$(CFBundleIdentifier)` to its keychain access group.
 
 ## Using the Google Sign-In Button
 
