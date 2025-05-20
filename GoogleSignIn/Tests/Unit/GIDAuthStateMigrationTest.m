@@ -185,7 +185,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #else
-
 - (void)testMigrateIfNeeded_NoPreviousMigration_GTMAppAuthMigration {
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
   [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kGTMAppAuthMigrationCheckPerformedKey];

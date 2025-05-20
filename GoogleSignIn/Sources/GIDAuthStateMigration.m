@@ -33,7 +33,6 @@ static NSString *const kGTMAppAuthMigrationCheckPerformedKey = @"GID_MigrationCh
 static NSString *const kDataProtectedMigrationCheckPerformedKey =
                                                       @"GID_DataProtectedMigrationCheckPerformed";
 
-
 // Keychain account used to store additional state in SDKs previous to v5, including GPPSignIn.
 static NSString *const kOldKeychainAccount = @"GooglePlus";
 
@@ -97,7 +96,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   if ([defaults boolForKey:kDataProtectedMigrationCheckPerformedKey]) {
     return;
   }
-  // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
+
   GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
   NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
   GTMKeychainStore *keychainStoreLegacy =
