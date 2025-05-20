@@ -18,7 +18,7 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
 
 @import GTMAppAuth;
 
@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
   id _mockGTMOAuth2Compatibility;
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
   id _realLegacyGTMKeychainStore;
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
 }
 
 - (void)setUp {
@@ -243,7 +243,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   XCTAssertNotNil(authorization);
 }
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
 
 - (void)testMigrateIfNeeded_HasPreviousMigration {
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
@@ -253,7 +253,7 @@ NS_ASSUME_NONNULL_BEGIN
 #else
   [[[_mockUserDefaults expect] andReturnValue:@YES] boolForKey:kGTMAppAuthMigrationCheckPerformedKey];
   [[_mockUserDefaults reject] setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
-#endif
+#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
