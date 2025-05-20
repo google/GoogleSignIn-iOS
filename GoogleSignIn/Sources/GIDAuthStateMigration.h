@@ -27,8 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates an instance of this migration type with the keychain storage wrapper it will use.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore NS_DESIGNATED_INITIALIZER;
 
-/// Perform a one-time migration for auth state saved by GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the
-/// GTMAppAuth storage introduced in GIDSignIn 5.0.
+/// Perform necessary migrations from legacy auth state storage to most recent GTMAppAuth version.
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
                        keychainName:(NSString *)keychainName
