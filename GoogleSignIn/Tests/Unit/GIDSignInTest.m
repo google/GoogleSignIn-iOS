@@ -40,6 +40,7 @@
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import "GoogleSignIn/Tests/Unit/GIDFakeAuthStateMigration.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
@@ -221,6 +222,9 @@ static NSString *const kNewScope = @"newScope";
   // Whether callback block has been called.
   BOOL _completionCalled;
 
+  // Fake for GIDAuthStateMigration
+  GIDFakeAuthStateMigration *_authStateMigrationService;
+
   // Fake fetcher service to emulate network requests.
   GIDFakeFetcherService *_fetcherService;
 
@@ -331,6 +335,7 @@ static NSString *const kNewScope = @"newScope";
       callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
+  _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
   _fetcherService = [[GIDFakeFetcherService alloc] init];
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
   [_fakeMainBundle startFakingWithClientID:kClientId];
