@@ -33,10 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
-                       keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall {
   if (_migrationInvokedCallback) {
-    _migrationInvokedCallback(tokenURL, callbackPath, keychainName, isFreshInstall);
+    _migrationInvokedCallback(tokenURL, callbackPath, isFreshInstall);
   }
   return;
 }

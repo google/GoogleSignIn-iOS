@@ -498,16 +498,14 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testInitWithKeychainStore_attemptsMigration {
-  NSString *expectedKeychainName = @"foo";
-
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
   _authStateMigrationService.migrationInvokedCallback =
-  ^(NSURL *tokenURL, NSString *callbackPath, NSString *keychainName, BOOL isFreshInstall) {
+  ^(NSURL *tokenURL, NSString *callbackPath, BOOL isFreshInstall) {
     XCTAssertFalse(isFreshInstall);
     [expectation fulfill];
   };
 
-  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:expectedKeychainName];
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:kKeychainName];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                           authStateMigrationService:_authStateMigrationService];
