@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 
 /// A fake |GIDAuthStateMigration| for testing.
 @interface GIDFakeAuthStateMigration : GIDAuthStateMigration
+
+/// Callback that is called when `migrateIfNeededWithTokenURL` is invoked.
+@property (nonatomic, nullable) void (^migrationInvokedCallback)
+  (NSURL * _Nullable tokenURL, NSString * _Nullable callbackPath, NSString * _Nullable keychainName,
+   BOOL isFreshInstall);
 
 @end
