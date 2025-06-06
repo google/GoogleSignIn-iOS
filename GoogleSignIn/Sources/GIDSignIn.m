@@ -186,8 +186,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // Flag indicating developer's intent to use App Check.
   BOOL _configureAppCheckCalled;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  // Service for performing auth state migrations.
-  GIDAuthStateMigration *_authStateMigrationService;
 }
 
 #pragma mark - Public methods
