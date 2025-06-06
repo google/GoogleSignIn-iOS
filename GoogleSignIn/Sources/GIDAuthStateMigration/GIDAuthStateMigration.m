@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+<<<<<<< HEAD
 #import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+=======
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
+>>>>>>> 43b6160 (update fake and create test)
 
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
@@ -107,10 +111,13 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
+<<<<<<< HEAD
     // If we're unable to save to the keychain, return without marking migration performed.
     if (err) {
       return;
     };
+=======
+>>>>>>> 43b6160 (update fake and create test)
     [keychainStoreLegacy removeAuthSessionWithError:nil];
   }
 
@@ -138,10 +145,13 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
+<<<<<<< HEAD
     // If we're unable to save to the keychain, return without marking migration performed.
     if (err) {
       return;
     };
+=======
+>>>>>>> 43b6160 (update fake and create test)
   }
 
   // Mark the migration check as having been performed.
