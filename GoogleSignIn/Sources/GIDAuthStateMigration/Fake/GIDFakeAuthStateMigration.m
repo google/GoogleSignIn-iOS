@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import "GoogleSignIn/Tests/Unit/GIDFakeAuthStateMigration.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Fake/GIDFakeAuthStateMigration.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDFakeAuthStateMigration
+
+@synthesize migrationInvokedCallback = _migrationInvokedCallback;
 
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
   self = [super initWithKeychainStore:keychainStore];
@@ -33,6 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
                        callbackPath:(NSString *)callbackPath
                        keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall {
+  if (_migrationInvokedCallback) {
+    _migrationInvokedCallback(tokenURL, callbackPath, keychainName, isFreshInstall);
+  }
   return;
 }
 

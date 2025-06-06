@@ -14,7 +14,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
