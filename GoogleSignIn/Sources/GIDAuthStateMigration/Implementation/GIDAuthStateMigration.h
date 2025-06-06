@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import "GoogleSignIn/Tests/Unit/GIDFakeAuthStateMigration.h"
 
+#import <Foundation/Foundation.h>
+
+@class GTMKeychainStore;
+@class GTMAuthSession;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation GIDFakeAuthStateMigration
+/// A class providing migration support for auth state saved by older versions of the SDK.
+@interface GIDAuthStateMigration : NSObject
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
-  return [self init];
-}
+/// Creates an instance of this migration type with the keychain storage wrapper it will use.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)init {
-  self = [super init];
-  return self;
-}
-
+/// Perform necessary migrations from legacy auth state storage to most recent GTMAppAuth version.
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
                        keychainName:(NSString *)keychainName
-                     isFreshInstall:(BOOL)isFreshInstall {
-  return;
-}
+                     isFreshInstall:(BOOL)isFreshInstall;
 
 @end
 
