@@ -184,7 +184,7 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertNotNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
 }
 
-#else
+#elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)testMigrateIfNeeded_NoPreviousMigration_GTMAppAuthMigration {
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
   [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kGTMAppAuthMigrationCheckPerformedKey];
@@ -249,7 +249,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX
   [[[_mockUserDefaults expect] andReturnValue:@YES] boolForKey:kDataProtectedMigrationCheckPerformedKey];
   [[_mockUserDefaults reject] setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
-#else
+#elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [[[_mockUserDefaults expect] andReturnValue:@YES] boolForKey:kGTMAppAuthMigrationCheckPerformedKey];
   [[_mockUserDefaults reject] setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
 #endif // TARGET_OS_OSX
@@ -266,7 +266,7 @@ NS_ASSUME_NONNULL_BEGIN
   [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
 #if TARGET_OS_OSX
   [[_mockUserDefaults expect] setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
-#else
+#elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [[_mockUserDefaults expect] setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
 #endif // TARGET_OS_OSX
 
