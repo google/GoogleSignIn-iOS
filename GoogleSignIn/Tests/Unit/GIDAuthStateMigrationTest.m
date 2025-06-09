@@ -181,7 +181,7 @@ NS_ASSUME_NONNULL_BEGIN
                             callbackPath:kCallbackPath
                             keychainName:kKeychainName
                           isFreshInstall:NO];
-  XCTAssertNotNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
+  XCTAssertNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
 }
 
 #else
