@@ -222,7 +222,7 @@ static NSString *const kNewScope = @"newScope";
   // Whether callback block has been called.
   BOOL _completionCalled;
 
-  // Fake for GIDAuthStateMigration
+  // Fake for |GIDAuthStateMigration|.
   GIDFakeAuthStateMigration *_authStateMigrationService;
 
   // Fake fetcher service to emulate network requests.
@@ -509,7 +509,7 @@ static NSString *const kNewScope = @"newScope";
 
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:expectedKeychainName];
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                                     authStateMigrationService:_authStateMigrationService];
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
