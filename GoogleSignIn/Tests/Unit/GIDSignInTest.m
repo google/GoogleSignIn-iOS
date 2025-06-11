@@ -222,7 +222,7 @@ static NSString *const kNewScope = @"newScope";
   // Whether callback block has been called.
   BOOL _completionCalled;
 
-  // Fake for GIDAuthStateMigration
+  // Fake for |GIDAuthStateMigration|.
   GIDFakeAuthStateMigration *_authStateMigrationService;
 
   // Fake fetcher service to emulate network requests.
@@ -500,16 +500,14 @@ static NSString *const kNewScope = @"newScope";
 - (void)testInitWithKeychainStore_attemptsMigration {
   XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
   _authStateMigrationService.migrationInvokedCallback =
-  ^(NSURL *tokenURL, NSString *callbackPath, BOOL isFreshInstall) {
-    XCTAssertFalse(isFreshInstall);
-    [expectation fulfill];
-  };
+    ^(NSURL *tokenURL, NSString *callbackPath, BOOL isFreshInstall) {
+      XCTAssertFalse(isFreshInstall);
+      [expectation fulfill];
+    };
 
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:kKeychainName];
-  GIDSignIn *signIn;
-  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
-
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                     authStateMigrationService:_authStateMigrationService];
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 

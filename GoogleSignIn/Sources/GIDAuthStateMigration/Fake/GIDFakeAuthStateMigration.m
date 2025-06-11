@@ -27,10 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
   return self;
 }
 
-- (instancetype)init {
-  return self;
-}
-
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
                      isFreshInstall:(BOOL)isFreshInstall {

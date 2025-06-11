@@ -105,10 +105,6 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
-    // If we're unable to save to the keychain, return without marking migration performed.
-    if (err) {
-      return;
-    };
     [keychainStoreLegacy removeAuthSessionWithError:nil];
   }
 
@@ -135,10 +131,6 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
-    // If we're unable to save to the keychain, return without marking migration performed.
-    if (err) {
-      return;
-    };
   }
 
   // Mark the migration check as having been performed.

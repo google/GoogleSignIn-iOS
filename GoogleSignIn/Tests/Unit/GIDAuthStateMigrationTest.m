@@ -179,7 +179,7 @@ NS_ASSUME_NONNULL_BEGIN
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
                           isFreshInstall:NO];
-  XCTAssertNotNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
+  XCTAssertNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
 }
 
 #else

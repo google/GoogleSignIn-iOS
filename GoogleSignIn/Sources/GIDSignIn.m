@@ -491,7 +491,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     GTMKeychainStore *keychainStore =
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
     GIDAuthStateMigration *authStateMigrationService =
-          [[GIDAuthStateMigration alloc] initWithKeychainStore:keychainStore];
+        [[GIDAuthStateMigration alloc] initWithKeychainStore:keychainStore];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 14.0, *)) {
       GIDAppCheck *appCheck = [GIDAppCheck appCheckUsingAppAttestProvider];
@@ -501,7 +501,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (!sharedInstance) {
-      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore                                        authStateMigrationService:authStateMigrationService];
+      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
+                                 authStateMigrationService:authStateMigrationService];
     }
   });
   return sharedInstance;
@@ -566,8 +567,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     _keychainStore = keychainStore;
     // Perform migration of auth state from old versions of the SDK if needed.
     [authStateMigrationService migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
-                              callbackPath:kBrowserCallbackPath
-                            isFreshInstall:isFreshInstall];
+                                              callbackPath:kBrowserCallbackPath
+                                            isFreshInstall:isFreshInstall];
   }
   return self;
 }
@@ -576,7 +577,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *) authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck {
-  self = [self initWithKeychainStore:keychainStore authStateMigrationService:authStateMigrationService];
+  self = [self initWithKeychainStore:keychainStore
+           authStateMigrationService:authStateMigrationService];
   if (self) {
     _appCheck = appCheck;
     _configureAppCheckCalled = NO;
