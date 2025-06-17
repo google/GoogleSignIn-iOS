@@ -508,6 +508,8 @@ static NSString *const kNewScope = @"newScope";
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:kKeychainName];
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                                      authStateMigrationService:_authStateMigrationService];
+
+  XCTAssertNotNil(signIn.configuration);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
