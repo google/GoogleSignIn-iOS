@@ -511,6 +511,7 @@ static NSString *const kNewScope = @"newScope";
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                                      authStateMigrationService:_authStateMigrationService];
 
+  XCTAssertNotNil(signIn.configuration);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
