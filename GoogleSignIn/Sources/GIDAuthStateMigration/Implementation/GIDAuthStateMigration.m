@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
-
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 @import GTMAppAuth;
@@ -65,30 +64,28 @@ static NSString *const kFingerprintService = @"fingerprint";
 
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
-                       keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall {
   // If this is a fresh install, take no action and mark the migration checks as having been
   // performed.
   if (isFreshInstall) {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#if TARGET_OS_OSX
     [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
-#elif TARGET_OS_IOS
+#elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     [defaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_OSX
     return;
   }
 
-#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#if TARGET_OS_OSX
   [self performDataProtectedMigrationIfNeeded];
-#elif TARGET_OS_IOS
+#elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [self performGIDMigrationIfNeededWithTokenURL:tokenURL
-                                   callbackPath:callbackPath
-                                   keychainName:keychainName];
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+                                   callbackPath:callbackPath];
+#endif // TARGET_OS_OSX
 }
 
-#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#if TARGET_OS_OSX
 // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
 - (void)performDataProtectedMigrationIfNeeded {
   // See if we've performed the migration check previously.
@@ -107,10 +104,6 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
-    // If we're unable to save to the keychain, return without marking migration performed.
-    if (err) {
-      return;
-    };
     [keychainStoreLegacy removeAuthSessionWithError:nil];
   }
 
@@ -118,12 +111,11 @@ static NSString *const kFingerprintService = @"fingerprint";
   [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
 }
 
-#elif TARGET_OS_IOS
+#elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 // Migrate from GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the GTMAppAuth storage introduced in
 // GIDSignIn 5.0.
 - (void)performGIDMigrationIfNeededWithTokenURL:(NSURL *)tokenURL
-                                   callbackPath:(NSString *)callbackPath
-                                   keychainName:(NSString *)keychainName {
+                                   callbackPath:(NSString *)callbackPath {
   // See if we've performed the migration check previously.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   if ([defaults boolForKey:kGTMAppAuthMigrationCheckPerformedKey]) {
@@ -138,10 +130,6 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
-    // If we're unable to save to the keychain, return without marking migration performed.
-    if (err) {
-      return;
-    };
   }
 
   // Mark the migration check as having been performed.
@@ -246,7 +234,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   NSString *password = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
   return password;
 }
-#endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#endif // TARGET_OS_OSX
 
 @end
 
