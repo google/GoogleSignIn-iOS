@@ -21,7 +21,6 @@
 
 /// Callback that is called when `migrateIfNeededWithTokenURL` is invoked.
 @property (nonatomic, nullable) void (^migrationInvokedCallback)
-  (NSURL * _Nullable tokenURL, NSString * _Nullable callbackPath, NSString * _Nullable keychainName,
-   BOOL isFreshInstall);
+  (NSURL * _Nullable tokenURL, NSString * _Nullable callbackPath, BOOL isFreshInstall);
 
 @end

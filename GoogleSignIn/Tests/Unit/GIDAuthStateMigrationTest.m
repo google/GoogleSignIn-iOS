@@ -154,7 +154,6 @@ NS_ASSUME_NONNULL_BEGIN
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
-                            keychainName:kKeychainName
                           isFreshInstall:NO];
 
   // verify that the auth session was removed during migration
@@ -179,7 +178,6 @@ NS_ASSUME_NONNULL_BEGIN
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
-                            keychainName:kKeychainName
                           isFreshInstall:NO];
   XCTAssertNil([_realLegacyGTMKeychainStore retrieveAuthSessionWithError:nil]);
 }
@@ -198,7 +196,6 @@ NS_ASSUME_NONNULL_BEGIN
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
-                            keychainName:kKeychainName
                           isFreshInstall:NO];
 }
 
@@ -215,7 +212,6 @@ NS_ASSUME_NONNULL_BEGIN
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
-                            keychainName:kKeychainName
                           isFreshInstall:NO];
 }
 
@@ -258,7 +254,6 @@ NS_ASSUME_NONNULL_BEGIN
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
-                            keychainName:kKeychainName
                           isFreshInstall:NO];
 }
 
@@ -274,7 +269,6 @@ NS_ASSUME_NONNULL_BEGIN
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
                             callbackPath:kCallbackPath
-                            keychainName:kKeychainName
                           isFreshInstall:YES];
 }
 

@@ -568,7 +568,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // Perform migration of auth state from old versions of the SDK if needed.
     [authStateMigrationService migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
                                               callbackPath:kBrowserCallbackPath
-                                              keychainName:kGTMAppAuthKeychainName
                                             isFreshInstall:isFreshInstall];
   }
   return self;

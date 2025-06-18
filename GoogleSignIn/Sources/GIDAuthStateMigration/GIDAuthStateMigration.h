@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// Perform necessary migrations from legacy auth state storage to most recent GTMAppAuth version.
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
-                       keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall;
 
 @end

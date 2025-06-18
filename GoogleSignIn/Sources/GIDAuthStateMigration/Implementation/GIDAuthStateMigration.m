@@ -64,7 +64,6 @@ static NSString *const kFingerprintService = @"fingerprint";
 
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
-                       keychainName:(NSString *)keychainName
                      isFreshInstall:(BOOL)isFreshInstall {
   // If this is a fresh install, take no action and mark the migration checks as having been
   // performed.
@@ -82,8 +81,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   [self performDataProtectedMigrationIfNeeded];
 #elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [self performGIDMigrationIfNeededWithTokenURL:tokenURL
-                                   callbackPath:callbackPath
-                                   keychainName:keychainName];
+                                   callbackPath:callbackPath];
 #endif // TARGET_OS_OSX
 }
 
@@ -117,8 +115,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 // Migrate from GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the GTMAppAuth storage introduced in
 // GIDSignIn 5.0.
 - (void)performGIDMigrationIfNeededWithTokenURL:(NSURL *)tokenURL
-                                   callbackPath:(NSString *)callbackPath
-                                   keychainName:(NSString *)keychainName {
+                                   callbackPath:(NSString *)callbackPath {
   // See if we've performed the migration check previously.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   if ([defaults boolForKey:kGTMAppAuthMigrationCheckPerformedKey]) {
