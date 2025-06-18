@@ -21,7 +21,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDProfileData.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
-#import "GoogleSignIn/Sources/GIDAuthStateMigration.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -490,15 +490,19 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   dispatch_once(&once, ^{
     GTMKeychainStore *keychainStore =
         [[GTMKeychainStore alloc] initWithItemName:kGTMAppAuthKeychainName];
+    GIDAuthStateMigration *authStateMigrationService =
+        [[GIDAuthStateMigration alloc] initWithKeychainStore:keychainStore];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 14.0, *)) {
       GIDAppCheck *appCheck = [GIDAppCheck appCheckUsingAppAttestProvider];
       sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
+                                 authStateMigrationService:authStateMigrationService
                                                   appCheck:appCheck];
     }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (!sharedInstance) {
-      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore];
+      sharedInstance = [[self alloc] initWithKeychainStore:keychainStore
+                                 authStateMigrationService:authStateMigrationService];
     }
   });
   return sharedInstance;
@@ -533,7 +537,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Private methods
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -561,20 +566,20 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                              tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
     _keychainStore = keychainStore;
     // Perform migration of auth state from old versions of the SDK if needed.
-    GIDAuthStateMigration *migration =
-        [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore];
-    [migration migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
-                              callbackPath:kBrowserCallbackPath
-                              keychainName:kGTMAppAuthKeychainName
-                            isFreshInstall:isFreshInstall];
+    [authStateMigrationService migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
+                                              callbackPath:kBrowserCallbackPath
+                                              keychainName:kGTMAppAuthKeychainName
+                                            isFreshInstall:isFreshInstall];
   }
   return self;
 }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck {
-  self = [self initWithKeychainStore:keychainStore];
+  self = [self initWithKeychainStore:keychainStore
+           authStateMigrationService:authStateMigrationService];
   if (self) {
     _appCheck = appCheck;
     _configureAppCheckCalled = NO;

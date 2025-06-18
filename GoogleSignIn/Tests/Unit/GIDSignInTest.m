@@ -40,6 +40,7 @@
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Fake/GIDFakeAuthStateMigration.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
@@ -221,6 +222,9 @@ static NSString *const kNewScope = @"newScope";
   // Whether callback block has been called.
   BOOL _completionCalled;
 
+  // Fake for |GIDAuthStateMigration|.
+  GIDFakeAuthStateMigration *_authStateMigrationService;
+
   // Fake fetcher service to emulate network requests.
   GIDFakeFetcherService *_fetcherService;
 
@@ -331,6 +335,7 @@ static NSString *const kNewScope = @"newScope";
       callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
+  _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
   _fetcherService = [[GIDFakeFetcherService alloc] init];
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
   [_fakeMainBundle startFakingWithClientID:kClientId];
@@ -339,7 +344,8 @@ static NSString *const kNewScope = @"newScope";
   // Object under test
   [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                           authStateMigrationService:_authStateMigrationService];
   _hint = nil;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -398,6 +404,7 @@ static NSString *const kNewScope = @"newScope";
                                                              userDefaults:_testUserDefaults];
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                       authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck];
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
@@ -421,6 +428,7 @@ static NSString *const kNewScope = @"newScope";
                                          userDefaults:_testUserDefaults];
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                       authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck];
 
     // Should fail if missing both token and error
@@ -439,7 +447,8 @@ static NSString *const kNewScope = @"newScope";
 - (void)testInitWithKeychainStore {
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
-  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -454,7 +463,8 @@ static NSString *const kNewScope = @"newScope";
                         openIDRealm:nil];
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
-  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -466,7 +476,8 @@ static NSString *const kNewScope = @"newScope";
 
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
-  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -481,8 +492,27 @@ static NSString *const kNewScope = @"newScope";
                         openIDRealm:nil];
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
-  signIn = [[GIDSignIn alloc] initWithKeychainStore:store];
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNil(signIn.configuration);
+}
+
+- (void)testInitWithKeychainStore_attemptsMigration {
+  NSString *expectedKeychainName = @"foo";
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
+  _authStateMigrationService.migrationInvokedCallback =
+    ^(NSURL *tokenURL, NSString *callbackPath, NSString *keychainName, BOOL isFreshInstall) {
+      XCTAssertFalse(isFreshInstall);
+      [expectation fulfill];
+    };
+
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:expectedKeychainName];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                     authStateMigrationService:_authStateMigrationService];
+
+  XCTAssertNotNil(signIn.configuration);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
