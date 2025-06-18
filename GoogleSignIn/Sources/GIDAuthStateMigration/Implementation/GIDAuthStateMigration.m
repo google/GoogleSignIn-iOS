@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
-
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 @import GTMAppAuth;
