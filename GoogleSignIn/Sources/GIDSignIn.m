@@ -186,8 +186,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // Flag indicating developer's intent to use App Check.
   BOOL _configureAppCheckCalled;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  // Service for performing auth state migrations.
-  GIDAuthStateMigration *_authStateMigrationService;
 }
 
 #pragma mark - Public methods
@@ -540,7 +538,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - Private methods
 
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-            authStateMigrationService:(GIDAuthStateMigration *) authStateMigrationService {
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService {
   self = [super init];
   if (self) {
     // Get the bundle of the current executable.
@@ -578,7 +576,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
-            authStateMigrationService:(GIDAuthStateMigration *) authStateMigrationService
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck {
   self = [self initWithKeychainStore:keychainStore
            authStateMigrationService:authStateMigrationService];
