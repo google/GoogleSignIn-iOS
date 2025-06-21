@@ -31,6 +31,9 @@ static NSString *const kWideButtonText = @"Sign in with Google";
 
 + (nullable NSString *)localizedStringForKey:(NSString *)key text:(NSString *)text {
   NSBundle *frameworkBundle = [NSBundle gid_frameworkBundle];
+  if (frameworkBundle == nil) {
+    return text;
+  }
   return [frameworkBundle localizedStringForKey:key value:text table:kStringsTableName];
 }
 
