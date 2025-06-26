@@ -2,6 +2,7 @@
 - Allow providing a custom `nonce` via GSI to AppAuth ([#402](https://github.com/google/GoogleSignIn-iOS/pull/402), [#476](https://github.com/google/GoogleSignIn-iOS/pull/476))
 - Fix invalid error code in `GIDSignIn` ([#472](https://github.com/google/GoogleSignIn-iOS/pull/472))
 - Add support for GTMAppAuth 5 on macOS ([#522](https://github.com/google/GoogleSignIn-iOS/pull/522))
+- Fix Data Protected migration bugs ([#533](https://github.com/google/GoogleSignIn-iOS/pull/533))
 - Internal
   - Add AppAuthCore as explicit dependency ([#470](https://github.com/google/GoogleSignIn-iOS/pull/470))
   - Update iPhone simulator from 14 to 15 ([#494](https://github.com/google/GoogleSignIn-iOS/pull/494))
@@ -11,6 +12,7 @@
   - Update AppAuth and GTMAppAuth dependencies ([#517](https://github.com/google/GoogleSignIn-iOS/pull/517), [#521](https://github.com/google/GoogleSignIn-iOS/pull/521))
   - Fix Swift integration tests for a returning user ([#518](https://github.com/google/GoogleSignIn-iOS/pull/518))
   - Update `.gitignore` to include .build and Package.resolved ([#520](https://github.com/google/GoogleSignIn-iOS/pull/520))
+  - Update GIDSignInTest to correctly setUp and tearDown NSUserDefaults ([#527](https://github.com/google/GoogleSignIn-iOS/pull/527))
 
 # 8.0.0
 - General release adding Firebase App Check support to establish your
