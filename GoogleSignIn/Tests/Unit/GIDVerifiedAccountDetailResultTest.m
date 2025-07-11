@@ -52,10 +52,7 @@
   XCTAssertEqual(result.refreshToken.tokenString, authState.lastTokenResponse.refreshToken);
 }
 
-- (void)testRefreshTokensWithCompletion_GIDAccountDetailTypeUnknown {
-  GIDVerifiableAccountDetail *verifiedAccountDetail =
-      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
-
+- (void)testRefreshTokensWithCompletion_randomScope {
   NSString *kAccountDetailList = [NSString stringWithFormat:@"some_scope"];
   OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:kAccountDetailList];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
@@ -63,12 +60,6 @@
       [[GIDVerifiedAccountDetailHandlingFake alloc] initWithTokenResponse:authState.lastTokenResponse
                                                         verifiedAuthState:authState
                                                                     error:nil];
-
-  NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
-      @[verifiedAccountDetail];
-  GIDVerifiedAccountDetailResult *expectedResult =
-      [[GIDVerifiedAccountDetailResult alloc] initWithAccountDetails:expectedVerifiedList
-                                                           authState:authState];
 
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Refreshed verified account details completion called"];
