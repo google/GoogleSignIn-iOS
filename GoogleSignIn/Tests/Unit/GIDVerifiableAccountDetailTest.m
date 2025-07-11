@@ -23,20 +23,23 @@
 @implementation GIDVerifiableAccountDetailTests
 
 - (void)testDesignatedInitializer {
-  GIDVerifiableAccountDetail *detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+  GIDVerifiableAccountDetail *detail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
   XCTAssertNotNil(detail);
-  XCTAssertEqual(detail.accountDetailType, GIDAccountDetailTypeAgeOver18);
+  XCTAssertEqual(detail.accountDetailType, GIDAccountDetailTypeUnknown);
 }
 
 - (void)testScopeRetrieval {
-  GIDVerifiableAccountDetail *detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+  GIDVerifiableAccountDetail *detail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
   NSString *retrievedScope = [detail scope];
-  XCTAssertEqualObjects(retrievedScope, kAccountDetailTypeAgeOver18Scope);
+  XCTAssertNil(retrievedScope);
 }
 
 - (void)testScopeRetrieval_MissingScope {
   NSInteger missingScope = 5;
-  GIDVerifiableAccountDetail *detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:missingScope];
+  GIDVerifiableAccountDetail *detail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:missingScope];
   NSString *retrievedScope = [detail scope];
   XCTAssertNil(retrievedScope);
 }

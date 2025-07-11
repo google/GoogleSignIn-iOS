@@ -40,8 +40,9 @@ static NSString * const kOpenIDRealm = @"FakeRealm";
                                                                   hostedDomain:nil
                                                                    openIDRealm:kOpenIDRealm];
   UIViewController *presentingViewController = [[UIViewController alloc] init];
-  GIDVerifiableAccountDetail *ageOver18Detail = [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
-  NSArray<GIDVerifiableAccountDetail *> *accountDetailsToVerify = @[ageOver18Detail];
+  GIDVerifiableAccountDetail *testAccountDetail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
+  NSArray<GIDVerifiableAccountDetail *> *accountDetailsToVerify = @[testAccountDetail];
   NSString *loginHint = @"login_hint";
   
   GIDSignInInternalOptions *options =

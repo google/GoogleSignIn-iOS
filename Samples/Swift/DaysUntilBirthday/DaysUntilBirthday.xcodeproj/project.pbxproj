@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		641495132C405D0200C9A613 /* VerifiedAgeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495122C405D0200C9A613 /* VerifiedAgeViewModel.swift */; };
-		641495152C405E1400C9A613 /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495142C405E1400C9A613 /* VerificationView.swift */; };
-		641495172C405E3600C9A613 /* VerificationLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641495162C405E3600C9A613 /* VerificationLoader.swift */; };
-		6499D22A2C4B2F4200825B30 /* Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6499D2292C4B2F4200825B30 /* Verification.swift */; };
-		6499D22C2C4B3B1500825B30 /* AgeVerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6499D22B2C4B3B1500825B30 /* AgeVerificationView.swift */; };
 		7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		7345AD052703D9470020AFB1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD042703D9470020AFB1 /* ContentView.swift */; };
 		7345AD072703D9480020AFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
@@ -58,11 +53,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		641495122C405D0200C9A613 /* VerifiedAgeViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiedAgeViewModel.swift; sourceTree = "<group>"; };
-		641495142C405E1400C9A613 /* VerificationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
-		641495162C405E3600C9A613 /* VerificationLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerificationLoader.swift; sourceTree = "<group>"; };
-		6499D2292C4B2F4200825B30 /* Verification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Verification.swift; sourceTree = "<group>"; };
-		6499D22B2C4B3B1500825B30 /* AgeVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgeVerificationView.swift; sourceTree = "<group>"; };
 		7345ACFF2703D9470020AFB1 /* DaysUntilBirthday (iOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday (iOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysUntilBirthday.swift; sourceTree = "<group>"; };
 		7345AD042703D9470020AFB1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -213,9 +203,7 @@
 			children = (
 				7345AD042703D9470020AFB1 /* ContentView.swift */,
 				739FCC45270E467600C92042 /* BirthdayView.swift */,
-				6499D22B2C4B3B1500825B30 /* AgeVerificationView.swift */,
 				7345AD112703D9C30020AFB1 /* SignInView.swift */,
-				641495142C405E1400C9A613 /* VerificationView.swift */,
 				7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */,
 			);
 			path = Views;
@@ -225,7 +213,6 @@
 			isa = PBXGroup;
 			children = (
 				739FCC47270E659A00C92042 /* Birthday.swift */,
-				6499D2292C4B2F4200825B30 /* Verification.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -234,7 +221,6 @@
 			isa = PBXGroup;
 			children = (
 				7345AD162703D9C30020AFB1 /* AuthenticationViewModel.swift */,
-				641495122C405D0200C9A613 /* VerifiedAgeViewModel.swift */,
 				736F49BB270E102C00580053 /* BirthdayViewModel.swift */,
 			);
 			path = ViewModels;
@@ -245,7 +231,6 @@
 			children = (
 				7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */,
 				736F49B9270E05E200580053 /* BirthdayLoader.swift */,
-				641495162C405E3600C9A613 /* VerificationLoader.swift */,
 				7345AD192703D9C30020AFB1 /* UserProfileImageLoader.swift */,
 			);
 			path = Services;
@@ -389,9 +374,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6499D22A2C4B2F4200825B30 /* Verification.swift in Sources */,
 				739FCC48270E659A00C92042 /* Birthday.swift in Sources */,
-				6499D22C2C4B3B1500825B30 /* AgeVerificationView.swift in Sources */,
 				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
 				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
 				7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */,
@@ -400,12 +383,9 @@
 				736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */,
 				736F49BA270E05E200580053 /* BirthdayLoader.swift in Sources */,
 				7345AD242703D9C30020AFB1 /* UserProfileView.swift in Sources */,
-				641495172C405E3600C9A613 /* VerificationLoader.swift in Sources */,
 				7345AD202703D9C30020AFB1 /* AuthenticationViewModel.swift in Sources */,
-				641495132C405D0200C9A613 /* VerifiedAgeViewModel.swift in Sources */,
 				7345AD052703D9470020AFB1 /* ContentView.swift in Sources */,
 				7345AD032703D9470020AFB1 /* DaysUntilBirthday.swift in Sources */,
-				641495152C405E1400C9A613 /* VerificationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

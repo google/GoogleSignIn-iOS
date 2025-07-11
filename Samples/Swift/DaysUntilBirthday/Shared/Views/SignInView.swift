@@ -19,10 +19,6 @@ import GoogleSignInSwift
 
 struct SignInView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
-#if os(iOS)
-  @State var verificationflowInitiated = false
-  @StateObject var verifiedAgeViewModel = VerifiedAgeViewModel()
-#endif
   @ObservedObject var vm = GoogleSignInButtonViewModel()
 
   var body: some View {
@@ -71,38 +67,6 @@ struct SignInView: View {
           #if os(iOS)
             .pickerStyle(.segmented)
           #endif
-        }
-      }
-      HStack {
-        VStack {
-#if os(iOS)
-          Text("Verify your Age")
-            .font(.title)
-              .fontWeight(.semibold)
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .padding()
-          Button(action: {
-            verifiedAgeViewModel.verifyUserAgeOver18()
-            verificationflowInitiated = true
-          }) {
-              Text("Verify")
-                .font(.headline)
-                .foregroundColor(.gray)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white)
-                .overlay(
-                  RoundedRectangle(cornerRadius: 2)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
-          }
-            .padding(.horizontal)
-          NavigationLink(isActive: $verificationflowInitiated) {
-            VerificationView(verifiedAgeViewModel: verifiedAgeViewModel)
-          } label: {
-            EmptyView()
-          }
-#endif
         }
       }
       Spacer()
