@@ -65,9 +65,9 @@ static NSString * const kFakeHostedDomain = @"fakehosteddomain.com";
 
   _verifyAccountDetail = [[GIDVerifyAccountDetail alloc] init];
 
-  GIDVerifiableAccountDetail *ageOver18Detail = 
-      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
-  _verifiableAccountDetails = @[ageOver18Detail];
+  GIDVerifiableAccountDetail *testAccountDetail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
+  _verifiableAccountDetails = @[testAccountDetail];
 
   _fakeMainBundle = [[GIDFakeMainBundle alloc] initWithClientID:kClientId
                                                  serverClientID:kServerClientId

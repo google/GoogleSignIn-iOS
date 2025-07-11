@@ -36,7 +36,7 @@
   OIDAuthState *authState = [OIDAuthState testInstance];
 
   GIDVerifiableAccountDetail *verifiedAccountDetail =
-      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
 
   NSArray<GIDVerifiableAccountDetail *> *verifiedList =
       @[verifiedAccountDetail, verifiedAccountDetail];
@@ -52,12 +52,11 @@
   XCTAssertEqual(result.refreshToken.tokenString, authState.lastTokenResponse.refreshToken);
 }
 
-- (void)testRefreshTokensWithCompletion_success {
-  GIDVerifiableAccountDetail *verifiedAccountDetail = 
-      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+- (void)testRefreshTokensWithCompletion_GIDAccountDetailTypeUnknown {
+  GIDVerifiableAccountDetail *verifiedAccountDetail =
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
 
-  NSString *kAccountDetailList = [NSString stringWithFormat:@"%@",
-                                  kAccountDetailTypeAgeOver18Scope];
+  NSString *kAccountDetailList = [NSString stringWithFormat:@"some_scope"];
   OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:kAccountDetailList];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
   GIDVerifiedAccountDetailHandlingFake *result =
@@ -77,7 +76,8 @@
                                       NSError * _Nullable error) {
     XCTAssertNil(error);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertTrue([refreshedResult isEqual:expectedResult]);
+    XCTAssertTrue([refreshedResult.verifiedAccountDetails count] == 0,
+                  @"verifiedAccountDetails should have a count of 0");
     [expectation fulfill];
   }];
 

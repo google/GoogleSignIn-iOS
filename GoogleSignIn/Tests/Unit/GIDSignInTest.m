@@ -1341,32 +1341,6 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
 }
 
-- (void)testValidScopesException {
-  NSString *requestedScope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
-  NSString *expectedException = 
-    [NSString stringWithFormat:@"The following scopes are not supported in the 'addScopes' flow. "
-                                "Please use the appropriate classes to handle these:\n%@ -> %@\n",
-                                requestedScope, NSStringFromClass([GIDVerifyAccountDetail class])];
-  BOOL threw = NO;
-  @try {
-    [_signIn addScopes:@[requestedScope]
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-      presentingViewController:_presentingViewController
-#elif TARGET_OS_OSX
-      presentingWindow:_presentingWindow
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            completion:_completion];
-  } @catch (NSException *exception) {
-    threw = YES;
-    XCTAssertEqualObjects(exception.description, expectedException);
-  } @finally {
-  }
-  XCTAssert(threw);
-
-  // TODO: Keep mocks from carrying forward to subsequent tests. (#410)
-  [_authState stopMocking];
-}
-
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Helpers

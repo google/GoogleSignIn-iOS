@@ -27,18 +27,16 @@
 
 - (void)testIsScopeRestricted {
   GIDRestrictedScopesRegistry *registry = [[GIDRestrictedScopesRegistry alloc] init];
-  BOOL isRestricted = [registry isScopeRestricted:kAccountDetailTypeAgeOver18Scope];
-  XCTAssertTrue(isRestricted);
+  BOOL isRestricted = [registry isScopeRestricted:@"some_scope"];
+  XCTAssertFalse(isRestricted);
 }
 
 - (void)testRestrictedScopesToClassMappingInSet {
   GIDRestrictedScopesRegistry *registry = [[GIDRestrictedScopesRegistry alloc] init];
-  NSSet<NSString *> *scopes = [NSSet setWithObjects:kAccountDetailTypeAgeOver18Scope, @"some_other_scope", nil];
+  NSSet<NSString *> *scopes = [NSSet setWithObjects:@"some_scope", @"some_other_scope", nil];
   NSDictionary<NSString *, Class> *mapping = [registry restrictedScopesToClassMappingInSet:scopes];
   
-  XCTAssertEqual(mapping.count, 1);
-  XCTAssertEqualObjects(mapping[kAccountDetailTypeAgeOver18Scope], [GIDVerifyAccountDetail class]);
-  XCTAssertNil(mapping[@"some_other_scope"]);
+  XCTAssertEqual(mapping.count, 0);
 }
 
 @end

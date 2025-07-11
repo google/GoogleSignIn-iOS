@@ -18,8 +18,6 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/auth/verified.age.over18.standard";
-
 @implementation GIDVerifiableAccountDetail
 
 - (instancetype)initWithAccountDetailType:(GIDAccountDetailType)accountDetailType {
@@ -31,12 +29,7 @@ NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/
 }
 
 - (nullable NSString *)scope {
-  switch (self.accountDetailType) {
-    case GIDAccountDetailTypeAgeOver18:
-      return kAccountDetailTypeAgeOver18Scope;
-    default:
-      return nil;
-  }
+  return nil;
 }
 
 - (BOOL)isEqual:(id)object {
@@ -51,9 +44,6 @@ NSString *const kAccountDetailTypeAgeOver18Scope = @"https://www.googleapis.com/
 }
 
 + (GIDAccountDetailType)detailTypeWithString:(NSString *)detailTypeString {
-  if ([detailTypeString isEqualToString:kAccountDetailTypeAgeOver18Scope]) {
-    return GIDAccountDetailTypeAgeOver18;
-  }
   return GIDAccountDetailTypeUnknown;
 }
 
