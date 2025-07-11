@@ -23,6 +23,8 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
     "Would you like to save this password to use with apps and websites?"
   private let signInDisclaimerHeaderText =
     "Sign in to Days Until Birthday"
+  private let returningUserSignInDisclaimerHeaderText =
+      "You’re signing back in to Days Until Birthday"
   private let accessHeaderText = "Days Until Birthday wants access to your Google Account"
   private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
   private let appTrustWarningText = "Make sure you trust Days Until Birthday"
@@ -191,7 +193,7 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    handleSignInDisclaimerIfNeeded()
+    handleReturningUserSignInDisclaimerIfNeeded()
     handleAccessRequestIfNeeded()
 
     return true
@@ -301,6 +303,18 @@ extension DaysUntilBirthdayUITests_iOS {
     if currentlyShowingSignInDisclaimer {
       sampleApp.buttons["Continue"].tap()
     }
+  }
+
+  func handleReturningUserSignInDisclaimerIfNeeded() {
+      let currentlyShowingReturningUserSignInDisclaimer =
+      sampleApp.staticTexts[returningUserSignInDisclaimerHeaderText]
+        .waitForExistence(timeout: timeout) &&
+      sampleApp.buttons["Continue"]
+        .waitForExistence(timeout: timeout)
+
+      if currentlyShowingReturningUserSignInDisclaimer {
+        sampleApp.buttons["Continue"].tap()
+      }
   }
 
   /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it.
