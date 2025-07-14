@@ -36,7 +36,7 @@
   OIDAuthState *authState = [OIDAuthState testInstance];
 
   GIDVerifiableAccountDetail *verifiedAccountDetail =
-      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
+      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeUnknown];
 
   NSArray<GIDVerifiableAccountDetail *> *verifiedList =
       @[verifiedAccountDetail, verifiedAccountDetail];
@@ -52,12 +52,8 @@
   XCTAssertEqual(result.refreshToken.tokenString, authState.lastTokenResponse.refreshToken);
 }
 
-- (void)testRefreshTokensWithCompletion_success {
-  GIDVerifiableAccountDetail *verifiedAccountDetail = 
-      [[GIDVerifiableAccountDetail alloc] initWithAccountDetailType:GIDAccountDetailTypeAgeOver18];
-
-  NSString *kAccountDetailList = [NSString stringWithFormat:@"%@",
-                                  kAccountDetailTypeAgeOver18Scope];
+- (void)testRefreshTokensWithCompletion_randomScope {
+  NSString *kAccountDetailList = [NSString stringWithFormat:@"some_scope"];
   OIDTokenResponse *tokenResponse = [OIDTokenResponse testInstanceWithScope:kAccountDetailList];
   OIDAuthState *authState = [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
   GIDVerifiedAccountDetailHandlingFake *result =
@@ -65,19 +61,14 @@
                                                         verifiedAuthState:authState
                                                                     error:nil];
 
-  NSArray<GIDVerifiableAccountDetail *> *expectedVerifiedList =
-      @[verifiedAccountDetail];
-  GIDVerifiedAccountDetailResult *expectedResult =
-      [[GIDVerifiedAccountDetailResult alloc] initWithAccountDetails:expectedVerifiedList
-                                                           authState:authState];
-
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Refreshed verified account details completion called"];
   [result refreshTokensWithCompletion:^(GIDVerifiedAccountDetailResult * _Nullable refreshedResult,
                                       NSError * _Nullable error) {
     XCTAssertNil(error);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertTrue([refreshedResult isEqual:expectedResult]);
+    XCTAssertEqual([refreshedResult.verifiedAccountDetails count], 0,
+                   @"verifiedAccountDetails should have a count of 0");
     [expectation fulfill];
   }];
 
@@ -103,8 +94,8 @@
     XCTAssertEqual(error, expectedError);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeUnknown);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertTrue([refreshedResult.verifiedAccountDetails count] == 0,
-                  @"verifiedAccountDetails should have a count of 0");
+    XCTAssertEqual([refreshedResult.verifiedAccountDetails count], 0,
+                   @"verifiedAccountDetails should have a count of 0");
     [expectation fulfill];
   }];
 

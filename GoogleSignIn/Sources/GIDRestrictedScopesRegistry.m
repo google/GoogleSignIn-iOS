@@ -24,10 +24,8 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _restrictedScopes = [NSSet setWithObjects:kAccountDetailTypeAgeOver18Scope, nil];
-    _scopeToClassMapping = @{
-      kAccountDetailTypeAgeOver18Scope: [GIDVerifyAccountDetail class],
-    };
+    _restrictedScopes = [NSSet set];
+    _scopeToClassMapping = @{};
   }
   return self;
 }

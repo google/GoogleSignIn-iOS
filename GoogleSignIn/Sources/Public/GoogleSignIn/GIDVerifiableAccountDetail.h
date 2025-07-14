@@ -26,12 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, GIDAccountDetailType) {
   /// Used when the account detail type is unspecified or cannot be matched.
   GIDAccountDetailTypeUnknown,
-  /// User account detail for age over 18.
-  GIDAccountDetailTypeAgeOver18,
 };
-
-/// String scope representing the account detail type for age over 18.
-extern NSString *const kAccountDetailTypeAgeOver18Scope;
 
 /// Helper object used to hold the enumeration representing a list of
 /// account details that Google can verify via GSI.
