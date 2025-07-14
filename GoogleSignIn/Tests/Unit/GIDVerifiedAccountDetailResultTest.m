@@ -67,8 +67,8 @@
                                       NSError * _Nullable error) {
     XCTAssertNil(error);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertTrue([refreshedResult.verifiedAccountDetails count] == 0,
-                  @"verifiedAccountDetails should have a count of 0");
+    XCTAssertEqual([refreshedResult.verifiedAccountDetails count], 0,
+                   @"verifiedAccountDetails should have a count of 0");
     [expectation fulfill];
   }];
 
@@ -94,8 +94,8 @@
     XCTAssertEqual(error, expectedError);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeUnknown);
     XCTAssertNotNil(refreshedResult);
-    XCTAssertTrue([refreshedResult.verifiedAccountDetails count] == 0,
-                  @"verifiedAccountDetails should have a count of 0");
+    XCTAssertEqual([refreshedResult.verifiedAccountDetails count], 0,
+                   @"verifiedAccountDetails should have a count of 0");
     [expectation fulfill];
   }];
 
