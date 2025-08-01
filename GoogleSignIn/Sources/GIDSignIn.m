@@ -541,6 +541,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService {
   self = [super init];
   if (self) {
+    _keychainStore = keychainStore;
+
     // Get the bundle of the current executable.
     NSBundle *bundle = NSBundle.mainBundle;
 
@@ -564,7 +566,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     _appAuthConfiguration = [[OIDServiceConfiguration alloc]
                              initWithAuthorizationEndpoint:[NSURL URLWithString:authorizationEnpointURL]
                              tokenEndpoint:[NSURL URLWithString:tokenEndpointURL]];
-    _keychainStore = keychainStore;
     // Perform migration of auth state from old versions of the SDK if needed.
     [authStateMigrationService migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
                                               callbackPath:kBrowserCallbackPath
