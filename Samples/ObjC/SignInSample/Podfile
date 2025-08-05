@@ -1,7 +1,0 @@
-platform :ios, '12.0'
-use_frameworks!
-
-target 'SampleForPod' do
-  pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
-  project 'SignInSampleForPod.xcodeproj'
-end
