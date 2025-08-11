@@ -29,7 +29,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
 
   /// Signs in the user based upon the selected account.'
   /// - note: Successful calls to this will set the `authViewModel`'s `state` property.
-  func signIn() {
+  @MainActor func signIn() {
 #if os(iOS)
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       print("There is no root view controller!")
@@ -98,7 +98,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// `addScopes(_:presenting:)` request.
   /// - note: Successful requests will update the `authViewModel.state` with a new current user that
   /// has the granted scope.
-  func addBirthdayReadScope(completion: @escaping () -> Void) {
+  @MainActor func addBirthdayReadScope(completion: @escaping () -> Void) {
     guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
       fatalError("No user signed in!")
     }
