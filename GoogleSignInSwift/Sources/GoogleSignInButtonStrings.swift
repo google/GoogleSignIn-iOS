@@ -23,7 +23,7 @@ import Foundation
 struct GoogleSignInButtonString {
   /// Button text used as both key in localized strings files and default value
   /// for the standard button.
-  private let standardButtonText = "🎹 COMPUTER LOVE 👾"
+  private let standardButtonText = "Sign in"
   /// Button text used as both key in localized strings files and default value
   /// for the wide button.
   private let wideButtonText = "Sign in with Google"
