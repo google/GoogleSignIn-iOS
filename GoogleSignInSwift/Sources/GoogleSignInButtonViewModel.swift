@@ -21,7 +21,7 @@ import Combine
 /// A view model for the SwiftUI sign-in button publishing changes for the
 /// button scheme, style, and state.
 @available(iOS 13.0, macOS 10.15, *)
-@MainActor public class GoogleSignInButtonViewModel: ObservableObject {
+public class GoogleSignInButtonViewModel: ObservableObject {
   @Published public var scheme: GoogleSignInButtonColorScheme
   @Published public var style: GoogleSignInButtonStyle
   @Published public var state: GoogleSignInButtonState
