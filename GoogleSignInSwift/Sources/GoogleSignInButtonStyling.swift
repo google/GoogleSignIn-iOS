@@ -257,7 +257,7 @@ extension GoogleSignInButtonStyle {
 // MARK: - Button Style
 
 @available(iOS 13.0, macOS 10.15, *)
-@preconcurrency struct SwiftUIButtonStyle: ButtonStyle {
+struct SwiftUIButtonStyle: ButtonStyle {
   let style: GoogleSignInButtonStyle
   let state: GoogleSignInButtonState
   let scheme: GoogleSignInButtonColorScheme
