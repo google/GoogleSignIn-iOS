@@ -130,5 +130,5 @@ let package = Package(
       path: "GoogleSignInSwift/Tests/Unit"
     )
   ],
-  swiftLanguageVersions: [.v5]
+  swiftLanguageVersions: [.version("6"), .v5]
 )
