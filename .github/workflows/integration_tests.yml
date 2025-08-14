@@ -64,7 +64,6 @@ jobs:
           build-for-testing \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4'
     - name: Run test target for Google Sign-in button for Swift
       env:
         EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
@@ -75,7 +74,6 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
 
@@ -99,7 +97,6 @@ jobs:
           build-for-testing \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15'
     - name: Run test target for App Check Example
       env:
         AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
@@ -110,6 +107,5 @@ jobs:
           test-without-building \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15' \
           AppCheckDebugToken=$AppCheckDebugToken \
           APP_CHECK_WEB_API_KEY=$APP_CHECK_WEB_API_KEY

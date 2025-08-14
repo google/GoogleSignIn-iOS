@@ -45,7 +45,7 @@ jobs:
           - sdk: 'macosx'
             destination: '"platform=OS X,arch=x86_64"'
           - sdk: 'iphonesimulator'
-            destination: '"platform=iOS Simulator,name=iPhone 15"'
+            destination: '"generic/platform=iOS Simulator"'
     steps:
     - uses: actions/checkout@v3
     - name: Build unit test target
