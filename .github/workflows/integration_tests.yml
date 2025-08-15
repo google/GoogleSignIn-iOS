@@ -47,7 +47,7 @@ jobs:
         fi
 
   swift-button-functional-test:
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: check-pr-body-for-key
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' && !github.event.pull_request.head.repo.fork }}
@@ -57,6 +57,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
     - name: Build test target for Google Sign-in button for Swift
       run: |
         xcodebuild \
