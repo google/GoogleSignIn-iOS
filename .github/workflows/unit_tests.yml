@@ -62,6 +62,5 @@ jobs:
         xcodebuild \
           -scheme GoogleSignIn-Package \
           -sdk ${{ matrix.sdk }} \
-          -destination ${{ matrix.destination }} \
           test-without-building
 
