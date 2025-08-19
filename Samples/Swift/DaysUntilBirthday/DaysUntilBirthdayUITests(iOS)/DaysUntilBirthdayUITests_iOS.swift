@@ -22,14 +22,14 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let passwordManagerPrompt =
     "Save Password?"
   private let signInDisclaimerHeaderText =
-    "Sign in to Days Until Birthday"
+    "Sign in to DaysUntilBirthday (iOS)"
   private let returningUserSignInDisclaimerHeaderText =
-    "You’re signing back in to Days Until Birthday"
-  private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
-  private let appTrustWarningText = "Make sure you trust Days Until Birthday"
+    "You’re signing back in to DaysUntilBirthday (iOS)"
+  private let additionalAccessHeaderText = "DaysUntilBirthday (iOS) wants additional access to your Google Account"
+  private let appTrustWarningText = "Make sure you trust DaysUntilBirthday (iOS)"
   private let chooseAnAccountHeaderText = "Choose an account"
   private let notNowText = "Not Now"
-  private let timeout: TimeInterval = 30
+  private let timeout: TimeInterval = 3//0
 
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
