@@ -29,7 +29,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let appTrustWarningText = "Make sure you trust DaysUntilBirthday (iOS)"
   private let chooseAnAccountHeaderText = "Choose an account"
   private let notNowText = "Not Now"
-  private let timeout: TimeInterval = 3//0
+  private let timeout: TimeInterval = 30
 
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
