@@ -554,11 +554,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // Check to see if the 3P app is being run for the first time after a fresh install.
     BOOL isFreshInstall = [self isFreshInstall];
 
-    // If this is a fresh install, ensure that any pre-existing keychain data is purged.
-    if (isFreshInstall) {
-      [self removeAllKeychainEntries];
-    }
-
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
                                          [GIDSignInPreferences googleAuthorizationServer]];
     NSString *tokenEndpointURL = [NSString stringWithFormat:kTokenURLTemplate,
