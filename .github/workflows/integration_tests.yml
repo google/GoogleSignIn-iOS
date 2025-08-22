@@ -47,7 +47,7 @@ jobs:
         fi
 
   swift-button-functional-test:
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: check-pr-body-for-key
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: ${{ needs.check-pr-body-for-key.outputs.RUN_INTEGRATION == 'yes' && !github.event.pull_request.head.repo.fork }}
@@ -57,6 +57,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
     - name: Build test target for Google Sign-in button for Swift
       run: |
         xcodebuild \
@@ -64,7 +66,6 @@ jobs:
           build-for-testing \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4'
     - name: Run test target for Google Sign-in button for Swift
       env:
         EMAIL_SECRET : ${{ secrets.EMAIL_SECRET }}
@@ -75,12 +76,12 @@ jobs:
           test-without-building \
           -scheme DaysUntilBirthday\ \(iOS\) \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
           EMAIL_SECRET=$EMAIL_SECRET \
           PASSWORD_SECRET=$PASSWORD_SECRET
 
   app-check-api-token-tests:
-    runs-on: macOS-13
+    runs-on: macos-15
     # Don't run if triggered by a PR from a fork since our Secrets won't be provided to the runner.
     if: "!github.event.pull_request.head.repo.fork"
     defaults:
@@ -89,9 +90,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Use Xcode 15.0.1
-      run: |
-        sudo xcode-select -s /Applications/Xcode_15.0.1.app
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
     - name: Build test target for App Check Example
       run: |
         xcodebuild \
@@ -99,7 +99,6 @@ jobs:
           build-for-testing \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15'
     - name: Run test target for App Check Example
       env:
         AppCheckDebugToken : ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
@@ -110,6 +109,6 @@ jobs:
           test-without-building \
           -scheme AppAttestExample \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
           AppCheckDebugToken=$AppCheckDebugToken \
           APP_CHECK_WEB_API_KEY=$APP_CHECK_WEB_API_KEY

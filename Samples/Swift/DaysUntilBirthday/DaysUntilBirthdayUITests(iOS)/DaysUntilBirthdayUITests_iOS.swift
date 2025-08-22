@@ -20,13 +20,13 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInStaticText =
     "“DaysUntilBirthday (iOS)” Wants to Use “google.com” to Sign In"
   private let passwordManagerPrompt =
-    "Would you like to save this password to use with apps and websites?"
+    "Save Password?"
   private let signInDisclaimerHeaderText =
-    "Sign in to Days Until Birthday"
+    "Sign in to DaysUntilBirthday (iOS)"
   private let returningUserSignInDisclaimerHeaderText =
-    "You’re signing back in to Days Until Birthday"
-  private let additionalAccessHeaderText = "Days Until Birthday wants additional access to your Google Account"
-  private let appTrustWarningText = "Make sure you trust Days Until Birthday"
+    "You’re signing back in to DaysUntilBirthday (iOS)"
+  private let additionalAccessHeaderText = "DaysUntilBirthday (iOS) wants additional access to your Google Account"
+  private let appTrustWarningText = "Make sure you trust DaysUntilBirthday (iOS)"
   private let chooseAnAccountHeaderText = "Choose an account"
   private let notNowText = "Not Now"
   private let timeout: TimeInterval = 30
@@ -177,6 +177,7 @@ extension DaysUntilBirthdayUITests_iOS {
     // Proceed through sign-in disclaimer and/or access request view(s) if needed
     handleSignInDisclaimerIfNeeded()
     handleAccessRequestIfNeeded()
+    handleReturningUserSignInDisclaimerIfNeeded()
 
     return true
   }
@@ -191,8 +192,9 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    handleReturningUserSignInDisclaimerIfNeeded()
+    handleSignInDisclaimerIfNeeded()
     handleAccessRequestIfNeeded()
+    handleReturningUserSignInDisclaimerIfNeeded()
 
     return true
   }

@@ -46,7 +46,7 @@ final class AuthenticationViewModel: ObservableObject {
   }
 
   /// Signs the user in.
-  func signIn() {
+  @MainActor func signIn() {
     authenticator.signIn()
   }
 
@@ -66,8 +66,8 @@ final class AuthenticationViewModel: ObservableObject {
 
   /// Adds the requested birthday read scope.
   /// - parameter completion: An escaping closure that is called upon successful completion.
-  func addBirthdayReadScope(completion: @escaping () -> Void) {
-    authenticator.addBirthdayReadScope(completion: completion)
+  @MainActor func addBirthdayReadScope(completion: @escaping () -> Void) {
+      authenticator.addBirthdayReadScope(completion: completion)
   }
 
 }
