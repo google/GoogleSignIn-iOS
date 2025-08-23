@@ -59,8 +59,8 @@ let package = Package(
       from: "3.3.0"),
     .package(
       name: "OCMock",
-      url: "https://github.com/firebase/ocmock.git",
-      .revision("7291762d3551c5c7e31c49cce40a0e391a52e889")),
+      url: "https://github.com/erikdoe/ocmock.git",
+      from: "3.9.4"),
     .package(
       name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
