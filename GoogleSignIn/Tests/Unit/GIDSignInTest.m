@@ -696,7 +696,8 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:NO
                 useAdditionalScopes:YES
                    additionalScopes:nil
-                        manualNonce:nil];
+                        manualNonce:nil
+                        tokenClaims:nil];
 
   expectedScopeString = [@[ @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -711,7 +712,8 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:NO
                 useAdditionalScopes:YES
                    additionalScopes:@[ kScope ]
-                        manualNonce:nil];
+                        manualNonce:nil
+                        tokenClaims:nil];
 
   expectedScopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -726,10 +728,85 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:NO
                 useAdditionalScopes:YES
                    additionalScopes:@[ kScope, kScope2 ]
-                        manualNonce:nil];
+                        manualNonce:nil
+                        tokenClaims:nil];
 
   expectedScopeString = [@[ kScope, kScope2, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
+}
+
+- (void)testOAuthLogin_TokenClaims {
+  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+  GIDTokenClaim *essentialAuthTimeClaim = [GIDTokenClaim essentialAuthTimeClaim];
+  NSString *expectedClaimsJsonString;
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                        tokenClaims:[NSSet setWithObject:essentialAuthTimeClaim]];
+
+  expectedClaimsJsonString = @"{\"id_token\":{\"auth_time\":{\"essential\":true}}}";
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"], expectedClaimsJsonString, @"Claims JSON should be correctly formatted");
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+
+  expectedClaimsJsonString = @"{\"id_token\":{\"auth_time\":null}}";
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"], expectedClaimsJsonString, @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_TokenClaims_FailsWithError {
+  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+  GIDTokenClaim *essentialAuthTimeClaim = [GIDTokenClaim essentialAuthTimeClaim];
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Completion should be called with an ambiguous claims error."];
+
+  GIDSignInCompletion completion = ^(GIDSignInResult * _Nullable signInResult,
+                                       NSError * _Nullable error) {
+      // Assert that the sign-in failed with the correct error.
+      XCTAssertNil(signInResult, @"Sign-in result should be nil on failure.");
+      XCTAssertNotNil(error, @"An error object should be returned.");
+      XCTAssertEqual(error.code, kGIDSignInErrorCodeAmbiguousClaims,
+                     @"The error code should be for ambiguous claims.");
+
+      // Fulfill the expectation to signal that the test is complete.
+      [expectation fulfill];
+    };
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+        [_signIn signInWithPresentingViewController:_presentingViewController
+#elif TARGET_OS_OSX
+        [_signIn signInWithPresentingWindow:_presentingWindow
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                tokenClaims:[NSSet setWithObjects:authTimeClaim, essentialAuthTimeClaim, nil]
+                                 completion:completion];
+
+  // Wait for the completion handler to be called
+  [self waitForExpectationsWithTimeout:1.0 handler:nil];
+
 }
 
 - (void)testAddScopes {
@@ -842,7 +919,8 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:@[]
-                        manualNonce:manualNonce];
+                        manualNonce:manualNonce
+                        tokenClaims:nil];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.nonce,
                         manualNonce,
@@ -1429,7 +1507,8 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:modalCancel
                 useAdditionalScopes:NO
                    additionalScopes:nil
-                        manualNonce:nil];
+                        manualNonce:nil
+                        tokenClaims:nil];
 }
 
 // The authorization flow with parameters to control which branches to take.
@@ -1443,7 +1522,8 @@ static NSString *const kNewScope = @"newScope";
                         modalCancel:(BOOL)modalCancel
                 useAdditionalScopes:(BOOL)useAdditionalScopes
                    additionalScopes:(NSArray *)additionalScopes 
-                        manualNonce:(NSString *)nonce {
+                        manualNonce:(NSString *)nonce
+                        tokenClaims:(NSSet *)tokenClaims {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
@@ -1533,6 +1613,7 @@ static NSString *const kNewScope = @"newScope";
                                        hint:_hint
                            additionalScopes:nil
                                       nonce:nonce
+                                tokenClaims:tokenClaims
                                  completion:completion];
       }
     }
