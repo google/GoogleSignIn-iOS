@@ -18,6 +18,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString *const kAuthTimeClaimName;
+
 /**
  * An object representing a single OIDC claim to be requested for an ID token.
  */

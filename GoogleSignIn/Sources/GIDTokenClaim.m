@@ -16,6 +16,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
 
+NSString * const kAuthTimeClaimName = @"auth_time";
+
 // Private interface to declare the internal initializer
 @interface GIDTokenClaim ()
 
@@ -39,11 +41,11 @@
 #pragma mark - Factory Methods
 
 + (instancetype)authTimeClaim {
-  return [[self alloc] initWithName:@"auth_time" essential:NO];
+  return [[self alloc] initWithName:kAuthTimeClaimName essential:NO];
 }
 
 + (instancetype)essentialAuthTimeClaim {
-  return [[self alloc] initWithName:@"auth_time" essential:YES];
+  return [[self alloc] initWithName:kAuthTimeClaimName essential:YES];
 }
 
 #pragma mark - NSObject

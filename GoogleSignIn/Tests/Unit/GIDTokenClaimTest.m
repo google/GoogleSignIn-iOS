@@ -16,8 +16,6 @@
 #import <XCTest/XCTest.h>
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
 
-static NSString *const kAuthTimeClaimName = @"auth_time";
-
 @interface GIDTokenClaimTest : XCTestCase
 @end
 
