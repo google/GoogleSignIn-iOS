@@ -15,6 +15,9 @@
 
 #import <XCTest/XCTest.h>
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+
+static NSString *const kAuthTimeClaimName = @"auth_time";
+
 @interface GIDTokenClaimTest : XCTestCase
 @end
 
@@ -22,13 +25,13 @@
 
 - (void)testAuthTimeClaim_PropertiesAreCorrect {
   GIDTokenClaim *claim = [GIDTokenClaim authTimeClaim];
-  XCTAssertEqualObjects(claim.name, @"auth_time");
+  XCTAssertEqualObjects(claim.name, kAuthTimeClaimName);
   XCTAssertFalse(claim.isEssential);
 }
 
 - (void)testEssentialAuthTimeClaim_PropertiesAreCorrect {
   GIDTokenClaim *claim = [GIDTokenClaim essentialAuthTimeClaim];
-  XCTAssertEqualObjects(claim.name, @"auth_time");
+  XCTAssertEqualObjects(claim.name, kAuthTimeClaimName);
   XCTAssertTrue(claim.isEssential);
 }
 
