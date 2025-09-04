@@ -36,12 +36,14 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
     let manualNonce = UUID().uuidString
+    let tokenClaims: Set<GIDTokenClaim> = Set([GIDTokenClaim.authTime()])
 
     GIDSignIn.sharedInstance.signIn(
       withPresenting: rootViewController,
       hint: nil,
       additionalScopes: nil,
-      nonce: manualNonce
+      nonce: manualNonce,
+      tokenClaims:tokenClaims
     ) { signInResult, error in
       guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
@@ -56,6 +58,9 @@ final class GoogleSignInAuthenticator: ObservableObject {
         // `nonce` mismatch
         assertionFailure("ERROR: Returned nonce doesn't match manual nonce!")
         return
+      }
+      if let authTimeDate = self.decodeAuthTime(fromJWT: idToken) {
+        self.authViewModel.authTime = authTimeDate
       }
       self.authViewModel.state = .signedIn(signInResult.user)
     }
@@ -152,6 +157,16 @@ private extension GoogleSignInAuthenticator {
       return nil
     }
     return nonce
+  }
+
+  func decodeAuthTime(fromJWT jwt: String) -> Date? {
+    let segments = jwt.components(separatedBy: ".")
+    guard segments.count > 1,
+          let parts = decodeJWTSegment(segments[1]),
+          let authTimeInterval = parts["auth_time"] as? TimeInterval else {
+      return nil
+    }
+    return Date(timeIntervalSince1970: authTimeInterval)
   }
 
   func decodeJWTSegment(_ segment: String) -> [String: Any]? {

@@ -28,6 +28,9 @@ struct DaysUntilBirthday: App {
         .onAppear {
           GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
             if let user = user {
+              print("✅ Session restored for user: \(user.profile?.name ?? "Unknown")")
+              print("Token %@", user.idToken?.tokenString ?? "NULL")
+              self.authViewModel.authTime = user.authTime
               self.authViewModel.state = .signedIn(user)
             } else if let error = error {
               self.authViewModel.state = .signedOut
@@ -42,4 +45,42 @@ struct DaysUntilBirthday: App {
         }
     }
   }
+}
+
+import Foundation // Make sure to add this import for the new code
+
+// This extension adds the .authTime property to the GIDGoogleUser object
+extension GIDGoogleUser {
+  var authTime: Date? {
+    guard let idToken = self.idToken?.tokenString,
+          let payload = JWTDecoder.decode(jwtToken: idToken),
+          let authTimeInterval = payload["auth_time"] as? TimeInterval else {
+      return nil
+    }
+    return Date(timeIntervalSince1970: authTimeInterval)
+  }
+}
+
+// This is a helper utility that the extension uses to decode the token
+struct JWTDecoder {
+    static func decode(jwtToken jwt: String) -> [String: Any]? {
+        let segments = jwt.components(separatedBy: ".")
+        guard segments.count > 1 else { return nil }
+        var base64 = segments[1]
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let length = Double(base64.lengthOfBytes(using: .utf8))
+        let requiredLength = 4 * ceil(length / 4.0)
+        let paddingLength = requiredLength - length
+        if paddingLength > 0 {
+            let padding = "".padding(toLength: Int(paddingLength), withPad: "=", startingAt: 0)
+            base64 += padding
+        }
+        guard let bodyData = Data(base64Encoded: base64, options: .ignoreUnknownCharacters),
+              let json = try? JSONSerialization.jsonObject(with: bodyData, options: []),
+              let payload = json as? [String: Any] else {
+            return nil
+        }
+        return payload
+    }
 }

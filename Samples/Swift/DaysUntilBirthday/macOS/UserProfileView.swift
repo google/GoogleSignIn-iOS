@@ -8,6 +8,13 @@ struct UserProfileView: View {
     return GIDSignIn.sharedInstance.currentUser
   }
 
+  private static var authTimeFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .short
+    return formatter
+  }()
+
   var body: some View {
     return Group {
       if let userProfile = user?.profile {
@@ -19,6 +26,12 @@ struct UserProfileView: View {
               Text(userProfile.name)
                 .font(.headline)
               Text(userProfile.email)
+              if let authTime = authViewModel.authTime {
+                Text("Last Login: \(Self.authTimeFormatter.string(from: authTime))")
+
+              } else {
+                Text("Last Login: Not available")
+              }
             }
           }
           Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)
