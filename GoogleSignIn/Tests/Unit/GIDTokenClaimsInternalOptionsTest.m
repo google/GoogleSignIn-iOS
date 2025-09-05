@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
 @import OCMock;
 
