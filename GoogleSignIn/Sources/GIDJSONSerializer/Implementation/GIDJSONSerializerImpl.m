@@ -25,7 +25,7 @@ NSString * const kGIDJSONSerializationErrorDescription =
 
 - (nullable NSString *)stringWithJSONObject:(NSDictionary<NSString *, id> *)jsonObject
                                       error:(NSError *_Nullable *_Nullable)error {
-  NSError *serializationError = nil;
+  NSError *serializationError;
   NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonObject
                                                      options:0
                                                        error:&serializationError];

@@ -55,7 +55,7 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
 
 - (void)testValidatedJSONStringForClaims_WithNonEssentialClaim_IsCorrectlyFormatted {
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
-  NSError *error = nil;
+  NSError *error;
   NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(error);
@@ -64,7 +64,7 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
 
 - (void)testValidatedJSONStringForClaims_WithEssentialClaim_IsCorrectlyFormatted {
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim essentialAuthTimeClaim]];
-  NSError *error = nil;
+  NSError *error;
   NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(error);
@@ -91,7 +91,7 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
   NSError *expectedJSONError = [NSError errorWithDomain:@"com.fake.json" code:-999 userInfo:nil];
   _jsonSerializerFake.errorToReturn = expectedJSONError;
-  NSError *actualError = nil;
+  NSError *actualError;
   NSString *result =
   [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&actualError];
 
