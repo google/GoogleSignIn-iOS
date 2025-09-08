@@ -21,20 +21,19 @@
 - (nullable NSString *)stringWithJSONObject:(NSDictionary<NSString *, id> *)jsonObject
                                       error:(NSError *_Nullable *_Nullable)error {
   _capturedJSONObject = [jsonObject copy];
-
   if (self.errorToReturn) {
     if (error) {
       *error = self.errorToReturn;
     }
     return nil;
   }
-  NSData *data = [NSJSONSerialization dataWithJSONObject:jsonObject
+  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonObject
                                                  options:0
                                                    error:error];
-  if (!data) {
+  if (!jsonData) {
       return nil;
   }
-  return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+  return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
 @end
