@@ -1,44 +1,62 @@
+// Copyright 2025 Google LLC
 //
-//  GIDTokenClaimsInternalOptionsTest.h
-//  GoogleSignIn
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//  Created by Akshat Gandhi on 9/5/25.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
-@import OCMock;
+#import "GoogleSignIn/Sources/GIDJSONSerializer/Fake/GIDFakeJSONSerializerImpl.h"
+#import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
 
 static NSString *const kEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_time\":{\"essential\":true}}}";
-static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_time\":null}}";
-
+static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_time\":{\"essential\":false}}}";
 
 @interface GIDTokenClaimsInternalOptionsTest : XCTestCase
+@property(nonatomic) GIDFakeJSONSerializerImpl *jsonSerializerFake;
+@property(nonatomic) GIDTokenClaimsInternalOptions *tokenClaimsInternalOptions;
 @end
 
 @implementation GIDTokenClaimsInternalOptionsTest
 
+- (void)setUp {
+  [super setUp];
+  _jsonSerializerFake = [[GIDFakeJSONSerializerImpl alloc] init];
+  _tokenClaimsInternalOptions = [[GIDTokenClaimsInternalOptions alloc] initWithJSONSerializer:_jsonSerializerFake];
+}
+
+- (void)tearDown {
+  _jsonSerializerFake = nil;
+  _tokenClaimsInternalOptions = nil;
+  [super tearDown];
+}
+
 #pragma mark - Input Validation Tests
 
 - (void)testValidatedJSONStringForClaims_WithNilInput_ShouldReturnNil {
-  XCTAssertNil([GIDTokenClaimsInternalOptions validatedJSONStringForClaims:nil error:nil]);
+  XCTAssertNil([_tokenClaimsInternalOptions validatedJSONStringForClaims:nil error:nil]);
 }
 
 - (void)testValidatedJSONStringForClaims_WithEmptyInput_ShouldReturnNil {
-  XCTAssertNil([GIDTokenClaimsInternalOptions validatedJSONStringForClaims:[NSSet set] error:nil]);
+  XCTAssertNil([_tokenClaimsInternalOptions validatedJSONStringForClaims:[NSSet set] error:nil]);
 }
 
 #pragma mark - Correct Formatting Tests
 
 - (void)testValidatedJSONStringForClaims_WithNonEssentialClaim_IsCorrectlyFormatted {
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
-
   NSError *error = nil;
-  NSString *result = [GIDTokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
+  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(error);
   XCTAssertEqualObjects(result, kNonEssentialAuthTimeExpectedJSON);
@@ -46,9 +64,8 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
 
 - (void)testValidatedJSONStringForClaims_WithEssentialClaim_IsCorrectlyFormatted {
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim essentialAuthTimeClaim]];
-
   NSError *error = nil;
-  NSString *result = [GIDTokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
+  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(error);
   XCTAssertEqualObjects(result, kEssentialAuthTimeExpectedJSON);
@@ -60,34 +77,27 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
   NSSet *claims = [NSSet setWithObjects:[GIDTokenClaim authTimeClaim],
                                         [GIDTokenClaim essentialAuthTimeClaim],
                                         nil];
-  NSError *error = nil;
-
-  NSString *result = [GIDTokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
+  NSError *error;
+  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(result, @"Method should return nil for conflicting claims.");
   XCTAssertNotNil(error, @"An error object should be populated.");
   XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain, @"Error domain should be correct.");
-  XCTAssertEqual(error.code, kGIDSignInErrorCodeAmbiguousClaims, @"Error code should be for ambiguous claims.");
+  XCTAssertEqual(error.code, kGIDSignInErrorCodeAmbiguousClaims,
+                 @"Error code should be for ambiguous claims.");
 }
 
 - (void)testValidatedJSONStringForClaims_WhenSerializationFails_ReturnsNilAndError {
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
-  NSError *fakeJSONError = [NSError errorWithDomain:@"com.fake.json" code:-999 userInfo:nil];
-  id mockSerialization = OCMClassMock([NSJSONSerialization class]);
-
-  OCMStub([mockSerialization dataWithJSONObject:OCMOCK_ANY
-                                         options:0
-                                           error:[OCMArg setTo:fakeJSONError]]).andReturn(nil);
-
+  NSError *expectedJSONError = [NSError errorWithDomain:@"com.fake.json" code:-999 userInfo:nil];
+  _jsonSerializerFake.errorToReturn = expectedJSONError;
   NSError *actualError = nil;
   NSString *result =
-      [GIDTokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&actualError];
+  [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&actualError];
 
   XCTAssertNil(result, @"The result should be nil when JSON serialization fails.");
-  XCTAssertEqualObjects(actualError, fakeJSONError,
+  XCTAssertEqualObjects(actualError, expectedJSONError,
                         @"The error from serialization should be passed back to the caller.");
-
-  [mockSerialization stopMocking];
 }
 
 @end

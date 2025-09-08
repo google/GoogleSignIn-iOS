@@ -14,26 +14,45 @@
  * limitations under the License.
  */
 
-#import "GIDTokenClaimsInternalOptions.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+#import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
+
+#import "GoogleSignIn/Sources/GIDJSONSerializer/API/GIDJSONSerializer.h"
+#import "GoogleSignIn/Sources/GIDJSONSerializer/Implementation/GIDJSONSerializerImpl.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
 
-NSString * const kTokenClaimErrorDescription = @"The claim was requested as both essential and non-essential. Please provide only one version.";
+NSString * const kGIDTokenClaimErrorDescription =
+    @"The claim was requested as both essential and non-essential. "
+    @"Please provide only one version.";
+NSString * const kGIDTokenClaimEssentialPropertyKey = @"essential";
+NSString * const kGIDTokenClaimKeyName = @"id_token";
 
-NSString * const kTokenClaimEssentialPropertyKey = @"essential";
-NSString * const kTokenClaimKeyName = @"id_token";
+@interface GIDTokenClaimsInternalOptions ()
+@property(nonatomic, readonly) id<GIDJSONSerializer> jsonSerializer;
+@end
 
 @implementation GIDTokenClaimsInternalOptions
 
-+ (nullable NSString *)validatedJSONStringForClaims:(nullable NSSet<GIDTokenClaim *> *)claims
-                                              error:(NSError **)error {
+- (instancetype)init {
+  return [self initWithJSONSerializer:[[GIDJSONSerializerImpl alloc] init]];
+}
+
+- (instancetype)initWithJSONSerializer:(id<GIDJSONSerializer>)jsonSerializer {
+  if (self = [super init]) {
+    _jsonSerializer = jsonSerializer;
+  }
+  return self;
+}
+
+- (nullable NSString *)validatedJSONStringForClaims:(nullable NSSet<GIDTokenClaim *> *)claims
+                                              error:(NSError *_Nullable *_Nullable)error {
   if (!claims || claims.count == 0) {
     return nil;
   }
 
   // === Step 1: Check for claims with ambiguous essential property. ===
   NSMutableDictionary<NSString *, GIDTokenClaim *> *validTokenClaims =
-  [[NSMutableDictionary alloc] init];
+    [[NSMutableDictionary alloc] init];
 
   for (GIDTokenClaim *currentClaim in claims) {
     GIDTokenClaim *existingClaim = validTokenClaims[currentClaim.name];
@@ -43,34 +62,30 @@ NSString * const kTokenClaimKeyName = @"id_token";
       if (error) {
         *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                      code:kGIDSignInErrorCodeAmbiguousClaims
-                                 userInfo:@{NSLocalizedDescriptionKey: kTokenClaimErrorDescription}];
+                                 userInfo:@{
+                                   NSLocalizedDescriptionKey:kGIDTokenClaimErrorDescription
+                                 }];
       }
-      return nil; // Validation failed
+      return nil;
     }
     validTokenClaims[currentClaim.name] = currentClaim;
   }
 
   // === Step 2: Build the dictionary structure required for OIDC JSON ===
-  NSMutableDictionary<NSString *, id> *tokenClaimsDictionary = [[NSMutableDictionary alloc] init];
+  NSMutableDictionary<NSString *, NSDictionary *> *tokenClaimsDictionary =
+    [[NSMutableDictionary alloc] init];
   for (GIDTokenClaim *claim in validTokenClaims.allValues) {
     if (claim.isEssential) {
-      tokenClaimsDictionary[claim.name] = @{ kTokenClaimEssentialPropertyKey: @YES };
+      tokenClaimsDictionary[claim.name] = @{ kGIDTokenClaimEssentialPropertyKey: @YES };
     } else {
-      // Per OIDC spec, non-essential claims can be represented by null.
-      tokenClaimsDictionary[claim.name] = [NSNull null];
+      tokenClaimsDictionary[claim.name] = @{ kGIDTokenClaimEssentialPropertyKey: @NO };
     }
   }
-  NSDictionary<NSString *, id> *finalRequestDictionary = @{ kTokenClaimKeyName: tokenClaimsDictionary };
+  NSDictionary<NSString *, id> *finalRequestDictionary =
+    @{ kGIDTokenClaimKeyName: tokenClaimsDictionary };
 
   // === Step 3: Serialize the final dictionary into a JSON string ===
-  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:finalRequestDictionary
-                                                     options:0
-                                                       error:error];
-  if (!jsonData) {
-    return nil;
-  }
-
-  return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+  return [_jsonSerializer stringWithJSONObject:finalRequestDictionary error:error];
 }
 
 @end

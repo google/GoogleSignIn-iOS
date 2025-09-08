@@ -20,28 +20,35 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const kTokenClaimErrorDescription;
+extern NSString *const kGIDTokenClaimErrorDescription;
+extern NSString *const kGIDTokenClaimEssentialPropertyKeyName;
+extern NSString *const kGIDTokenClaimKeyName;
 
-extern NSString *const kTokenClaimEssentialPropertyKeyName;
-extern NSString *const kTokenClaimKeyName;
+@protocol GIDJSONSerializer;
 
 /**
- * An internal utility class for processing and serializing the NSSet of GIDTokenClaim objects
- * into the JSON format required for an OIDAuthorizationRequest.
+ * An internal utility class for processing and serializing the `NSSet` of `GIDTokenClaim` objects
+ * into the `JSON` format required for an `OIDAuthorizationRequest`.
  */
 @interface GIDTokenClaimsInternalOptions : NSObject
 
+- (instancetype)init;
+
+- (instancetype)initWithJSONSerializer:
+    (id<GIDJSONSerializer>)jsonSerializer NS_DESIGNATED_INITIALIZER;
+
 /**
- * Processes the NSSet of GIDTokenClaim objects, handling ambiguous claims, and returns a JSON string.
+ * Processes the `NSSet` of `GIDTokenClaim` objects, handling ambiguous claims,
+ * and returns a `JSON` string.
  *
- * @param claims The NSSet of GIDTokenClaim objects provided by the developer.
- * @param error A pointer to an NSError object to be populated if an error occurs (e.g., if a
+ * @param claims The `NSSet` of `GIDTokenClaim` objects provided by the developer.
+ * @param error A pointer to an `NSError` object to be populated if an error occurs (e.g., if a
  * claim is requested as both essential and non-essential).
- * @return A JSON string representing the claims request, or nil if the input is empty or an
+ * @return A `JSON` string representing the claims request, or `nil` if the input is empty or an
  * error occurs.
  */
-+ (nullable NSString *)validatedJSONStringForClaims:(nullable NSSet<GIDTokenClaim *> *)claims
-                                              error:(NSError **)error;
+- (nullable NSString *)validatedJSONStringForClaims:(nullable NSSet<GIDTokenClaim *> *)claims
+                                              error:(NSError *_Nullable *_Nullable)error;
 
 @end
 

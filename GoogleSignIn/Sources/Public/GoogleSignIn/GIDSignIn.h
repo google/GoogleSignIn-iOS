@@ -51,6 +51,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   kGIDSignInErrorCodeScopesAlreadyGranted = -8,
   /// Indicates there is an operation on a previous user.
   kGIDSignInErrorCodeMismatchWithCurrentUser = -9,
+  /// Indicates that an object could not be serialized into a `JSON` string.
+  kGIDSignInErrorCodeJSONSerializationFailure = -10
 };
 
 /// This class is used to sign in users with their Google account and manage their session.
