@@ -16,17 +16,28 @@
 
 #import "GoogleSignIn/Sources/GIDJSONSerializer/Fake/GIDFakeJSONSerializerImpl.h"
 
+#import "GoogleSignIn/Sources/GIDJSONSerializer/Implementation/GIDJSONSerializerImpl.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+
 @implementation GIDFakeJSONSerializerImpl
 
 - (nullable NSString *)stringWithJSONObject:(NSDictionary<NSString *, id> *)jsonObject
                                       error:(NSError *_Nullable *_Nullable)error {
   _capturedJSONObject = [jsonObject copy];
-  if (self.errorToReturn) {
+
+  // Check the boolean flag to see if we should simulate a failure.
+  if (self.shouldFailJSONSerialization) {
     if (error) {
-      *error = self.errorToReturn;
+      *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                   code:kGIDSignInErrorCodeJSONSerializationFailure
+                               userInfo:@{
+                            NSLocalizedDescriptionKey:kGIDJSONSerializationErrorDescription,
+                               }];
     }
     return nil;
   }
+
+  // If not failing, fall back to the real serialization path.
   NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonObject
                                                  options:0
                                                    error:error];

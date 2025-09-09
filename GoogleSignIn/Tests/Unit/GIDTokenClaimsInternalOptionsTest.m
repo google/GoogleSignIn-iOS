@@ -15,6 +15,7 @@
 #import <XCTest/XCTest.h>
 
 #import "GoogleSignIn/Sources/GIDJSONSerializer/Fake/GIDFakeJSONSerializerImpl.h"
+#import "GoogleSignIn/Sources/GIDJSONSerializer/Implementation/GIDJSONSerializerImpl.h"
 #import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
@@ -23,8 +24,10 @@ static NSString *const kEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_
 static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_time\":{\"essential\":false}}}";
 
 @interface GIDTokenClaimsInternalOptionsTest : XCTestCase
+
 @property(nonatomic) GIDFakeJSONSerializerImpl *jsonSerializerFake;
 @property(nonatomic) GIDTokenClaimsInternalOptions *tokenClaimsInternalOptions;
+
 @end
 
 @implementation GIDTokenClaimsInternalOptionsTest
@@ -89,15 +92,22 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
 
 - (void)testValidatedJSONStringForClaims_WhenSerializationFails_ReturnsNilAndError {
   NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
-  NSError *expectedJSONError = [NSError errorWithDomain:@"com.fake.json" code:-999 userInfo:nil];
-  _jsonSerializerFake.errorToReturn = expectedJSONError;
+  NSError *expectedJSONError = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                                   code:kGIDSignInErrorCodeJSONSerializationFailure
+                                               userInfo:@{
+                                                 NSLocalizedDescriptionKey: kGIDJSONSerializationErrorDescription,
+                                               }];
+  _jsonSerializerFake.shouldFailJSONSerialization = YES;
   NSError *actualError;
-  NSString *result =
-  [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&actualError];
+  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims
+                                                                         error:&actualError];
 
   XCTAssertNil(result, @"The result should be nil when JSON serialization fails.");
-  XCTAssertEqualObjects(actualError, expectedJSONError,
-                        @"The error from serialization should be passed back to the caller.");
+  XCTAssertEqualObjects(
+      actualError,
+      expectedJSONError,
+      @"The error from serialization should be passed back to the caller."
+  );
 }
 
 @end
