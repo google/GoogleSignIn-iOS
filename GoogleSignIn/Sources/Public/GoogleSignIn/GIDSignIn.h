@@ -45,10 +45,14 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   kGIDSignInErrorCodeCanceled = -5,
   /// Indicates an Enterprise Mobility Management related error has occurred.
   kGIDSignInErrorCodeEMM = -6,
+  /// Indicates a claim was requested as both essential and non-essential .
+  kGIDSignInErrorCodeAmbiguousClaims = -7,
   /// Indicates the requested scopes have already been granted to the `currentUser`.
   kGIDSignInErrorCodeScopesAlreadyGranted = -8,
   /// Indicates there is an operation on a previous user.
   kGIDSignInErrorCodeMismatchWithCurrentUser = -9,
+  /// Indicates that an object could not be serialized into a `JSON` string.
+  kGIDSignInErrorCodeJSONSerializationFailure = -10
 };
 
 /// This class is used to sign in users with their Google account and manage their session.
