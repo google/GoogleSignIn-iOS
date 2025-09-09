@@ -22,13 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GIDFakeJSONSerializerImpl : NSObject <GIDJSONSerializer>
 
 /**
- * A flag to control whether the serialization method should fail.
+ * An error to be returned by `stringWithJSONObject:error:`.
  *
- * If set to `YES`, `stringWithJSONObject:error:` will return `nil` and
- * populate the error parameter with a serialization failure error.
- * If `NO` (the default), it will attempt a real serialization.
+ * If this property is set, `stringWithJSONObject:error:` will return `nil` and
+ * populate the error parameter with this error.
  */
-@property(nonatomic, assign) BOOL shouldFailJSONSerialization;
+@property(nonatomic, nullable) NSError *serializationError;
 
 /** The dictionary passed to the serialization method. */
 @property(nonatomic, readonly, nullable) NSDictionary<NSString *, id> *capturedJSONObject;

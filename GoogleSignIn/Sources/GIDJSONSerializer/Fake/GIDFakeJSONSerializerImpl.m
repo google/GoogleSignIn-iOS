@@ -25,14 +25,10 @@
                                       error:(NSError *_Nullable *_Nullable)error {
   _capturedJSONObject = [jsonObject copy];
 
-  // Check the boolean flag to see if we should simulate a failure.
-  if (self.shouldFailJSONSerialization) {
+  // Check if a serialization error should be simulated.
+  if (self.serializationError) {
     if (error) {
-      *error = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                   code:kGIDSignInErrorCodeJSONSerializationFailure
-                               userInfo:@{
-                            NSLocalizedDescriptionKey:kGIDJSONSerializationErrorDescription,
-                               }];
+      *error = self.serializationError;
     }
     return nil;
   }

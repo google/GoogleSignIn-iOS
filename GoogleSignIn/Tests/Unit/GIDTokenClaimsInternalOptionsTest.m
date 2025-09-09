@@ -97,7 +97,7 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
                                                userInfo:@{
                                                  NSLocalizedDescriptionKey: kGIDJSONSerializationErrorDescription,
                                                }];
-  _jsonSerializerFake.shouldFailJSONSerialization = YES;
+  _jsonSerializerFake.serializationError = expectedJSONError;
   NSError *actualError;
   NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims
                                                                          error:&actualError];
