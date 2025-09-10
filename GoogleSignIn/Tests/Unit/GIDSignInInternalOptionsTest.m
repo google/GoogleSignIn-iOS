@@ -63,6 +63,56 @@
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
+- (void)testDefaultOptions_withAllParameters_initializesPropertiesCorrectly {
+  id configuration = OCMStrictClassMock([GIDConfiguration class]);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  id presentingViewController = OCMStrictClassMock([UIViewController class]);
+#elif TARGET_OS_OSX
+  id presentingWindow = OCMStrictClassMock([NSWindow class]);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  NSString *loginHint = @"login_hint";
+  NSArray<NSString *> *scopes = @[@"scope1", @"scope2"];
+  NSString *nonce = @"test_nonce";
+  NSSet<GIDTokenClaim *> *tokenClaims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
+
+  // The expected scopes array will contain the provided scopes plus the default profile scopes.
+  NSArray<NSString *> *expectedScopes = @[@"scope1", @"scope2", @"email", @"profile"];
+
+  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                     NSError * _Nullable error) {};
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                       presentingViewController:presentingViewController
+#elif TARGET_OS_OSX
+                                               presentingWindow:presentingWindow
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                                      loginHint:loginHint
+                                                  addScopesFlow:NO
+                                                         scopes:scopes
+                                                          nonce:nonce
+                                                    tokenClaims:tokenClaims
+                                                     completion:completion];
+  XCTAssertTrue(options.interactive);
+  XCTAssertFalse(options.continuation);
+  XCTAssertFalse(options.addScopesFlow);
+  XCTAssertNil(options.extraParams);
+
+  // Convert arrays to sets for comparison to make the test order-independent.
+  XCTAssertEqualObjects([NSSet setWithArray:options.scopes], [NSSet setWithArray:expectedScopes]);
+  XCTAssertEqualObjects(options.nonce, nonce);
+  XCTAssertEqualObjects(options.tokenClaims, tokenClaims);
+  XCTAssertNil(options.tokenClaimsAsJSON);
+
+  OCMVerifyAll(configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  OCMVerifyAll(presentingViewController);
+#elif TARGET_OS_OSX
+  OCMVerifyAll(presentingWindow);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+}
+
+
 - (void)testSilentOptions {
   GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
                                      NSError * _Nullable error) {};

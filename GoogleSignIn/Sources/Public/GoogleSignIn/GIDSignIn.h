@@ -26,6 +26,7 @@
 @class GIDConfiguration;
 @class GIDGoogleUser;
 @class GIDSignInResult;
+@class GIDTokenClaim;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -225,6 +226,99 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
                        NSError *_Nullable error))completion
     NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
 
+/// Starts an interactive sign-in flow on iOS using the provided tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
+///     iOS 9 and 10.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+
+/// Starts an interactive sign-in flow on iOS using the provided hint, and tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
+///     iOS 9 and 10.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+
+/// Starts an interactive sign-in flow on iOS using the provided hint, additional scopes,
+/// and tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
+///     iOS 9 and 10.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                          additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+
+/// Starts an interactive sign-in flow on iOS using the provided hint, additional scopes, nonce
+/// and tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingViewController The view controller used to present `SFSafariViewController` on
+///     iOS 9 and 10.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
+/// @param nonce A custom nonce.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
+                                      hint:(nullable NSString *)hint
+                          additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                                     nonce:(nullable NSString *)nonce
+                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                completion:
+    (nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                       NSError *_Nullable error))completion
+    NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.");
+
 #elif TARGET_OS_OSX
 
 /// Starts an interactive sign-in flow on macOS.
@@ -298,6 +392,86 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
                         completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
+/// Starts an interactive sign-in flow on macOS using the provided tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                                                      NSError *_Nullable error))completion;
+
+/// Starts an interactive sign-in flow on macOS using the provided hint, and tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                                                      NSError *_Nullable error))completion;
+
+/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes
+/// and tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                  additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                                                      NSError *_Nullable error))completion;
+
+/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes, nonce
+/// and tokenClaims.
+///
+/// The completion will be called at the end of this process.  Any saved sign-in state will be
+/// replaced by the result of this flow.  Note that this method should not be called when the app is
+/// starting up, (e.g in `application:didFinishLaunchingWithOptions:`); instead use the
+/// `restorePreviousSignInWithCompletion:` method to restore a previous sign-in.
+///
+/// @param presentingWindow The window used to supply `presentationContextProvider` for `ASWebAuthenticationSession`.
+/// @param hint An optional hint for the authorization server, for example the user's ID or email
+///     address, to be prefilled if possible.
+/// @param additionalScopes An optional array of scopes to request in addition to the basic profile scopes.
+/// @param nonce A custom nonce.
+/// @param tokenClaims An optional `NSSet` of tokenClaims to request.
+/// @param completion The optional block that is called on completion.  This block will
+///     be called asynchronously on the main queue.
+- (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
+                              hint:(nullable NSString *)hint
+                  additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
+                             nonce:(nullable NSString *)nonce
+                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                        completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
+                                                      NSError *_Nullable error))completion;
 
 #endif
 
