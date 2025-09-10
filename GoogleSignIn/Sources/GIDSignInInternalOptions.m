@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
+                                    tokenClaims:(nullable NSSet *)tokenClaims
                                      completion:(nullable GIDSignInCompletion)completion {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
