@@ -17,6 +17,7 @@
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
 
 #ifdef SWIFT_PACKAGE
 @import OCMock;
