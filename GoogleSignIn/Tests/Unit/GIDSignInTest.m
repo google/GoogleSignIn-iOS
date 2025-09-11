@@ -8,7 +8,6 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR COhttp://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -1638,9 +1637,6 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
     }
 
     if (tokenClaimsError) {
-      XCTestExpectation *tokenClaimsErrorExpectation =
-          [self expectationWithDescription:@"Callback called"];
-      [tokenClaimsErrorExpectation fulfill];
       return;
     }
 

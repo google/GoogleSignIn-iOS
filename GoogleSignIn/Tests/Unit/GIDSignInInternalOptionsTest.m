@@ -75,8 +75,6 @@
   NSArray<NSString *> *scopes = @[@"scope1", @"scope2"];
   NSString *nonce = @"test_nonce";
   NSSet<GIDTokenClaim *> *tokenClaims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
-
-  // The expected scopes array will contain the provided scopes plus the default profile scopes.
   NSArray<NSString *> *expectedScopes = @[@"scope1", @"scope2", @"email", @"profile"];
 
   GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,

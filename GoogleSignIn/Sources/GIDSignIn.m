@@ -742,7 +742,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     NSError *claimsError;
 
     // If tokenClaims are invalid or JSON serialization fails, return with an error.
-    if (![self processTokenClaimsForOptions:options error:&claimsError]) {
+    options.tokenClaimsAsJSON = [_tokenClaimsInternalOptions
+                                    validatedJSONStringForClaims:options.tokenClaims
+                                                           error:&claimsError];
+    if (claimsError) {
       if (options.completion) {
         self->_currentOptions = nil;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1265,24 +1268,6 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     [NSException raise:NSInvalidArgumentException
                 format:@"|presentingViewController| must be set."];
   }
-}
-
-- (BOOL)processTokenClaimsForOptions:(GIDSignInInternalOptions *)options
-                               error:(NSError **)error {
-  if (!options.tokenClaims) {
-    return YES; // Success
-  }
-
-  NSString *tokenClaimsAsJSON =
-      [_tokenClaimsInternalOptions validatedJSONStringForClaims:options.tokenClaims
-                                                          error:error];
-
-  if (!tokenClaimsAsJSON) {
-    return NO; // Failure
-  }
-
-  options.tokenClaimsAsJSON = tokenClaimsAsJSON;
-  return YES; // Success
 }
 
 // Checks whether or not this is the first time the app runs.
