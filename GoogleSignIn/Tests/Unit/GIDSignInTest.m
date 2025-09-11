@@ -1633,6 +1633,8 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
       }
     }
 
+    // When token claims are invalid, sign-in fails skipping the entire authorization flow.
+    // Thus, no need to verify `_authorization` or `_authState` as they won't be generated.
     if (tokenClaimsError) {
       return;
     }
