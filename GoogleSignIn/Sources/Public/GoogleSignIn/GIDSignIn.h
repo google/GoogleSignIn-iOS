@@ -404,7 +404,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
                         completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
-/// Starts an interactive sign-in flow on macOS using the provided hint, and tokenClaims.
+/// Starts an interactive sign-in flow on macOS using the provided hint and tokenClaims.
 ///
 /// The completion will be called at the end of this process.  Any saved sign-in state will be
 /// replaced by the result of this flow.  Note that this method should not be called when the app is
@@ -423,7 +423,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
                         completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
-/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes
+/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes,
 /// and tokenClaims.
 ///
 /// The completion will be called at the end of this process.  Any saved sign-in state will be
@@ -445,7 +445,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
                         completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                       NSError *_Nullable error))completion;
 
-/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes, nonce
+/// Starts an interactive sign-in flow on macOS using the provided hint, additional scopes, nonce,
 /// and tokenClaims.
 ///
 /// The completion will be called at the end of this process.  Any saved sign-in state will be
