@@ -852,6 +852,32 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   [profile stopMocking];
 }
 
+- (void)testOAuthLogin_TokenClaims_Passes {
+  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                   tokenClaimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+
+  OCMVerifyAll(_user);
+  OCMVerifyAll(_authState);
+}
+
+
 - (void)testOpenIDRealm {
   _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                       serverClientID:nil
@@ -1553,12 +1579,20 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                                                nonce:nonce
                                                          errorString:authError];
 
-  OIDTokenResponse *tokenResponse =
-      [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
-                                    accessToken:restoredSignIn ? kAccessToken : nil
-                                      expiresIn:oldAccessToken ? @(300) : nil
-                                   refreshToken:kRefreshToken
-                                   tokenRequest:nil];
+  OIDTokenResponse *tokenResponse;
+  if (tokenClaims) {
+    tokenResponse = [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse iDTokenWithAuthTime]
+                                                  accessToken:restoredSignIn ? kAccessToken : nil
+                                                    expiresIn:oldAccessToken ? @(300) : nil
+                                                 refreshToken:kRefreshToken
+                                                 tokenRequest:nil];
+  } else {
+    tokenResponse = [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
+                                                  accessToken:restoredSignIn ? kAccessToken : nil
+                                                    expiresIn:oldAccessToken ? @(300) : nil
+                                                 refreshToken:kRefreshToken
+                                                 tokenRequest:nil];
+  }
 
   OIDTokenRequest *tokenRequest = [[OIDTokenRequest alloc]
       initWithConfiguration:authResponse.request.configuration
@@ -1749,6 +1783,12 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   } else {
     // Simulate token endpoint response.
     _savedTokenCallback(tokenResponse, nil);
+    if (tokenClaims) {
+      XCTAssertEqualObjects(tokenResponse.idToken,
+                            [OIDTokenResponse iDTokenWithAuthTime],
+                            @"ID Token string should contain authTime");
+    }
+
   }
 
   if (keychainError) {
