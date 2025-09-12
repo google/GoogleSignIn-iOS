@@ -71,7 +71,7 @@ extern NSString * const kFatPictureURL;
 
 + (NSString *)fatIDToken;
 
-+ (NSString *)iDTokenWithAuthTime;
++ (NSString *)fatIDTokenWithAuthTime;
 
 /**
  * @sub The subject of the ID token.

@@ -38,7 +38,7 @@ NSString *const kUserID = @"12345679";
 NSString *const kHostedDomain = @"fakehosteddomain.com";
 NSString *const kIssuer = @"https://test.com";
 NSString *const kAudience = @"audience";
-NSString *const kAuthTime = @"123333";
+NSString *const kAuthTime = @"1757753868";
 NSTimeInterval const kIDTokenExpires = 1000;
 NSTimeInterval const kIssuedAt = 0;
 
@@ -109,7 +109,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   return [self idTokenWithSub:kUserID exp:@(kIDTokenExpires) fat:YES];
 }
 
-+ (NSString *)iDTokenWithAuthTime {
++ (NSString *)fatIDTokenWithAuthTime {
   return [self idTokenWithSub:kUserID exp:@(kIDTokenExpires) fat:YES authTime:kAuthTime];
 }
 

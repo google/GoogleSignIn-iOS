@@ -745,42 +745,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
 }
 
-- (void)testOAuthLogin_requestClaimsSuccessfully {
-  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
-
-  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
-          ).andDo(^(NSInvocation *invocation){
-    self->_keychainSaved = self->_saveAuthorizationReturnValue;
-  });
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                   tokenClaimsError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO
-                useAdditionalScopes:NO
-                   additionalScopes:nil
-                        manualNonce:nil
-                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
-
-  XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
-  NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
-  XCTAssertNotNil(idTokenString, @"ID token string should not be nil.");
-  NSArray<NSString *> *components = [idTokenString componentsSeparatedByString:@"."];
-  XCTAssertEqual(components.count, 3, @"JWT should have 3 parts.");
-  NSData *payloadData = [[NSData alloc] initWithBase64EncodedString:components[1]
-                                                            options:NSDataBase64DecodingIgnoreUnknownCharacters];
-  NSDictionary *claims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
-  XCTAssertEqualObjects(claims[@"auth_time"],
-                        kAuthTime,
-                        @"The 'auth_time' claim should be present and correct.");
-}
-
-- (void)testOAuthLogin_TokenClaims {
+- (void)testOAuthLogin_WithTokenClaims_FormatsParametersCorrectly {
   GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
   GIDTokenClaim *essentialAuthTimeClaim = [GIDTokenClaim essentialAuthTimeClaim];
 
@@ -824,6 +789,42 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
                         kNonEssentialAuthTimeClaimsJsonString,
                         @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_WithTokenClaims_ReturnsIdTokenWithCorrectClaims {
+  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                   tokenClaimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+
+  XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
+  NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
+  XCTAssertNotNil(idTokenString, @"ID token string should not be nil.");
+  NSArray<NSString *> *components = [idTokenString componentsSeparatedByString:@"."];
+  XCTAssertEqual(components.count, 3, @"JWT should have 3 parts.");
+  NSData *payloadData = [[NSData alloc]
+      initWithBase64EncodedString:components[1]
+                          options:NSDataBase64DecodingIgnoreUnknownCharacters];
+  NSDictionary *claims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
+  XCTAssertEqualObjects(claims[@"auth_time"],
+                        kAuthTime,
+                        @"The 'auth_time' claim should be present and correct.");
 }
 
 - (void)testAddScopes {
@@ -1588,24 +1589,19 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                                                nonce:nonce
                                                          errorString:authError];
 
-  OIDTokenResponse *tokenResponse;
-  if (tokenClaims) {
-    tokenResponse = [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse iDTokenWithAuthTime]
-                                                  accessToken:restoredSignIn ? kAccessToken : nil
-                                                    expiresIn:oldAccessToken ? @(300) : nil
-                                                 refreshToken:kRefreshToken
-                                                 tokenRequest:nil];
+  NSString *idToken = tokenClaims ? [OIDTokenResponse fatIDTokenWithAuthTime] : [OIDTokenResponse fatIDToken];
+  OIDTokenResponse *tokenResponse =
+      [OIDTokenResponse testInstanceWithIDToken:idToken
+                                    accessToken:restoredSignIn ? kAccessToken : nil
+                                      expiresIn:oldAccessToken ? @(300) : nil
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:nil];
 
+  if (tokenClaims) {
     // Creating this stub to use `currentUser.idToken`.
     id mockIDToken = OCMClassMock([GIDToken class]);
     OCMStub([mockIDToken tokenString]).andReturn(tokenResponse.idToken);
     OCMStub([_user idToken]).andReturn(mockIDToken);
-  } else {
-    tokenResponse = [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
-                                                  accessToken:restoredSignIn ? kAccessToken : nil
-                                                    expiresIn:oldAccessToken ? @(300) : nil
-                                                 refreshToken:kRefreshToken
-                                                 tokenRequest:nil];
   }
 
   OIDTokenRequest *tokenRequest = [[OIDTokenRequest alloc]
