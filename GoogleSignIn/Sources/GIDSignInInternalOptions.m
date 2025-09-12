@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
+                                    tokenClaims:(nullable NSSet *)tokenClaims
                                      completion:(nullable GIDSignInCompletion)completion {
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
@@ -40,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
+                                    tokenClaims:(nullable NSSet *)tokenClaims
                                      completion:(nullable GIDSignInCompletion)completion {
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   GIDSignInInternalOptions *options = [[GIDSignInInternalOptions alloc] init];
@@ -57,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_completion = completion;
     options->_scopes = [GIDScopes scopesWithBasicProfile:scopes];
     options->_nonce = nonce;
+    options->_tokenClaims = tokenClaims;
   }
   return options;
 }
@@ -84,6 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                 addScopesFlow:addScopesFlow
                                                                        scopes:@[]
                                                                         nonce:nil
+                                                                  tokenClaims:nil
                                                                    completion:completion];
   return options;
 }
@@ -120,6 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
     options->_loginHint = _loginHint;
     options->_completion = _completion;
     options->_scopes = _scopes;
+    options->_tokenClaims = _tokenClaims;
     options->_extraParams = [extraParams copy];
   }
   return options;
