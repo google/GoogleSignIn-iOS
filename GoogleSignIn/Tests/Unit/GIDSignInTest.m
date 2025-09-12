@@ -745,6 +745,41 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
 }
 
+- (void)testOAuthLogin_requestClaimsSuccessfully {
+  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+                      keychainError:NO
+                   tokenClaimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+
+  XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
+  NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
+  XCTAssertNotNil(idTokenString, @"ID token string should not be nil.");
+  NSArray<NSString *> *components = [idTokenString componentsSeparatedByString:@"."];
+  XCTAssertEqual(components.count, 3, @"JWT should have 3 parts.");
+  NSData *payloadData = [[NSData alloc] initWithBase64EncodedString:components[1]
+                                                            options:NSDataBase64DecodingIgnoreUnknownCharacters];
+  NSDictionary *claims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
+  XCTAssertEqualObjects(claims[@"auth_time"],
+                        kAuthTime,
+                        @"The 'auth_time' claim should be present and correct.");
+}
+
 - (void)testOAuthLogin_TokenClaims {
   GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
   GIDTokenClaim *essentialAuthTimeClaim = [GIDTokenClaim essentialAuthTimeClaim];
@@ -851,32 +886,6 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   [profile verify];
   [profile stopMocking];
 }
-
-- (void)testOAuthLogin_TokenClaims_Passes {
-  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
-  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
-          ).andDo(^(NSInvocation *invocation){
-    self->_keychainSaved = self->_saveAuthorizationReturnValue;
-  });
-
-  [self OAuthLoginWithAddScopesFlow:NO
-                          authError:nil
-                         tokenError:nil
-            emmPasscodeInfoRequired:NO
-                      keychainError:NO
-                   tokenClaimsError:NO
-                     restoredSignIn:NO
-                     oldAccessToken:NO
-                        modalCancel:NO
-                useAdditionalScopes:NO
-                   additionalScopes:nil
-                        manualNonce:nil
-                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
-
-  OCMVerifyAll(_user);
-  OCMVerifyAll(_authState);
-}
-
 
 - (void)testOpenIDRealm {
   _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
@@ -1586,6 +1595,11 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                                     expiresIn:oldAccessToken ? @(300) : nil
                                                  refreshToken:kRefreshToken
                                                  tokenRequest:nil];
+
+    // Creating this stub to use `currentUser.idToken`.
+    id mockIDToken = OCMClassMock([GIDToken class]);
+    OCMStub([mockIDToken tokenString]).andReturn(tokenResponse.idToken);
+    OCMStub([_user idToken]).andReturn(mockIDToken);
   } else {
     tokenResponse = [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
                                                   accessToken:restoredSignIn ? kAccessToken : nil
@@ -1783,12 +1797,6 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   } else {
     // Simulate token endpoint response.
     _savedTokenCallback(tokenResponse, nil);
-    if (tokenClaims) {
-      XCTAssertEqualObjects(tokenResponse.idToken,
-                            [OIDTokenResponse iDTokenWithAuthTime],
-                            @"ID Token string should contain authTime");
-    }
-
   }
 
   if (keychainError) {
