@@ -71,7 +71,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
     GIDSignIn.sharedInstance.signIn(
       withPresenting: presentingWindow,
       tokenClaims: tokenClaims
-      ) { signInResult, error in
+    ) { signInResult, error in
       guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
         return

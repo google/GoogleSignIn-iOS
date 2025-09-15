@@ -36,7 +36,7 @@ struct UserProfileView: View {
                 .font(.headline)
               Text(userProfile.email)
               if let authTimeString = authViewModel.formattedAuthTimeString {
-                  Text("Last sign-in date: \(authTimeString)")
+                Text("Last sign-in date: \(authTimeString)")
               }
             }
           }
