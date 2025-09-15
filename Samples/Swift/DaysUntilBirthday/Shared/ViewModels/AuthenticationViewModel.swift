@@ -74,7 +74,7 @@ final class AuthenticationViewModel: ObservableObject {
   var formattedAuthTimeString: String? {
           guard let date = authTime else { return nil }
           let formatter = DateFormatter()
-          formatter.dateFormat = "dd/MM/yyyy"
+          formatter.dateFormat = "MM/dd/yyyy"
           return formatter.string(from: date)
   }
 }
