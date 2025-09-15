@@ -22,6 +22,7 @@ final class AuthenticationViewModel: ObservableObject {
   /// The user's log in status.
   /// - note: This will publish updates when its value changes.
   @Published var state: State
+  @Published var authTime: Date?
   private var authenticator: GoogleSignInAuthenticator {
     return GoogleSignInAuthenticator(authViewModel: self)
   }
@@ -69,7 +70,13 @@ final class AuthenticationViewModel: ObservableObject {
   @MainActor func addBirthdayReadScope(completion: @escaping () -> Void) {
       authenticator.addBirthdayReadScope(completion: completion)
   }
-
+  
+  var formattedAuthTimeString: String? {
+          guard let date = authTime else { return nil }
+          let formatter = DateFormatter()
+          formatter.dateFormat = "dd/MM/yyyy"
+          return formatter.string(from: date)
+  }
 }
 
 extension AuthenticationViewModel {

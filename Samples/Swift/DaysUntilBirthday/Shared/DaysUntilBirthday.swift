@@ -29,6 +29,7 @@ struct DaysUntilBirthday: App {
           GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
             if let user = user {
               self.authViewModel.state = .signedIn(user)
+              self.authViewModel.authTime = UserDefaults.standard.object(forKey: "authTime") as? Date
             } else if let error = error {
               self.authViewModel.state = .signedOut
               print("There was an error restoring the previous sign-in: \(error)")

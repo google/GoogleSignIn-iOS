@@ -35,6 +35,9 @@ struct UserProfileView: View {
               Text(userProfile.name)
                 .font(.headline)
               Text(userProfile.email)
+              if let authTimeString = authViewModel.formattedAuthTimeString {
+                  Text("Last sign-in date: \(authTimeString)")
+              }
             }
           }
           NavigationLink(NSLocalizedString("View Days Until Birthday", comment: "View birthday days"),
