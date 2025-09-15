@@ -27,7 +27,7 @@ final class AuthenticationViewModel: ObservableObject {
   }
 
   /// The user's `auth_time` as found in `idToken`.
-  /// - note: If the user is logged out, then this will default to nil.
+  /// - note: If the user is logged out, then this will default to `nil`.
   var authTime: Date? {
     switch state {
     case .signedIn(let user):
