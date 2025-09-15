@@ -59,10 +59,6 @@ final class GoogleSignInAuthenticator: ObservableObject {
         assertionFailure("ERROR: Returned nonce doesn't match manual nonce!")
         return
       }
-      if let authTimeDate = self.decodeAuthTime(fromJWT: idToken) {
-        self.authViewModel.authTime = authTimeDate
-        UserDefaults.standard.set(authTimeDate, forKey: "authTime")
-      }
       self.authViewModel.state = .signedIn(signInResult.user)
     }
 
@@ -79,17 +75,6 @@ final class GoogleSignInAuthenticator: ObservableObject {
       guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
         return
-      }
-
-      // If the idToken is nil, we cannot get the authTime, so we treat this
-      // as a failure for the app's sign-in flow and return.
-      guard let idToken = signInResult.user.idToken?.tokenString else {
-        print("Error: idToken is missing from signInResult.")
-        return
-      }
-      if let authTimeDate = self.decodeAuthTime(fromJWT: idToken) {
-        self.authViewModel.authTime = authTimeDate
-        UserDefaults.standard.set(authTimeDate, forKey: "authTime")
       }
       self.authViewModel.state = .signedIn(signInResult.user)
     }
@@ -164,7 +149,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
 
 // MARK: Parse nonce from JWT ID Token
 
-private extension GoogleSignInAuthenticator {
+extension GoogleSignInAuthenticator {
   func decodeNonce(fromJWT jwt: String) -> String? {
     let segments = jwt.components(separatedBy: ".")
     guard let parts = decodeJWTSegment(segments[1]),
@@ -172,16 +157,6 @@ private extension GoogleSignInAuthenticator {
       return nil
     }
     return nonce
-  }
-
-  func decodeAuthTime(fromJWT jwt: String) -> Date? {
-    let segments = jwt.components(separatedBy: ".")
-    guard segments.count > 1,
-          let parts = decodeJWTSegment(segments[1]),
-          let authTimeInterval = parts["auth_time"] as? TimeInterval else {
-      return nil
-    }
-    return Date(timeIntervalSince1970: authTimeInterval)
   }
 
   func decodeJWTSegment(_ segment: String) -> [String: Any]? {

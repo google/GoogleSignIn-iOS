@@ -22,10 +22,21 @@ final class AuthenticationViewModel: ObservableObject {
   /// The user's log in status.
   /// - note: This will publish updates when its value changes.
   @Published var state: State
-  @Published var authTime: Date?
   private var authenticator: GoogleSignInAuthenticator {
     return GoogleSignInAuthenticator(authViewModel: self)
   }
+
+  // 3. Change authTime to a computed property
+  var authTime: Date? {
+    switch state {
+    case .signedIn(let user):
+      guard let idToken = user.idToken?.tokenString else { return nil }
+      return decodeAuthTime(fromJWT: idToken)
+    case .signedOut:
+      return nil
+    }
+  }
+
   /// The user-authorized scopes.
   /// - note: If the user is logged out, then this will default to empty.
   var authorizedScopes: [String] {
@@ -77,6 +88,42 @@ final class AuthenticationViewModel: ObservableObject {
           formatter.dateFormat = "MM/dd/yyyy"
           return formatter.string(from: date)
   }
+}
+
+private extension AuthenticationViewModel {
+    func decodeAuthTime(fromJWT jwt: String) -> Date? {
+        let segments = jwt.components(separatedBy: ".")
+        guard segments.count > 1,
+              let parts = decodeJWTSegment(segments[1]),
+              let authTimeInterval = parts["auth_time"] as? TimeInterval else {
+            return nil
+        }
+        return Date(timeIntervalSince1970: authTimeInterval)
+    }
+
+    func decodeJWTSegment(_ segment: String) -> [String: Any]? {
+        guard let segmentData = base64UrlDecode(segment),
+              let segmentJSON = try? JSONSerialization.jsonObject(with: segmentData, options: []),
+              let payload = segmentJSON as? [String: Any] else {
+            return nil
+        }
+        return payload
+    }
+
+    func base64UrlDecode(_ value: String) -> Data? {
+        var base64 = value
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+
+        let length = Double(base64.lengthOfBytes(using: String.Encoding.utf8))
+        let requiredLength = 4 * ceil(length / 4.0)
+        let paddingLength = requiredLength - length
+        if paddingLength > 0 {
+            let padding = "".padding(toLength: Int(paddingLength), withPad: "=", startingAt: 0)
+            base64 = base64 + padding
+        }
+        return Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
+    }
 }
 
 extension AuthenticationViewModel {
