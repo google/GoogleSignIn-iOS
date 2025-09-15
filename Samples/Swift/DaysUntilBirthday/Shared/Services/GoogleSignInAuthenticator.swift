@@ -20,6 +20,7 @@ import GoogleSignIn
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
   private var authViewModel: AuthenticationViewModel
+  private var tokenClaims: Set<GIDTokenClaim> = Set([GIDTokenClaim.authTime()])
 
   /// Creates an instance of this authenticator.
   /// - parameter authViewModel: The view model this authenticator will set logged in status on.
@@ -36,7 +37,6 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
     let manualNonce = UUID().uuidString
-    let tokenClaims: Set<GIDTokenClaim> = Set([GIDTokenClaim.authTime()])
 
     GIDSignIn.sharedInstance.signIn(
       withPresenting: rootViewController,
@@ -71,8 +71,6 @@ final class GoogleSignInAuthenticator: ObservableObject {
       print("There is no presenting window!")
       return
     }
-
-    let tokenClaims: Set<GIDTokenClaim> = Set([GIDTokenClaim.authTime()])
 
     GIDSignIn.sharedInstance.signIn(
       withPresenting: presentingWindow,
