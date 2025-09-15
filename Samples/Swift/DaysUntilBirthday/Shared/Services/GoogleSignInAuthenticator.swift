@@ -149,7 +149,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
 
 // MARK: Parse nonce from JWT ID Token
 
-extension GoogleSignInAuthenticator {
+private extension GoogleSignInAuthenticator {
   func decodeNonce(fromJWT jwt: String) -> String? {
     let segments = jwt.components(separatedBy: ".")
     guard let parts = decodeJWTSegment(segments[1]),
