@@ -367,6 +367,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                   addScopesFlow:YES
                                                      completion:completion];
 
+  OIDAuthorizationRequest *lastAuthorizationRequest =
+      self.currentUser.authState.lastAuthorizationResponse.request;
+  NSString *lastTokenClaimsAsJSON =
+      lastAuthorizationRequest.additionalParameters[kTokenClaimsParameter];
+  if (lastTokenClaimsAsJSON) {
+    options.tokenClaimsAsJSON = lastTokenClaimsAsJSON;
+  }
+
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
       [NSMutableSet setWithArray:self.currentUser.grantedScopes];
@@ -498,6 +506,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                       loginHint:self.currentUser.profile.email
                                                   addScopesFlow:YES
                                                      completion:completion];
+
+  OIDAuthorizationRequest *lastAuthorizationRequest =
+      self.currentUser.authState.lastAuthorizationResponse.request;
+  NSString *lastTokenClaimsAsJSON =
+      lastAuthorizationRequest.additionalParameters[kTokenClaimsParameter];
+  if (lastTokenClaimsAsJSON) {
+    options.tokenClaimsAsJSON = lastTokenClaimsAsJSON;
+  }
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
   NSMutableSet<NSString *> *grantedScopes =
@@ -739,20 +755,23 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       }
     }];
   } else {
-    NSError *claimsError;
+    // Only serialize tokenClaims if options.tokenClaimsAsJSON isn't already set.
+    if (!options.tokenClaimsAsJSON) {
+      NSError *claimsError;
 
-    // If tokenClaims are invalid or JSON serialization fails, return with an error.
-    options.tokenClaimsAsJSON = [_tokenClaimsInternalOptions
-                                    validatedJSONStringForClaims:options.tokenClaims
-                                                           error:&claimsError];
-    if (claimsError) {
-      if (options.completion) {
-        self->_currentOptions = nil;
-        dispatch_async(dispatch_get_main_queue(), ^{
-          options.completion(nil, claimsError);
-        });
+      // If tokenClaims are invalid or JSON serialization fails, return with an error.
+      options.tokenClaimsAsJSON = [_tokenClaimsInternalOptions
+                                   validatedJSONStringForClaims:options.tokenClaims
+                                   error:&claimsError];
+      if (claimsError) {
+        if (options.completion) {
+          self->_currentOptions = nil;
+          dispatch_async(dispatch_get_main_queue(), ^{
+            options.completion(nil, claimsError);
+          });
+        }
+        return;
       }
-      return;
     }
     [self authenticateWithOptions:options];
   }
