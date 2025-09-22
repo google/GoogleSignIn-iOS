@@ -762,10 +762,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       // If tokenClaims are invalid or JSON serialization fails, return with an error.
       options.tokenClaimsAsJSON = [_tokenClaimsInternalOptions
                                    validatedJSONStringForClaims:options.tokenClaims
-                                   error:&claimsError];
+                                                          error:&claimsError];
       if (claimsError) {
         if (options.completion) {
-          self->_currentOptions = nil;
+          _currentOptions = nil;
           dispatch_async(dispatch_get_main_queue(), ^{
             options.completion(nil, claimsError);
           });

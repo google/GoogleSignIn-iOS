@@ -952,12 +952,11 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   NSString *grantedScopeString = _savedAuthorizationRequest.scope;
 
   if (grantedScopeString) {
-    grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
-        [NSCharacterSet whitespaceCharacterSet]];
-    // Tokenize with space as a delimiter.
+    NSCharacterSet *whiteSpaceChars = [NSCharacterSet whitespaceCharacterSet];
+    grantedScopeString =
+        [grantedScopeString stringByTrimmingCharactersInSet:whiteSpaceChars];
     NSMutableArray<NSString *> *parsedScopes =
         [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
-    // Remove empty strings.
     [parsedScopes removeObject:@""];
     grantedScopes = [parsedScopes copy];
   }
@@ -970,7 +969,6 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 
   [_user verify];
   [profile verify];
-  [profile stopMocking];
 }
 
 - (void)testOpenIDRealm {
