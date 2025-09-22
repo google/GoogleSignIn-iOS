@@ -1685,7 +1685,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 
   NSDictionary<NSString *, NSString *> *additionalParameters =
       [self additionalParametersWithEMMPasscodeInfoRequired:emmPasscodeInfoRequired
-                                     tokenClaimsAsJSONRequired:tokenClaimsAsJSONRequired];
+                                  tokenClaimsAsJSONRequired:tokenClaimsAsJSONRequired];
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstanceWithAdditionalParameters:additionalParameters
                                                                nonce:nonce
