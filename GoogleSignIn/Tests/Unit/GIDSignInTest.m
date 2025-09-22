@@ -973,7 +973,6 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   [profile stopMocking];
 }
 
-
 - (void)testOpenIDRealm {
   _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                       serverClientID:nil
@@ -1685,7 +1684,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   }
 
   NSDictionary<NSString *, NSString *> *additionalParameters =
-      [self getAdditionalParametersWithEMMPasscodeInfoRequired:emmPasscodeInfoRequired
+      [self additionalParametersWithEMMPasscodeInfoRequired:emmPasscodeInfoRequired
                                      tokenClaimsAsJSONRequired:tokenClaimsAsJSONRequired];
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstanceWithAdditionalParameters:additionalParameters
@@ -1953,8 +1952,8 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 #pragma mark - Private Helpers
 
 - (NSDictionary<NSString *, NSString *> *)
-    getAdditionalParametersWithEMMPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
-                             tokenClaimsAsJSONRequired:(BOOL)tokenClaimsAsJSONRequired {
+    additionalParametersWithEMMPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
+                          tokenClaimsAsJSONRequired:(BOOL)tokenClaimsAsJSONRequired {
   NSMutableDictionary<NSString *, NSString *> *additionalParameters =
       [NSMutableDictionary dictionary];
 
