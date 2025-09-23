@@ -928,7 +928,6 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   id profile = OCMStrictClassMock([GIDProfileData class]);
   OCMStub([profile email]).andReturn(kUserEmail);
 
-  // Mock for the method `addScopes`.
   GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                                 serverClientID:nil
                                                                   hostedDomain:nil
