@@ -15,6 +15,8 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "GoogleSignIn/GIDClaims.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,7 +25,7 @@ extern NSString *const kAuthTimeClaimName;
 /**
  * An object representing a single OIDC claim to be requested for an ID token.
  */
-@interface GIDTokenClaim : NSObject
+@interface GIDTokenClaim : GIDClaims
 
 /// The name of the claim, e.g., "auth_time".
 @property (nonatomic, readonly) NSString *name;

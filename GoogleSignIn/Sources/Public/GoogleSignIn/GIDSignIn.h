@@ -27,6 +27,7 @@
 @class GIDGoogleUser;
 @class GIDSignInResult;
 @class GIDTokenClaim;
+@class GIDClaims;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -238,7 +239,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
 /// @param completion The optional block that is called on completion.  This block will
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:
     (nullable void (^)(GIDSignInResult *_Nullable signInResult,
                        NSError *_Nullable error))completion
@@ -259,7 +260,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
 ///     be called asynchronously on the main queue.
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:
     (nullable void (^)(GIDSignInResult *_Nullable signInResult,
                        NSError *_Nullable error))completion
@@ -283,7 +284,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:
     (nullable void (^)(GIDSignInResult *_Nullable signInResult,
                        NSError *_Nullable error))completion
@@ -309,7 +310,7 @@ NS_EXTENSION_UNAVAILABLE("The sign-in flow is not supported in App Extensions.")
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                      nonce:(nullable NSString *)nonce
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:
     (nullable void (^)(GIDSignInResult *_Nullable signInResult,
                        NSError *_Nullable error))completion

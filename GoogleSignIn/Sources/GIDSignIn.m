@@ -298,7 +298,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:nil
@@ -308,7 +308,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:hint
@@ -320,7 +320,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:hint
@@ -335,7 +335,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                      nonce:(nullable NSString *)nonce
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                               tokenClaims:(nullable NSSet<GIDClaims *> *)tokenClaims
                                 completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
