@@ -72,17 +72,17 @@ NSString * const kGIDClaimKeyName = @"id_token";
   }
 
   // === Step 2: Build the dictionary structure required for OIDC JSON ===
-  NSMutableDictionary<NSString *, NSDictionary *> *tokenClaimsDictionary =
+  NSMutableDictionary<NSString *, NSDictionary *> *claimsDictionary =
     [[NSMutableDictionary alloc] init];
   for (GIDClaim *claim in validClaims.allValues) {
     if (claim.isEssential) {
-      tokenClaimsDictionary[claim.name] = @{ kGIDClaimEssentialPropertyKey: @YES };
+      claimsDictionary[claim.name] = @{ kGIDClaimEssentialPropertyKey: @YES };
     } else {
-      tokenClaimsDictionary[claim.name] = @{ kGIDClaimEssentialPropertyKey: @NO };
+      claimsDictionary[claim.name] = @{ kGIDClaimEssentialPropertyKey: @NO };
     }
   }
   NSDictionary<NSString *, id> *finalRequestDictionary =
-    @{ kGIDClaimKeyName: tokenClaimsDictionary };
+    @{ kGIDClaimKeyName: claimsDictionary };
 
   // === Step 3: Serialize the final dictionary into a JSON string ===
   return [_jsonSerializer stringWithJSONObject:finalRequestDictionary error:error];

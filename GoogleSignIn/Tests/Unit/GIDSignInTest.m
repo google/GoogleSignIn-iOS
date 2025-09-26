@@ -921,7 +921,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        claims:[NSSet setWithObject:authTimeClaim]];
+                             claims:[NSSet setWithObject:authTimeClaim]];
 
   XCTAssertNotNil(_signIn.currentUser);
 
