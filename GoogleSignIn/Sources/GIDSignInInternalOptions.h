@@ -68,11 +68,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// and to mitigate replay attacks.
 @property(nonatomic, readonly, copy, nullable) NSString *nonce;
 
-/// The tokenClaims requested by the Clients.
-@property(nonatomic, readonly, copy, nullable) NSSet<GIDTokenClaim *> *tokenClaims;
+/// The claims requested by the Clients.
+@property(nonatomic, readonly, copy, nullable) NSSet<GIDClaim *> *claims;
 
 /// The JSON token claims to be used during the flow.
-@property(nonatomic, copy, nullable) NSString *tokenClaimsAsJSON;
+@property(nonatomic, copy, nullable) NSString *claimsAsJSON;
 
 /// Creates the default options.
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
-                                    tokenClaims:(nullable NSSet *)tokenClaims
+                                         claims:(nullable NSSet *)claims
                                      completion:(nullable GIDSignInCompletion)completion;
 
 #elif TARGET_OS_OSX
@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
                                           nonce:(nullable NSString *)nonce
-                                    tokenClaims:(nullable NSSet *)tokenClaims
+                                         claims:(nullable NSSet *)claims
                                      completion:(nullable GIDSignInCompletion)completion;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 

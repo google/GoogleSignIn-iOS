@@ -32,7 +32,7 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
-#import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppCheckCore/GACAppCheckToken.h>
@@ -644,7 +644,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -662,7 +662,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:NO
@@ -680,7 +680,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:YES
@@ -700,16 +700,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:nil];
+                             claims:nil];
 
   expectedScopeString = [@[ @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -718,16 +718,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
                    additionalScopes:@[ kScope ]
                         manualNonce:nil
-                        tokenClaims:nil];
+                             claims:nil];
 
   expectedScopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -736,24 +736,24 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
                    additionalScopes:@[ kScope, kScope2 ]
                         manualNonce:nil
-                        tokenClaims:nil];
+                             claims:nil];
 
   expectedScopeString = [@[ kScope, kScope2, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
 }
 
-- (void)testOAuthLogin_WithTokenClaims_FormatsParametersCorrectly {
-  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
-  GIDTokenClaim *essentialAuthTimeClaim = [GIDTokenClaim essentialAuthTimeClaim];
+- (void)testOAuthLogin_WithClaims_FormatsParametersCorrectly {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *essentialAuthTimeClaim = [GIDClaim essentialAuthTimeClaim];
 
   OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
           ).andDo(^(NSInvocation *invocation){
@@ -764,16 +764,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:[NSSet setWithObject:essentialAuthTimeClaim]];
+                             claims:[NSSet setWithObject:essentialAuthTimeClaim]];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
                         kEssentialAuthTimeClaimsJsonString,
@@ -783,24 +783,24 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+                             claims:[NSSet setWithObject:authTimeClaim]];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
                         kNonEssentialAuthTimeClaimsJsonString,
                         @"Claims JSON should be correctly formatted");
 }
 
-- (void)testOAuthLogin_WithTokenClaims_ReturnsIdTokenWithCorrectClaims {
-  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+- (void)testOAuthLogin_WithClaims_ReturnsIdTokenWithCorrectClaims {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
 
   OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
           ).andDo(^(NSInvocation *invocation){
@@ -811,16 +811,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+                             claims:[NSSet setWithObject:authTimeClaim]];
 
   XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
   NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
@@ -847,7 +847,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:NO
@@ -872,7 +872,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -901,7 +901,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 }
 
 - (void)testAddScopes_WithPreviouslyRequestedClaims {
-  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
   // Restore the previous sign-in account. This is the preparation for adding scopes.
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
@@ -912,16 +912,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:[NSSet setWithObject:authTimeClaim]];
+                        claims:[NSSet setWithObject:authTimeClaim]];
 
   XCTAssertNotNil(_signIn.currentUser);
 
@@ -941,7 +941,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:YES
+               claimsAsJSONRequired:YES
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -986,7 +986,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1014,16 +1014,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:@[]
                         manualNonce:manualNonce
-                        tokenClaims:nil];
+                             claims:nil];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.nonce,
                         manualNonce,
@@ -1043,7 +1043,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1069,7 +1069,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1084,7 +1084,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:@"access_denied"
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1099,7 +1099,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1124,7 +1124,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:YES
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1136,25 +1136,25 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeKeychain);
 }
 
-- (void)testOAuthLogin_TokenClaims_FailsWithError {
-  GIDTokenClaim *authTimeClaim = [GIDTokenClaim authTimeClaim];
-  GIDTokenClaim *essentialAuthTimeClaim = [GIDTokenClaim essentialAuthTimeClaim];
+- (void)testOAuthLogin_Claims_FailsWithError {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *essentialAuthTimeClaim = [GIDClaim essentialAuthTimeClaim];
   NSSet *conflictingClaims = [NSSet setWithObjects:authTimeClaim, essentialAuthTimeClaim, nil];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
-                   tokenClaimsError:YES
+                        claimsError:YES
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:conflictingClaims];
+                             claims:conflictingClaims];
 
   // Wait for the completion handler to be called
   [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -1163,7 +1163,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                  @"The error code should be for ambiguous claims.");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain,
                         @"The error domain should be the GIDSignIn error domain.");
-  XCTAssertEqualObjects(_authError.localizedDescription, kGIDTokenClaimErrorDescription,
+  XCTAssertEqualObjects(_authError.localizedDescription, kGIDClaimErrorDescription,
                         @"The error description should clearly explain the ambiguity.");
 }
 
@@ -1183,7 +1183,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:NO
@@ -1430,7 +1430,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1482,7 +1482,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:YES
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1514,7 +1514,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:callbackParams[@"error"]
                          tokenError:nil
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1552,7 +1552,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:nil
                          tokenError:emmError
             emmPasscodeInfoRequired:NO
-          tokenClaimsAsJSONRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1637,7 +1637,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:(NSString *)authError
                          tokenError:(NSError *)tokenError
             emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
-          tokenClaimsAsJSONRequired:(BOOL)tokenClaimsAsJSONRequired
+               claimsAsJSONRequired:(BOOL)claimsAsJSONRequired
                       keychainError:(BOOL)keychainError
                      restoredSignIn:(BOOL)restoredSignIn
                      oldAccessToken:(BOOL)oldAccessToken
@@ -1646,16 +1646,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:authError
                          tokenError:tokenError
             emmPasscodeInfoRequired:emmPasscodeInfoRequired
-          tokenClaimsAsJSONRequired:tokenClaimsAsJSONRequired
+               claimsAsJSONRequired:claimsAsJSONRequired
                       keychainError:keychainError
-                   tokenClaimsError:NO
+                        claimsError:NO
                      restoredSignIn:restoredSignIn
                      oldAccessToken:oldAccessToken
                         modalCancel:modalCancel
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                        tokenClaims:nil];
+                             claims:nil];
 }
 
 // The authorization flow with parameters to control which branches to take.
@@ -1663,16 +1663,16 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                           authError:(NSString *)authError
                          tokenError:(NSError *)tokenError
             emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
-          tokenClaimsAsJSONRequired:(BOOL)tokenClaimsAsJSONRequired
+               claimsAsJSONRequired:(BOOL)claimsAsJSONRequired
                       keychainError:(BOOL)keychainError
-                   tokenClaimsError:(BOOL)tokenClaimsError
+                        claimsError:(BOOL)claimsError
                      restoredSignIn:(BOOL)restoredSignIn
                      oldAccessToken:(BOOL)oldAccessToken
                         modalCancel:(BOOL)modalCancel
                 useAdditionalScopes:(BOOL)useAdditionalScopes
                    additionalScopes:(NSArray *)additionalScopes
                         manualNonce:(NSString *)nonce
-                        tokenClaims:(NSSet *)tokenClaims {
+                             claims:(NSSet *)claims {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
@@ -1682,13 +1682,13 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 
   NSDictionary<NSString *, NSString *> *additionalParameters =
       [self additionalParametersWithEMMPasscodeInfoRequired:emmPasscodeInfoRequired
-                                  tokenClaimsAsJSONRequired:tokenClaimsAsJSONRequired];
+                                       claimsAsJSONRequired:claimsAsJSONRequired];
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstanceWithAdditionalParameters:additionalParameters
                                                                nonce:nonce
                                                          errorString:authError];
 
-  NSString *idToken = tokenClaims ? [OIDTokenResponse fatIDTokenWithAuthTime] : [OIDTokenResponse fatIDToken];
+  NSString *idToken = claims ? [OIDTokenResponse fatIDTokenWithAuthTime] : [OIDTokenResponse fatIDToken];
   OIDTokenResponse *tokenResponse =
       [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:restoredSignIn ? kAccessToken : nil
@@ -1696,7 +1696,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                    refreshToken:kRefreshToken
                                    tokenRequest:nil];
 
-  if (tokenClaims) {
+  if (claims) {
     // Creating this stub to use `currentUser.idToken`.
     id mockIDToken = OCMClassMock([GIDToken class]);
     OCMStub([mockIDToken tokenString]).andReturn(tokenResponse.idToken);
@@ -1772,14 +1772,14 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                        hint:_hint
                            additionalScopes:nil
                                       nonce:nonce
-                                tokenClaims:tokenClaims
+                                     claims:claims
                                  completion:completion];
       }
     }
 
     // When token claims are invalid, sign-in fails skipping the entire authorization flow.
     // Thus, no need to verify `_authorization` or `_authState` as they won't be generated.
-    if (tokenClaimsError) {
+    if (claimsError) {
       return;
     }
 
@@ -1950,14 +1950,14 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 
 - (NSDictionary<NSString *, NSString *> *)
     additionalParametersWithEMMPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
-                          tokenClaimsAsJSONRequired:(BOOL)tokenClaimsAsJSONRequired {
+                               claimsAsJSONRequired:(BOOL)claimsAsJSONRequired {
   NSMutableDictionary<NSString *, NSString *> *additionalParameters =
       [NSMutableDictionary dictionary];
 
   if (emmPasscodeInfoRequired) {
     additionalParameters[@"emm_passcode_info_required"] = @"1";
   }
-  if (tokenClaimsAsJSONRequired) {
+  if (claimsAsJSONRequired) {
     additionalParameters[@"claims"] = kNonEssentialAuthTimeClaimsJsonString;
   }
 

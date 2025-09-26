@@ -20,7 +20,7 @@ import GoogleSignIn
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
   private var authViewModel: AuthenticationViewModel
-  private var tokenClaims: Set<GIDTokenClaim> = Set([GIDTokenClaim.authTime()])
+  private var claims: Set<GIDClaim> = Set([GIDClaim.authTime()])
 
   /// Creates an instance of this authenticator.
   /// - parameter authViewModel: The view model this authenticator will set logged in status on.
@@ -43,7 +43,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
       hint: nil,
       additionalScopes: nil,
       nonce: manualNonce,
-      tokenClaims: tokenClaims
+      claims: claims
     ) { signInResult, error in
       guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
@@ -70,7 +70,7 @@ final class GoogleSignInAuthenticator: ObservableObject {
 
     GIDSignIn.sharedInstance.signIn(
       withPresenting: presentingWindow,
-      tokenClaims: tokenClaims
+      claims: claims
     ) { signInResult, error in
       guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")

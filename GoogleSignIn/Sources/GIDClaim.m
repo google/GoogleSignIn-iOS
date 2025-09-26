@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
 NSString * const kAuthTimeClaimName = @"auth_time";
 
 // Private interface to declare the internal initializer
-@interface GIDTokenClaim ()
+@interface GIDClaim ()
 
 - (instancetype)initWithName:(NSString *)name
                    essential:(BOOL)essential NS_DESIGNATED_INITIALIZER;
 
 @end
 
-@implementation GIDTokenClaim
+@implementation GIDClaim
 
 // Private designated initializer
 - (instancetype)initWithName:(NSString *)name essential:(BOOL)essential {
@@ -57,12 +57,12 @@ NSString * const kAuthTimeClaimName = @"auth_time";
   }
 
   // 2. Check if the other object is not a GIDTokenClaim instance.
-  if (![object isKindOfClass:[GIDTokenClaim class]]) {
+  if (![object isKindOfClass:[GIDClaim class]]) {
     return NO;
   }
 
   // 3. Compare the properties that define equality.
-  GIDTokenClaim *other = (GIDTokenClaim *)object;
+  GIDClaim *other = (GIDClaim *)object;
   return [self.name isEqualToString:other.name] &&
          self.isEssential == other.isEssential;
 }

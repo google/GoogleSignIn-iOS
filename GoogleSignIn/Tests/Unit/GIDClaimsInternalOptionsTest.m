@@ -16,59 +16,59 @@
 
 #import "GoogleSignIn/Sources/GIDJSONSerializer/Fake/GIDFakeJSONSerializerImpl.h"
 #import "GoogleSignIn/Sources/GIDJSONSerializer/Implementation/GIDJSONSerializerImpl.h"
-#import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
 static NSString *const kEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_time\":{\"essential\":true}}}";
 static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"auth_time\":{\"essential\":false}}}";
 
-@interface GIDTokenClaimsInternalOptionsTest : XCTestCase
+@interface GIDClaimsInternalOptionsTest : XCTestCase
 
 @property(nonatomic) GIDFakeJSONSerializerImpl *jsonSerializerFake;
-@property(nonatomic) GIDTokenClaimsInternalOptions *tokenClaimsInternalOptions;
+@property(nonatomic) GIDClaimsInternalOptions *claimsInternalOptions;
 
 @end
 
-@implementation GIDTokenClaimsInternalOptionsTest
+@implementation GIDClaimsInternalOptionsTest
 
 - (void)setUp {
   [super setUp];
   _jsonSerializerFake = [[GIDFakeJSONSerializerImpl alloc] init];
-  _tokenClaimsInternalOptions = [[GIDTokenClaimsInternalOptions alloc] initWithJSONSerializer:_jsonSerializerFake];
+  _claimsInternalOptions = [[GIDClaimsInternalOptions alloc] initWithJSONSerializer:_jsonSerializerFake];
 }
 
 - (void)tearDown {
   _jsonSerializerFake = nil;
-  _tokenClaimsInternalOptions = nil;
+  _claimsInternalOptions = nil;
   [super tearDown];
 }
 
 #pragma mark - Input Validation Tests
 
 - (void)testValidatedJSONStringForClaims_WithNilInput_ShouldReturnNil {
-  XCTAssertNil([_tokenClaimsInternalOptions validatedJSONStringForClaims:nil error:nil]);
+  XCTAssertNil([_claimsInternalOptions validatedJSONStringForClaims:nil error:nil]);
 }
 
 - (void)testValidatedJSONStringForClaims_WithEmptyInput_ShouldReturnNil {
-  XCTAssertNil([_tokenClaimsInternalOptions validatedJSONStringForClaims:[NSSet set] error:nil]);
+  XCTAssertNil([_claimsInternalOptions validatedJSONStringForClaims:[NSSet set] error:nil]);
 }
 
 #pragma mark - Correct Formatting Tests
 
 - (void)testValidatedJSONStringForClaims_WithNonEssentialClaim_IsCorrectlyFormatted {
-  NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
+  NSSet *claims = [NSSet setWithObject:[GIDClaim authTimeClaim]];
   NSError *error;
-  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
+  NSString *result = [_claimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(error);
   XCTAssertEqualObjects(result, kNonEssentialAuthTimeExpectedJSON);
 }
 
 - (void)testValidatedJSONStringForClaims_WithEssentialClaim_IsCorrectlyFormatted {
-  NSSet *claims = [NSSet setWithObject:[GIDTokenClaim essentialAuthTimeClaim]];
+  NSSet *claims = [NSSet setWithObject:[GIDClaim essentialAuthTimeClaim]];
   NSError *error;
-  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
+  NSString *result = [_claimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(error);
   XCTAssertEqualObjects(result, kEssentialAuthTimeExpectedJSON);
@@ -77,11 +77,11 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
 #pragma mark - Client Error Handling Tests
 
 - (void)testValidatedJSONStringForClaims_WithConflictingClaims_ReturnsNilAndPopulatesError {
-  NSSet *claims = [NSSet setWithObjects:[GIDTokenClaim authTimeClaim],
-                                        [GIDTokenClaim essentialAuthTimeClaim],
+  NSSet *claims = [NSSet setWithObjects:[GIDClaim authTimeClaim],
+                                        [GIDClaim essentialAuthTimeClaim],
                                         nil];
   NSError *error;
-  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims error:&error];
+  NSString *result = [_claimsInternalOptions validatedJSONStringForClaims:claims error:&error];
 
   XCTAssertNil(result, @"Method should return nil for conflicting claims.");
   XCTAssertNotNil(error, @"An error object should be populated.");
@@ -91,7 +91,7 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
 }
 
 - (void)testValidatedJSONStringForClaims_WhenSerializationFails_ReturnsNilAndError {
-  NSSet *claims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
+  NSSet *claims = [NSSet setWithObject:[GIDClaim authTimeClaim]];
   NSError *expectedJSONError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                                    code:kGIDSignInErrorCodeJSONSerializationFailure
                                                userInfo:@{
@@ -99,7 +99,7 @@ static NSString *const kNonEssentialAuthTimeExpectedJSON = @"{\"id_token\":{\"au
                                                }];
   _jsonSerializerFake.serializationError = expectedJSONError;
   NSError *actualError;
-  NSString *result = [_tokenClaimsInternalOptions validatedJSONStringForClaims:claims
+  NSString *result = [_claimsInternalOptions validatedJSONStringForClaims:claims
                                                                          error:&actualError];
 
   XCTAssertNil(result, @"The result should be nil when JSON serialization fails.");
