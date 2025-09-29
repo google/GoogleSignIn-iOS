@@ -14,35 +14,35 @@
 
 
 #import <XCTest/XCTest.h>
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
-@interface GIDTokenClaimTest : XCTestCase
+@interface GIDClaimTest : XCTestCase
 @end
 
-@implementation GIDTokenClaimTest
+@implementation GIDClaimTest
 
 - (void)testAuthTimeClaim_PropertiesAreCorrect {
-  GIDTokenClaim *claim = [GIDTokenClaim authTimeClaim];
+  GIDClaim *claim = [GIDClaim authTimeClaim];
   XCTAssertEqualObjects(claim.name, kAuthTimeClaimName);
   XCTAssertFalse(claim.isEssential);
 }
 
 - (void)testEssentialAuthTimeClaim_PropertiesAreCorrect {
-  GIDTokenClaim *claim = [GIDTokenClaim essentialAuthTimeClaim];
+  GIDClaim *claim = [GIDClaim essentialAuthTimeClaim];
   XCTAssertEqualObjects(claim.name, kAuthTimeClaimName);
   XCTAssertTrue(claim.isEssential);
 }
 
 - (void)testEquality_WithEqualClaims {
-  GIDTokenClaim *claim1 = [GIDTokenClaim authTimeClaim];
-  GIDTokenClaim *claim2 = [GIDTokenClaim authTimeClaim];
+  GIDClaim *claim1 = [GIDClaim authTimeClaim];
+  GIDClaim *claim2 = [GIDClaim authTimeClaim];
   XCTAssertEqualObjects(claim1, claim2);
   XCTAssertEqual(claim1.hash, claim2.hash);
 }
 
 - (void)testEquality_WithUnequalClaims {
-  GIDTokenClaim *claim1 = [GIDTokenClaim authTimeClaim];
-  GIDTokenClaim *claim2 = [GIDTokenClaim essentialAuthTimeClaim];
+  GIDClaim *claim1 = [GIDClaim authTimeClaim];
+  GIDClaim *claim2 = [GIDClaim essentialAuthTimeClaim];
   XCTAssertNotEqualObjects(claim1, claim2);
 }
 

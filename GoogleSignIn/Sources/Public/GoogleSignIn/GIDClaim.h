@@ -23,7 +23,7 @@ extern NSString *const kAuthTimeClaimName;
 /**
  * An object representing a single OIDC claim to be requested for an ID token.
  */
-@interface GIDTokenClaim : NSObject
+@interface GIDClaim : NSObject
 
 /// The name of the claim, e.g., "auth_time".
 @property (nonatomic, readonly) NSString *name;

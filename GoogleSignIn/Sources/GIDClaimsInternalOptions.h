@@ -16,21 +16,21 @@
 
 #import <Foundation/Foundation.h>
 
-@class GIDTokenClaim;
+@class GIDClaim;
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const kGIDTokenClaimErrorDescription;
-extern NSString *const kGIDTokenClaimEssentialPropertyKeyName;
-extern NSString *const kGIDTokenClaimKeyName;
+extern NSString *const kGIDClaimErrorDescription;
+extern NSString *const kGIDClaimEssentialPropertyKeyName;
+extern NSString *const kGIDClaimKeyName;
 
 @protocol GIDJSONSerializer;
 
 /**
- * An internal utility class for processing and serializing the `NSSet` of `GIDTokenClaim` objects
+ * An internal utility class for processing and serializing the `NSSet` of `GIDClaim` objects
  * into the `JSON` format required for an `OIDAuthorizationRequest`.
  */
-@interface GIDTokenClaimsInternalOptions : NSObject
+@interface GIDClaimsInternalOptions : NSObject
 
 - (instancetype)init;
 
@@ -38,16 +38,16 @@ extern NSString *const kGIDTokenClaimKeyName;
     (id<GIDJSONSerializer>)jsonSerializer NS_DESIGNATED_INITIALIZER;
 
 /**
- * Processes the `NSSet` of `GIDTokenClaim` objects, handling ambiguous claims,
+ * Processes the `NSSet` of `GIDClaim` objects, handling ambiguous claims,
  * and returns a `JSON` string.
  *
- * @param claims The `NSSet` of `GIDTokenClaim` objects provided by the developer.
+ * @param claims The `NSSet` of `GIDClaim` objects provided by the developer.
  * @param error A pointer to an `NSError` object to be populated if an error occurs (e.g., if a
  * claim is requested as both essential and non-essential).
  * @return A `JSON` string representing the claims request, or `nil` if the input is empty or an
  * error occurs.
  */
-- (nullable NSString *)validatedJSONStringForClaims:(nullable NSSet<GIDTokenClaim *> *)claims
+- (nullable NSString *)validatedJSONStringForClaims:(nullable NSSet<GIDClaim *> *)claims
                                               error:(NSError *_Nullable *_Nullable)error;
 
 @end

@@ -17,7 +17,7 @@
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDTokenClaim.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
 #ifdef SWIFT_PACKAGE
 @import OCMock;
@@ -74,7 +74,7 @@
   NSString *loginHint = @"login_hint";
   NSArray<NSString *> *scopes = @[@"scope1", @"scope2"];
   NSString *nonce = @"test_nonce";
-  NSSet<GIDTokenClaim *> *tokenClaims = [NSSet setWithObject:[GIDTokenClaim authTimeClaim]];
+  NSSet<GIDClaim *> *claims = [NSSet setWithObject:[GIDClaim authTimeClaim]];
   NSArray<NSString *> *expectedScopes = @[@"scope1", @"scope2", @"email", @"profile"];
 
   GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
@@ -90,7 +90,7 @@
                                                   addScopesFlow:NO
                                                          scopes:scopes
                                                           nonce:nonce
-                                                    tokenClaims:tokenClaims
+                                                         claims:claims
                                                      completion:completion];
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);
@@ -100,8 +100,8 @@
   // Convert arrays to sets for comparison to make the test order-independent.
   XCTAssertEqualObjects([NSSet setWithArray:options.scopes], [NSSet setWithArray:expectedScopes]);
   XCTAssertEqualObjects(options.nonce, nonce);
-  XCTAssertEqualObjects(options.tokenClaims, tokenClaims);
-  XCTAssertNil(options.tokenClaimsAsJSON);
+  XCTAssertEqualObjects(options.claims, claims);
+  XCTAssertNil(options.claimsAsJSON);
 
   OCMVerifyAll(configuration);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
