@@ -116,8 +116,21 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
 
 - (nullable NSDictionary<NSString *,NSString *> *)
 additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
-  return [GIDEMMSupport updatedEMMParametersWithParameters:
-          authSession.authState.lastTokenResponse.additionalParameters];
+  NSDictionary *originalParameters =
+      [GIDEMMSupport updatedEMMParametersWithParameters:authSession.authState.lastTokenResponse
+                                                            .additionalParameters];
+
+  // Ensure returned dictionary has values of only type String.
+  NSMutableDictionary<NSString *, NSString *> *convertedParameters =
+      [NSMutableDictionary dictionary];
+  [originalParameters enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+    if ([value isKindOfClass:[NSNumber class]]) {
+      convertedParameters[key] = [value stringValue];
+    } else if ([value isKindOfClass:[NSString class]]) {
+      convertedParameters[key] = value;
+    }
+  }];
+  return convertedParameters;
 }
 
 - (void)updateErrorForAuthSession:(GTMAuthSession *)authSession
