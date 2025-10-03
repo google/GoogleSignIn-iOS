@@ -120,17 +120,54 @@ additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
       [GIDEMMSupport updatedEMMParametersWithParameters:authSession.authState.lastTokenResponse
                                                             .additionalParameters];
 
-  // Ensure returned dictionary has values of only type String.
-  NSMutableDictionary<NSString *, NSString *> *convertedParameters =
-      [NSMutableDictionary dictionary];
-  [originalParameters enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-    if ([value isKindOfClass:[NSNumber class]]) {
-      convertedParameters[key] = [value stringValue];
-    } else if ([value isKindOfClass:[NSString class]]) {
-      convertedParameters[key] = value;
+  NSMutableDictionary *updatedParameters = [NSMutableDictionary dictionary];
+  // Will first make any json objects within our original parameters into a string.
+  [updatedParameters enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+    if ([NSJSONSerialization isValidJSONObject:value]) {
+      NSError *error;
+      NSData *jsonData = [NSJSONSerialization dataWithJSONObject:value
+                                                         options:0
+                                                           error:&error];
+      if (!error && jsonData) {
+        updatedParameters[key] = [[NSString alloc] initWithData:jsonData
+                                                          encoding:NSUTF8StringEncoding];
+      }
+    }
+    else {
+      updatedParameters[key] = value;
     }
   }];
-  return convertedParameters;
+
+  // Start converting our original parameters to [String:String]
+  NSError *error;
+  NSData *additionalParametersData = [NSJSONSerialization dataWithJSONObject:updatedParameters
+                                                                     options:NSJSONWritingPrettyPrinted
+                                                                       error:nil];
+  NSString *additionalParametersString = [[NSString alloc] initWithData:additionalParametersData
+                                                               encoding:NSUTF8StringEncoding];
+
+  NSCharacterSet *newline = [NSCharacterSet newlineCharacterSet];
+  NSMutableArray<NSString *> *keyAndValueArray =
+      [[additionalParametersString componentsSeparatedByCharactersInSet:newline] mutableCopy];
+
+  // Remove braces
+  [keyAndValueArray removeObjectAtIndex:0];
+  [keyAndValueArray removeLastObject];
+
+  // Set up what characters should be removed in loop
+  NSMutableCharacterSet *keySet = [[NSCharacterSet whitespaceCharacterSet] mutableCopy];
+  [keySet formUnionWithCharacterSet:[NSCharacterSet punctuationCharacterSet]];
+  NSCharacterSet *valueSet = [NSCharacterSet punctuationCharacterSet];
+
+  NSMutableDictionary<NSString *, NSString *> *stringOnlyParameters = [@{} mutableCopy];
+  for (NSString *kvPair in keyAndValueArray) {
+    NSArray<NSString *> *keyAndValue = [kvPair componentsSeparatedByString:@":"];
+    NSString *key = [keyAndValue[0] stringByTrimmingCharactersInSet:keySet];
+    NSString *value = [keyAndValue[1] stringByTrimmingCharactersInSet:valueSet];
+    stringOnlyParameters[key] = value;
+  }
+
+  return stringOnlyParameters;
 }
 
 - (void)updateErrorForAuthSession:(GTMAuthSession *)authSession
