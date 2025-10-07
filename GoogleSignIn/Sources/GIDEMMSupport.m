@@ -161,9 +161,9 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
       return;
     }
 
-    // Case 3: The value is of NSArray or NSDictionary type.
-    // To satisfy `GTMAppAuth`'s requirement for [String: String] parameters, the entire
-    // object is serialized into a single JSON string.
+    // Case 3: The value is of `NSArray` or `NSDictionary` type.
+    // To satisfy `GTMAppAuth`'s requirement for `NSDictionary<NSString *, NSString *>` parameter,
+    // the entire value object is serialized into a single `JSON` string.
     if ([NSJSONSerialization isValidJSONObject:value]) {
       NSError *error = nil;
       NSData *jsonData = [NSJSONSerialization dataWithJSONObject:value options:0 error:&error];
