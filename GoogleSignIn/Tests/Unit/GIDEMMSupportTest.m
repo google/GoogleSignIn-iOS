@@ -59,6 +59,11 @@ static NSString *const kEMMKey = @"emm_support";
 static NSString *const kDeviceOSKey = @"device_os";
 static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
+@interface GIDEMMSupport (Private)
++ (NSDictionary<NSString *, NSString *> *)
+    dictionaryWithStringValuesFromDictionary:(NSDictionary *)originalDictionary;
+@end
+
 @interface GIDEMMSupportTest : XCTestCase
   // The view controller that has been presented, if any.
 @property(nonatomic, strong, nullable) UIViewController *presentedViewController;
@@ -272,6 +277,138 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   [self waitForExpectations:@[ notCalled ] timeout:1];
   savedCompletion();
   [self waitForExpectations:@[ called ] timeout:1];
+}
+
+# pragma mark - String Conversion Tests
+
+- (void)testStringConversion_withAnyNumber_isConvertedToString {
+  NSDictionary *inputDictionary = @{ @"number_key": @12345 };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"12345",
+                        @"The NSNumber should be converted to a string.");
+}
+
+- (void)testStringConversion_withNumberOne_isConvertedToString {
+  NSDictionary *inputDictionary = @{ @"number_key": @1 };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"1",
+                        @"The NSNumber should be converted to a string.");
+}
+
+- (void)testStringConversion_withNumberZero_isConvertedToString {
+  NSDictionary *inputDictionary = @{ @"number_key": @0};
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"0",
+                        @"The NSNumber should be converted to a string.");
+}
+
+- (void)testStringConversion_withBooleanYes_isConvertedToTrueString {
+  NSDictionary *inputDictionary = @{ @"bool_key": @YES };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"true",
+                        @"The boolean YES should be converted to the string 'true'.");
+}
+
+- (void)testStringConversion_withBooleanNo_isConvertedToFalseString {
+  NSDictionary *inputDictionary = @{ @"bool_key": @NO };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"false",
+                        @"The boolean NO should be converted to the string 'false'.");
+}
+
+- (void)testStringConversion_withString_remainsUnchanged {
+  NSDictionary *inputDictionary = @{ @"string_key": @"hello" };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"string_key"] isKindOfClass:[NSString class]],
+                @"The value should still be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"string_key"], @"hello",
+                        @"The original string value should be preserved.");
+}
+
+- (void)testStringConversion_withArray_isConvertedToJSONString {
+  NSDictionary *inputDictionary = @{
+    @"array_key": @[ @1, @"two", @YES ]
+  };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"array_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"array_key"], @"[1,\"two\",true]",
+                        @"The array should be serialized into a JSON string.");
+}
+
+- (void)testStringConversion_withDictionary_isConvertedToJSONString {
+  NSDictionary *valueAsDictionary = @{ @"nested_key": @"nested_value" };
+  NSDictionary *inputDictionary = @{
+    @"dict_key": @{
+      @"nested_key": @"nested_value"
+    }
+  };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"dict_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"dict_key"], @"{\"nested_key\":\"nested_value\"}",
+                        @"The dictionary should be serialized into a JSON string.");
+}
+
+- (void)testStringConversion_withMixedTypes_allAreConverted {
+  NSDictionary *inputDictionary = @{
+    @"string_key": @"hello",
+    @"number_key": @987,
+    @"bool_key": @YES,
+    @"array_key": @[ @"a", @NO ],
+  };
+
+  NSDictionary *resultDictionary = [GIDEMMSupport
+                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+
+  XCTAssertTrue([resultDictionary[@"string_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"string_key"], @"hello");
+
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"987");
+
+  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"true");
+
+  XCTAssertTrue([resultDictionary[@"array_key"] isKindOfClass:[NSString class]]);
+  XCTAssertEqualObjects(resultDictionary[@"array_key"], @"[\"a\",false]");
+}
+
+- (void)testStringConversion_withEmptyDictionary_returnsEmptyDictionary {
+  NSDictionary *resultDictionary = [GIDEMMSupport dictionaryWithStringValuesFromDictionary:@{}];
+
+  XCTAssertEqual(resultDictionary.count, 0, @"The resulting dictionary should be empty.");
 }
 
 # pragma mark - Helpers
