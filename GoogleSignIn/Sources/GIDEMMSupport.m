@@ -58,6 +58,13 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   ErrorCodeAppVerificationRequired,
 };
 
+@interface GIDEMMSupport ()
+
++ (NSDictionary<NSString *, NSString *> *)
+    dictionaryWithStringValuesFromDictionary:(NSDictionary *)originalDictionary;
+
+@end
+
 @implementation GIDEMMSupport
 
 - (instancetype)init {
@@ -115,9 +122,11 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
 #pragma mark - GTMAuthSessionDelegate
 
 - (nullable NSDictionary<NSString *,NSString *> *)
-additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
-  return [GIDEMMSupport updatedEMMParametersWithParameters:
-          authSession.authState.lastTokenResponse.additionalParameters];
+    additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
+  NSDictionary *additionalParameters = authSession.authState.lastTokenResponse.additionalParameters;
+  NSDictionary *updatedAdditionalParameters =
+      [GIDEMMSupport updatedEMMParametersWithParameters:additionalParameters];
+  return [GIDEMMSupport dictionaryWithStringValuesFromDictionary:updatedAdditionalParameters];
 }
 
 - (void)updateErrorForAuthSession:(GTMAuthSession *)authSession
@@ -126,6 +135,48 @@ additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
   [GIDEMMSupport handleTokenFetchEMMError:originalError completion:^(NSError *_Nullable error) {
     completion(error);
   }];
+}
+
+#pragma mark - Private Helpers
+
++ (NSDictionary<NSString *, NSString *> *)
+    dictionaryWithStringValuesFromDictionary:(NSDictionary *)originalDictionary {
+  NSMutableDictionary<NSString *, NSString *> *stringifiedDictionary =
+      [NSMutableDictionary dictionaryWithCapacity:originalDictionary.count];
+
+  [originalDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+    // Case 1: The value is already of `NSString` type.
+    if ([value isKindOfClass:[NSString class]]) {
+      stringifiedDictionary[key] = value;
+        return;
+    }
+
+    // Case 2: The value is of `NSNumber` type (which includes `BOOL` type).
+    if ([value isKindOfClass:[NSNumber class]]) {
+      if (CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) {
+        stringifiedDictionary[key] = [value boolValue] ? @"true" : @"false";
+      } else {
+        stringifiedDictionary[key] = [value stringValue];
+      }
+      return;
+    }
+
+    // Case 3: The value is of NSArray or NSDictionary type.
+    // To satisfy `GTMAppAuth`'s requirement for [String: String] parameters, the entire
+    // object is serialized into a single JSON string.
+    if ([NSJSONSerialization isValidJSONObject:value]) {
+      NSError *error = nil;
+      NSData *jsonData = [NSJSONSerialization dataWithJSONObject:value options:0 error:&error];
+
+      if (jsonData && !error) {
+        stringifiedDictionary[key] = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+      } else {
+        stringifiedDictionary[key] = [value description];
+      }
+      return;
+    }
+  }];
+  return stringifiedDictionary;
 }
 
 @end
