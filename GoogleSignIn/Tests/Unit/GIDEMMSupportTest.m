@@ -287,7 +287,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   NSDictionary *resultDictionary = [GIDEMMSupport
                                     dictionaryWithStringValuesFromDictionary:inputDictionary];
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
   XCTAssertEqualObjects(resultDictionary[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
 }
@@ -298,7 +299,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   NSDictionary *resultDictionary = [GIDEMMSupport
                                     dictionaryWithStringValuesFromDictionary:inputDictionary];
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
   XCTAssertEqualObjects(resultDictionary[@"number_key"], @"1",
                         @"The NSNumber should be converted to a string.");
 }
@@ -309,7 +311,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   NSDictionary *resultDictionary = [GIDEMMSupport
                                     dictionaryWithStringValuesFromDictionary:inputDictionary];
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
   XCTAssertEqualObjects(resultDictionary[@"number_key"], @"0",
                         @"The NSNumber should be converted to a string.");
 }
@@ -365,7 +368,6 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 }
 
 - (void)testStringConversion_withDictionary_isConvertedToJSONString {
-  NSDictionary *valueAsDictionary = @{ @"nested_key": @"nested_value" };
   NSDictionary *inputDictionary = @{
     @"dict_key": @{
       @"nested_key": @"nested_value"
@@ -392,17 +394,25 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   NSDictionary *resultDictionary = [GIDEMMSupport
                                     dictionaryWithStringValuesFromDictionary:inputDictionary];
 
-  XCTAssertTrue([resultDictionary[@"string_key"] isKindOfClass:[NSString class]]);
-  XCTAssertEqualObjects(resultDictionary[@"string_key"], @"hello");
+  XCTAssertTrue([resultDictionary[@"string_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"string_key"], @"hello",
+                        @"The original string value should be preserved");
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]]);
-  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"987");
+  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"987",
+                        @"The NSNumber should be converted to a string.");
 
-  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]]);
-  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"true");
+  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"true",
+                        @"The boolean YES should be converted to the string 'true'.");
 
-  XCTAssertTrue([resultDictionary[@"array_key"] isKindOfClass:[NSString class]]);
-  XCTAssertEqualObjects(resultDictionary[@"array_key"], @"[\"a\",false]");
+  XCTAssertTrue([resultDictionary[@"array_key"] isKindOfClass:[NSString class]],
+                @"The value should be an NSString.");
+  XCTAssertEqualObjects(resultDictionary[@"array_key"], @"[\"a\",false]",
+                        @"The array should be serialized into a JSON string.");
 }
 
 - (void)testStringConversion_withEmptyDictionary_returnsEmptyDictionary {
