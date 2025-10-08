@@ -161,20 +161,10 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
       return;
     }
 
-    // Case 3: The value is of `NSArray` or `NSDictionary` type.
-    // To satisfy `GTMAppAuth`'s requirement for `NSDictionary<NSString *, NSString *>` parameter,
-    // the entire value object is serialized into a single `JSON` string.
-    if ([NSJSONSerialization isValidJSONObject:value]) {
-      NSError *error = nil;
-      NSData *jsonData = [NSJSONSerialization dataWithJSONObject:value options:0 error:&error];
-
-      if (jsonData && !error) {
-        stringifiedDictionary[key] = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-      } else {
-        stringifiedDictionary[key] = [value description];
-      }
-      return;
-    }
+    // NOTE: Nested container objects (e.g., NSArray, NSDictionary) are intentionally ignored.
+    // The underlying AppAuth API expects a flat `NSDictionary<NSString *, NSString *>` and is
+    // not designed for serialized, nested objects. A proper fix for nested objects
+    // would require a larger refactoring of the AppAuth and GTMAppAuth libraries.
   }];
   return stringifiedDictionary;
 }
