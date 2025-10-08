@@ -145,13 +145,10 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
       [NSMutableDictionary dictionaryWithCapacity:originalDictionary.count];
 
   [originalDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-    // Case 1: The value is already of `NSString` type.
     if ([value isKindOfClass:[NSString class]]) {
       stringifiedDictionary[key] = value;
         return;
     }
-
-    // Case 2: The value is of `NSNumber` type (which includes `BOOL` type).
     if ([value isKindOfClass:[NSNumber class]]) {
       if (CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) {
         stringifiedDictionary[key] = [value boolValue] ? @"true" : @"false";
@@ -160,11 +157,6 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
       }
       return;
     }
-
-    // NOTE: Nested container objects (e.g., NSArray, NSDictionary) are intentionally ignored.
-    // The underlying AppAuth API expects a flat `NSDictionary<NSString *, NSString *>` and is
-    // not designed for serialized, nested objects. A proper fix for nested objects
-    // would require a larger refactoring of the AppAuth and GTMAppAuth libraries.
   }];
   return stringifiedDictionary;
 }
