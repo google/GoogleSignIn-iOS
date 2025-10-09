@@ -283,11 +283,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                                      emmSupport:@"1"
                                                          isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
-                @"The value should be an NSString.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
-  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 
@@ -298,11 +296,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                                      emmSupport:@"1"
                                                          isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
-                @"The value should be an NSString.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"1",
                         @"The NSNumber should be converted to a string.");
-  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 - (void)testParametersWithParameters_withNumberZero_isConvertedToString {
@@ -312,11 +308,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                                      emmSupport:@"1"
                                                          isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
-                @"The value should be an NSString.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"0",
                         @"The NSNumber should be converted to a string.");
-  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 - (void)testParametersWithParameters_withBooleanYes_isConvertedToTrueString {
@@ -326,11 +320,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                                      emmSupport:@"1"
                                                          isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
-                @"The value should be an NSString.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
   XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"true",
                         @"The boolean YES should be converted to the string 'true'.");
-  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 - (void)testParametersWithParameters_withBooleanNo_isConvertedToFalseString {
@@ -340,11 +332,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                                      emmSupport:@"1"
                                                          isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
-                @"The value should be an NSString.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
   XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"false",
                         @"The boolean NO should be converted to the string 'false'.");
-  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 - (void)testParametersWithParameters_withString_remainsUnchanged {
@@ -354,11 +344,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                                                      emmSupport:@"1"
                                                          isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([stringifiedParameters[@"string_key"] isKindOfClass:[NSString class]],
-                @"The value should still be an NSString.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
   XCTAssertEqualObjects(stringifiedParameters[@"string_key"], @"hello",
                         @"The original string value should be preserved.");
-  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 # pragma mark - Helpers
