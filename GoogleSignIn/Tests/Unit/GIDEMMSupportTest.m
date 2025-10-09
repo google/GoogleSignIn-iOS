@@ -59,11 +59,6 @@ static NSString *const kEMMKey = @"emm_support";
 static NSString *const kDeviceOSKey = @"device_os";
 static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
-@interface GIDEMMSupport (Private)
-+ (NSDictionary<NSString *, NSString *> *)
-    dictionaryWithStringValuesFromDictionary:(NSDictionary *)originalDictionary;
-@end
-
 @interface GIDEMMSupportTest : XCTestCase
   // The view controller that has been presented, if any.
 @property(nonatomic, strong, nullable) UIViewController *presentedViewController;
