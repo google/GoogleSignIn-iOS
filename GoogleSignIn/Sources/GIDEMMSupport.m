@@ -84,16 +84,16 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   }
 }
 
-+ (NSDictionary *)updatedEMMParametersWithParameters:(NSDictionary *)parameters {
++ (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
+    (NSDictionary *)parameters {
   return [self parametersWithParameters:parameters
                              emmSupport:parameters[kEMMSupportParameterName]
                  isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
 }
 
-
-+ (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
-                                emmSupport:(nullable NSString *)emmSupport
-                    isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
++ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+                                                       emmSupport:(nullable NSString *)emmSupport
+                                           isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
   if (!emmSupport) {
     return parameters;
   }
