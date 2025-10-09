@@ -288,7 +288,6 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                         @"The NSNumber should be converted to a string.");
 }
 
-
 - (void)testParametersWithParameters_withNumberOne_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @1 };
 
