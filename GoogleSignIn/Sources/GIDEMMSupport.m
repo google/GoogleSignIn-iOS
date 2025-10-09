@@ -58,13 +58,6 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   ErrorCodeAppVerificationRequired,
 };
 
-@interface GIDEMMSupport ()
-
-+ (NSDictionary<NSString *, NSString *> *)
-    dictionaryWithStringValuesFromDictionary:(NSDictionary *)originalDictionary;
-
-@end
-
 @implementation GIDEMMSupport
 
 - (instancetype)init {
@@ -116,17 +109,15 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   if (isPasscodeInfoRequired) {
     allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
   }
-  return allParameters;
+  return [GIDEMMSupport dictionaryWithStringValuesFromDictionary:allParameters];
 }
 
 #pragma mark - GTMAuthSessionDelegate
 
 - (nullable NSDictionary<NSString *,NSString *> *)
-    additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
-  NSDictionary *additionalParameters = authSession.authState.lastTokenResponse.additionalParameters;
-  NSDictionary *updatedAdditionalParameters =
-      [GIDEMMSupport updatedEMMParametersWithParameters:additionalParameters];
-  return [GIDEMMSupport dictionaryWithStringValuesFromDictionary:updatedAdditionalParameters];
+additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
+  return [GIDEMMSupport updatedEMMParametersWithParameters:
+          authSession.authState.lastTokenResponse.additionalParameters];
 }
 
 - (void)updateErrorForAuthSession:(GTMAuthSession *)authSession
