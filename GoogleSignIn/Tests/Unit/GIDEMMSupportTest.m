@@ -281,76 +281,89 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 # pragma mark - String Conversion Tests
 
-- (void)testStringConversion_withAnyNumber_isConvertedToString {
-  NSDictionary *inputDictionary = @{ @"number_key": @12345 };
+- (void)testParametersWithParameters_withAnyNumber_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @12345 };
 
-  NSDictionary *resultDictionary = [GIDEMMSupport
-                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
                 @"The value should be an NSString.");
-  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"12345",
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
-- (void)testStringConversion_withNumberOne_isConvertedToString {
-  NSDictionary *inputDictionary = @{ @"number_key": @1 };
 
-  NSDictionary *resultDictionary = [GIDEMMSupport
-                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+- (void)testParametersWithParameters_withNumberOne_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @1 };
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
                 @"The value should be an NSString.");
-  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"1",
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"1",
                         @"The NSNumber should be converted to a string.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
-- (void)testStringConversion_withNumberZero_isConvertedToString {
-  NSDictionary *inputDictionary = @{ @"number_key": @0};
+- (void)testParametersWithParameters_withNumberZero_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @0};
 
-  NSDictionary *resultDictionary = [GIDEMMSupport
-                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([resultDictionary[@"number_key"] isKindOfClass:[NSString class]],
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
                 @"The value should be an NSString.");
-  XCTAssertEqualObjects(resultDictionary[@"number_key"], @"0",
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"0",
                         @"The NSNumber should be converted to a string.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
-- (void)testStringConversion_withBooleanYes_isConvertedToTrueString {
-  NSDictionary *inputDictionary = @{ @"bool_key": @YES };
+- (void)testParametersWithParameters_withBooleanYes_isConvertedToTrueString {
+  NSDictionary *inputParameters = @{ @"bool_key": @YES };
 
-  NSDictionary *resultDictionary = [GIDEMMSupport
-                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]],
+  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
                 @"The value should be an NSString.");
-  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"true",
+  XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"true",
                         @"The boolean YES should be converted to the string 'true'.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
-- (void)testStringConversion_withBooleanNo_isConvertedToFalseString {
-  NSDictionary *inputDictionary = @{ @"bool_key": @NO };
+- (void)testParametersWithParameters_withBooleanNo_isConvertedToFalseString {
+  NSDictionary *inputParameters = @{ @"bool_key": @NO };
 
-  NSDictionary *resultDictionary = [GIDEMMSupport
-                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([resultDictionary[@"bool_key"] isKindOfClass:[NSString class]],
+  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
                 @"The value should be an NSString.");
-  XCTAssertEqualObjects(resultDictionary[@"bool_key"], @"false",
+  XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"false",
                         @"The boolean NO should be converted to the string 'false'.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
-- (void)testStringConversion_withString_remainsUnchanged {
-  NSDictionary *inputDictionary = @{ @"string_key": @"hello" };
+- (void)testParametersWithParameters_withString_remainsUnchanged {
+  NSDictionary *inputParameters = @{ @"string_key": @"hello" };
 
-  NSDictionary *resultDictionary = [GIDEMMSupport
-                                    dictionaryWithStringValuesFromDictionary:inputDictionary];
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
 
-  XCTAssertTrue([resultDictionary[@"string_key"] isKindOfClass:[NSString class]],
+  XCTAssertTrue([stringifiedParameters[@"string_key"] isKindOfClass:[NSString class]],
                 @"The value should still be an NSString.");
-  XCTAssertEqualObjects(resultDictionary[@"string_key"], @"hello",
+  XCTAssertEqualObjects(stringifiedParameters[@"string_key"], @"hello",
                         @"The original string value should be preserved.");
+  [self assertAllKeysAndValuesAreStringsInDictionary:stringifiedParameters];
 }
 
 # pragma mark - Helpers
@@ -379,6 +392,16 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                      selector:@selector(presentViewController:animated:completion:)
               isClassSelector:NO];
   self.presentedViewController = nil;
+}
+
+- (void)assertAllKeysAndValuesAreStringsInDictionary:(NSDictionary *)dictionary {
+  [dictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+    XCTAssertTrue([key isKindOfClass:[NSString class]],
+                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
+    XCTAssertTrue([obj isKindOfClass:[NSString class]],
+                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
+                  [obj class], key);
+  }];
 }
 
 @end
