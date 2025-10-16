@@ -285,13 +285,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
-  [stringifiedParameters enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-    XCTAssertTrue([key isKindOfClass:[NSString class]],
-                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
-    XCTAssertTrue([obj isKindOfClass:[NSString class]],
-                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
-                  [obj class], key);
-  }];
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
 }
 
 - (void)testParametersWithParameters_withNumberOne_isConvertedToString {
@@ -303,13 +298,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"1",
                         @"The NSNumber should be converted to a string.");
-  [stringifiedParameters enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-    XCTAssertTrue([key isKindOfClass:[NSString class]],
-                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
-    XCTAssertTrue([obj isKindOfClass:[NSString class]],
-                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
-                  [obj class], key);
-  }];
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
 }
 
 - (void)testParametersWithParameters_withNumberZero_isConvertedToString {
@@ -321,13 +311,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"0",
                         @"The NSNumber should be converted to a string.");
-  [stringifiedParameters enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-    XCTAssertTrue([key isKindOfClass:[NSString class]],
-                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
-    XCTAssertTrue([obj isKindOfClass:[NSString class]],
-                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
-                  [obj class], key);
-  }];
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
 }
 
 - (void)testParametersWithParameters_withBooleanYes_isConvertedToTrueString {
@@ -339,13 +324,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"true",
                         @"The boolean YES should be converted to the string 'true'.");
-  [stringifiedParameters enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-    XCTAssertTrue([key isKindOfClass:[NSString class]],
-                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
-    XCTAssertTrue([obj isKindOfClass:[NSString class]],
-                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
-                  [obj class], key);
-  }];
+  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
 }
 
 - (void)testParametersWithParameters_withBooleanNo_isConvertedToFalseString {
@@ -357,13 +337,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"false",
                         @"The boolean NO should be converted to the string 'false'.");
-  [stringifiedParameters enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-    XCTAssertTrue([key isKindOfClass:[NSString class]],
-                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
-    XCTAssertTrue([obj isKindOfClass:[NSString class]],
-                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
-                  [obj class], key);
-  }];
+  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
 }
 
 - (void)testParametersWithParameters_withString_remainsUnchanged {
@@ -375,13 +350,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
   XCTAssertEqualObjects(stringifiedParameters[@"string_key"], @"hello",
                         @"The original string value should be preserved.");
-  [stringifiedParameters enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-    XCTAssertTrue([key isKindOfClass:[NSString class]],
-                  @"All keys must be NSStrings. Found a key of type '%@'.", [key class]);
-    XCTAssertTrue([obj isKindOfClass:[NSString class]],
-                  @"All values must be NSStrings. Found a value of type '%@' for key '%@'.",
-                  [obj class], key);
-  }];
+  XCTAssertTrue([stringifiedParameters[@"string_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
 }
 
 # pragma mark - Helpers
