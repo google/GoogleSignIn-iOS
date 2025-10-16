@@ -274,6 +274,86 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   [self waitForExpectations:@[ called ] timeout:1];
 }
 
+# pragma mark - String Conversion Tests
+
+- (void)testParametersWithParameters_withAnyNumber_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @12345 };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
+                        @"The NSNumber should be converted to a string.");
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
+- (void)testParametersWithParameters_withNumberOne_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @1 };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"1",
+                        @"The NSNumber should be converted to a string.");
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
+- (void)testParametersWithParameters_withNumberZero_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @0};
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"0",
+                        @"The NSNumber should be converted to a string.");
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
+- (void)testParametersWithParameters_withBooleanYes_isConvertedToTrueString {
+  NSDictionary *inputParameters = @{ @"bool_key": @YES };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"true",
+                        @"The boolean YES should be converted to the string 'true'.");
+  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
+- (void)testParametersWithParameters_withBooleanNo_isConvertedToFalseString {
+  NSDictionary *inputParameters = @{ @"bool_key": @NO };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"false",
+                        @"The boolean NO should be converted to the string 'false'.");
+  XCTAssertTrue([stringifiedParameters[@"bool_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
+- (void)testParametersWithParameters_withString_remainsUnchanged {
+  NSDictionary *inputParameters = @{ @"string_key": @"hello" };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"string_key"], @"hello",
+                        @"The original string value should be preserved.");
+  XCTAssertTrue([stringifiedParameters[@"string_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
 # pragma mark - Helpers
 
 - (NSString *)systemVersion {
