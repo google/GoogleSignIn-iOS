@@ -34,12 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
                       completion:(void (^)(NSError *_Nullable))completion;
 
 /// Gets a new set of URL parameters that contains updated EMM-related URL parameters if needed.
-+ (NSDictionary *)updatedEMMParametersWithParameters:(NSDictionary *)parameters;
++ (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
+    (NSDictionary *)parameters;
 
 /// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
-+ (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
-                                emmSupport:(nullable NSString *)emmSupport
-                    isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;
++ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+                                                       emmSupport:(nullable NSString *)emmSupport
+                                           isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;
 
 @end
 
