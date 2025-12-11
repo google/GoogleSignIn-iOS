@@ -120,8 +120,6 @@ static NSString * const kEMMWrongActionURL =
      @"com.google.UnitTests:///emmcallback?action=unrecognized";
 static NSString * const kDevicePolicyAppBundleID = @"com.google.DevicePolicy";
 
-static NSString * const kAppHasRunBeforeKey = @"GPP_AppHasRunBefore";
-
 static NSString * const kFingerprintKeychainName = @"fingerprint";
 static NSString * const kVerifierKeychainName = @"verifier";
 static NSString * const kVerifierKey = @"verifier";
@@ -1210,6 +1208,18 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongPathURL]], @"should not handle URL");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
+}
+
+#pragma mark - Test Fresh Install
+
+- (void)testFreshInstall_removesKeychainEntries {
+  // Simulate that the app has been deleted and user defaults removed.
+  [NSUserDefaults.standardUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
+  // Initialization should check `isFreshInstall`.
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                     authStateMigrationService:_authStateMigrationService];
+  // If `isFreshInstall`, keychain entries should be removed.
+  XCTAssertTrue(self->_keychainRemoved);
 }
 
 #pragma mark - Tests - disconnectWithCallback:

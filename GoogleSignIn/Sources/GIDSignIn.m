@@ -120,8 +120,7 @@ static NSString *const kKeychainError = @"keychain error";
 // Error string for user cancelations.
 static NSString *const kUserCanceledError = @"The user canceled the sign-in flow.";
 
-// User preference key to detect fresh install of the app.
-static NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
+NSString *const kAppHasRunBeforeKey = @"GID_AppHasRunBefore";
 
 // Maximum retry interval in seconds for the fetcher.
 static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
@@ -672,6 +671,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
     // Check to see if the 3P app is being run for the first time after a fresh install.
     BOOL isFreshInstall = [self isFreshInstall];
+    
+    // If this is a fresh install, ensure that any pre-existing keychain data is purged.
+    if (isFreshInstall) {
+      [self removeAllKeychainEntries];
+    }
 
     NSString *authorizationEnpointURL = [NSString stringWithFormat:kAuthorizationURLTemplate,
                                          [GIDSignInPreferences googleAuthorizationServer]];
