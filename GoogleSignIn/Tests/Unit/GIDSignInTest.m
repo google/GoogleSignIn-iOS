@@ -1219,6 +1219,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                      authStateMigrationService:_authStateMigrationService];
   // If `isFreshInstall`, keychain entries should be removed.
+  XCTAssertNotNil(signIn);
   XCTAssertTrue(self->_keychainRemoved);
 }
 
