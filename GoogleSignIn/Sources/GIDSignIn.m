@@ -28,7 +28,7 @@
 #import "GoogleSignIn/Sources/GIDCallbackQueue.h"
 #import "GoogleSignIn/Sources/GIDScopes.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
-#import "GoogleSignIn/Sources/GIDTokenClaimsInternalOptions.h"
+#import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
@@ -138,7 +138,7 @@ static NSString *const kLoginHintParameter = @"login_hint";
 static NSString *const kHostedDomainParameter = @"hd";
 
 // Parameter for requesting the token claims.
-static NSString *const kTokenClaimsParameter = @"claims";
+static NSString *const kClaimsParameter = @"claims";
 
 // Parameters for auth and token exchange endpoints using App Attest.
 static NSString *const kClientAssertionParameter = @"client_assertion";
@@ -173,7 +173,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // set when a sign-in flow is begun via |signInWithOptions:| when the options passed don't
   // represent a sign in continuation.
   GIDSignInInternalOptions *_currentOptions;
-  GIDTokenClaimsInternalOptions *_tokenClaimsInternalOptions;
+  GIDClaimsInternalOptions *_claimsInternalOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheck *_appCheck API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -293,40 +293,40 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                       hint:hint
                           additionalScopes:additionalScopes
                                      nonce:nonce
-                               tokenClaims:nil
+                                    claims:nil
                                 completion:completion];
 }
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                    claims:(nullable NSSet<GIDClaim *> *)claims
                                 completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:nil
-                               tokenClaims:tokenClaims
+                                    claims:claims
                                 completion:completion];
 }
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                    claims:(nullable NSSet<GIDClaim *> *)claims
                                 completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:hint
                           additionalScopes:@[]
-                               tokenClaims:tokenClaims
+                                    claims:claims
                                 completion:completion];
 }
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                    claims:(nullable NSSet<GIDClaim *> *)claims
                                 completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingViewController:presentingViewController
                                       hint:hint
                           additionalScopes:additionalScopes
                                      nonce:nil
-                               tokenClaims:tokenClaims
+                                    claims:claims
                                 completion:completion];
 }
 
@@ -335,7 +335,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                       hint:(nullable NSString *)hint
                           additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                                      nonce:(nullable NSString *)nonce
-                               tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                                    claims:(nullable NSSet<GIDClaim *> *)claims
                                 completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
@@ -344,7 +344,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                   addScopesFlow:NO
                                                          scopes:additionalScopes
                                                           nonce:nonce
-                                                    tokenClaims:tokenClaims
+                                                         claims:claims
                                                      completion:completion];
   [self signInWithOptions:options];
 }
@@ -369,10 +369,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   OIDAuthorizationRequest *lastAuthorizationRequest =
       self.currentUser.authState.lastAuthorizationResponse.request;
-  NSString *lastTokenClaimsAsJSON =
-      lastAuthorizationRequest.additionalParameters[kTokenClaimsParameter];
-  if (lastTokenClaimsAsJSON) {
-    options.tokenClaimsAsJSON = lastTokenClaimsAsJSON;
+  NSString *lastClaimsAsJSON =
+      lastAuthorizationRequest.additionalParameters[kClaimsParameter];
+  if (lastClaimsAsJSON) {
+    options.claimsAsJSON = lastClaimsAsJSON;
   }
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
@@ -441,40 +441,40 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               hint:hint
                   additionalScopes:additionalScopes
                              nonce:nonce
-                       tokenClaims:nil
+                            claims:nil
                         completion:completion];
 }
 
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
-                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                            claims:(nullable NSSet<GIDClaim *> *)claims
                         completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingWindow:presentingWindow
                               hint:nil
-                       tokenClaims:tokenClaims
+                            claims:claims
                         completion:completion];
 }
 
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
-                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                            claims:(nullable NSSet<GIDClaim *> *)claims
                         completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingWindow:presentingWindow
                               hint:hint
                   additionalScopes:@[]
-                       tokenClaims:tokenClaims
+                            claims:claims
                         completion:completion];
 }
 
 - (void)signInWithPresentingWindow:(NSWindow *)presentingWindow
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
-                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                            claims:(nullable NSSet<GIDClaim *> *)claims
                         completion:(nullable GIDSignInCompletion)completion {
   [self signInWithPresentingWindow:presentingWindow
                               hint:hint
                   additionalScopes:additionalScopes
                              nonce:nil
-                       tokenClaims:tokenClaims
+                            claims:claims
                         completion:completion];
 }
 
@@ -482,7 +482,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                               hint:(nullable NSString *)hint
                   additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                              nonce:(nullable NSString *)nonce
-                       tokenClaims:(nullable NSSet<GIDTokenClaim *> *)tokenClaims
+                            claims:(nullable NSSet<GIDClaim *> *)claims
                         completion:(nullable GIDSignInCompletion)completion {
   GIDSignInInternalOptions *options =
       [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
@@ -491,7 +491,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                   addScopesFlow:NO
                                                          scopes:additionalScopes
                                                           nonce:nonce
-                                                    tokenClaims:tokenClaims
+                                                         claims:claims
                                                      completion:completion];
   [self signInWithOptions:options];
 }
@@ -509,10 +509,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   OIDAuthorizationRequest *lastAuthorizationRequest =
       self.currentUser.authState.lastAuthorizationResponse.request;
-  NSString *lastTokenClaimsAsJSON =
-      lastAuthorizationRequest.additionalParameters[kTokenClaimsParameter];
-  if (lastTokenClaimsAsJSON) {
-    options.tokenClaimsAsJSON = lastTokenClaimsAsJSON;
+  NSString *lastClaimsAsJSON =
+      lastAuthorizationRequest.additionalParameters[kClaimsParameter];
+  if (lastClaimsAsJSON) {
+    options.claimsAsJSON = lastClaimsAsJSON;
   }
 
   NSSet<NSString *> *requestedScopes = [NSSet setWithArray:scopes];
@@ -660,7 +660,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   self = [super init];
   if (self) {
     _keychainStore = keychainStore;
-    _tokenClaimsInternalOptions = [[GIDTokenClaimsInternalOptions alloc] init];
+    _claimsInternalOptions = [[GIDClaimsInternalOptions alloc] init];
 
     // Get the bundle of the current executable.
     NSBundle *bundle = NSBundle.mainBundle;
@@ -755,14 +755,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       }
     }];
   } else {
-    // Only serialize tokenClaims if options.tokenClaimsAsJSON isn't already set.
-    if (!options.tokenClaimsAsJSON) {
+    // Only serialize claims if options.claimsAsJSON isn't already set.
+    if (!options.claimsAsJSON) {
       NSError *claimsError;
 
-      // If tokenClaims are invalid or JSON serialization fails, return with an error.
-      options.tokenClaimsAsJSON = [_tokenClaimsInternalOptions
-                                   validatedJSONStringForClaims:options.tokenClaims
-                                                          error:&claimsError];
+      // If claims are invalid or JSON serialization fails, return with an error.
+      options.claimsAsJSON = [_claimsInternalOptions
+                              validatedJSONStringForClaims:options.claims
+                                                     error:&claimsError];
       if (claimsError) {
         if (options.completion) {
           _currentOptions = nil;
@@ -902,8 +902,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   if (options.configuration.hostedDomain) {
     additionalParameters[kHostedDomainParameter] = options.configuration.hostedDomain;
   }
-  if (options.tokenClaimsAsJSON) {
-    additionalParameters[kTokenClaimsParameter] = options.tokenClaimsAsJSON;
+  if (options.claimsAsJSON) {
+    additionalParameters[kClaimsParameter] = options.claimsAsJSON;
   }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
