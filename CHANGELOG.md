@@ -1,10 +1,10 @@
 # 9.1.0
-- Allow requesting `claims` (currently, only `auth_time`) via flow initializer methods, eg. `[signInWithPresentingViewController](https://github.com/google/GoogleSignIn-iOS/blob/gandhiakshat/update-changelog-for-9.1.0-release/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240)` ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
-- Update the `AddScopes` method to include previously requested `claims` ([#557](https://github.com/google/GoogleSignIn-iOS/pull/557))
+- Allow requesting `claims` (currently, only `auth_time`) via Sign-in methods, e.g., `[signInWithPresentingViewController](https://github.com/google/GoogleSignIn-iOS/blob/gandhiakshat/update-changelog-for-9.1.0-release/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240)` ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
+- Update the `addScopes` method to include previously requested `claims` ([#557](https://github.com/google/GoogleSignIn-iOS/pull/557))
 - Internal
   - Assign to keychainStore asap in initializer ([#540](https://github.com/google/GoogleSignIn-iOS/pull/540))
   - Add support for Swift 6 ([#543](https://github.com/google/GoogleSignIn-iOS/pull/543), [#544](https://github.com/google/GoogleSignIn-iOS/pull/544), [#546](https://github.com/google/GoogleSignIn-iOS/pull/546))
-  - Update Github Actions workflows ([#545](https://github.com/google/GoogleSignIn-iOS/pull/545), [#570](https://github.com/google/GoogleSignIn-iOS/pull/570))
+  - Update GitHub Actions workflows ([#545](https://github.com/google/GoogleSignIn-iOS/pull/545), [#570](https://github.com/google/GoogleSignIn-iOS/pull/570))
   - Update the `DaysUntilBirthday` sample app to support `auth_time` claim ([#555](https://github.com/google/GoogleSignIn-iOS/pull/555))
   - Rename `tokenClaims` to `claims` throughout the code ([#568](https://github.com/google/GoogleSignIn-iOS/pull/568))
 
