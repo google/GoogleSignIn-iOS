@@ -29,6 +29,6 @@ extern NSString * _Nonnull const OIDAuthorizationRequestTestingCodeVerifier;
 
 + (instancetype _Nonnull)testInstance;
 
-+ (instancetype _Nonnull)testInstanceWithNonce:(nullable NSString *)nonce;
-
++ (instancetype _Nonnull)testInstanceWithNonce:(nullable NSString *)nonce
+                          additionalParameters:(nullable NSDictionary<NSString *, NSString *> *)additionalParameters;
 @end

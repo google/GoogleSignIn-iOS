@@ -46,7 +46,10 @@
       [parameters addEntriesFromDictionary:additionalParameters];
     }
   }
-  return [[OIDAuthorizationResponse alloc] initWithRequest:[OIDAuthorizationRequest testInstanceWithNonce:nonce]
+  OIDAuthorizationRequest *request =
+      [OIDAuthorizationRequest testInstanceWithNonce:nonce
+                                additionalParameters:additionalParameters];
+  return [[OIDAuthorizationResponse alloc] initWithRequest:request
                                                 parameters:parameters];
 }
 

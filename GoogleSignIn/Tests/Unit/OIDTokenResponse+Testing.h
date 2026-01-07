@@ -33,6 +33,7 @@ extern NSString *const kUserID;
 extern NSString *const kHostedDomain;
 extern NSString *const kIssuer;
 extern NSString *const kAudience;
+extern NSString *const kAuthTime;
 extern NSTimeInterval const kIDTokenExpires;
 extern NSTimeInterval const kIssuedAt;
 
@@ -59,9 +60,18 @@ extern NSString * const kFatPictureURL;
                            refreshToken:(NSString *)refreshToken
                            tokenRequest:(OIDTokenRequest *)tokenRequest;
 
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                              expiresIn:(NSNumber *)expiresIn
+                           refreshToken:(NSString *)refreshToken
+                               authTime:(NSString *)authTime
+                           tokenRequest:(OIDTokenRequest *)tokenRequest;
+
 + (NSString *)idToken;
 
 + (NSString *)fatIDToken;
+
++ (NSString *)fatIDTokenWithAuthTime;
 
 /**
  * @sub The subject of the ID token.
@@ -70,5 +80,7 @@ extern NSString * const kFatPictureURL;
 + (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp;
 
 + (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp fat:(BOOL)fat;
+
++ (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp fat:(BOOL)fat authTime:(NSString *)authTime;
 
 @end

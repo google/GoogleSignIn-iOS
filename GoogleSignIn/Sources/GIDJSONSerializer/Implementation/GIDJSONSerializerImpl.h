@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import <TargetConditionals.h>
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import "GIDAppCheckError.h"
-#endif
-#import "GIDConfiguration.h"
-#import "GIDGoogleUser.h"
-#import "GIDProfileData.h"
-#import "GIDSignIn.h"
-#import "GIDToken.h"
-#import "GIDSignInResult.h"
-#import "GIDClaim.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-#import "GIDSignInButton.h"
-#endif
+#import "GoogleSignIn/Sources/GIDJSONSerializer/API/GIDJSONSerializer.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+extern NSString *const kGIDJSONSerializationErrorDescription;
+
+@interface GIDJSONSerializerImpl : NSObject <GIDJSONSerializer>
+@end
+
+NS_ASSUME_NONNULL_END
