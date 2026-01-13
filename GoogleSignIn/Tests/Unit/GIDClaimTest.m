@@ -34,7 +34,7 @@
 }
 
 - (void)testAMRClaim_PropertiesAreCorrect {
-  GIDClaim *claim = [GIDClaim amrClaim];
+  GIDClaim *claim = [GIDClaim AMRClaim];
   XCTAssertEqualObjects(claim.name, kAMRClaimName);
   XCTAssertFalse(claim.isEssential);
 }

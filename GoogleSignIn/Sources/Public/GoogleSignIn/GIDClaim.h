@@ -44,7 +44,7 @@ extern NSString *const kAMRClaimName;
 + (instancetype)essentialAuthTimeClaim;
 
 /// Creates a *non-essential* (voluntary) "amr" claim object.
-+ (instancetype)amrClaim;
++ (instancetype)AMRClaim;
 
 /// Creates an *essential* "amr" claim object.
 + (instancetype)essentialAMRClaim;

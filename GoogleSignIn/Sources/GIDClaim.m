@@ -49,7 +49,7 @@ NSString * const kAMRClaimName = @"amr";
   return [[self alloc] initWithName:kAuthTimeClaimName essential:YES];
 }
 
-+ (instancetype)amrClaim {
++ (instancetype)AMRClaim {
   return [[self alloc] initWithName:kAMRClaimName essential:NO];
 }
 
