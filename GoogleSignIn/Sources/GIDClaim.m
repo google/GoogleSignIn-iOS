@@ -16,8 +16,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
-NSString * const kAuthTimeClaimName = @"auth_time";
-NSString * const kAMRClaimName = @"amr";
+NSString *const kAuthTimeClaimName = @"auth_time";
+NSString *const kAMRClaimName = @"amr";
 
 // Private interface to declare the internal initializer
 @interface GIDClaim ()
