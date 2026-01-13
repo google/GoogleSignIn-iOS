@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "E1592086-F47A-47B0-89F5-A5A3C3FBEF58",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "GoogleSignIn-UnitTests",
+        "name" : "GoogleSignIn-UnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

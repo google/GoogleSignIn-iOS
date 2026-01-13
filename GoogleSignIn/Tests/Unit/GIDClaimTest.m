@@ -33,6 +33,18 @@
   XCTAssertTrue(claim.isEssential);
 }
 
+- (void)testAMRClaim_PropertiesAreCorrect {
+  GIDClaim *claim = [GIDClaim amrClaim];
+  XCTAssertEqualObjects(claim.name, kAMRClaimName);
+  XCTAssertFalse(claim.isEssential);
+}
+
+- (void)testEssentialAMRClaim_PropertiesAreCorrect {
+  GIDClaim *claim = [GIDClaim essentialAMRClaim];
+  XCTAssertEqualObjects(claim.name, kAMRClaimName);
+  XCTAssertTrue(claim.isEssential);
+}
+
 - (void)testEquality_WithEqualClaims {
   GIDClaim *claim1 = [GIDClaim authTimeClaim];
   GIDClaim *claim2 = [GIDClaim authTimeClaim];
