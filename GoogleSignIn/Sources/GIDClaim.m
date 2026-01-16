@@ -16,7 +16,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
-NSString * const kAuthTimeClaimName = @"auth_time";
+NSString *const kAuthTimeClaimName = @"auth_time";
+NSString *const kAMRClaimName = @"amr";
 
 // Private interface to declare the internal initializer
 @interface GIDClaim ()
@@ -46,6 +47,14 @@ NSString * const kAuthTimeClaimName = @"auth_time";
 
 + (instancetype)essentialAuthTimeClaim {
   return [[self alloc] initWithName:kAuthTimeClaimName essential:YES];
+}
+
++ (instancetype)AMRClaim {
+  return [[self alloc] initWithName:kAMRClaimName essential:NO];
+}
+
++ (instancetype)essentialAMRClaim {
+  return [[self alloc] initWithName:kAMRClaimName essential:YES];
 }
 
 #pragma mark - NSObject
