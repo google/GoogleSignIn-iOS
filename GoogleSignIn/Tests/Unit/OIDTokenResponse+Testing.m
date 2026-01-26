@@ -71,21 +71,6 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
                               expiresIn:(NSNumber *)expiresIn
                            refreshToken:(NSString *)refreshToken
                            tokenRequest:(OIDTokenRequest *)tokenRequest {
-  return [OIDTokenResponse testInstanceWithIDToken:idToken
-                                       accessToken:accessToken
-                                         expiresIn:expiresIn
-                                      refreshToken:refreshToken
-                                          authTime:nil
-                                      tokenRequest:tokenRequest];
-}
-
-+ (instancetype)testInstanceWithIDToken:(NSString *)idToken
-                            accessToken:(NSString *)accessToken
-                              expiresIn:(NSNumber *)expiresIn
-                           refreshToken:(NSString *)refreshToken
-                               authTime:(NSString *)authTime
-                           tokenRequest:(OIDTokenRequest *)tokenRequest {
-
   NSMutableDictionary<NSString *, NSString *> *parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
     @"access_token" : accessToken ?: kAccessToken,
     @"expires_in" : expiresIn ?: @(kAccessTokenExpiresIn),
@@ -109,8 +94,12 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   return [self idTokenWithSub:kUserID exp:@(kIDTokenExpires) fat:YES];
 }
 
-+ (NSString *)fatIDTokenWithAuthTime {
-  return [self idTokenWithSub:kUserID exp:@(kIDTokenExpires) fat:YES authTime:kAuthTime];
++ (NSString *)fatIDTokenWithClaims {
+  return [self idTokenWithSub:kUserID exp:@(kIDTokenExpires) fat:YES claims:YES];
+}
+
++ (NSArray<NSString *> *)stubbedAMRValues {
+  return @[ @"pwd", @"mfa", @"otp" ];
 }
 
 + (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp {
@@ -120,13 +109,13 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
 + (NSString *)idTokenWithSub:(NSString *)sub
                          exp:(NSNumber *)exp
                          fat:(BOOL)fat {
-  return [self idTokenWithSub:kUserID exp:exp fat:fat authTime:nil];
+  return [self idTokenWithSub:kUserID exp:exp fat:fat claims:NO];
 }
 
 + (NSString *)idTokenWithSub:(NSString *)sub
                          exp:(NSNumber *)exp
                          fat:(BOOL)fat
-                    authTime:(NSString *)authTime{
+                      claims:(BOOL)claims {
   NSError *error;
   NSDictionary *headerContents = @{
     @"alg" : kAlg,
@@ -156,9 +145,10 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
       kFatPictureURLKey : kFatPictureURL,
     }];
   }
-  if (authTime) {
+  if (claims) {
     [payloadContents addEntriesFromDictionary:@{
           @"auth_time": kAuthTime,
+          @"amr": [OIDTokenResponse stubbedAMRValues],
     }];
   }
   NSData *payloadJson = [NSJSONSerialization dataWithJSONObject:payloadContents

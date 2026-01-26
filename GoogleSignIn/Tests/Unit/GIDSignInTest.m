@@ -160,11 +160,18 @@ static NSString *const kEMMSupport = @"1";
 static NSString *const kGrantedScope = @"grantedScope";
 static NSString *const kNewScope = @"newScope";
 
-static NSString *const kEssentialAuthTimeClaimsJsonString =
+static NSString *const kEssentialAuthTimeClaimJsonString =
     @"{\"id_token\":{\"auth_time\":{\"essential\":true}}}";
-static NSString *const kNonEssentialAuthTimeClaimsJsonString =
+static NSString *const kNonEssentialAuthTimeClaimJsonString =
     @"{\"id_token\":{\"auth_time\":{\"essential\":false}}}";
 
+static NSString *const kEssentialAMRClaimJsonString =
+    @"{\"id_token\":{\"amr\":{\"essential\":true}}}";
+static NSString *const kNonEssentialAMRClaimJsonString =
+    @"{\"id_token\":{\"amr\":{\"essential\":false}}}";
+
+static NSString *const kMultipleClaimsJsonString =
+    @"{\"id_token\":{\"amr\":{\"essential\":false},\"auth_time\":{\"essential\":false}}}";
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 // This category is used to allow the test to swizzle a private method.
@@ -751,7 +758,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
 }
 
-- (void)testOAuthLogin_WithClaims_FormatsParametersCorrectly {
+- (void)testOAuthLogin_WithAuthTimeClaim_FormatsParametersCorrectly {
   GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
   GIDClaim *essentialAuthTimeClaim = [GIDClaim essentialAuthTimeClaim];
 
@@ -776,7 +783,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                              claims:[NSSet setWithObject:essentialAuthTimeClaim]];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
-                        kEssentialAuthTimeClaimsJsonString,
+                        kEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 
   [self OAuthLoginWithAddScopesFlow:NO
@@ -795,12 +802,13 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                              claims:[NSSet setWithObject:authTimeClaim]];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
-                        kNonEssentialAuthTimeClaimsJsonString,
+                        kNonEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 }
 
-- (void)testOAuthLogin_WithClaims_ReturnsIdTokenWithCorrectClaims {
-  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+- (void)testOAuthLogin_WithAMRClaim_FormatsParametersCorrectly {
+  GIDClaim *AMRClaim = [GIDClaim AMRClaim];
+  GIDClaim *essentialAMRClaim = [GIDClaim essentialAMRClaim];
 
   OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
           ).andDo(^(NSInvocation *invocation){
@@ -820,7 +828,86 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                             claims:[NSSet setWithObject:authTimeClaim]];
+                             claims:[NSSet setWithObject:essentialAMRClaim]];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kEssentialAMRClaimJsonString,
+                        @"Claims JSON should be correctly formatted");
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:[NSSet setWithObject:AMRClaim]];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kNonEssentialAMRClaimJsonString,
+                        @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_WithMultipleClaims_FormatsParametersCorrectly {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *AMRClaim = [GIDClaim AMRClaim];
+  NSSet *claims = [NSSet setWithArray:@[authTimeClaim, AMRClaim]];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:claims];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kMultipleClaimsJsonString,
+                        @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_WithMultipleClaims_ReturnsIdTokenWithCorrectClaims {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *AMRClaim = [GIDClaim AMRClaim];
+  NSSet *claims = [NSSet setWithArray:@[authTimeClaim, AMRClaim]];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:claims];
 
   XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
   NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
@@ -830,10 +917,13 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   NSData *payloadData = [[NSData alloc]
       initWithBase64EncodedString:components[1]
                           options:NSDataBase64DecodingIgnoreUnknownCharacters];
-  NSDictionary *claims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
-  XCTAssertEqualObjects(claims[@"auth_time"],
+  NSDictionary *receivedClaims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
+  XCTAssertEqualObjects(receivedClaims[@"auth_time"],
                         kAuthTime,
                         @"The 'auth_time' claim should be present and correct.");
+  XCTAssertEqualObjects(receivedClaims[@"amr"],
+                        [OIDTokenResponse stubbedAMRValues],
+                        @"The 'amr' claim should be present and correct.");
 }
 
 - (void)testAddScopes {
@@ -963,7 +1053,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
-                        kNonEssentialAuthTimeClaimsJsonString,
+                        kNonEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 
   [_user verify];
@@ -1688,7 +1778,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                                                nonce:nonce
                                                          errorString:authError];
 
-  NSString *idToken = claims ? [OIDTokenResponse fatIDTokenWithAuthTime] : [OIDTokenResponse fatIDToken];
+  NSString *idToken = claims ? [OIDTokenResponse fatIDTokenWithClaims] : [OIDTokenResponse fatIDToken];
   OIDTokenResponse *tokenResponse =
       [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:restoredSignIn ? kAccessToken : nil
@@ -1958,7 +2048,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
     additionalParameters[@"emm_passcode_info_required"] = @"1";
   }
   if (claimsAsJSONRequired) {
-    additionalParameters[@"claims"] = kNonEssentialAuthTimeClaimsJsonString;
+    additionalParameters[@"claims"] = kNonEssentialAuthTimeClaimJsonString;
   }
 
   return [additionalParameters copy];
