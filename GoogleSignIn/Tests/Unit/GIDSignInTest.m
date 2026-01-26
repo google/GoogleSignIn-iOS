@@ -922,7 +922,7 @@ static NSString *const kMultipleClaimsJsonString =
                         kAuthTime,
                         @"The 'auth_time' claim should be present and correct.");
   XCTAssertEqualObjects(receivedClaims[@"amr"],
-                        [OIDTokenResponse testAMRValues],
+                        [OIDTokenResponse stubbedAMRValues],
                         @"The 'amr' claim should be present and correct.");
 }
 

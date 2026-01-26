@@ -66,7 +66,7 @@ extern NSString * const kFatPictureURL;
 
 + (NSString *)fatIDTokenWithClaims;
 
-+ (NSArray<NSString *> *)testAMRValues;
++ (NSArray<NSString *> *)stubbedAMRValues;
 
 /**
  * @sub The subject of the ID token.

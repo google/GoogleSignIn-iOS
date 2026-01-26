@@ -98,7 +98,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   return [self idTokenWithSub:kUserID exp:@(kIDTokenExpires) fat:YES claims:YES];
 }
 
-+ (NSArray<NSString *> *)testAMRValues {
++ (NSArray<NSString *> *)stubbedAMRValues {
   return @[ @"pwd", @"mfa", @"otp" ];
 }
 
@@ -148,7 +148,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   if (claims) {
     [payloadContents addEntriesFromDictionary:@{
           @"auth_time": kAuthTime,
-          @"amr": [OIDTokenResponse testAMRValues],
+          @"amr": [OIDTokenResponse stubbedAMRValues],
     }];
   }
   NSData *payloadJson = [NSJSONSerialization dataWithJSONObject:payloadContents
