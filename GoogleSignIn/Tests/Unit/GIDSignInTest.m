@@ -854,7 +854,7 @@ static NSString *const kMultipleClaimsJsonString =
                         @"Claims JSON should be correctly formatted");
 }
 
-- (void)testOAuthLogin_WithClaims_FormatsParametersCorrectly {
+- (void)testOAuthLogin_WithMultipleClaims_FormatsParametersCorrectly {
   GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
   GIDClaim *AMRClaim = [GIDClaim AMRClaim];
   NSSet *claims = [NSSet setWithArray:@[authTimeClaim, AMRClaim]];
@@ -884,7 +884,7 @@ static NSString *const kMultipleClaimsJsonString =
                         @"Claims JSON should be correctly formatted");
 }
 
-- (void)testOAuthLogin_WithClaims_ReturnsIdTokenWithCorrectClaims {
+- (void)testOAuthLogin_WithMultipleClaims_ReturnsIdTokenWithCorrectClaims {
   GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
   GIDClaim *AMRClaim = [GIDClaim AMRClaim];
   NSSet *claims = [NSSet setWithArray:@[authTimeClaim, AMRClaim]];
