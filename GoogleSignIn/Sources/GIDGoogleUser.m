@@ -125,6 +125,16 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     });
     return;
   }
+  if (self.refreshToken.expirationDate && [self.refreshToken.expirationDate timeIntervalSinceNow] <= 0) {
+    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                         code:kGIDSignInErrorCodeRefreshTokenExpired
+                                     userInfo:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      completion(nil, error);
+    });
+    return;
+  }
+
   @synchronized (_tokenRefreshHandlerQueue) {
     // Push the handler into the callback queue.
     [_tokenRefreshHandlerQueue addObject:[completion copy]];
@@ -275,8 +285,17 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     self.accessToken = accessToken;
   }
   
+  NSDictionary *additionalParameters = authState.lastTokenResponse.additionalParameters;
+  NSNumber *refreshTokenExpiresIn = nil;
+  NSDate *refreshTokenExpirationDate = nil;
+  id expiresInValue = additionalParameters[@"refresh_token_expires_in"];
+  if ([expiresInValue isKindOfClass:[NSNumber class]]) {
+    refreshTokenExpiresIn = (NSNumber *)expiresInValue;
+    NSTimeInterval interval = [refreshTokenExpiresIn doubleValue];
+    refreshTokenExpirationDate = [NSDate dateWithTimeIntervalSinceNow:interval];
+  }
   GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
-                                                  expirationDate:nil];
+                                                  expirationDate:refreshTokenExpirationDate];
   if (![self.refreshToken isEqualToToken:refreshToken]) {
     self.refreshToken = refreshToken;
   }
