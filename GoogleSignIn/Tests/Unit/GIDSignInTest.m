@@ -310,6 +310,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
+  OCMStub([_tokenResponse additionalParameters]).andReturn(@{});
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAuthSession class]);
   _keychainStore = OCMStrictClassMock([GTMKeychainStore class]);
