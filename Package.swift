@@ -64,11 +64,11 @@ let package = Package(
     .target(
       name: "GoogleSignIn",
       dependencies: [
-        .product(name: "AppAuth", package: "AppAuth"),
-        .product(name: "AppAuthCore", package: "AppAuth"),
-        .product(name: "AppCheckCore", package: "AppCheck"),
+        .product(name: "AppAuth", package: "AppAuth-iOS"),
+        .product(name: "AppAuthCore", package: "AppAuth-iOS"),
+        .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
-        .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "GTMSessionFetcherCore", package: "gtm-session-fetcher"),
       ],
       path: "GoogleSignIn/Sources",
       resources: [
@@ -105,10 +105,10 @@ let package = Package(
       dependencies: [
         "GoogleSignIn",
         "OCMock",
-        .product(name: "AppAuth", package: "AppAuth"),
-        .product(name: "AppCheckCore", package: "AppCheck"),
+        .product(name: "AppAuth", package: "AppAuth-iOS"),
+        .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
-        .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "GTMSessionFetcherCore", package: "gtm-session-fetcher"),
         .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
         .product(name: "GULSwizzlerTestHelpers", package: "GoogleUtilities"),
       ],
