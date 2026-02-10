@@ -85,8 +85,24 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
                            refreshToken:(NSString *)refreshToken
                                authTime:(NSString *)authTime
                            tokenRequest:(OIDTokenRequest *)tokenRequest {
+    
+  return [OIDTokenResponse testInstanceWithIDToken:idToken
+                                       accessToken:accessToken
+                                         expiresIn:expiresIn
+                                      refreshToken:refreshToken
+                                  refreshExpiresIn:nil
+                                          authTime:authTime
+                                      tokenRequest:tokenRequest];
+}
 
-  NSMutableDictionary<NSString *, NSString *> *parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                              expiresIn:(NSNumber *)expiresIn
+                           refreshToken:(NSString *)refreshToken
+                       refreshExpiresIn:(NSNumber *)refreshExpiresIn
+                               authTime:(NSString *)authTime
+                           tokenRequest:(OIDTokenRequest *)tokenRequest {
+  NSMutableDictionary<NSString *, NSObject<NSCopying> *> *parameters = [[NSMutableDictionary alloc] initWithDictionary:@{
     @"access_token" : accessToken ?: kAccessToken,
     @"expires_in" : expiresIn ?: @(kAccessTokenExpiresIn),
     @"token_type" : @"example_token_type",
@@ -96,6 +112,9 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   }];
   if (idToken) {
     parameters[@"id_token"] = idToken;
+  }
+  if (refreshExpiresIn) {
+    parameters[@"refresh_token_expires_in"] = refreshExpiresIn;
   }
   return [[OIDTokenResponse alloc] initWithRequest:tokenRequest ?: [OIDTokenRequest testInstance]
                                         parameters:parameters];
