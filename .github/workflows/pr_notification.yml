@@ -11,13 +11,18 @@ jobs:
     - name: Pull Request Details
       run: |
         echo "Pull Request: ${{ github.event.pull_request.number }}"
-        echo "Author: ${{ github.event.pull_request.user.login }}"
+        echo "Author: ${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
+      env:
+        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
 
     - name: Google Chat Notification
       shell: bash
       env:
         TITLE: ${{ github.event.pull_request.title }}
         LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+        GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
+        GITHUB_EVENT_PULL_REQUEST_HTML_URL: ${{ github.event.pull_request.html_url }}
       run: |
         curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
         --header 'Content-Type: application/json' \
@@ -34,7 +39,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Repo",
-                        "content": "${{ github.event.pull_request.head.repo.full_name }}"
+                        "content": "${GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME}"
                       }
                     },
                     {
@@ -46,7 +51,7 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Creator",
-                        "content": "${{ github.event.pull_request.user.login }}"
+                        "content": "${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
                       }
                     },
                     {
@@ -80,7 +85,7 @@ jobs:
                             "text": "Open Pull Request",
                             "onClick": {
                               "openLink": {
-                                "url": "${{ github.event.pull_request.html_url }}"
+                                "url": "${GITHUB_EVENT_PULL_REQUEST_HTML_URL}"
                               }
                             }
                           }
