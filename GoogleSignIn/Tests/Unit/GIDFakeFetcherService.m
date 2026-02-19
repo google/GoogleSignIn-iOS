@@ -19,10 +19,6 @@
   NSMutableArray *_fetchers;
 }
 
-@synthesize delegateQueue;
-@synthesize callbackQueue;
-@synthesize reuseSession;
-
 - (instancetype)init {
   self = [super init];
   if (self) {
@@ -84,6 +80,24 @@
 
 - (NSDate *)stoppedAllFetchersDate {
   return nil;
+}
+
+- (dispatch_queue_t)callbackQueue {
+  return nil;
+}
+
+- (void)setCallbackQueue:(dispatch_queue_t)callbackQueue {
+}
+
+- (NSOperationQueue *)delegateQueue {
+  return nil;
+}
+
+- (BOOL)reuseSession {
+  return NO;
+}
+
+- (void)setReuseSession:(BOOL)reuseSession {
 }
 
 @end
