@@ -122,5 +122,5 @@ lead to new installs of apps sharing the same keychain access group to remove
 keychain credentials for apps already installed. 
 
 To prevent unintentional credential removal, you can explicitly list the
-typical default access group (or whatever you prefer) in your list first. GSI,
-will then use that default access group.
+typical default access group (or whatever you prefer so long as it is not
+shared) in your list first. GSI, will then use that default access group.
