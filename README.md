@@ -108,29 +108,18 @@ let signInButton = GoogleSignInButton {
 let hostedButton = NSHostingView(rootView: signInButton)
 ```
 
-## A Note iOS Keychain Access Groups
+## A Note on iOS Keychain Access Groups
 
-On iOS, if you do not supply a custom Keychain access group, the system creates
-a Keychain access group by prepending `$(AppIdentifierPrefix)` to your bundle
-ID (e.g., `$(AppIdentifierPrefix).com.example.MyApp`), which becomes the
-default access group for just your app ([Apple documentation](https://developer.apple.com/documentation/security/sharing-access-to-keychain-items-among-a-collection-of-apps#Establish-your-apps-private-access-group)).
+GSI uses your default (first listed) keychain access group. If you don't add a
+custom keychain access group, the default keychain access group is provided by
+Xcode and looks like `$(AppIdentifierPrefix)$(CFBundleIdentifier)`.
 
-If, however, you add a new Keychain access group (and add the entitlement to
-your app), then Xcode will use whatever access group is listed first in the
-list as the default. So, if the shared access group is first, then it becomes
-the default Keychain for your app.
-
-The implication of this scenario is that credentials saved by GSI (via
-[GTMAppAuth](https://github.com/google/GTMAppAuth)) on behalf of your app will
-be stored in the shared keychain access group.
-
-You should make sure that you want this behavior because GSI [removes Keychain
-items upon fresh install](https://github.com/google/GoogleSignIn-iOS/pull/567)
+GSI [removes keychain items upon fresh install](https://github.com/google/GoogleSignIn-iOS/pull/567)
 to ensure that stale credentials from previous installs of your app are not
-mistakenly used. This behavior can lead new installs of apps sharing the same
-Keychain access group to remove Keychain credentials for apps already installed.
+mistakenly used. If your app uses a shared access group by default this may
+lead to new installs of apps sharing the same keychain access group to remove
+keychain credentials for apps already installed. 
 
-You can mitigate this by explicitly listing the typical default access group
-(or whatever you prefer) in your list first. GSI, via GTMAppAuth, will then use
-that default access group. Make sure that you also update your code that writes
-to the Keychain to explicitly use the shared access group as needed.
+To prevent unintentional credential removal, you can explicitly list the
+typical default access group (or whatever you prefer) in your list first. GSI,
+will then use that default access group.
