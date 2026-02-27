@@ -55,7 +55,8 @@ in order for your macOS app to store credentials via the Keychain on macOS, you 
 Google Sign-In also supports iOS apps that are built for macOS via
 [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for your Mac Catalyst app
 to store credentials via the Keychain on macOS, you will need to add
-`$(AppIdentifierPrefix)$(CFBundleIdentifier)` to its keychain access group.
+`$(AppIdentifierPrefix)$(CFBundleIdentifier)` as the first item in the keychain
+access group.
 
 ## Using the Google Sign-In Button
 
