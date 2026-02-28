@@ -42,27 +42,21 @@ let package = Package(
   ],
   dependencies: [
     .package(
-      name: "AppAuth",
       url: "https://github.com/openid/AppAuth-iOS.git",
       from: "2.0.0"),
     .package(
-      name: "AppCheck",
       url: "https://github.com/google/app-check.git",
       from: "11.0.0"),
     .package(
-      name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
       from: "5.0.0"),
     .package(
-      name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
       from: "3.3.0"),
     .package(
-      name: "OCMock",
       url: "https://github.com/firebase/ocmock.git",
-      .revision("7291762d3551c5c7e31c49cce40a0e391a52e889")),
+      revision: "7291762d3551c5c7e31c49cce40a0e391a52e889"),
     .package(
-      name: "GoogleUtilities",
       url: "https://github.com/google/GoogleUtilities.git",
       from: "8.0.0"),
   ],
@@ -70,11 +64,11 @@ let package = Package(
     .target(
       name: "GoogleSignIn",
       dependencies: [
-        .product(name: "AppAuth", package: "AppAuth"),
-        .product(name: "AppAuthCore", package: "AppAuth"),
-        .product(name: "AppCheckCore", package: "AppCheck"),
+        .product(name: "AppAuth", package: "AppAuth-iOS"),
+        .product(name: "AppAuthCore", package: "AppAuth-iOS"),
+        .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
-        .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "GTMSessionFetcherCore", package: "gtm-session-fetcher"),
       ],
       path: "GoogleSignIn/Sources",
       resources: [
@@ -111,10 +105,10 @@ let package = Package(
       dependencies: [
         "GoogleSignIn",
         "OCMock",
-        .product(name: "AppAuth", package: "AppAuth"),
-        .product(name: "AppCheckCore", package: "AppCheck"),
+        .product(name: "AppAuth", package: "AppAuth-iOS"),
+        .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
-        .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
+        .product(name: "GTMSessionFetcherCore", package: "gtm-session-fetcher"),
         .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
         .product(name: "GULSwizzlerTestHelpers", package: "GoogleUtilities"),
       ],
