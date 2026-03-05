@@ -28,6 +28,7 @@ public class GoogleSignInButtonViewModel: ObservableObject {
 
   /// A computed property providing the button's size, colors, corner radius,
   /// and shadow based on this current view model's `SignInButtonStyle`.
+  @MainActor
   var buttonStyle: SwiftUIButtonStyle {
     return SwiftUIButtonStyle(style: style, state: state, scheme: scheme)
   }

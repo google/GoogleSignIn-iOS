@@ -84,16 +84,16 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   }
 }
 
-+ (NSDictionary *)updatedEMMParametersWithParameters:(NSDictionary *)parameters {
++ (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
+    (NSDictionary *)parameters {
   return [self parametersWithParameters:parameters
                              emmSupport:parameters[kEMMSupportParameterName]
                  isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
 }
 
-
-+ (NSDictionary *)parametersWithParameters:(NSDictionary *)parameters
-                                emmSupport:(nullable NSString *)emmSupport
-                    isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
++ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+                                                       emmSupport:(nullable NSString *)emmSupport
+                                           isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
   if (!emmSupport) {
     return parameters;
   }
@@ -109,7 +109,7 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   if (isPasscodeInfoRequired) {
     allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
   }
-  return allParameters;
+  return [GIDEMMSupport dictionaryWithStringValuesFromDictionary:allParameters];
 }
 
 #pragma mark - GTMAuthSessionDelegate
@@ -126,6 +126,30 @@ additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
   [GIDEMMSupport handleTokenFetchEMMError:originalError completion:^(NSError *_Nullable error) {
     completion(error);
   }];
+}
+
+#pragma mark - Private Helpers
+
++ (NSDictionary<NSString *, NSString *> *)
+    dictionaryWithStringValuesFromDictionary:(NSDictionary *)originalDictionary {
+  NSMutableDictionary<NSString *, NSString *> *stringifiedDictionary =
+      [NSMutableDictionary dictionaryWithCapacity:originalDictionary.count];
+
+  [originalDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+    if ([value isKindOfClass:[NSString class]]) {
+      stringifiedDictionary[key] = value;
+        return;
+    }
+    if ([value isKindOfClass:[NSNumber class]]) {
+      if (CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) {
+        stringifiedDictionary[key] = [value boolValue] ? @"true" : @"false";
+      } else {
+        stringifiedDictionary[key] = [value stringValue];
+      }
+      return;
+    }
+  }];
+  return stringifiedDictionary;
 }
 
 @end

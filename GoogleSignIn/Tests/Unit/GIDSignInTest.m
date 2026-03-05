@@ -32,11 +32,16 @@
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+#import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <AppCheckCore/GACAppCheckToken.h>
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
+#import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Fake/GIDFakeAuthStateMigration.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
@@ -79,6 +84,9 @@
     return YES;\
 }]
 
+/// `NSUserDefaults` suite name for testing with `GIDAppCheck`.
+static NSString *const kUserDefaultsSuiteName = @"GIDAppCheckKeySuiteName";
+
 static NSString * const kFakeGaiaID = @"123456789";
 static NSString * const kFakeIDToken = @"FakeIDToken";
 static NSString * const kClientId = @"FakeClientID";
@@ -111,8 +119,6 @@ static NSString * const kEMMWrongPathURL =
 static NSString * const kEMMWrongActionURL =
      @"com.google.UnitTests:///emmcallback?action=unrecognized";
 static NSString * const kDevicePolicyAppBundleID = @"com.google.DevicePolicy";
-
-static NSString * const kAppHasRunBeforeKey = @"GPP_AppHasRunBefore";
 
 static NSString * const kFingerprintKeychainName = @"fingerprint";
 static NSString * const kVerifierKeychainName = @"verifier";
@@ -151,6 +157,12 @@ static NSString *const kEMMSupport = @"1";
 
 static NSString *const kGrantedScope = @"grantedScope";
 static NSString *const kNewScope = @"newScope";
+
+static NSString *const kEssentialAuthTimeClaimsJsonString =
+    @"{\"id_token\":{\"auth_time\":{\"essential\":true}}}";
+static NSString *const kNonEssentialAuthTimeClaimsJsonString =
+    @"{\"id_token\":{\"auth_time\":{\"essential\":false}}}";
+
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 // This category is used to allow the test to swizzle a private method.
@@ -215,6 +227,9 @@ static NSString *const kNewScope = @"newScope";
   // Whether callback block has been called.
   BOOL _completionCalled;
 
+  // Fake for |GIDAuthStateMigration|.
+  GIDFakeAuthStateMigration *_authStateMigrationService;
+
   // Fake fetcher service to emulate network requests.
   GIDFakeFetcherService *_fetcherService;
 
@@ -261,6 +276,9 @@ static NSString *const kNewScope = @"newScope";
 
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
+
+  // Test userDefaults for use with `GIDAppCheck`
+  NSUserDefaults *_testUserDefaults;
 }
 @end
 
@@ -286,10 +304,11 @@ static NSString *const kNewScope = @"newScope";
 #elif TARGET_OS_OSX
   _presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  _authState = OCMStrictClassMock([OIDAuthState class]);
+  _authState = OCMClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
+  OCMStub([_tokenResponse additionalParameters]).andReturn(@{});
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAuthSession class]);
   _keychainStore = OCMStrictClassMock([GTMKeychainStore class]);
@@ -316,19 +335,22 @@ static NSString *const kNewScope = @"newScope";
                          callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
-                 callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
+      originalAuthorizationResponse:[OCMArg any]
+      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
+  _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
   _fetcherService = [[GIDFakeFetcherService alloc] init];
   _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
   [_fakeMainBundle startFakingWithClientID:kClientId];
   [_fakeMainBundle fakeAllSchemesSupported];
 
   // Object under test
-  [[NSUserDefaults standardUserDefaults] setBool:YES
-                                          forKey:kAppHasRunBeforeKey];
+  _testUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
+  [_testUserDefaults setBool:YES forKey:kAppHasRunBeforeKey];
 
-  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore];
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                           authStateMigrationService:_authStateMigrationService];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -357,6 +379,7 @@ static NSString *const kNewScope = @"newScope";
   OCMVerifyAll(_presentingWindow);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
+  [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
   [super tearDown];
@@ -364,14 +387,65 @@ static NSString *const kNewScope = @"newScope";
 
 #pragma mark - Tests
 
-- (void)testShareInstance {
-  GIDSignIn *signIn1 = GIDSignIn.sharedInstance;
-  GIDSignIn *signIn2 = GIDSignIn.sharedInstance;
-  XCTAssertTrue(signIn1 == signIn2, @"shared instance must be singleton");
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)testConfigureSucceeds {
+  if (@available(iOS 14, *)) {
+    XCTestExpectation *configureSucceedsExpecation =
+    [self expectationWithDescription:@"Configure succeeds expectation"];
+
+    GACAppCheckToken *token = [[GACAppCheckToken alloc] initWithToken:@"foo"
+                                                       expirationDate:[NSDate distantFuture]];
+    GIDAppCheckProviderFake *fakeProvider =
+        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:token error:nil];
+    GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
+                                                             userDefaults:_testUserDefaults];
+
+    GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                       authStateMigrationService:_authStateMigrationService
+                                                        appCheck:appCheck];
+    [signIn configureWithCompletion:^(NSError * _Nullable error) {
+      XCTAssertNil(error);
+      [configureSucceedsExpecation fulfill];
+    }];
+
+    [self waitForExpectations:@[configureSucceedsExpecation] timeout:1];
+    XCTAssertTrue(appCheck.isPrepared);
+  }
 }
 
-- (void)testInitPrivate {
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+- (void)testConfigureFailsNoTokenOrError {
+  if (@available(iOS 14, *)) {
+    XCTestExpectation *configureFailsExpecation =
+    [self expectationWithDescription:@"Configure fails expectation"];
+
+    GIDAppCheckProviderFake *fakeProvider =
+        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+    GIDAppCheck *appCheck =
+        [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
+                                         userDefaults:_testUserDefaults];
+
+    GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                       authStateMigrationService:_authStateMigrationService
+                                                        appCheck:appCheck];
+
+    // Should fail if missing both token and error
+    [signIn configureWithCompletion:^(NSError * _Nullable error) {
+      XCTAssertNotNil(error);
+      XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+      [configureFailsExpecation fulfill];
+    }];
+
+    [self waitForExpectations:@[configureFailsExpecation] timeout:1];
+    XCTAssertFalse(appCheck.isPrepared);
+  }
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+- (void)testInitWithKeychainStore {
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -379,21 +453,28 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNil(signIn.configuration.openIDRealm);
 }
 
-- (void)testInitPrivate_noConfig {
+- (void)testInitWithKeychainStore_noConfig {
   [_fakeMainBundle fakeWithClientID:nil
                      serverClientID:nil
                        hostedDomain:nil
                         openIDRealm:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNil(signIn.configuration);
 }
 
-- (void)testInitPrivate_fullConfig {
+- (void)testInitWithKeychainStore_fullConfig {
   [_fakeMainBundle fakeWithClientID:kClientId
                      serverClientID:kServerClientId
                        hostedDomain:kFakeHostedDomain
                         openIDRealm:kOpenIDRealm];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -401,13 +482,32 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqual(signIn.configuration.openIDRealm, kOpenIDRealm);
 }
 
-- (void)testInitPrivate_invalidConfig {
+- (void)testInitWithKeychainStore_invalidConfig {
   [_fakeMainBundle fakeWithClientID:@[ @"bad", @"config", @"values" ]
                      serverClientID:nil
                        hostedDomain:nil
                         openIDRealm:nil];
-  GIDSignIn *signIn = [[GIDSignIn alloc] initPrivate];
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
+  GIDSignIn *signIn;
+  signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                          authStateMigrationService:_authStateMigrationService];
   XCTAssertNil(signIn.configuration);
+}
+
+- (void)testInitWithKeychainStore_attemptsMigration {
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback should be called."];
+  _authStateMigrationService.migrationInvokedCallback =
+    ^(NSURL *tokenURL, NSString *callbackPath, BOOL isFreshInstall) {
+      XCTAssertFalse(isFreshInstall);
+      [expectation fulfill];
+    };
+
+  GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:kKeychainName];
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
+                                     authStateMigrationService:_authStateMigrationService];
+
+  XCTAssertNotNil(signIn.configuration);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testRestorePreviousSignInNoRefresh_hasPreviousUser {
@@ -423,19 +523,18 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([idTokenDecoded alloc]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
-  
+
   // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
   OIDAuthorizationResponse *authResponse =
-      [OIDAuthorizationResponse testInstanceWithAdditionalParameters:nil
-                                                         errorString:nil];
-  
+      [OIDAuthorizationResponse testInstance];
+
   OCMStub([_authState lastAuthorizationResponse]).andReturn(authResponse);
   OCMStub([_tokenResponse idToken]).andReturn(kFakeIDToken);
   OCMStub([_tokenResponse request]).andReturn(_tokenRequest);
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
-  
+
   [_signIn restorePreviousSignInNoRefresh];
 
   [idTokenDecoded verify];
@@ -544,6 +643,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -561,6 +661,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:NO
@@ -578,6 +679,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:YES
@@ -597,12 +699,16 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
-                   additionalScopes:nil];
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:nil];
 
   expectedScopeString = [@[ @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -611,12 +717,16 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
-                   additionalScopes:@[ kScope ]];
+                   additionalScopes:@[ kScope ]
+                        manualNonce:nil
+                             claims:nil];
 
   expectedScopeString = [@[ kScope, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
@@ -625,15 +735,104 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
+                        claimsError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
                         modalCancel:NO
                 useAdditionalScopes:YES
-                   additionalScopes:@[ kScope, kScope2 ]];
+                   additionalScopes:@[ kScope, kScope2 ]
+                        manualNonce:nil
+                             claims:nil];
 
   expectedScopeString = [@[ kScope, kScope2, @"email", @"profile" ] componentsJoinedByString:@" "];
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
+}
+
+- (void)testOAuthLogin_WithClaims_FormatsParametersCorrectly {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *essentialAuthTimeClaim = [GIDClaim essentialAuthTimeClaim];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:[NSSet setWithObject:essentialAuthTimeClaim]];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kEssentialAuthTimeClaimsJsonString,
+                        @"Claims JSON should be correctly formatted");
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:[NSSet setWithObject:authTimeClaim]];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kNonEssentialAuthTimeClaimsJsonString,
+                        @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_WithClaims_ReturnsIdTokenWithCorrectClaims {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:[NSSet setWithObject:authTimeClaim]];
+
+  XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
+  NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
+  XCTAssertNotNil(idTokenString, @"ID token string should not be nil.");
+  NSArray<NSString *> *components = [idTokenString componentsSeparatedByString:@"."];
+  XCTAssertEqual(components.count, 3, @"JWT should have 3 parts.");
+  NSData *payloadData = [[NSData alloc]
+      initWithBase64EncodedString:components[1]
+                          options:NSDataBase64DecodingIgnoreUnknownCharacters];
+  NSDictionary *claims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
+  XCTAssertEqualObjects(claims[@"auth_time"],
+                        kAuthTime,
+                        @"The 'auth_time' claim should be present and correct.");
 }
 
 - (void)testAddScopes {
@@ -647,6 +846,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:NO
@@ -656,7 +856,7 @@ static NSString *const kNewScope = @"newScope";
 
   id profile = OCMStrictClassMock([GIDProfileData class]);
   OCMStub([profile email]).andReturn(kUserEmail);
-  
+
   // Mock for the method `addScopes`.
   GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
                                                                 serverClientID:nil
@@ -665,11 +865,13 @@ static NSString *const kNewScope = @"newScope";
   OCMStub([_user configuration]).andReturn(configuration);
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
+  OCMStub([_user authState]).andReturn(_authState);
 
   [self OAuthLoginWithAddScopesFlow:YES
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -688,13 +890,83 @@ static NSString *const kNewScope = @"newScope";
     [parsedScopes removeObject:@""];
     grantedScopes = [parsedScopes copy];
   }
-  
+
   NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
 
   [_user verify];
   [profile verify];
   [profile stopMocking];
+}
+
+- (void)testAddScopes_WithPreviouslyRequestedClaims {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  // Restore the previous sign-in account. This is the preparation for adding scopes.
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:[NSSet setWithObject:authTimeClaim]];
+
+  XCTAssertNotNil(_signIn.currentUser);
+
+  id profile = OCMStrictClassMock([GIDProfileData class]);
+  OCMStub([profile email]).andReturn(kUserEmail);
+
+  GIDConfiguration *configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                                serverClientID:nil
+                                                                  hostedDomain:nil
+                                                                   openIDRealm:kOpenIDRealm];
+  OCMStub([_user configuration]).andReturn(configuration);
+  OCMStub([_user profile]).andReturn(profile);
+  OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
+  OCMStub([_user authState]).andReturn(_authState);
+
+  [self OAuthLoginWithAddScopesFlow:YES
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:YES
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSArray<NSString *> *grantedScopes;
+  NSString *grantedScopeString = _savedAuthorizationRequest.scope;
+
+  if (grantedScopeString) {
+    NSCharacterSet *whiteSpaceChars = [NSCharacterSet whitespaceCharacterSet];
+    grantedScopeString =
+        [grantedScopeString stringByTrimmingCharactersInSet:whiteSpaceChars];
+    NSMutableArray<NSString *> *parsedScopes =
+        [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
+    [parsedScopes removeObject:@""];
+    grantedScopes = [parsedScopes copy];
+  }
+
+  NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
+  XCTAssertEqualObjects(grantedScopes, expectedScopes);
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kNonEssentialAuthTimeClaimsJsonString,
+                        @"Claims JSON should be correctly formatted");
+
+  [_user verify];
+  [profile verify];
 }
 
 - (void)testOpenIDRealm {
@@ -713,6 +985,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -720,6 +993,40 @@ static NSString *const kNewScope = @"newScope";
 
   NSDictionary<NSString *, NSString *> *params = _savedTokenRequest.additionalParameters;
   XCTAssertEqual(params[kOpenIDRealmKey], kOpenIDRealm, @"OpenID Realm should match.");
+}
+
+- (void)testManualNonce {
+  _signIn.configuration = [[GIDConfiguration alloc] initWithClientID:kClientId
+                                                      serverClientID:nil
+                                                        hostedDomain:nil
+                                                         openIDRealm:kOpenIDRealm];
+
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  NSString* manualNonce = @"manual_nonce";
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:@[]
+                        manualNonce:manualNonce
+                             claims:nil];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.nonce,
+                        manualNonce,
+                        @"Provided nonce should match nonce in authorization request.");
 }
 
 - (void)testOAuthLogin_LoginHint {
@@ -735,6 +1042,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -760,6 +1068,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -774,6 +1083,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:@"access_denied"
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -788,6 +1098,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -812,6 +1123,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:YES
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -821,6 +1133,37 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeKeychain);
+}
+
+- (void)testOAuthLogin_Claims_FailsWithError {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *essentialAuthTimeClaim = [GIDClaim essentialAuthTimeClaim];
+  NSSet *conflictingClaims = [NSSet setWithObjects:authTimeClaim, essentialAuthTimeClaim, nil];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:YES
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:conflictingClaims];
+
+  // Wait for the completion handler to be called
+  [self waitForExpectationsWithTimeout:1.0 handler:nil];
+  XCTAssertNotNil(_authError, @"An error object should have been returned.");
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeAmbiguousClaims,
+                 @"The error code should be for ambiguous claims.");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain,
+                        @"The error domain should be the GIDSignIn error domain.");
+  XCTAssertEqualObjects(_authError.localizedDescription, kGIDClaimErrorDescription,
+                        @"The error description should clearly explain the ambiguity.");
 }
 
 - (void)testSignOut {
@@ -839,6 +1182,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:YES
                      oldAccessToken:NO
@@ -864,6 +1208,19 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertFalse([_signIn handleURL:[NSURL URLWithString:kWrongPathURL]], @"should not handle URL");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain");
   XCTAssertFalse(_completionCalled, @"should not call delegate");
+}
+
+#pragma mark - Test Fresh Install
+
+- (void)testFreshInstall_removesKeychainEntries {
+  // Simulate that the app has been deleted and user defaults removed.
+  [NSUserDefaults.standardUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
+  // Initialization should check `isFreshInstall`.
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                     authStateMigrationService:_authStateMigrationService];
+  // If `isFreshInstall`, keychain entries should be removed.
+  XCTAssertNotNil(signIn);
+  XCTAssertTrue(self->_keychainRemoved);
 }
 
 #pragma mark - Tests - disconnectWithCallback:
@@ -1085,6 +1442,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1136,6 +1494,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:nil
             emmPasscodeInfoRequired:YES
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1167,6 +1526,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:callbackParams[@"error"]
                          tokenError:nil
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1204,6 +1564,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:nil
                          tokenError:emmError
             emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
                       keychainError:NO
                      restoredSignIn:NO
                      oldAccessToken:NO
@@ -1212,7 +1573,7 @@ static NSString *const kNewScope = @"newScope";
   NSError *handledError = [NSError errorWithDomain:kGIDSignInErrorDomain
                                               code:kGIDSignInErrorCodeEMM
                                           userInfo:emmError.userInfo];
-  
+
   completion(handledError);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -1288,6 +1649,7 @@ static NSString *const kNewScope = @"newScope";
                           authError:(NSString *)authError
                          tokenError:(NSError *)tokenError
             emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
+               claimsAsJSONRequired:(BOOL)claimsAsJSONRequired
                       keychainError:(BOOL)keychainError
                      restoredSignIn:(BOOL)restoredSignIn
                      oldAccessToken:(BOOL)oldAccessToken
@@ -1296,12 +1658,16 @@ static NSString *const kNewScope = @"newScope";
                           authError:authError
                          tokenError:tokenError
             emmPasscodeInfoRequired:emmPasscodeInfoRequired
+               claimsAsJSONRequired:claimsAsJSONRequired
                       keychainError:keychainError
+                        claimsError:NO
                      restoredSignIn:restoredSignIn
                      oldAccessToken:oldAccessToken
                         modalCancel:modalCancel
                 useAdditionalScopes:NO
-                   additionalScopes:nil];
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:nil];
 }
 
 // The authorization flow with parameters to control which branches to take.
@@ -1309,31 +1675,45 @@ static NSString *const kNewScope = @"newScope";
                           authError:(NSString *)authError
                          tokenError:(NSError *)tokenError
             emmPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
+               claimsAsJSONRequired:(BOOL)claimsAsJSONRequired
                       keychainError:(BOOL)keychainError
+                        claimsError:(BOOL)claimsError
                      restoredSignIn:(BOOL)restoredSignIn
                      oldAccessToken:(BOOL)oldAccessToken
                         modalCancel:(BOOL)modalCancel
                 useAdditionalScopes:(BOOL)useAdditionalScopes
-                   additionalScopes:(NSArray *)additionalScopes {
+                   additionalScopes:(NSArray *)additionalScopes
+                        manualNonce:(NSString *)nonce
+                             claims:(NSSet *)claims {
   if (restoredSignIn) {
     // clearAndAuthenticateWithOptions
     [[[_authorization expect] andReturn:_authState] authState];
-    BOOL isAuthorized = restoredSignIn ? YES : NO;
+    BOOL isAuthorized = restoredSignIn;
     [[[_authState expect] andReturnValue:[NSNumber numberWithBool:isAuthorized]] isAuthorized];
   }
 
-  NSDictionary<NSString *, NSString *> *additionalParameters = emmPasscodeInfoRequired ?
-      @{ @"emm_passcode_info_required" : @"1" } : nil;
+  NSDictionary<NSString *, NSString *> *additionalParameters =
+      [self additionalParametersWithEMMPasscodeInfoRequired:emmPasscodeInfoRequired
+                                       claimsAsJSONRequired:claimsAsJSONRequired];
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstanceWithAdditionalParameters:additionalParameters
+                                                               nonce:nonce
                                                          errorString:authError];
 
+  NSString *idToken = claims ? [OIDTokenResponse fatIDTokenWithAuthTime] : [OIDTokenResponse fatIDToken];
   OIDTokenResponse *tokenResponse =
-      [OIDTokenResponse testInstanceWithIDToken:[OIDTokenResponse fatIDToken]
+      [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:restoredSignIn ? kAccessToken : nil
                                       expiresIn:oldAccessToken ? @(300) : nil
                                    refreshToken:kRefreshToken
                                    tokenRequest:nil];
+
+  if (claims) {
+    // Creating this stub to use `currentUser.idToken`.
+    id mockIDToken = OCMClassMock([GIDToken class]);
+    OCMStub([mockIDToken tokenString]).andReturn(tokenResponse.idToken);
+    OCMStub([_user idToken]).andReturn(mockIDToken);
+  }
 
   OIDTokenRequest *tokenRequest = [[OIDTokenRequest alloc]
       initWithConfiguration:authResponse.request.configuration
@@ -1377,6 +1757,7 @@ static NSString *const kNewScope = @"newScope";
       self->_authError = error;
     };
     if (addScopesFlow) {
+      [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [_signIn addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
         presentingViewController:_presentingViewController
@@ -1401,8 +1782,17 @@ static NSString *const kNewScope = @"newScope";
         [_signIn signInWithPresentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                                        hint:_hint
+                           additionalScopes:nil
+                                      nonce:nonce
+                                     claims:claims
                                  completion:completion];
       }
+    }
+
+    // When token claims are invalid, sign-in fails skipping the entire authorization flow.
+    // Thus, no need to verify `_authorization` or `_authState` as they won't be generated.
+    if (claimsError) {
+      return;
     }
 
     [_authorization verify];
@@ -1499,7 +1889,7 @@ static NSString *const kNewScope = @"newScope";
                                                     profileData:SAVE_TO_ARG_BLOCK(profileData)];
     }
   }
-  
+
   // CompletionCallback - mock server auth code parsing
   if (!keychainError) {
     [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
@@ -1521,9 +1911,9 @@ static NSString *const kNewScope = @"newScope";
     return;
   }
   [self waitForExpectationsWithTimeout:1 handler:nil];
-  
+
   [_authState verify];
-  
+
   XCTAssertTrue(_keychainSaved, @"should save to keychain");
   if (addScopesFlow) {
     XCTAssertNotNil(updatedTokenResponse);
@@ -1560,12 +1950,30 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
   XCTAssertFalse(_keychainRemoved, @"should not remove keychain");
   XCTAssertFalse(_keychainSaved, @"should not save to keychain again");
-  
+
   if (restoredSignIn) {
     // Ignore the return value
     OCMVerify((void)[_keychainStore retrieveAuthSessionWithError:OCMArg.anyObjectRef]);
     OCMVerify([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]);
   }
+}
+
+#pragma mark - Private Helpers
+
+- (NSDictionary<NSString *, NSString *> *)
+    additionalParametersWithEMMPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
+                               claimsAsJSONRequired:(BOOL)claimsAsJSONRequired {
+  NSMutableDictionary<NSString *, NSString *> *additionalParameters =
+      [NSMutableDictionary dictionary];
+
+  if (emmPasscodeInfoRequired) {
+    additionalParameters[@"emm_passcode_info_required"] = @"1";
+  }
+  if (claimsAsJSONRequired) {
+    additionalParameters[@"claims"] = kNonEssentialAuthTimeClaimsJsonString;
+  }
+
+  return [additionalParameters copy];
 }
 
 @end

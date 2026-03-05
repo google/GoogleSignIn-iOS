@@ -23,11 +23,7 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#ifdef SWIFT_PACKAGE
-@import GTMSessionFetcherCore;
-#else
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
-#endif
 
 @class GIDConfiguration;
 @class GIDSignInResult;

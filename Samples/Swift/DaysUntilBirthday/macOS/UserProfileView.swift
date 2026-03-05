@@ -19,6 +19,9 @@ struct UserProfileView: View {
               Text(userProfile.name)
                 .font(.headline)
               Text(userProfile.email)
+              if let authTimeString = authViewModel.formattedAuthTimeString {
+                Text("Last sign-in date: \(authTimeString)")
+              }
             }
           }
           Button(NSLocalizedString("Sign Out", comment: "Sign out button"), action: signOut)

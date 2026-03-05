@@ -21,6 +21,7 @@
 #import "AuthInspectorViewController.h"
 #import "DataPickerState.h"
 #import "DataPickerViewController.h"
+#import <AppAuth/OIDTokenUtilities.h>
 
 static NSString *const kSignInViewTitle = @"Sign-In Sample";
 static NSString *const kPlaceholderUserName = @"<Name>";
@@ -247,7 +248,11 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 #pragma mark - IBActions
 
 - (IBAction)signIn:(id)sender {
+  NSString* nonce = [OIDTokenUtilities randomURLSafeStringWithSize:32];
   [GIDSignIn.sharedInstance signInWithPresentingViewController:self
+                                                          hint:nil
+                                              additionalScopes:nil
+                                                         nonce:nonce
                                                     completion:^(GIDSignInResult *signInResult,
                                                                  NSError *error) {
     if (error) {

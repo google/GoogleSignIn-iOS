@@ -133,8 +133,17 @@ static NSString *const kNewScope = @"newScope";
 - (void)testLegacyCoding {
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
                                                      profileData:[GIDProfileData testInstance]];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user];
-  GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  
+  NSError *archiveError;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:user
+                                       requiringSecureCoding:NO
+                                                       error:&archiveError];
+  XCTAssertNil(archiveError);
+  NSError *unarchiveError;
+  GIDGoogleUser *newUser = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDGoogleUser class]
+                                                             fromData:data
+                                                                error:&unarchiveError];
+  XCTAssertNil(unarchiveError);
   XCTAssertEqualObjects(user, newUser);
   XCTAssertTrue(GIDGoogleUser.supportsSecureCoding);
 }
@@ -450,6 +459,25 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testRefreshTokensIfNeededWithCompletion_noRefresh_givenRefreshTokenExpired {
+  NSTimeInterval expiresIn = -10;
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:expiresIn
+                                                idTokenExpiresIn:expiresIn
+                                           refreshTokenExpiresIn:expiresIn];
+    
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+    
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
+                                              NSError * _Nullable error) {
+    [expectation fulfill];
+    XCTAssertNil(user);
+    XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);
+    XCTAssertEqual(error.code, kGIDSignInErrorCodeRefreshTokenExpired);
+  }];
+    
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 # pragma mark - Test `addScopes:`
 
 - (void)testAddScopes_success {
@@ -547,6 +575,20 @@ static NSString *const kNewScope = @"newScope";
                                                       accessToken:kAccessToken
                                              accessTokenExpiresIn:accessTokenExpiresIn
                                                      refreshToken:kRefreshToken];
+  
+  return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+}
+
+- (GIDGoogleUser *)googleUserWithAccessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
+                                     idTokenExpiresIn:(NSTimeInterval)idTokenExpiresIn
+                                refreshTokenExpiresIn:(NSTimeInterval)refreshTokenExpiresIn {
+  NSString *idToken = [self idTokenWithExpiresIn:idTokenExpiresIn];
+
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                             accessTokenExpiresIn:accessTokenExpiresIn
+                                                     refreshToken:kRefreshToken
+                                            refreshTokenExpiresIn:refreshTokenExpiresIn];
   
   return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
 }

@@ -99,9 +99,17 @@
 // Deprecated in iOS 13 and macOS 10.14
 - (void)testLegacyCoding {
   GIDConfiguration *configuration = [GIDConfiguration testInstance];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:configuration];
-  GIDConfiguration *newConfiguration = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-  XCTAssertEqualObjects(configuration, newConfiguration);
+  NSError *archivedError;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:configuration
+                                       requiringSecureCoding:NO
+                                                       error:&archivedError];
+  XCTAssertNil(archivedError);
+  NSError *unArchivedError;
+  GIDConfiguration *newConfig = [NSKeyedUnarchiver unarchivedObjectOfClass:[GIDConfiguration class]
+                                                                  fromData:data
+                                                                     error:&unArchivedError];
+  XCTAssertNil(unArchivedError);
+  XCTAssertEqualObjects(configuration, newConfig);
   XCTAssertTrue(GIDConfiguration.supportsSecureCoding);
 }
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST

@@ -25,11 +25,12 @@
 @implementation OIDAuthorizationResponse (Testing)
 
 + (instancetype)testInstance {
-  return [self testInstanceWithAdditionalParameters:nil errorString:nil];
+  return [self testInstanceWithAdditionalParameters:nil nonce:nil errorString:nil];
 }
 
 + (instancetype)testInstanceWithAdditionalParameters:
     (NSDictionary<NSString *, NSString *> *)additionalParameters
+                                               nonce:(NSString *)nonce
                                          errorString:(NSString *)errorString {
 
   NSMutableDictionary<NSString *, NSString *> *parameters;
@@ -45,7 +46,10 @@
       [parameters addEntriesFromDictionary:additionalParameters];
     }
   }
-  return [[OIDAuthorizationResponse alloc] initWithRequest:[OIDAuthorizationRequest testInstance]
+  OIDAuthorizationRequest *request =
+      [OIDAuthorizationRequest testInstanceWithNonce:nonce
+                                additionalParameters:additionalParameters];
+  return [[OIDAuthorizationResponse alloc] initWithRequest:request
                                                 parameters:parameters];
 }
 
