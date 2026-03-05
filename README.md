@@ -48,14 +48,15 @@ Google Sign-In allows your users to sign-in to your native macOS app using their
 and default browser.  When building for macOS, the `signInWithConfiguration:` and `addScopes:`
 methods take a `presentingWindow:` parameter in place of `presentingViewController:`.  Note that
 in order for your macOS app to store credentials via the Keychain on macOS, you will need to add
-`$(AppIdentifierPrefix)$(CFBundleIdentifier)` to its keychain access group.
+`$(AppIdentifierPrefix)$(CFBundleIdentifier)` as the first item in its keychain access group.
 
 ### Mac Catalyst
 
 Google Sign-In also supports iOS apps that are built for macOS via
 [Mac Catalyst](https://developer.apple.com/mac-catalyst/).  In order for your Mac Catalyst app
 to store credentials via the Keychain on macOS, you will need to add
-`$(AppIdentifierPrefix)$(CFBundleIdentifier)` to its keychain access group.
+`$(AppIdentifierPrefix)$(CFBundleIdentifier)` as the first item in the keychain
+access group.
 
 ## Using the Google Sign-In Button
 
@@ -107,3 +108,19 @@ let signInButton = GoogleSignInButton {
 }
 let hostedButton = NSHostingView(rootView: signInButton)
 ```
+
+## A Note on iOS Keychain Access Groups
+
+GSI uses your default (first listed) keychain access group. If you don't add a
+custom keychain access group, the default keychain access group is provided by
+Xcode and looks like `$(AppIdentifierPrefix)$(CFBundleIdentifier)`.
+
+GSI [removes keychain items upon fresh install](https://github.com/google/GoogleSignIn-iOS/pull/567)
+to ensure that stale credentials from previous installs of your app are not
+mistakenly used. If your app uses a shared access group by default this may
+lead to new installs of apps sharing the same keychain access group to remove
+keychain credentials for apps already installed. 
+
+To prevent unintentional credential removal, you can explicitly list the
+typical default access group (or whatever you prefer so long as it is not
+shared) in your list first. GSI, will then use that default access group.
