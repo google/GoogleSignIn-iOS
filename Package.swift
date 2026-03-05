@@ -104,7 +104,7 @@ let package = Package(
       name: "GoogleSignIn-UnitTests",
       dependencies: [
         "GoogleSignIn",
-        "OCMock",
+        .product(name: "OCMock", package: "ocmock"),
         .product(name: "AppAuth", package: "AppAuth-iOS"),
         .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
