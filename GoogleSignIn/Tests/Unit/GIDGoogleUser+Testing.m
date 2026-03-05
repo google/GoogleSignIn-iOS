@@ -14,8 +14,18 @@
 
 #import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
 
-#import "GoogleSignIn/Tests/Unit/GIDAuthentication+Testing.h"
+#import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+
+#import "GoogleSignIn/Sources/GIDAuthentication.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
+#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
+
+#import "GoogleSignIn/Tests/Unit/GIDConfiguration+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
+
+// Key constants used for encode and decode.
+static NSString *const kProfileDataKey = @"profileData";
+static NSString *const kAuthentication = @"authentication";
 
 @implementation GIDGoogleUser (Testing)
 
@@ -30,17 +40,42 @@
 }
 
 - (BOOL)isEqualToGoogleUser:(GIDGoogleUser *)other {
-  return [self.authentication isEqual:other.authentication] &&
-      [self.userID isEqual:other.userID] &&
-      [self.serverAuthCode isEqual:other.serverAuthCode] &&
+  return [self.userID isEqual:other.userID] &&
       [self.profile isEqual:other.profile] &&
-      [self.hostedDomain isEqual:other.hostedDomain];
+      [self.configuration isEqual:other.configuration] &&
+      [self.idToken isEqual:other.idToken] &&
+      [self.refreshToken isEqual:other.refreshToken] &&
+      [self.accessToken isEqual:other.accessToken];
 }
 
 // Not the hash implemention you want to use on prod, but just to match |isEqual:| here.
 - (NSUInteger)hash {
-  return [self.authentication hash] ^ [self.userID hash] ^ [self.serverAuthCode hash] ^
-      [self.profile hash] ^ [self.hostedDomain hash];
+  return [self.userID hash] ^ [self.configuration hash] ^ [self.profile hash] ^
+      [self.idToken hash] ^ [self.refreshToken hash] ^ [self.accessToken hash];
+}
+
+@end
+
+@implementation GIDGoogleUserOldFormat {
+  GIDAuthentication *_authentication;
+  GIDProfileData *_profile;
+}
+
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(GIDProfileData *)profileData {
+  self = [super initWithAuthState:authState profileData:profileData];
+  if (self) {
+    _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
+    _profile = profileData;
+  }
+  return self;
+}
+
+#pragma mark - NSSecureCoding
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+  [encoder encodeObject:_profile forKey:kProfileDataKey];
+  [encoder encodeObject:_authentication forKey:kAuthentication];
 }
 
 @end

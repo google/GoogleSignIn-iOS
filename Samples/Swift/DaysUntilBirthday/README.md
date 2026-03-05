@@ -35,6 +35,14 @@ The email and password that we use are defined as
 [secrets](https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context)
 on our GitHub repo, and we retrieve these from the workflow environment.
 
-Locally, both the email and password need to be passed to `xcodebuild` as
-arguments: `xcodebuild <other args> EMAIL_SECRET=... PASSWORD_SECRET=...`.
-Refer to the repo's Secrets for these values.
+When run locally, both the email and password need to be passed to `xcodebuild`.
+
+In Xcode, you can add arguments by selecting "Edit Scheme > Run > Environment Variables", and
+replace the variables with your test account. Alternatively, edit `Credential.swift` directly.
+WARNING: Don't check these into the repo!
+
+From the command line, you can do this as arguments:
+`xcodebuild <other args> EMAIL_SECRET=... PASSWORD_SECRET=...`.
+
+For Googlers, refer to CSI internal Workflow documentation for how to access these values, or access
+them via the repo's Secrets. 

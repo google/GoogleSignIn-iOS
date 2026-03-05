@@ -33,6 +33,7 @@ extern NSString *const kUserID;
 extern NSString *const kHostedDomain;
 extern NSString *const kIssuer;
 extern NSString *const kAudience;
+extern NSString *const kAuthTime;
 extern NSTimeInterval const kIDTokenExpires;
 extern NSTimeInterval const kIssuedAt;
 
@@ -56,14 +57,38 @@ extern NSString * const kFatPictureURL;
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
                             accessToken:(NSString *)accessToken
                               expiresIn:(NSNumber *)expiresIn
+                           refreshToken:(NSString *)refreshToken
+                           tokenRequest:(OIDTokenRequest *)tokenRequest;
+
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                              expiresIn:(NSNumber *)expiresIn
+                           refreshToken:(NSString *)refreshToken
+                               authTime:(NSString *)authTime
+                           tokenRequest:(OIDTokenRequest *)tokenRequest;
+
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                              expiresIn:(NSNumber *)expiresIn
+                           refreshToken:(NSString *)refreshToken
+                       refreshExpiresIn:(NSNumber *)refreshExpiresIn
+                               authTime:(NSString *)authTime
                            tokenRequest:(OIDTokenRequest *)tokenRequest;
 
 + (NSString *)idToken;
 
 + (NSString *)fatIDToken;
 
++ (NSString *)fatIDTokenWithAuthTime;
+
+/**
+ * @sub The subject of the ID token.
+ * @exp The interval between 00:00:00 UTC on 1 January 1970 and the expiration date of the ID token.
+ */
 + (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp;
 
 + (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp fat:(BOOL)fat;
+
++ (NSString *)idTokenWithSub:(NSString *)sub exp:(NSNumber *)exp fat:(BOOL)fat authTime:(NSString *)authTime;
 
 @end

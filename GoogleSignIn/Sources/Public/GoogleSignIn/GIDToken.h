@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,27 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// A class providing migration support for auth state saved by older versions of the SDK.
-@interface GIDAuthStateMigration : NSObject
+/// This class represents an OAuth2 or OpenID Connect token.
+@interface GIDToken : NSObject <NSSecureCoding>
 
-// Perform a one-time migration for auth state saved by GPPSignIn 1.x or GIDSignIn 1.0 - 4.x to the
-// GTMAppAuth storage introduced in GIDSignIn 5.0.
-+ (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
-                       callbackPath:(NSString *)callbackPath
-                       keychainName:(NSString *)keychainName
-                     isFreshInstall:(BOOL)isFreshInstall;
+/// The token string.
+@property(nonatomic, copy, readonly) NSString *tokenString;
+
+/// The estimated expiration date of the token.
+@property(nonatomic, readonly, nullable) NSDate *expirationDate;
+
+/// Check if current token is equal to another one.
+///
+/// @param otherToken Another token to compare.
+- (BOOL)isEqualToToken:(GIDToken *)otherToken;
+
+/// Unavailable.
+/// :nodoc:
++ (instancetype)new NS_UNAVAILABLE;
+
+/// Unavailable.
+/// :nodoc:
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

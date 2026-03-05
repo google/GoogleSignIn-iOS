@@ -22,9 +22,10 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 
 @class GIDConfiguration;
+@class GIDSignInResult;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -54,8 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, weak, nullable) NSWindow *presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
-/// The callback block to be called at the completion of the flow.
-@property(nonatomic, readonly, nullable) GIDSignInCallback callback;
+/// The completion block to be called at the completion of the flow.
+@property(nonatomic, readonly, nullable) GIDSignInCompletion completion;
 
 /// The scopes to be used during the flow.
 @property(nonatomic, copy, nullable) NSArray<NSString *> *scopes;
@@ -63,38 +64,52 @@ NS_ASSUME_NONNULL_BEGIN
 /// The login hint to be used during the flow.
 @property(nonatomic, copy, nullable) NSString *loginHint;
 
+/// A cryptographically random value used to associate a Client session with an ID Token,
+/// and to mitigate replay attacks.
+@property(nonatomic, readonly, copy, nullable) NSString *nonce;
+
+/// The claims requested by the Clients.
+@property(nonatomic, readonly, copy, nullable) NSSet<GIDClaim *> *claims;
+
+/// The JSON token claims to be used during the flow.
+@property(nonatomic, copy, nullable) NSString *claimsAsJSON;
+
 /// Creates the default options.
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                       callback:(nullable GIDSignInCallback)callback;
+                                     completion:(nullable GIDSignInCompletion)completion;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                        presentingViewController:(nullable UIViewController *)presentingViewController
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                       callback:(nullable GIDSignInCallback)callback;
+                                          nonce:(nullable NSString *)nonce
+                                         claims:(nullable NSSet *)claims
+                                     completion:(nullable GIDSignInCompletion)completion;
 
 #elif TARGET_OS_OSX
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
-                                       callback:(nullable GIDSignInCallback)callback;
+                                     completion:(nullable GIDSignInCompletion)completion;
 
 + (instancetype)defaultOptionsWithConfiguration:(nullable GIDConfiguration *)configuration
                                presentingWindow:(nullable NSWindow *)presentingWindow
                                       loginHint:(nullable NSString *)loginHint
                                   addScopesFlow:(BOOL)addScopesFlow
                                          scopes:(nullable NSArray *)scopes
-                                       callback:(nullable GIDSignInCallback)callback;
+                                          nonce:(nullable NSString *)nonce
+                                         claims:(nullable NSSet *)claims
+                                     completion:(nullable GIDSignInCompletion)completion;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
 /// Creates the options to sign in silently.
-+ (instancetype)silentOptionsWithCallback:(GIDSignInCallback)callback;
++ (instancetype)silentOptionsWithCompletion:(GIDSignInCompletion)completion;
 
 /// Creates options with the same values as the receiver, except for the "extra parameters", and
 /// continuation flag, which are replaced by the arguments passed to this method.

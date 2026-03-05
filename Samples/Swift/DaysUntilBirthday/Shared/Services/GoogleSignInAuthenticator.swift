@@ -19,18 +19,8 @@ import GoogleSignIn
 
 /// An observable class for authenticating via Google.
 final class GoogleSignInAuthenticator: ObservableObject {
-  // TODO: Replace this with your own ID.
-  #if os(iOS)
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
-  #elseif os(macOS)
-  private let clientID = "687389107077-8qr6dh8fr4uaja89sdr5ieqb7mep04qv.apps.googleusercontent.com"
-  #endif
-
-  private lazy var configuration: GIDConfiguration = {
-    return GIDConfiguration(clientID: clientID)
-  }()
-
   private var authViewModel: AuthenticationViewModel
+  private var claims: Set<GIDClaim> = Set([GIDClaim.authTime()])
 
   /// Creates an instance of this authenticator.
   /// - parameter authViewModel: The view model this authenticator will set logged in status on.
@@ -40,20 +30,36 @@ final class GoogleSignInAuthenticator: ObservableObject {
 
   /// Signs in the user based upon the selected account.'
   /// - note: Successful calls to this will set the `authViewModel`'s `state` property.
-  func signIn() {
+  @MainActor func signIn() {
 #if os(iOS)
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       print("There is no root view controller!")
       return
     }
+    let manualNonce = UUID().uuidString
 
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: rootViewController) { user, error in
-      guard let user = user else {
+    GIDSignIn.sharedInstance.signIn(
+      withPresenting: rootViewController,
+      hint: nil,
+      additionalScopes: nil,
+      nonce: manualNonce,
+      claims: claims
+    ) { signInResult, error in
+      guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
         return
       }
-      self.authViewModel.state = .signedIn(user)
+
+      // Per OpenID Connect Core section 3.1.3.7, rule #11, compare returned nonce to manual
+      guard let idToken = signInResult.user.idToken?.tokenString,
+            let returnedNonce = self.decodeNonce(fromJWT: idToken),
+            returnedNonce == manualNonce else {
+        // Assert a failure for convenience so that integration tests with this sample app fail upon
+        // `nonce` mismatch
+        assertionFailure("ERROR: Returned nonce doesn't match manual nonce!")
+        return
+      }
+      self.authViewModel.state = .signedIn(signInResult.user)
     }
 
 #elseif os(macOS)
@@ -62,13 +68,15 @@ final class GoogleSignInAuthenticator: ObservableObject {
       return
     }
 
-    GIDSignIn.sharedInstance.signIn(with: configuration,
-                                    presenting: presentingWindow) { user, error in
-      guard let user = user else {
+    GIDSignIn.sharedInstance.signIn(
+      withPresenting: presentingWindow,
+      claims: claims
+    ) { signInResult, error in
+      guard let signInResult = signInResult else {
         print("Error! \(String(describing: error))")
         return
       }
-      self.authViewModel.state = .signedIn(user)
+      self.authViewModel.state = .signedIn(signInResult.user)
     }
 #endif
   }
@@ -95,21 +103,25 @@ final class GoogleSignInAuthenticator: ObservableObject {
   /// `addScopes(_:presenting:)` request.
   /// - note: Successful requests will update the `authViewModel.state` with a new current user that
   /// has the granted scope.
-  func addBirthdayReadScope(completion: @escaping () -> Void) {
+  @MainActor func addBirthdayReadScope(completion: @escaping () -> Void) {
+    guard let currentUser = GIDSignIn.sharedInstance.currentUser else {
+      fatalError("No user signed in!")
+    }
+    
     #if os(iOS)
     guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
       fatalError("No root view controller!")
     }
 
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: rootViewController) { user, error in
+    currentUser.addScopes([BirthdayLoader.birthdayReadScope],
+                          presenting: rootViewController) { signInResult, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
       }
 
-      guard let currentUser = user else { return }
-      self.authViewModel.state = .signedIn(currentUser)
+      guard let signInResult = signInResult else { return }
+      self.authViewModel.state = .signedIn(signInResult.user)
       completion()
     }
 
@@ -118,19 +130,56 @@ final class GoogleSignInAuthenticator: ObservableObject {
       fatalError("No presenting window!")
     }
 
-    GIDSignIn.sharedInstance.addScopes([BirthdayLoader.birthdayReadScope],
-                                       presenting: presentingWindow) { user, error in
+    currentUser.addScopes([BirthdayLoader.birthdayReadScope],
+                          presenting: presentingWindow) { signInResult, error in
       if let error = error {
         print("Found error while adding birthday read scope: \(error).")
         return
       }
 
-      guard let currentUser = user else { return }
-      self.authViewModel.state = .signedIn(currentUser)
+      guard let signInResult = signInResult else { return }
+      self.authViewModel.state = .signedIn(signInResult.user)
       completion()
     }
 
     #endif
   }
 
+}
+
+// MARK: Parse nonce from JWT ID Token
+
+private extension GoogleSignInAuthenticator {
+  func decodeNonce(fromJWT jwt: String) -> String? {
+    let segments = jwt.components(separatedBy: ".")
+    guard let parts = decodeJWTSegment(segments[1]),
+          let nonce = parts["nonce"] as? String else {
+      return nil
+    }
+    return nonce
+  }
+
+  func decodeJWTSegment(_ segment: String) -> [String: Any]? {
+    guard let segmentData = base64UrlDecode(segment),
+          let segmentJSON = try? JSONSerialization.jsonObject(with: segmentData, options: []),
+          let payload = segmentJSON as? [String: Any] else {
+      return nil
+    }
+    return payload
+  }
+
+  func base64UrlDecode(_ value: String) -> Data? {
+    var base64 = value
+      .replacingOccurrences(of: "-", with: "+")
+      .replacingOccurrences(of: "_", with: "/")
+
+    let length = Double(base64.lengthOfBytes(using: String.Encoding.utf8))
+    let requiredLength = 4 * ceil(length / 4.0)
+    let paddingLength = requiredLength - length
+    if paddingLength > 0 {
+      let padding = "".padding(toLength: Int(paddingLength), withPad: "=", startingAt: 0)
+      base64 = base64 + padding
+    }
+    return Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
+  }
 }

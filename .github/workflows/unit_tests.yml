@@ -1,0 +1,67 @@
+name: unit_tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+    
+  pod-lib-lint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        podspec: [GoogleSignIn.podspec, GoogleSignInSwiftSupport.podspec]
+        flag: [
+          "",
+          "--use-static-frameworks"
+        ]
+        include:
+          - podspec: GoogleSignInSwiftSupport.podspec
+            includePodspecFlag: "--include-podspecs='GoogleSignIn.podspec'"
+    steps:
+    - uses: actions/checkout@v3
+    - name: Update Bundler
+      run: bundle update --bundler
+    - name: Install Ruby gems with Bundler
+      run: bundle install
+    - name: Lint podspec using local source
+      # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
+      run: |
+        pod lib lint ${{ matrix.podspec }} --verbose \
+          ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
+  spm-build-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        sdk: ['macosx', 'iphonesimulator']
+        include:
+          - sdk: 'macosx'
+            destination: '"platform=OS X,arch=x86_64"'
+          - sdk: 'iphonesimulator'
+            destination: '"platform=iOS Simulator,name=iPhone 16,OS=18.6"'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Build unit test target
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn-Package \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
+          build-for-testing
+    - name: Run unit test target
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn-Package \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
+          test-without-building
+

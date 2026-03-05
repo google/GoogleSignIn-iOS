@@ -48,14 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// Initialize a `GIDConfiguration` object with a client ID.
 ///
 /// @param clientID The client ID of the app.
-/// @return An initilized `GIDConfiguration` instance.
+/// @return An initialized `GIDConfiguration` instance.
 - (instancetype)initWithClientID:(NSString *)clientID;
 
 /// Initialize a `GIDConfiguration` object with a client ID and server client ID.
 ///
 /// @param clientID The client ID of the app.
 /// @param serverClientID The server's client ID.
-/// @return An initilized `GIDConfiguration` instance.
+/// @return An initialized `GIDConfiguration` instance.
 - (instancetype)initWithClientID:(NSString *)clientID
                   serverClientID:(nullable NSString *)serverClientID;
 
@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param serverClientID The server's client ID.
 /// @param hostedDomain The Google Apps domain to be used.
 /// @param openIDRealm The OpenID realm to be used.
-/// @return An initilized `GIDConfiguration` instance.
+/// @return An initialized `GIDConfiguration` instance.
 - (instancetype)initWithClientID:(NSString *)clientID
                   serverClientID:(nullable NSString *)serverClientID
                     hostedDomain:(nullable NSString *)hostedDomain

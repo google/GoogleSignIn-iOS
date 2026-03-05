@@ -1,21 +1,137 @@
-# 6.2.3 (2022-8-18)
+# 9.1.0
+- Allow requesting `claims` (currently, only `auth_time`) via [Sign-in methods](https://github.com/google/GoogleSignIn-iOS/blob/gandhiakshat/update-changelog-for-9.1.0-release/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240) ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
+- Update `addScopes:` methods in `GIDSignIn` to include previously requested `claims` ([#557](https://github.com/google/GoogleSignIn-iOS/pull/557))
+- Internal
+  - Assign to `keychainStore` asap in initializer ([#540](https://github.com/google/GoogleSignIn-iOS/pull/540))
+  - Add support for Swift 6 ([#543](https://github.com/google/GoogleSignIn-iOS/pull/543), [#544](https://github.com/google/GoogleSignIn-iOS/pull/544), [#546](https://github.com/google/GoogleSignIn-iOS/pull/546))
+  - Update GitHub Actions workflows ([#545](https://github.com/google/GoogleSignIn-iOS/pull/545), [#570](https://github.com/google/GoogleSignIn-iOS/pull/570))
+  - Update the `DaysUntilBirthday` sample app to support `auth_time` claim ([#555](https://github.com/google/GoogleSignIn-iOS/pull/555))
+  - Rename `tokenClaims` to `claims` throughout the code ([#568](https://github.com/google/GoogleSignIn-iOS/pull/568))
+
+# 9.0.0
+- Allow providing a custom `nonce` via GSI to AppAuth ([#402](https://github.com/google/GoogleSignIn-iOS/pull/402), [#476](https://github.com/google/GoogleSignIn-iOS/pull/476))
+- Fix invalid error code in `GIDSignIn` ([#472](https://github.com/google/GoogleSignIn-iOS/pull/472))
+- Add support for GTMAppAuth 5 on macOS ([#522](https://github.com/google/GoogleSignIn-iOS/pull/522))
+- Fix Data Protected migration bugs ([#533](https://github.com/google/GoogleSignIn-iOS/pull/533))
+- Internal
+  - Add AppAuthCore as explicit dependency ([#470](https://github.com/google/GoogleSignIn-iOS/pull/470))
+  - Update iPhone simulator from 14 to 15 ([#494](https://github.com/google/GoogleSignIn-iOS/pull/494))
+  - Fix swift button integration test ([#497](https://github.com/google/GoogleSignIn-iOS/pull/497))
+  - Update runner to macos-13 ([#498](https://github.com/google/GoogleSignIn-iOS/pull/498))
+  - Update `scorecards.yml` to use `upload-artifact@v4.6.2` ([#516](https://github.com/google/GoogleSignIn-iOS/pull/516))
+  - Update AppAuth and GTMAppAuth dependencies ([#517](https://github.com/google/GoogleSignIn-iOS/pull/517), [#521](https://github.com/google/GoogleSignIn-iOS/pull/521))
+  - Fix Swift integration tests for a returning user ([#518](https://github.com/google/GoogleSignIn-iOS/pull/518))
+  - Update `.gitignore` to include .build and Package.resolved ([#520](https://github.com/google/GoogleSignIn-iOS/pull/520))
+  - Update GIDSignInTest to correctly setUp and tearDown NSUserDefaults ([#527](https://github.com/google/GoogleSignIn-iOS/pull/527))
+
+# 8.0.0
+- General release adding Firebase App Check support to establish your
+application's integrity while signing in with Google
+- Update minimum iOS support to iOS 12 ([#445](https://github.com/google/GoogleSignIn-iOS/pull/445))
+- Internal
+  - Update AppCheckCore dependency to v11.0 ([#454](https://github.com/google/GoogleSignIn-iOS/pull/454))
+  - Add instancetype return to test helper ([#393](https://github.com/google/GoogleSignIn-iOS/pull/393))
+  - Remove GTMSessionFetcher modular import ([#403](https://github.com/google/GoogleSignIn-iOS/pull/403))
+  - Bump activesupport from 5.2.5 to 5.2.8.1 in the bundler group ([#429](https://github.com/google/GoogleSignIn-iOS/pull/429))
+  - Remove deprecated macos-11 runner ([#447](https://github.com/google/GoogleSignIn-iOS/pull/447))
+  - Update deprecated archiving API usage in tests ([#449](https://github.com/google/GoogleSignIn-iOS/pull/449))
+
+# 7.1.0-fac-beta-1.1.0
+- Beta release supporting Firebase App Check tokens used
+to establish your application's integrity while signing in with Google
+- Adds privacy manifest support released in [v7.1.0](https://github.com/google/GoogleSignIn-iOS/releases/tag/7.1.0)
+- Internal
+  - Check integration test for presubmit instruction ([#368](https://github.com/google/GoogleSignIn-iOS/pull/368))
+  - Test skip integration key ([#374](https://github.com/google/GoogleSignIn-iOS/pull/374))
+  - Add Privacy Manifest to App Check Release Branch ([#392](https://github.com/google/GoogleSignIn-iOS/pull/392))
+  - [Add return type to init in GIDFakeFetcherService header](https://github.com/google/GoogleSignIn-iOS/commit/ebf681cac127497da55c932cb5bbf185971a29e7)
+
+# 7.1.0
+- Update to Swift 5.0 in `GoogleSignInSwiftSupport` pod ([#317](https://github.com/google/GoogleSignIn-iOS/pull/317))
+- Documentation updates ([#351](https://github.com/google/GoogleSignIn-iOS/pull/351), [#372](https://github.com/google/GoogleSignIn-iOS/pull/372))
+- Add Privacy Manifest ([#382](https://github.com/google/GoogleSignIn-iOS/pull/382))
+- Internal
+  - Fix typo in `SFSafariViewController` ([#291](https://github.com/google/GoogleSignIn-iOS/pull/291))
+  - Fix `OCMock` usage in unit test ([#298](https://github.com/google/GoogleSignIn-iOS/pull/298))
+  - Use new [delegate protocol](https://github.com/google/GTMAppAuth/pull/224) from GTMAppAuth 4.0.0 ([#299](https://github.com/google/GoogleSignIn-iOS/pull/299))
+  - Ensure that `completion` is not nil before calling `-[GIDSignIn restorePreviousSignIn:]` ([#301](https://github.com/google/GoogleSignIn-iOS/pull/301))
+  - Removes `macos-11` runner in GitHub workflows ([#302](https://github.com/google/GoogleSignIn-iOS/pull/302))
+  - Updates button name reference so UI automation tests pass ([#308](https://github.com/google/GoogleSignIn-iOS/pull/308))
+
+# 7.1.0-fac-beta-1.0.0
+- Beta release supporting Firebase App Check tokens used
+to establish your application's integrity while signing in with Google
+- Internal
+  - Update SignInSample Podfile minimum iOS version ([#355](https://github.com/google/GoogleSignIn-iOS/pull/355))
+  - Update AppCheckExample unit test target to pass during continuous integration ([#356](https://github.com/google/GoogleSignIn-iOS/pull/356))
+
+# 7.1.0-fac-eap-1.0.0
+- Early Access Program (EAP) release supporting Firebase App Check tokens used
+to establish your application's integrity while signing in with Google
+  - Use [`-[GIDSignIn configureWithCompletion:]`](https://github.com/google/GoogleSignIn-iOS/blob/7.1.0-fac-eap-1.0.0/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L79)
+    to configure GSI to use Firebase App Check as early as possible in your app
+    to minimize latency.
+  - Use [`-[GIDSignIn configureDebugProviderWithAPIKey:completion:]`](https://github.com/google/GoogleSignIn-iOS/blob/7.1.0-fac-eap-1.0.0/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L91)
+    in debug builds or continuous integration environments.
+  - New [sample app](https://github.com/google/GoogleSignIn-iOS/tree/7.1.0-fac-eap-1.0.0/Samples/Swift/AppAttestExample)
+    showing example of configuring GSI to use Firebase App Check.
+- Internal
+  - Fix typo in `SFSafariViewController` ([#291](https://github.com/google/GoogleSignIn-iOS/pull/291))
+  - Removes `macos-11` runner in GitHub workflows ([#302](https://github.com/google/GoogleSignIn-iOS/pull/302))
+  - Updates button name reference so UI automation tests pass ([#308](https://github.com/google/GoogleSignIn-iOS/pull/308))
+  - Ensure that `completion` is not nil before calling
+    `-[GIDSignIn restorePreviousSignIn:]` ([#301](https://github.com/google/GoogleSignIn-iOS/pull/301))
+  - Use new [delegate protocol](https://github.com/google/GTMAppAuth/pull/224)
+    from GTMAppAuth 4.0.0 ([#299](https://github.com/google/GoogleSignIn-iOS/pull/299))
+
+# 7.0.0
+- All configuration can now be provided via your `Info.plist` file. ([#228](https://github.com/google/GoogleSignIn-iOS/pull/228))
+  - Use the following keys in `<key>KEY</key><string>VALUE</string>` pairs to configure the SDK:
+    - `GIDClientID` (required)
+    - `GIDServerClientID` (optional)
+    - `GIDHostedDomain` (optional)
+    - `GIDOpenIDRealm` (optional)
+- Support for [Swift Concurrency](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html). ([#187](https://github.com/google/GoogleSignIn-iOS/pull/187))
+- API surface improvements ([#249](https://github.com/google/GoogleSignIn-iOS/pull/249), [#228](https://github.com/google/GoogleSignIn-iOS/pull/228), [#187](https://github.com/google/GoogleSignIn-iOS/pull/187))
+  - `GIDSignIn`
+    - New `configuration` property.
+    - Removed `Configuration:` arguments from `signIn:` methods.
+    - Removed `addScopes:` and added it to `GIDGoogleUser`.
+    - Renamed `callback:` arguments to `completion:` for asynchronous methods taking blocks.
+  - `GIDGoogleUser`
+    - New `configuration` property.
+    - New `addScopes:` method moved from `GIDSignIn`.
+    - Removed `authentication` property and replaced it with:
+      - New `accessToken` property.
+      - New `refreshToken` property.
+      - New `idToken` property.
+      - New `fetcherAuthorizer` property.
+      - New `refreshTokensIfNeededWithCompletion:` method.
+  - New `GIDToken` class to represent access, refresh, and ID tokens in `GIDGoogleUser`.
+  - New `GIDSignInResult` class to represent the result of a successful signIn or addScopes flow.
+  - Removed `GIDSignInCallback`, `GIDDisconnectCallback`, and `GIDAuthenticationAction` block type definitions.
+
+# 6.2.4
+- Updated the GTMSessionFetcher dependency to allow 2.x versions. ([#207](https://github.com/google/GoogleSignIn-iOS/pull/207))
+
+# 6.2.3
 - Fix resource loading in GoogleSignInSwift with CocoaPods use_frameworks! ([#197](https://github.com/google/GoogleSignIn-iOS/pull/197))
 - Prevent build errors for GoogleSignInSwift in certain scenarios when using Swift Package Manager. ([#166](https://github.com/google/GoogleSignIn-iOS/pull/166))
 
-# 6.2.2 (2022-5-27)
+# 6.2.2
 - Prevent build errors for GoogleSignInSwift when using Swift Package Manager. ([#157](https://github.com/google/GoogleSignIn-iOS/pull/157))
 - Prevent a build error on Xcode 12 and earlier. ([#158](https://github.com/google/GoogleSignIn-iOS/pull/158))
 
-# 6.2.1 (2022-5-19)
+# 6.2.1
 - Use `GoogleSignInSwiftSupport` as the name of the Swift support CocoaPod. ([#137](https://github.com/google/GoogleSignIn-iOS/pull/137))
 
-# 6.2.0 (2022-5-18)
+# 6.2.0
 - Support for macOS. ([#104](https://github.com/google/GoogleSignIn-iOS/pull/104))
 - Added a SwiftUI "Sign in with Google" button. ([#103](https://github.com/google/GoogleSignIn-iOS/pull/103))
 - Added the ability to request additional scopes at sign-in time. ([#30](https://github.com/google/GoogleSignIn-iOS/pull/30))
 - Fixed several issues. ([#87](https://github.com/google/GoogleSignIn-iOS/pull/87), [#106](https://github.com/google/GoogleSignIn-iOS/issues/106))
 
-# 6.1.0 (2021-12-16)
+# 6.1.0
 - New Swift sample app demonstrating SwiftUI.
   ([#63](https://github.com/google/GoogleSignIn-iOS/pull/63))
 - Support for Mac Catalyst.
@@ -23,15 +139,15 @@
   ([#68](https://github.com/google/GoogleSignIn-iOS/pull/68),
   [#70](https://github.com/google/GoogleSignIn-iOS/pull/70))
 
-# 6.0.2 (2021-8-20)
+# 6.0.2
 - Ensure that module imports can be used when built as a library.
   ([#53](https://github.com/google/GoogleSignIn-iOS/pull/53))
 
-# 6.0.1 (2021-7-21)
+# 6.0.1
 - Fixes nested callbacks not being called for signIn and addScopes methods.
   ([#29](https://github.com/google/GoogleSignIn-iOS/pull/29))
 
-# 6.0.0 (2021-7-13)
+# 6.0.0
 - Google Sign-In for iOS is now open source.
 - Swift Package Manager support.
 - Support for Simulator on M1 Macs.
@@ -57,15 +173,15 @@
     an `IBAction` or similar in order for you to call
     `signInWithConfiguration:presentingViewController:callback:` to initiate a sign-in flow.
 
-# 5.0.2 (2019-11-7)
+# 5.0.2
 - Fixes the wrong error code being sent to `signIn:didSignInForUser:withError:` when the user
   cancels iOS's consent dialog during the sign-in flow.
 
-# 5.0.1 (2019-10-9)
+# 5.0.1
 - Fixes an issue that the sign in flow cannot be correctly started on iOS 13.
 - The zip distribution requires Xcode 11 or above.
 
-# 5.0.0 (2019-8-14)
+# 5.0.0
 - Changes to GIDSignIn
   - `uiDelegate` has been replaced with `presentingViewController`.
   - `hasAuthInKeychain` has been replaced with `hasPreviousSignIn`.
@@ -79,40 +195,40 @@
 - Removes the dependency on GoogleToolboxForMac.
 - Drops support for iOS 7.
 
-# 4.4.0 (2018-11-26)
+# 4.4.0
 - Removes the dependency on GTM OAuth 2.
 
-# 4.3.0 (2018-10-1)
+# 4.3.0
 - Supports Google's Enterprise Mobile Management.
 
-# 4.2.0 (2018-8-10)
+# 4.2.0
 - Adds `grantedScopes` to `GIDGoogleUser`, allowing confirmation of which scopes
   have been granted after a successful sign-in.
 - Deprecates `accessibleScopes` in `GIDGoogleUser`, use `grantedScopes` instead.
 - Localizes `GIDSignInButton` for hi (Hindi) and fr-CA (French (Canada)).
 - Adds dependency to the system `LocalAuthentication` framework.
 
-# 4.1.2 (2018-1-8)
+# 4.1.2
 - Add `pod try` support for the GoogleSignIn CocoaPod.
 
-# 4.1.1 (2017-10-17)
+# 4.1.1
 - Fixes an issue that `GIDSignInUIDelegate`'s `signInWillDispatch:error:` was
   not called on iOS 11. Please note that it is intended that neither
   `signIn:presentViewController:` nor `signIn:dismissViewController:` is called
   on iOS 11 because SFAuthenticationSession is not presented by the app's view
   controller.
 
-# 4.1.0 (2017-09-13)
+# 4.1.0
 - Uses SFAuthenticationSession on iOS 11.
 
-# 4.0.2 (2017-2-6)
+# 4.0.2
 - No longer depends on GoogleAppUtilities.
 
-# 4.0.1 (2016-10-24)
+# 4.0.1
 - Switches to open source pod dependencies.
 - Appearance of sign-in button no longer depends on requested scopes.
 
-# 4.0.0 (2016-4-21)
+# 4.0.0
 - GoogleSignIn pod now takes form of a static framework. Import with
   `#import <GoogleSignIn/GoogleSignIn.h>` in Objective-C.
 - Adds module support. You can also use `@import GoogleSignIn;` in Objective-C,
@@ -126,7 +242,7 @@
   from `GIDSignIn`.
 - No longer requires adding bundle ID as a URL scheme supported by the app.
 
-# 3.0.0 (2016-3-4)
+# 3.0.0
 - Provides `givenName` and `familyName` properties on `GIDProfileData`.
 - Allows setting the `loginHint` property on `GIDSignIn` to prefill the user's
   ID or email address in the sign-in flow.
@@ -138,41 +254,41 @@
 - Provides bitcode support.
 - Requires Xcode 7.0 or above due to bitcode incompatibilities with Xcode 6.
 
-# 2.4.0 (2015-10-26)
+# 2.4.0
 - Updates sign-in button with the new Google logo.
 - Supports domain restriction for sign-in.
 - Allows refreshing ID tokens.
 
-# 2.3.2 (2015-10-9)
+# 2.3.2
 - No longer requires Xcode 7.
 
-# 2.3.1 (2015-10-1)
+# 2.3.1
 - Fixes a crash in `GIDProfileData`'s `imageURLWithDimension:`.
 
-# 2.3.0 (2015-9-25)
+# 2.3.0
 - Requires Xcode 7.0 or above.
 - Uses SFSafariViewController for signing in on iOS 9.  `uiDelegate` must be
   set for this to work.
 - Optimizes fetching user profile.
 - Supports GTMFetcherAuthorizationProtocol in GIDAuthentication.
 
-# 2.2.0 (2015-7-15)
+# 2.2.0
 - Compatible with iOS 9 (beta).  Note that this version of the Sign-In SDK does
   not include bitcode, so you must set ENABLE_BITCODE to NO in your project if
   you use Xcode 7.
 - Adds descriptive identifiers for GIDSignInButton's Auto Layout constraints.
 - `signInSilently` no longer requires setting `uiDelegate`.
 
-# 2.1.0 (2015-6-17)
+# 2.1.0
 - Fixes Auto Layout issues with GIDSignInButton.
 - Adds API to refresh access token in GIDAuthentication.
 - Better exception description for unassigned clientID in GIDSignIn.
 - Other minor bug fixes.
 
-# 2.0.1 (2015-5-28)
+# 2.0.1
 - Bug fixes
 
-# 2.0.0 (2015-5-21)
+# 2.0.0
 - Supports sign-in via UIWebView rather than app switching to a browser,
   configurable with the new `allowsSignInWithWebView` property.
 - Now apps which have disabled the app switch to a browser via the
@@ -184,7 +300,7 @@
   is `NO` as documented
 - Other minor bug fixes
 
-# 1.0.0 (2015-3-12)
+# 1.0.0
 - New sign-in focused SDK with refreshed API
 - Dynamically rendered sign-in button with contextual branding
 - Basic profile support

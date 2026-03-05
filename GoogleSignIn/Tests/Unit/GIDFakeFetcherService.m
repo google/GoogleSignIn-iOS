@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
-
 #import "GoogleSignIn/Tests/Unit/GIDFakeFetcher.h"
 
 @implementation GIDFakeFetcherService {
@@ -28,6 +27,17 @@
   self = [super init];
   if (self) {
     _fetchers = [[NSMutableArray alloc] init];
+  }
+  return self;
+}
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+- (instancetype)initWithAuthorizer:(id<GTMFetcherAuthorizationProtocol>)authorizer {
+#pragma clang diagnostic pop
+  self = [self init];
+  if (self) {
+    self.authorizer = authorizer;
   }
   return self;
 }
@@ -50,7 +60,8 @@
 }
 
 - (GTMSessionFetcher *)fetcherWithRequest:(NSURLRequest *)request {
-  GIDFakeFetcher *fetcher = [[GIDFakeFetcher alloc] initWithRequest:request];
+  GIDFakeFetcher *fetcher = [[GIDFakeFetcher alloc] initWithRequest:request
+                                                         authorizer:self.authorizer];
   [_fetchers addObject:fetcher];
   return fetcher;
 }
