@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The minimum size of the button depends on the language used for text.
 /// The following dimensions (in points) fit for all languages:
 /// - kGIDSignInButtonStyleStandard: 230 x 48 (Example display text: "Sign in")
-/// - kGIDSignInButtonStyleWide:     312 x 48 (Display text is "Sign in with Google")
+/// - kGIDSignInButtonStyleWide:     312 x 48 (Example display text: "Sign in with Google")
 /// - kGIDSignInButtonStyleIconOnly: 48 x 48  (no text, fixed size)
 typedef NS_ENUM(NSInteger, GIDSignInButtonStyle) {
   kGIDSignInButtonStyleStandard = 0,
