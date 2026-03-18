@@ -19,7 +19,17 @@ import XCTest
 class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInStaticText =
     "“DaysUntilBirthday (iOS)” Wants to Use “google.com” to Sign In"
-  private let timeout: TimeInterval = 5
+  private let passwordManagerPrompt =
+    "Save Password?"
+  private let signInDisclaimerHeaderText =
+    "Sign in to DaysUntilBirthday (iOS)"
+  private let returningUserSignInDisclaimerHeaderText =
+    "You’re signing back in to DaysUntilBirthday (iOS)"
+  private let additionalAccessHeaderText = "DaysUntilBirthday (iOS) wants additional access to your Google Account"
+  private let appTrustWarningText = "Make sure you trust DaysUntilBirthday (iOS)"
+  private let chooseAnAccountHeaderText = "Choose an account"
+  private let notNowText = "Not Now"
+  private let timeout: TimeInterval = 30
 
   private let sampleApp = XCUIApplication()
   private let springboardApp = XCUIApplication(
@@ -152,6 +162,23 @@ extension DaysUntilBirthdayUITests_iOS {
       .typeText(Credential.password.rawValue)
     sampleApp.keyboards.element.buttons["return"].tap()
 
+    if sampleApp
+      .staticTexts[passwordManagerPrompt]
+      .waitForExistence(timeout: timeout) {
+      guard sampleApp
+        .buttons[notNowText]
+        .waitForExistence(timeout: timeout) else {
+        XCTFail("Failed to find \(notNowText) button")
+        return false
+      }
+      sampleApp.buttons[notNowText].tap()
+    }
+
+    // Proceed through sign-in disclaimer and/or access request view(s) if needed
+    handleSignInDisclaimerIfNeeded()
+    handleAccessRequestIfNeeded()
+    handleReturningUserSignInDisclaimerIfNeeded()
+
     return true
   }
 
@@ -160,15 +187,14 @@ extension DaysUntilBirthdayUITests_iOS {
   /// This will check that there is a `Credential.email` in a list to select and
   /// sign in with.
   func useExistingSignIn() -> Bool {
-    guard sampleApp.staticTexts[Credential.email.rawValue].exists else {
-      XCTFail("Email used for previous sign-in not in list")
+    guard findAndTapExistingSignedInEmail() else {
+      XCTFail("Failed to find signed-in account")
       return false
     }
-    guard sampleApp.staticTexts[Credential.email.rawValue].isHittable else {
-      XCTFail("Email used for previous sign-in not tappable")
-      return false
-    }
-    sampleApp.staticTexts[Credential.email.rawValue].tap()
+
+    handleSignInDisclaimerIfNeeded()
+    handleAccessRequestIfNeeded()
+    handleReturningUserSignInDisclaimerIfNeeded()
 
     return true
   }
@@ -196,17 +222,16 @@ extension DaysUntilBirthdayUITests_iOS {
       }
       springboardApp.buttons["Continue"].tap()
 
-      guard sampleApp
-              .staticTexts["Days Until Birthday wants to access your Google Account"]
-              .waitForExistence(timeout: timeout) else {
-        XCTFail("Failed to find permission screen")
-        return false
+      if sampleApp
+        .staticTexts[chooseAnAccountHeaderText]
+        .waitForExistence(timeout: timeout) {
+        guard findAndTapExistingSignedInEmail() else {
+          XCTFail("Failed to find signed-in account")
+          return false
+        }
       }
-      guard sampleApp.buttons["Allow"].waitForExistence(timeout: timeout) else {
-        XCTFail("Failed to find 'Allow' button")
-        return false
-      }
-      sampleApp.buttons["Allow"].tap()
+
+      handleAccessRequestIfNeeded()
     }
 
     guard sampleApp.staticTexts["Days Until Birthday"]
@@ -238,6 +263,58 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
+    return true
+  }
+
+  /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
+  func handleAccessRequestIfNeeded() {
+    let currentlyShowingAdditionalAccessRequest = sampleApp.staticTexts[additionalAccessHeaderText]
+      .waitForExistence(timeout: timeout) && sampleApp.staticTexts[appTrustWarningText]
+      .waitForExistence(timeout: timeout) &&
+    sampleApp.buttons["Continue"]
+      .waitForExistence(timeout: timeout)
+
+    if currentlyShowingAdditionalAccessRequest {
+      sampleApp.buttons["Continue"].tap()
+    }
+  }
+
+  /// Proceeds through the sign-in disclaimer view if needed.
+  func handleSignInDisclaimerIfNeeded() {
+    let currentlyShowingSignInDisclaimer = sampleApp.staticTexts[signInDisclaimerHeaderText]
+      .waitForExistence(timeout: timeout) &&
+    sampleApp.buttons["Continue"]
+      .waitForExistence(timeout: timeout)
+
+    if currentlyShowingSignInDisclaimer {
+      sampleApp.buttons["Continue"].tap()
+    }
+  }
+
+  func handleReturningUserSignInDisclaimerIfNeeded() {
+    let currentlyShowingReturningUserSignInDisclaimer =
+    sampleApp.staticTexts[returningUserSignInDisclaimerHeaderText]
+      .waitForExistence(timeout: timeout) &&
+    sampleApp.buttons["Continue"]
+      .waitForExistence(timeout: timeout)
+
+    if currentlyShowingReturningUserSignInDisclaimer {
+      sampleApp.buttons["Continue"].tap()
+    }
+  }
+
+  /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it.
+  /// - returns: true if the signed-in account was found and tapped, otherwise returns false.
+  func findAndTapExistingSignedInEmail() -> Bool {
+    guard sampleApp.staticTexts[Credential.email.rawValue].exists else {
+      XCTFail("Email used for previous sign-in was not found.")
+      return false
+    }
+    guard sampleApp.staticTexts[Credential.email.rawValue].isHittable else {
+      XCTFail("Email used for previous sign-in not tappable.")
+      return false
+    }
+    sampleApp.staticTexts[Credential.email.rawValue].tap()
     return true
   }
 }

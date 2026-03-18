@@ -17,6 +17,7 @@
 import XCTest
 @testable import GoogleSignInSwift
 
+@MainActor
 @available(iOS 13.0, macOS 10.15, *)
 class GoogleSignInButtonStylingTests: XCTestCase {
   private typealias ButtonViewModelInfo = (

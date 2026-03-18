@@ -15,12 +15,14 @@
  */
 #import <TargetConditionals.h>
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import "GIDAppCheckError.h"
+#endif
 #import "GIDConfiguration.h"
 #import "GIDGoogleUser.h"
 #import "GIDProfileData.h"
 #import "GIDSignIn.h"
 #import "GIDToken.h"
 #import "GIDSignInResult.h"
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#import "GIDClaim.h"
 #import "GIDSignInButton.h"
-#endif
