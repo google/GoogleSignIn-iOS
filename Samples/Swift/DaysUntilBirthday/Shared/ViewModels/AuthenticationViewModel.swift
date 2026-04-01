@@ -26,15 +26,15 @@ final class AuthenticationViewModel: ObservableObject {
     return GoogleSignInAuthenticator(authViewModel: self)
   }
 
-  /// The user's `auth_time` as found in `idToken`.
-  /// - note: If the user is logged out, then this will default to `nil`.
-  var authTime: Date? {
+  /// The user's `claims` as found in `idToken`.
+  /// - note: If the user is logged out, then this will default to empty.
+  var claims: [(key: String, value: String)] {
     switch state {
     case .signedIn(let user):
-      guard let idToken = user.idToken?.tokenString else { return nil }
-      return decodeAuthTime(fromJWT: idToken)
+      guard let idToken = user.idToken?.tokenString else { return [] }
+      return decodeClaims(fromJwt: idToken)
     case .signedOut:
-      return nil
+      return []
     }
   }
 
@@ -82,23 +82,48 @@ final class AuthenticationViewModel: ObservableObject {
   @MainActor func addBirthdayReadScope(completion: @escaping () -> Void) {
       authenticator.addBirthdayReadScope(completion: completion)
   }
-  
-  var formattedAuthTimeString: String? {
-    guard let date = authTime else { return nil }
-    let formatter = DateFormatter()
-    formatter.dateFormat = "MMM d, yyyy 'at' h:mm a"
-    return formatter.string(from: date)
-  }
 }
 
 private extension AuthenticationViewModel {
-  func decodeAuthTime(fromJWT jwt: String) -> Date? {
+  /// Returns the `auth_time` claim from the given JWT, if present.
+  func decodeAuthTime(fromJwt jwt: String) -> Date? {
     let segments = jwt.components(separatedBy: ".")
     guard let parts = decodeJWTSegment(segments[1]),
-          let authTimeInterval = parts["auth_time"] as? TimeInterval else {
+      let authTime = parts["auth_time"] as? TimeInterval
+    else {
       return nil
     }
-    return Date(timeIntervalSince1970: authTimeInterval)
+    return Date(timeIntervalSince1970: authTime)
+  }
+
+  /// Returns the `amr` claim from the given JWT, if present.
+  func decodeAmr(fromJwt jwt: String) -> [String]? {
+    let segments = jwt.components(separatedBy: ".")
+    guard let parts = decodeJWTSegment(segments[1]),
+      let amr = parts["amr"] as? [String]
+    else {
+      return nil
+    }
+    return amr
+  }
+
+  /// Returns a collection of formatted claim keys and values decoded from a JWT.
+  func decodeClaims(fromJwt jwt: String) -> [(key: String, value: String)] {
+    let claims: [(key: String, value: String)?] = [
+      decodeAuthTime(fromJwt: jwt).map { date in
+        let formattedDate = DateFormatter.localizedString(
+          from: date,
+          dateStyle: .medium,
+          timeStyle: .medium
+        )
+        return (key: "auth_time", value: formattedDate)
+      },
+      decodeAmr(fromJwt: jwt).map { amr in
+        (key: "amr", value: amr.joined(separator: ", "))
+      },
+    ]
+
+    return claims.compactMap { $0 }
   }
 
   func decodeJWTSegment(_ segment: String) -> [String: Any]? {
