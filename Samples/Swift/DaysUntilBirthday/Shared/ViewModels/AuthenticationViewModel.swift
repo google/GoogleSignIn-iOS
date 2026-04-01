@@ -85,42 +85,19 @@ final class AuthenticationViewModel: ObservableObject {
 }
 
 private extension AuthenticationViewModel {
-  /// Returns the `auth_time` claim from the given JWT, if present.
-  func decodeAuthTime(fromJwt jwt: String) -> Date? {
-    let segments = jwt.components(separatedBy: ".")
-    guard let parts = decodeJWTSegment(segments[1]),
-      let authTime = parts["auth_time"] as? TimeInterval
-    else {
-      return nil
-    }
-    return Date(timeIntervalSince1970: authTime)
-  }
-
-  /// Returns the `amr` claim from the given JWT, if present.
-  func decodeAmr(fromJwt jwt: String) -> [String]? {
-    let segments = jwt.components(separatedBy: ".")
-    guard let parts = decodeJWTSegment(segments[1]),
-      let amr = parts["amr"] as? [String]
-    else {
-      return nil
-    }
-    return amr
-  }
-
   /// Returns a collection of formatted claim keys and values decoded from a JWT.
   func decodeClaims(fromJwt jwt: String) -> [(key: String, value: String)] {
+    let segments = jwt.components(separatedBy: ".")
+
+    guard segments.count > 1,
+      let payload = decodeJWTSegment(segments[1])
+    else {
+      return []
+    }
+
     let claims: [(key: String, value: String)?] = [
-      decodeAuthTime(fromJwt: jwt).map { date in
-        let formattedDate = DateFormatter.localizedString(
-          from: date,
-          dateStyle: .medium,
-          timeStyle: .medium
-        )
-        return (key: "auth_time", value: formattedDate)
-      },
-      decodeAmr(fromJwt: jwt).map { amr in
-        (key: "amr", value: amr.joined(separator: ", "))
-      },
+      formatAuthTime(from: payload),
+      formatAmr(from: payload)
     ]
 
     return claims.compactMap { $0 }
@@ -148,6 +125,26 @@ private extension AuthenticationViewModel {
       base64 = base64 + padding
     }
     return Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
+  }
+
+  /// Returns the `auth_time` claim from the given JWT, if present.
+  func formatAuthTime(from payload: [String: Any]) -> (key: String, value: String)? {
+    guard let authTime = payload["auth_time"] as? TimeInterval
+    else {
+      return nil
+    }
+    let date = Date(timeIntervalSince1970: authTime)
+    let formattedDate = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .medium)
+    return (key: "auth_time", value: formattedDate)
+  }
+
+  /// Returns the `amr` claim from the given JWT, if present.
+  private func formatAmr(from payload: [String: Any]) -> (key: String, value: String)? {
+    guard let amr = payload["amr"] as? [String]
+    else {
+      return nil
+    }
+    return (key: "amr", value: amr.joined(separator: ", "))
   }
 }
 
