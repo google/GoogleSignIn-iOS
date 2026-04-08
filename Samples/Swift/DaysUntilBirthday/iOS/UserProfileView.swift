@@ -19,9 +19,9 @@ import GoogleSignIn
 
 /// A view that displays a list of ID token claims.
 struct ClaimsListView: View {
-  let claims: [(key: String, value: String)]
+  let claims: [Claim]
   var body: some View {
-    List(claims, id: \.key) { claim in
+    List(claims) { claim in
       VStack(alignment: .leading, spacing: 4) {
         Text(claim.key)
           .font(.caption)
@@ -63,7 +63,6 @@ struct UserProfileView: View {
                     Image(systemName: "list.bullet.rectangle.portrait")
                     Text("View ID Token Claims")
                   }
-                  .font(.caption)
                   .foregroundColor(.blue)
                 }
               }

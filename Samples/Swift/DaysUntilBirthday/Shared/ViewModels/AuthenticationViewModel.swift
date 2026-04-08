@@ -28,7 +28,7 @@ final class AuthenticationViewModel: ObservableObject {
 
   /// The user's `claims` as found in `idToken`.
   /// - note: If the user is logged out, then this will default to empty.
-  var claims: [(key: String, value: String)] {
+  var claims: [Claim] {
     switch state {
     case .signedIn(let user):
       guard let idToken = user.idToken?.tokenString else { return [] }
@@ -86,7 +86,7 @@ final class AuthenticationViewModel: ObservableObject {
 
 private extension AuthenticationViewModel {
   /// Returns a collection of formatted claim keys and values decoded from a JWT.
-  func decodeClaims(fromJwt jwt: String) -> [(key: String, value: String)] {
+  func decodeClaims(fromJwt jwt: String) -> [Claim] {
     let segments = jwt.components(separatedBy: ".")
 
     guard segments.count > 1,
@@ -95,7 +95,7 @@ private extension AuthenticationViewModel {
       return []
     }
 
-    let claims: [(key: String, value: String)?] = [
+    let claims: [Claim?] = [
       formatAuthTime(from: payload),
       formatAmr(from: payload)
     ]
@@ -128,23 +128,23 @@ private extension AuthenticationViewModel {
   }
 
   /// Returns the `auth_time` claim from the given JWT, if present.
-  func formatAuthTime(from payload: [String: Any]) -> (key: String, value: String)? {
+  func formatAuthTime(from payload: [String: Any]) -> Claim? {
     guard let authTime = payload["auth_time"] as? TimeInterval
     else {
       return nil
     }
     let date = Date(timeIntervalSince1970: authTime)
     let formattedDate = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .medium)
-    return (key: "auth_time", value: formattedDate)
+    return Claim(key: "auth_time", value: formattedDate)
   }
 
   /// Returns the `amr` claim from the given JWT, if present.
-  private func formatAmr(from payload: [String: Any]) -> (key: String, value: String)? {
+  private func formatAmr(from payload: [String: Any]) -> Claim? {
     guard let amr = payload["amr"] as? [String]
     else {
       return nil
     }
-    return (key: "amr", value: amr.joined(separator: ", "))
+    return Claim(key: "amr", value: amr.joined(separator: ", "))
   }
 }
 
