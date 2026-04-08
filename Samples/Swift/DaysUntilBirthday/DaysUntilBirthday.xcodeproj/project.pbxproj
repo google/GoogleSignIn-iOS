@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -40,6 +40,9 @@
 		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
 		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
 		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
+		F8CE667E2F86AB020044EAFF /* Claim.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CE667D2F86AAFD0044EAFF /* Claim.swift */; };
+		F8CE667F2F86AB020044EAFF /* Claim.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CE667D2F86AAFD0044EAFF /* Claim.swift */; };
+		F8CE66802F86B6A30044EAFF /* Claim.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CE667D2F86AAFD0044EAFF /* Claim.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +76,7 @@
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
 		73DB417E2805F9850028B8D3 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = ../../..; sourceTree = "<group>"; };
+		F8CE667D2F86AAFD0044EAFF /* Claim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Claim.swift; sourceTree = "<group>"; };
 		FE2F2ABC2800D9C1005EA17F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE71738027ECFAF400910319 /* DaysUntilBirthday (macOS).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DaysUntilBirthday (macOS).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE71738927ECFAF600910319 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -212,6 +216,7 @@
 		FE7173AD27F65B8500910319 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				F8CE667D2F86AAFD0044EAFF /* Claim.swift */,
 				739FCC47270E659A00C92042 /* Birthday.swift */,
 			);
 			path = Models;
@@ -378,6 +383,7 @@
 				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
 				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
 				7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */,
+				F8CE667E2F86AB020044EAFF /* Claim.swift in Sources */,
 				7345AD232703D9C30020AFB1 /* UserProfileImageLoader.swift in Sources */,
 				7345AD1E2703D9C30020AFB1 /* UserProfileImageView.swift in Sources */,
 				736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */,
@@ -394,6 +400,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				73508ED528134C7300ED7FB7 /* Credential.swift in Sources */,
+				F8CE66802F86B6A30044EAFF /* Claim.swift in Sources */,
 				73508EC82811BD9C00ED7FB7 /* DaysUntilBirthdayUITests_iOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -406,6 +413,7 @@
 				73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */,
 				73DB418D2805FBD00028B8D3 /* AuthenticationViewModel.swift in Sources */,
 				73DB418F2805FBF50028B8D3 /* ContentView.swift in Sources */,
+				F8CE667F2F86AB020044EAFF /* Claim.swift in Sources */,
 				73DB418C2805FBC80028B8D3 /* UserProfileImageLoader.swift in Sources */,
 				73DB418E2805FBD40028B8D3 /* BirthdayViewModel.swift in Sources */,
 				73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */,
