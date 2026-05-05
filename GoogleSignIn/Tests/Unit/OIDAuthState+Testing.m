@@ -57,7 +57,6 @@
                                       expiresIn:@(accessTokenExpiresIn)
                                    refreshToken:refreshToken
                                refreshExpiresIn:@(refreshTokenExpiresIn)
-                                       authTime:nil
                                    tokenRequest:nil];
   return [self testInstanceWithTokenResponse:newResponse];
 }
