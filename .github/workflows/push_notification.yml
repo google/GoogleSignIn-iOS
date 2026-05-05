@@ -14,8 +14,11 @@ jobs:
     - name: Main Branch Push
       run: |
         echo "Workflow initiated by event with name: ${{ github.event_name }}"
-        echo "Pushing commit to main: ${{ github.event.head_commit.id }}"
-        echo "Pushed by: ${{ github.event.pusher.name }}"
+        echo "Pushing commit to main: ${GITHUB_EVENT_HEAD_COMMIT_ID}"
+        echo "Pushed by: ${GITHUB_EVENT_PUSHER_NAME}"
+      env:
+        GITHUB_EVENT_HEAD_COMMIT_ID: ${{ github.event.head_commit.id }}
+        GITHUB_EVENT_PUSHER_NAME: ${{ github.event.pusher.name }}
 
     - name: Push Notification to Google Chat
       run: |
@@ -34,13 +37,13 @@ jobs:
                     {
                       "keyValue": {
                         "topLabel": "Repo",
-                        "content": "${{ github.event.repository.full_name }}"
+                        "content": "${GITHUB_EVENT_REPOSITORY_FULL_NAME}"
                       }
                     },
                     {
                       "keyValue": {
                         "topLabel": "Committed by",
-                        "content": "${{ github.event.head_commit.author.username }}"
+                        "content": "${GITHUB_EVENT_HEAD_COMMIT_AUTHOR_USERNAME}"
                       }
                     },
                     {
@@ -50,7 +53,7 @@ jobs:
                             "text": "Ref comparison",
                             "onClick": {
                               "openLink": {
-                                "url": "${{ github.event.compare }}"
+                                "url": "${GITHUB_EVENT_COMPARE}"
                               }
                             }
                           }
@@ -63,4 +66,8 @@ jobs:
             }
           ]
         }'
+      env:
+        GITHUB_EVENT_REPOSITORY_FULL_NAME: ${{ github.event.repository.full_name }}
+        GITHUB_EVENT_HEAD_COMMIT_AUTHOR_USERNAME: ${{ github.event.head_commit.author.username }}
+        GITHUB_EVENT_COMPARE: ${{ github.event.compare }}
 

@@ -53,7 +53,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   /// Indicates there is an operation on a previous user.
   kGIDSignInErrorCodeMismatchWithCurrentUser = -9,
   /// Indicates that an object could not be serialized into a `JSON` string.
-  kGIDSignInErrorCodeJSONSerializationFailure = -10
+  kGIDSignInErrorCodeJSONSerializationFailure = -10,
+  /// Indicates that the refresh token has expired and the user must be re-authorized.
+  kGIDSignInErrorCodeRefreshTokenExpired = -11,
 };
 
 /// This class is used to sign in users with their Google account and manage their session.
