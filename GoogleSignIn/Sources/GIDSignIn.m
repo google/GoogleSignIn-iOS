@@ -128,6 +128,11 @@ static const NSTimeInterval kFetcherMaxRetryInterval = 15.0;
 // The delay before the new sign-in flow can be presented after the existing one is cancelled.
 static const NSTimeInterval kPresentationDelayAfterCancel = 1.0;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+// The delay before checking whether a backgrounded auth flow was dismissed without a callback.
+static const NSTimeInterval kInterruptedAuthFlowCancellationDelay = 0.5;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 // Parameters for the auth and token exchange endpoints.
 static NSString *const kAudienceParameter = @"audience";
 // See b/11669751 .
@@ -189,6 +194,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   GIDTimedLoader *_timedLoader;
   // Flag indicating developer's intent to use App Check.
   BOOL _configureAppCheckCalled;
+  // Whether the current auth flow entered the background while still pending.
+  BOOL _authorizationFlowEnteredBackground;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 
@@ -202,6 +209,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // Check if the callback path matches the expected one for a URL from Safari/Chrome/SafariVC.
   if ([url.path isEqual:kBrowserCallbackPath]) {
     if ([_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url error:nil]) {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+      _authorizationFlowEnteredBackground = NO;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       _currentAuthorizationFlow = nil;
       return YES;
     }
@@ -601,6 +611,12 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 #pragma mark - Custom getters and setters
 
+- (void)dealloc {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+}
+
 + (GIDSignIn *)sharedInstance {
   static dispatch_once_t once;
   static GIDSignIn *sharedInstance;
@@ -688,6 +704,18 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     [authStateMigrationService migrateIfNeededWithTokenURL:_appAuthConfiguration.tokenEndpoint
                                               callbackPath:kBrowserCallbackPath
                                             isFreshInstall:isFreshInstall];
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackground:)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActive:)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
   return self;
 }
@@ -713,6 +741,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   // derive suitable options for the continuation!
   if (!options.continuation) {
     _currentOptions = options;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    _authorizationFlowEnteredBackground = NO;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   }
 
   if (options.interactive) {
@@ -781,6 +812,39 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   }
 }
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)applicationDidEnterBackground:(NSNotification *)notification {
+  if (_currentAuthorizationFlow && _currentOptions.interactive) {
+    _authorizationFlowEnteredBackground = YES;
+  }
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+  if (!_authorizationFlowEnteredBackground) {
+    return;
+  }
+
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                               (int64_t)(kInterruptedAuthFlowCancellationDelay * NSEC_PER_SEC)),
+                 dispatch_get_main_queue(), ^{
+    [self cancelInterruptedAuthorizationFlowIfNeeded];
+  });
+}
+
+- (void)cancelInterruptedAuthorizationFlowIfNeeded {
+  if (!_authorizationFlowEnteredBackground ||
+      !_currentAuthorizationFlow ||
+      !_currentOptions.interactive ||
+      _currentOptions.presentingViewController.presentedViewController) {
+    return;
+  }
+
+  _authorizationFlowEnteredBackground = NO;
+  [_currentAuthorizationFlow cancel];
+  _currentAuthorizationFlow = nil;
+}
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
 #pragma mark - Authentication flow
 
 - (void)authenticateInteractivelyWithOptions:(GIDSignInInternalOptions *)options {
@@ -804,6 +868,10 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                     callback:
                                                       ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
                                                         NSError *_Nullable error) {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+      self->_authorizationFlowEnteredBackground = NO;
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+      self->_currentAuthorizationFlow = nil;
       [self processAuthorizationResponse:authorizationResponse
                                    error:error
                               emmSupport:emmSupport];
