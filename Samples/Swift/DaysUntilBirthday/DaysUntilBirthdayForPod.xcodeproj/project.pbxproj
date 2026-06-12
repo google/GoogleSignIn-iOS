@@ -22,6 +22,7 @@
 		736F49BC270E102C00580053 /* BirthdayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49BB270E102C00580053 /* BirthdayViewModel.swift */; };
 		739FCC46270E467600C92042 /* BirthdayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC45270E467600C92042 /* BirthdayView.swift */; };
 		739FCC48270E659A00C92042 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		F8CE6602270E659A00C92042 /* Claim.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CE6601270E659A00C92042 /* Claim.swift */; };
 		73DB41892805FBA90028B8D3 /* DaysUntilBirthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD022703D9470020AFB1 /* DaysUntilBirthday.swift */; };
 		73DB418A2805FBC00028B8D3 /* GoogleSignInAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD172703D9C30020AFB1 /* GoogleSignInAuthenticator.swift */; };
 		73DB418B2805FBC40028B8D3 /* BirthdayLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736F49B9270E05E200580053 /* BirthdayLoader.swift */; };
@@ -34,6 +35,7 @@
 		73DB41922805FC010028B8D3 /* UserProfileImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7345AD142703D9C30020AFB1 /* UserProfileImageView.swift */; };
 		73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7173A527F5110F00910319 /* UserProfileView.swift */; };
 		73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739FCC47270E659A00C92042 /* Birthday.swift */; };
+		F8CE66032805FC5F0028B8D3 /* Claim.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CE6601270E659A00C92042 /* Claim.swift */; };
 		73DB419628060A9A0028B8D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7345AD062703D9480020AFB1 /* Assets.xcassets */; };
 		C1B5D38D282AFE870068D12B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C1B5D38C282AFE870068D12B /* README.md */; };
 		EEEEE201864437604E97D3B4 /* Pods_DaysUntilBirthdayForPod__iOS_.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F329EC9CE4A0A4AF2280834F /* Pods_DaysUntilBirthdayForPod__iOS_.framework */; };
@@ -61,6 +63,7 @@
 		736F49BB270E102C00580053 /* BirthdayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayViewModel.swift; sourceTree = "<group>"; };
 		739FCC45270E467600C92042 /* BirthdayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayView.swift; sourceTree = "<group>"; };
 		739FCC47270E659A00C92042 /* Birthday.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Birthday.swift; sourceTree = "<group>"; };
+		F8CE6601270E659A00C92042 /* Claim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Claim.swift; sourceTree = "<group>"; };
 		7542DB53C46DFA9B71387188 /* Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod (iOS)/Pods-DaysUntilBirthdayForPod (iOS).release.xcconfig"; sourceTree = "<group>"; };
 		926A15D393D684C68E09FB0F /* Pods_DaysUntilBirthdayForPod__macOS_.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DaysUntilBirthdayForPod__macOS_.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7CC09BA1B68EB1881A08E87 /* Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; path = "Target Support Files/Pods-DaysUntilBirthdayForPod(macOS)/Pods-DaysUntilBirthdayForPod(macOS).debug.xcconfig"; sourceTree = "<group>"; };
@@ -205,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				739FCC47270E659A00C92042 /* Birthday.swift */,
+				F8CE6601270E659A00C92042 /* Claim.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -413,6 +417,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				739FCC48270E659A00C92042 /* Birthday.swift in Sources */,
+				F8CE6602270E659A00C92042 /* Claim.swift in Sources */,
 				739FCC46270E467600C92042 /* BirthdayView.swift in Sources */,
 				7345AD1B2703D9C30020AFB1 /* SignInView.swift in Sources */,
 				7345AD212703D9C30020AFB1 /* GoogleSignInAuthenticator.swift in Sources */,
@@ -438,6 +443,7 @@
 				73DB418C2805FBC80028B8D3 /* UserProfileImageLoader.swift in Sources */,
 				73DB418E2805FBD40028B8D3 /* BirthdayViewModel.swift in Sources */,
 				73DB41952805FC5F0028B8D3 /* Birthday.swift in Sources */,
+				F8CE66032805FC5F0028B8D3 /* Claim.swift in Sources */,
 				73DB418A2805FBC00028B8D3 /* GoogleSignInAuthenticator.swift in Sources */,
 				73DB41932805FC3B0028B8D3 /* UserProfileView.swift in Sources */,
 				73DB41892805FBA90028B8D3 /* DaysUntilBirthday.swift in Sources */,
