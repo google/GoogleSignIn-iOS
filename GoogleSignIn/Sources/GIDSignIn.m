@@ -201,7 +201,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 - (BOOL)handleURL:(NSURL *)url {
   // Check if the callback path matches the expected one for a URL from Safari/Chrome/SafariVC.
   if ([url.path isEqual:kBrowserCallbackPath]) {
-    if ([_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url]) {
+    if ([_currentAuthorizationFlow resumeExternalUserAgentFlowWithURL:url error:nil]) {
       _currentAuthorizationFlow = nil;
       return YES;
     }
