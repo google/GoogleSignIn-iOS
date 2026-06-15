@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
     'CoreGraphics',
     'SwiftUI',
   ]
-  s.dependency 'GoogleSignIn', '~> 9.0'
+  s.dependency 'GoogleSignIn', '~> 9.2'
   s.resource_bundles = {
     'GoogleSignInSwiftSupport_Privacy' => 'GoogleSignInSwift/Sources/Resources/PrivacyInfo.xcprivacy'
   }
