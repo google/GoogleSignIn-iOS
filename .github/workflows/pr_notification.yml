@@ -18,83 +18,51 @@ jobs:
     - name: Google Chat Notification
       shell: bash
       env:
+        # All untrusted values are passed via env vars and encoded with jq
+        # to prevent shell injection and JSON injection attacks.
         TITLE: ${{ github.event.pull_request.title }}
         LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
-        GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
-        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
-        GITHUB_EVENT_PULL_REQUEST_HTML_URL: ${{ github.event.pull_request.html_url }}
+        REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        CREATOR: ${{ github.event.pull_request.user.login }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_STATE: ${{ github.event.pull_request.state }}
+        ASSIGNEES: ${{ join(github.event.pull_request.assignees.*.login, ', ') }}
+        REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}
       run: |
-        curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-          "cards": [
-            {
+        # Build JSON safely with jq to handle special characters in PR title/labels
+        PAYLOAD=$(jq -n \
+          --arg title    "$TITLE" \
+          --arg labels   "$LABELS" \
+          --arg repo     "$REPO" \
+          --arg creator  "$CREATOR" \
+          --arg url      "$PR_URL" \
+          --arg prnum    "$PR_NUMBER" \
+          --arg state    "$PR_STATE" \
+          --arg assignees "$ASSIGNEES" \
+          --arg reviewers "$REVIEWERS" \
+          '{
+            "cards": [{
               "header": {
                 "title": "Pull request notification",
-                "subtitle": "Pull request: #${{ github.event.pull_request.number }}"
+                "subtitle": ("Pull request: #" + $prnum)
               },
-              "sections": [
-                {
-                  "widgets": [
-                    {
-                      "keyValue": {
-                        "topLabel": "Repo",
-                        "content": "${GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Title",
-                        "content": "'"$TITLE"'"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Creator",
-                        "content": "${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "State",
-                        "content": "${{ github.event.pull_request.state }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Assignees",
-                        "content": "- ${{ join(github.event.pull_request.assignees.*.login, ', ') }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Reviewers",
-                        "content": "- ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Labels",
-                        "content": "- '"$LABELS"'"
-                      }
-                    },
-                    {
-                      "buttons": [
-                        {
-                          "textButton": {
-                            "text": "Open Pull Request",
-                            "onClick": {
-                              "openLink": {
-                                "url": "${GITHUB_EVENT_PULL_REQUEST_HTML_URL}"
-                              }
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }'
+              "sections": [{
+                "widgets": [
+                  {"keyValue": {"topLabel": "Repo",      "content": $repo}},
+                  {"keyValue": {"topLabel": "Title",     "content": $title}},
+                  {"keyValue": {"topLabel": "Creator",   "content": $creator}},
+                  {"keyValue": {"topLabel": "State",     "content": $state}},
+                  {"keyValue": {"topLabel": "Assignees", "content": $assignees}},
+                  {"keyValue": {"topLabel": "Reviewers", "content": $reviewers}},
+                  {"keyValue": {"topLabel": "Labels",    "content": $labels}},
+                  {"buttons": [{"textButton": {"text": "Open Pull Request",
+                    "onClick": {"openLink": {"url": $url}}}}]}
+                ]
+              }]
+            }]
+          }')
+
+        curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "$PAYLOAD"
