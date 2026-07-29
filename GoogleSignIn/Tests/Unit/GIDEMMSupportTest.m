@@ -354,6 +354,36 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                 @"The final value should be of a NSString type.");
 }
 
+- (void)testParametersWithParameters_withEMMSupportNil_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @12345 };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:nil
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
+                        @"The NSNumber should be converted to a string.");
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
+- (void)testParametersWithParameters_withPasscodeInfoRequired_isConvertedToString {
+  NSDictionary *inputParameters = @{ @"number_key": @12345 };
+
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
+                                                                     emmSupport:@"1"
+                                                         isPasscodeInfoRequired:YES];
+
+  XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
+                        @"The NSNumber should be converted to a string.");
+  XCTAssertTrue([stringifiedParameters[@"number_key"] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+  XCTAssertNotNil(stringifiedParameters[kEMMPasscodeInfoKey],
+                  @"The passcode info key should be present when requested.");
+  XCTAssertTrue([stringifiedParameters[kEMMPasscodeInfoKey] isKindOfClass:[NSString class]],
+                @"The passcode info value should be of a NSString type.");
+}
+
 # pragma mark - Helpers
 
 - (NSString *)systemVersion {
