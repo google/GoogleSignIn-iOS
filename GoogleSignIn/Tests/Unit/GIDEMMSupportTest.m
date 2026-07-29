@@ -367,6 +367,17 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                 @"The final value should be of a NSString type.");
 }
 
+- (void)testParametersWithParameters_withArbitraryEMMSupport_isAppended {
+  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:@{}
+                                                                     emmSupport:@"False"
+                                                         isPasscodeInfoRequired:NO];
+
+  XCTAssertEqualObjects(stringifiedParameters[kEMMKey], @"False",
+                        @"The EMM support parameter should append any valid NSString it receives.");
+  XCTAssertTrue([stringifiedParameters[kEMMKey] isKindOfClass:[NSString class]],
+                @"The final value should be of a NSString type.");
+}
+
 - (void)testParametersWithParameters_withPasscodeInfoRequired_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @12345 };
 
