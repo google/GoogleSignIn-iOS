@@ -132,20 +132,9 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    // 1. Explicitly tap the email field so the keyboard appears
+    // Tap to focus, then type the email and automatically hit the enter key using "\n"
     emailTextField.tap()
-
-    guard sampleApp
-            .keyboards
-            .element
-            .buttons["return"]
-            .waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find 'return' button")
-      return false
-    }
-
-    emailTextField.typeText(Credential.email.rawValue)
-    sampleApp.keyboards.element.buttons["return"].tap()
+    emailTextField.typeText(Credential.email.rawValue + "\n")
 
     let passwordTextField = sampleApp.secureTextFields["Enter your password"]
     guard passwordTextField.waitForExistence(timeout: timeout) else {
@@ -153,20 +142,9 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    // 2. Explicitly tap the password field so its keyboard appears
+    // Tap to focus, then type the password and automatically hit the enter key using "\n"
     passwordTextField.tap()
-
-    guard sampleApp
-            .keyboards
-            .element
-            .buttons["return"]
-            .waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find 'return' button")
-      return false
-    }
-
-    passwordTextField.typeText(Credential.password.rawValue)
-    sampleApp.keyboards.element.buttons["return"].tap()
+    passwordTextField.typeText(Credential.password.rawValue + "\n")
 
     if sampleApp
       .staticTexts[passwordManagerPrompt]
@@ -187,6 +165,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     return true
   }
+
 
   /// Signs in expecting a prior sign in.
   /// @discussion
