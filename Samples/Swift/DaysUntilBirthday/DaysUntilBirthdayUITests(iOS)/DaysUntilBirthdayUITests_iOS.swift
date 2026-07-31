@@ -126,46 +126,51 @@ extension DaysUntilBirthdayUITests_iOS {
   /// This will assumme the full flow where a user must type in an email and
   /// password to sign in with.
   func signInForTheFirstTime() -> Bool {
-    let emailTextField = sampleApp.textFields["Email or phone"]
-    guard emailTextField.waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find email textfield")
-      return false
-    }
-
-    // Tap to focus, then type the email and automatically hit the enter key using "\n"
-    emailTextField.tap()
-    emailTextField.typeText(Credential.email.rawValue + "\n")
-
-    let passwordTextField = sampleApp.secureTextFields["Enter your password"]
-    guard passwordTextField.waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find password textfield")
-      return false
-    }
-
-    // Tap to focus, then type the password and automatically hit the enter key using "\n"
-    passwordTextField.tap()
-    passwordTextField.typeText(Credential.password.rawValue + "\n")
-
-    if sampleApp
-      .staticTexts[passwordManagerPrompt]
-      .waitForExistence(timeout: timeout) {
-      guard sampleApp
-        .buttons[notNowText]
-        .waitForExistence(timeout: timeout) else {
-        XCTFail("Failed to find \(notNowText) button")
-        return false
+      let emailField = sampleApp.textFields["Email or phone"]
+      guard emailField.waitForExistence(timeout: timeout) else {
+          XCTFail("Failed to find email textfield")
+          return false
       }
-      sampleApp.buttons[notNowText].tap()
-    }
 
-    // Proceed through sign-in disclaimer and/or access request view(s) if needed
-    handleSignInDisclaimerIfNeeded()
-    handleAccessRequestIfNeeded()
-    handleReturningUserSignInDisclaimerIfNeeded()
+      // 1. Explicitly tap the field to bring up the keyboard
+      emailField.tap()
 
-    return true
+      // 2. Type the text and append "\n" to simulate tapping the return key
+      emailField.typeText("\(Credential.email.rawValue)\n")
+
+      let passwordField = sampleApp.secureTextFields["Enter your password"]
+      guard passwordField.waitForExistence(timeout: timeout) else {
+          XCTFail("Failed to find password textfield")
+          return false
+      }
+
+      // 1. Tap the password field to ensure focus
+      passwordField.tap()
+
+      // 2. Type password and append "\n"
+      passwordField.typeText("\(Credential.password.rawValue)\n")
+
+      // 3. Handle System Password Prompt via SpringBoard (if it's an Apple system alert)
+      let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+      let notNowButton = springboard.buttons[notNowText]
+
+      // Use a short timeout here so the test doesn't hang too long if the prompt doesn't appear
+      if notNowButton.waitForExistence(timeout: 3) {
+          notNowButton.tap()
+      } else {
+          // Fallback: Check inside sampleApp just in case it's a custom in-app prompt
+          if sampleApp.buttons[notNowText].waitForExistence(timeout: 1) {
+              sampleApp.buttons[notNowText].tap()
+          }
+      }
+
+      // Proceed through sign-in disclaimer and/or access request view(s) if needed
+      handleSignInDisclaimerIfNeeded()
+      handleAccessRequestIfNeeded()
+      handleReturningUserSignInDisclaimerIfNeeded()
+
+      return true
   }
-
 
   /// Signs in expecting a prior sign in.
   /// @discussion
@@ -252,41 +257,39 @@ extension DaysUntilBirthdayUITests_iOS {
   }
 
   /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
-  func handleAccessRequestIfNeeded() {
-    let currentlyShowingAdditionalAccessRequest = sampleApp.staticTexts[additionalAccessHeaderText]
-      .waitForExistence(timeout: timeout) && sampleApp.staticTexts[appTrustWarningText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
+  /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
+    func handleAccessRequestIfNeeded() {
+      // Use a short 3-second timeout for optional checks so the test doesn't hang
+      guard sampleApp.staticTexts[additionalAccessHeaderText].waitForExistence(timeout: 3) else {
+        return // View didn't appear, move on immediately
+      }
 
-    if currentlyShowingAdditionalAccessRequest {
-      sampleApp.buttons["Continue"].tap()
+      // If the header exists, we can assume the rest of the view is there
+      if sampleApp.staticTexts[appTrustWarningText].exists && sampleApp.buttons["Continue"].exists {
+        sampleApp.buttons["Continue"].tap()
+      }
     }
-  }
 
-  /// Proceeds through the sign-in disclaimer view if needed.
-  func handleSignInDisclaimerIfNeeded() {
-    let currentlyShowingSignInDisclaimer = sampleApp.staticTexts[signInDisclaimerHeaderText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
+    /// Proceeds through the sign-in disclaimer view if needed.
+    func handleSignInDisclaimerIfNeeded() {
+      guard sampleApp.staticTexts[signInDisclaimerHeaderText].waitForExistence(timeout: 3) else {
+        return
+      }
 
-    if currentlyShowingSignInDisclaimer {
-      sampleApp.buttons["Continue"].tap()
+      if sampleApp.buttons["Continue"].exists {
+        sampleApp.buttons["Continue"].tap()
+      }
     }
-  }
 
-  func handleReturningUserSignInDisclaimerIfNeeded() {
-    let currentlyShowingReturningUserSignInDisclaimer =
-    sampleApp.staticTexts[returningUserSignInDisclaimerHeaderText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
+    func handleReturningUserSignInDisclaimerIfNeeded() {
+      guard sampleApp.staticTexts[returningUserSignInDisclaimerHeaderText].waitForExistence(timeout: 3) else {
+        return
+      }
 
-    if currentlyShowingReturningUserSignInDisclaimer {
-      sampleApp.buttons["Continue"].tap()
+      if sampleApp.buttons["Continue"].exists {
+        sampleApp.buttons["Continue"].tap()
+      }
     }
-  }
 
   /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it.
   /// - returns: true if the signed-in account was found and tapped, otherwise returns false.
