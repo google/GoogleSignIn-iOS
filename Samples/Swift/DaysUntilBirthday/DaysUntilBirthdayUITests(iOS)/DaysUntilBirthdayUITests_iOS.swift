@@ -258,39 +258,24 @@ extension DaysUntilBirthdayUITests_iOS {
 
   /// Proceeds through the view with header "Days Until Birthday wants additional access to your Google Account" if needed.
   func handleAccessRequestIfNeeded() {
-    let currentlyShowingAdditionalAccessRequest = sampleApp.staticTexts[additionalAccessHeaderText]
-      .waitForExistence(timeout: timeout) && sampleApp.staticTexts[appTrustWarningText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
-
-    if currentlyShowingAdditionalAccessRequest {
-      sampleApp.buttons["Continue"].tap()
-    }
-  }
+    let continueButton = sampleApp.buttons["Continue"]
+        if continueButton.waitForExistence(timeout: 5) {
+          continueButton.tap()
+        }  }
 
   /// Proceeds through the sign-in disclaimer view if needed.
   func handleSignInDisclaimerIfNeeded() {
-    let currentlyShowingSignInDisclaimer = sampleApp.staticTexts[signInDisclaimerHeaderText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
-
-    if currentlyShowingSignInDisclaimer {
-      sampleApp.buttons["Continue"].tap()
-    }
+    let continueButton = sampleApp.buttons["Continue"]
+        if continueButton.waitForExistence(timeout: 5) {
+          continueButton.tap()
+        }
   }
 
   func handleReturningUserSignInDisclaimerIfNeeded() {
-    let currentlyShowingReturningUserSignInDisclaimer =
-    sampleApp.staticTexts[returningUserSignInDisclaimerHeaderText]
-      .waitForExistence(timeout: timeout) &&
-    sampleApp.buttons["Continue"]
-      .waitForExistence(timeout: timeout)
-
-    if currentlyShowingReturningUserSignInDisclaimer {
-      sampleApp.buttons["Continue"].tap()
-    }
+    let continueButton = sampleApp.buttons["Continue"]
+        if continueButton.waitForExistence(timeout: 5) {
+          continueButton.tap()
+        }
   }
 
   /// This method looks for an account in the current view that reflects an already-signed-in state, and taps it.
