@@ -1,3 +1,18 @@
+# 9.2.0
+- Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))
+- Support requesting the `amr` (Authentication Methods References) claim ([#600](https://github.com/google/GoogleSignIn-iOS/pull/600))
+- Remove keychain entries on a fresh install ([#567](https://github.com/google/GoogleSignIn-iOS/pull/567))
+- Update the AppAuth-iOS dependency minimum to 2.1.0 ([#603](https://github.com/google/GoogleSignIn-iOS/pull/603))
+- Fix optional bundle handling for localized strings ([#373](https://github.com/google/GoogleSignIn-iOS/pull/373))
+- Include all public headers unconditionally in the umbrella header ([#595](https://github.com/google/GoogleSignIn-iOS/pull/595))
+- Move `GIDSignInButton` import outside of conditional compilation ([#591](https://github.com/google/GoogleSignIn-iOS/pull/591))
+- Internal
+  - Fix Swift Package Manager deprecation warnings ([#579](https://github.com/google/GoogleSignIn-iOS/pull/579))
+  - Improve doc comment for `GIDSignInButtonStyle` ([#204](https://github.com/google/GoogleSignIn-iOS/pull/204))
+  - Resolve unassigned child warning in the `AppIcon` asset catalog ([#348](https://github.com/google/GoogleSignIn-iOS/pull/348))
+  - Refactor GitHub Actions workflow ([#580](https://github.com/google/GoogleSignIn-iOS/pull/580))
+  - Upgrade GitHub Actions to the latest versions for Node 24 compatibility ([#592](https://github.com/google/GoogleSignIn-iOS/pull/592), [#593](https://github.com/google/GoogleSignIn-iOS/pull/593))
+
 # 9.1.0
 - Allow requesting `claims` (currently, only `auth_time`) via [Sign-in methods](https://github.com/google/GoogleSignIn-iOS/blob/gandhiakshat/update-changelog-for-9.1.0-release/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240) ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
 - Update `addScopes:` methods in `GIDSignIn` to include previously requested `claims` ([#557](https://github.com/google/GoogleSignIn-iOS/pull/557))
