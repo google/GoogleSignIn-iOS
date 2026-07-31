@@ -126,11 +126,15 @@ extension DaysUntilBirthdayUITests_iOS {
   /// This will assumme the full flow where a user must type in an email and
   /// password to sign in with.
   func signInForTheFirstTime() -> Bool {
-    guard sampleApp.textFields["Email or phone"]
-            .waitForExistence(timeout: timeout) else {
+    let emailTextField = sampleApp.textFields["Email or phone"]
+    guard emailTextField.waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find email textfield")
       return false
     }
+
+    // 1. Explicitly tap the email field so the keyboard appears
+    emailTextField.tap()
+
     guard sampleApp
             .keyboards
             .element
@@ -140,14 +144,18 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    sampleApp.textFields["Email or phone"].typeText(Credential.email.rawValue)
+    emailTextField.typeText(Credential.email.rawValue)
     sampleApp.keyboards.element.buttons["return"].tap()
 
-    guard sampleApp.secureTextFields["Enter your password"]
-            .waitForExistence(timeout: timeout) else {
+    let passwordTextField = sampleApp.secureTextFields["Enter your password"]
+    guard passwordTextField.waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find password textfield")
       return false
     }
+
+    // 2. Explicitly tap the password field so its keyboard appears
+    passwordTextField.tap()
+
     guard sampleApp
             .keyboards
             .element
@@ -157,9 +165,7 @@ extension DaysUntilBirthdayUITests_iOS {
       return false
     }
 
-    sampleApp
-      .secureTextFields["Enter your password"]
-      .typeText(Credential.password.rawValue)
+    passwordTextField.typeText(Credential.password.rawValue)
     sampleApp.keyboards.element.buttons["return"].tap()
 
     if sampleApp
