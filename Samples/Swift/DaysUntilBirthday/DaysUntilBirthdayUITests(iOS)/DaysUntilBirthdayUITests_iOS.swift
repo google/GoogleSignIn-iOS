@@ -24,7 +24,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInDisclaimerHeaderText =
     "Sign in to DaysUntilBirthday (iOS)"
   private let returningUserSignInDisclaimerHeaderText =
-    "You're signing back in to DaysUntilBirthday (iOS)"
+    "You’re signing back in to DaysUntilBirthday (iOS)"
   private let additionalAccessHeaderText = "DaysUntilBirthday (iOS) wants additional access to your Google Account"
   private let appTrustWarningText = "Make sure you trust DaysUntilBirthday (iOS)"
   private let chooseAnAccountHeaderText = "Choose an account"
