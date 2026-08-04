@@ -133,7 +133,7 @@ extension DaysUntilBirthdayUITests_iOS {
     }
 
     emailField.tap()
-    emailField.typeText("robertstone.304803@gmail.com")
+    emailField.typeText(Credential.email.rawValue)
     sampleApp.buttons["Next"].firstMatch.tap()
 
     let passwordField = sampleApp.secureTextFields["Enter your password"].firstMatch
@@ -144,7 +144,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     passwordField.tap()
     passwordField
-      .typeText("yaFTmF.r*46")
+      .typeText(Credential.password.rawValue)
     sampleApp.buttons["Next"].firstMatch.tap()
 
 
