@@ -133,8 +133,7 @@ extension DaysUntilBirthdayUITests_iOS {
     }
 
     emailField.tap()
-    emailField.typeText(Credential.email.rawValue)
-    sampleApp.buttons["Next"].firstMatch.tap()
+    emailField.typeText("\(Credential.email.rawValue)\n")
 
     let passwordField = sampleApp.secureTextFields["Enter your password"].firstMatch
     guard passwordField.waitForExistence(timeout: timeout) else {
@@ -144,9 +143,7 @@ extension DaysUntilBirthdayUITests_iOS {
 
     passwordField.tap()
     passwordField
-      .typeText(Credential.password.rawValue)
-    sampleApp.buttons["Next"].firstMatch.tap()
-
+      .typeText("\(Credential.password.rawValue)\n")
 
     if sampleApp
       .staticTexts[passwordManagerPrompt]
