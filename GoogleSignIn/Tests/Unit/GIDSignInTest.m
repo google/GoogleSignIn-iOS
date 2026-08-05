@@ -1217,13 +1217,15 @@ static NSString *const kMultipleClaimsJsonString =
                "when unset.");
 }
 
-- (void)testWrapperIdentifier_PropertyReflectsSanitizedValue {
-  GIDSignIn.sharedInstance.wrapperIdentifier = @"Fire Base!";
-  XCTAssertEqualObjects(GIDSignIn.sharedInstance.wrapperIdentifier, @"firebase",
-                        @"The wrapperIdentifier property should reflect the sanitized value.");
+- (void)testWrapperIdentifier_InvalidValueIsIgnored {
+  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"Fire Base!",
+                               NSException, NSInternalInconsistencyException,
+                               @"Setting an invalid wrapper identifier should throw.");
+  XCTAssertNil(GIDSignIn.sharedInstance.wrapperIdentifier,
+               @"The wrapper identifier should be nil after an invalid assignment.");
 }
 
-- (void)testWrapperIdentifier_PercentEncodedOnRevokeURL {
+- (void)testWrapperIdentifier_PresentOnRevokeURL {
   GIDSignIn.sharedInstance.wrapperIdentifier = @"my-sdk";
 
   [[[_authorization expect] andReturn:_authState] authState];
@@ -1235,9 +1237,51 @@ static NSString *const kMultipleClaimsJsonString =
 
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   NSURL *url = [self fetchedURL];
-  NSString *urlString = url.absoluteString;
-  XCTAssertTrue([urlString containsString:@"gidwrapper=my-sdk"],
-                @"The revoke URL should contain the percent-encoded 'gidwrapper' parameter.");
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url
+                                           resolvingAgainstBaseURL:NO];
+  NSArray<NSURLQueryItem *> *queryItems = components.queryItems;
+
+  XCTAssertEqualObjects([self valueForQueryItemName:@"gidwrapper" inArray:queryItems],
+                        @"my-sdk", @"The revoke URL should contain the 'gidwrapper' parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kSDKVersionLoggingParameter inArray:queryItems],
+                        [GIDSignInPreferences sdkVersion],
+                        @"The revoke URL should contain the SDK version parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kEnvironmentLoggingParameter
+                                            inArray:queryItems],
+                        [GIDSignInPreferences environment],
+                        @"The revoke URL should contain the environment parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:@"token" inArray:queryItems],
+                        kAccessToken, @"The revoke URL should contain the 'token' parameter.");
+}
+
+- (void)testWrapperIdentifier_AbsentFromRevokeURLWhenUnset {
+  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url
+                                           resolvingAgainstBaseURL:NO];
+  NSArray<NSURLQueryItem *> *queryItems = components.queryItems;
+
+  XCTAssertNil([self valueForQueryItemName:@"gidwrapper" inArray:queryItems],
+               @"The revoke URL should not contain the 'gidwrapper' parameter when unset.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kSDKVersionLoggingParameter inArray:queryItems],
+                        [GIDSignInPreferences sdkVersion],
+                        @"The revoke URL should still contain the SDK version parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kEnvironmentLoggingParameter
+                                            inArray:queryItems],
+                        [GIDSignInPreferences environment],
+                        @"The revoke URL should still contain the environment parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:@"token" inArray:queryItems],
+                        kAccessToken,
+                        @"The revoke URL should still contain the 'token' parameter.");
 }
 
 - (void)testOAuthLogin_ConsentCanceled {
@@ -1753,6 +1797,17 @@ static NSString *const kMultipleClaimsJsonString =
 
 #pragma mark - Helpers
 
+// Returns the value for the query item with the given name in the array of query items.
+- (nullable NSString *)valueForQueryItemName:(NSString *)name
+                                     inArray:(NSArray<NSURLQueryItem *> *)queryItems {
+  for (NSURLQueryItem *item in queryItems) {
+    if ([item.name isEqualToString:name]) {
+      return item.value;
+    }
+  }
+  return nil;
+}
+
 // Whether or not a fetcher has been started.
 - (BOOL)isFetcherStarted {
   NSUInteger count = _fetcherService.fetchers.count;
@@ -1795,9 +1850,11 @@ static NSString *const kMultipleClaimsJsonString =
   NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
   XCTAssertEqualObjects([params valueForKey:@"token"], token,
                         @"token parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion],
                         @"SDK version logging parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment],
                         @"Environment logging parameter should match");
   // Emulate result back from server.
   [self didFetch:nil error:nil];
@@ -1963,8 +2020,8 @@ static NSString *const kMultipleClaimsJsonString =
     XCTAssertNotNil(_savedAuthorizationRequest);
     NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
     XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
-    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], GIDVersion());
-    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], GIDEnvironment());
+    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], [GIDSignInPreferences sdkVersion]);
+    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], [GIDSignInPreferences environment]);
     XCTAssertNotNil(_savedAuthorizationCallback);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
