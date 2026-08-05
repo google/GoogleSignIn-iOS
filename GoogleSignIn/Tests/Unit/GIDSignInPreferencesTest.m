@@ -22,12 +22,12 @@
 @implementation GIDSignInPreferencesTest
 
 - (void)testGIDVersion {
-  NSString *version = GIDVersion();
+  NSString *version = [GIDSignInPreferences sdkVersion];
   XCTAssertTrue([version hasPrefix:@"gid-"]);
 }
 
 - (void)testGIDEnvironment {
-  NSString *environment = GIDEnvironment();
+  NSString *environment = [GIDSignInPreferences environment];
 
   NSString *expectedEnvironment;
 #if TARGET_OS_MACCATALYST
@@ -45,74 +45,142 @@
 }
 
 - (void)tearDown {
-  GIDSetWrapperIdentifier(nil);
+  [GIDSignInPreferences setWrapperIdentifier:nil];
   [super tearDown];
 }
 
-- (void)testWrapperIdentifier_UnsetReturnsNil {
-  // Test that when no identifier is set (or it is explicitly cleared), nil is returned.
-  GIDSetWrapperIdentifier(nil);
-  XCTAssertNil(GIDWrapperIdentifier());
+- (void)testWrapperIdentifier_UnsetIsNil {
+  // Test that when no identifier is set, nil is returned.
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
-- (void)testWrapperIdentifier_RoundTripsSimpleValue {
-  // Test that a simple alphanumeric identifier is correctly stored and retrieved.
-  GIDSetWrapperIdentifier(@"firebase");
-  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+- (void)testWrapperIdentifier_AcceptsSimpleValue {
+  // Test that a simple lowercase alphanumeric identifier is accepted.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
 }
 
-- (void)testWrapperIdentifier_Lowercases {
-  // Test that identifiers are automatically lowercased when stored.
-  GIDSetWrapperIdentifier(@"FireBase");
-  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+- (void)testWrapperIdentifier_AcceptsHyphenatedValue {
+  // Test that a value with internal hyphens is accepted.
+  [GIDSignInPreferences setWrapperIdentifier:@"react-native"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"react-native");
 }
 
-- (void)testWrapperIdentifier_StripsDisallowedCharacters {
-  // Test that spaces and disallowed punctuation are removed from the identifier.
-  GIDSetWrapperIdentifier(@"fire base!/&=?");
-  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+- (void)testWrapperIdentifier_AcceptsDigits {
+  // Test that a value with digits is accepted.
+  [GIDSignInPreferences setWrapperIdentifier:@"wrapper2"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"wrapper2");
 }
 
-- (void)testWrapperIdentifier_KeepsAllowedPunctuation {
-  // Test that allowed characters (A-Za-z0-9-._~) are preserved.
-  GIDSetWrapperIdentifier(@"my-sdk_1.2~x");
-  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"my-sdk_1.2~x");
+- (void)testWrapperIdentifier_AcceptsMaximumLength {
+  // Test that a 32-character valid identifier is accepted and not truncated.
+  NSString *maxLength = @"abcdefghijklmnopqrstuvwxyz123456"; // 32 chars
+  [GIDSignInPreferences setWrapperIdentifier:maxLength];
+  XCTAssertEqual([GIDSignInPreferences wrapperIdentifier].length, (NSUInteger)32);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], maxLength);
 }
 
-- (void)testWrapperIdentifier_TrimsWhitespace {
-  // Test that leading and trailing whitespace is trimmed from the identifier.
-  GIDSetWrapperIdentifier(@"  firebase  ");
-  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+- (void)testWrapperIdentifier_RejectsUppercase {
+  // Test that uppercase characters cause a rejection.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"Firebase"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
-- (void)testWrapperIdentifier_EmptyOrWhitespaceBecomesNil {
-  // Test that empty or whitespace-only strings result in a nil identifier.
-  GIDSetWrapperIdentifier(@"   ");
-  XCTAssertNil(GIDWrapperIdentifier());
+- (void)testWrapperIdentifier_RejectsWhitespace {
+  // Test that leading/trailing or internal whitespace cause a rejection.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"  firebase  "],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 
-  // Test that a string consisting only of invalid characters results in a nil identifier.
-  GIDSetWrapperIdentifier(@"!!!");
-  XCTAssertNil(GIDWrapperIdentifier());
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"fire base"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
-- (void)testWrapperIdentifier_CapsAtThirtyTwoCharacters {
-  // Test that the identifier is truncated to a maximum of 32 characters.
-  NSString *longString = @"abcdefghijklmnopqrstuvwxyz1234567890"; // 36 characters
-  GIDSetWrapperIdentifier(longString);
-  NSString *result = GIDWrapperIdentifier();
-  XCTAssertEqual(result.length, (NSUInteger)32);
-  XCTAssertEqualObjects(result, [longString.lowercaseString substringToIndex:32]);
+- (void)testWrapperIdentifier_RejectsPunctuation {
+  // Test that disallowed punctuation causes a rejection.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"my-sdk_1.2~x"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"fire!base"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
-- (void)testWrapperIdentifier_LastWriteWins {
-  // Test that subsequent writes overwrite the previous identifier.
-  GIDSetWrapperIdentifier(@"first");
-  GIDSetWrapperIdentifier(@"second");
-  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"second");
+- (void)testWrapperIdentifier_RejectsEmpty {
+  // Test that an empty string is rejected.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@""],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
 
-  // Test that setting it to nil clears the identifier.
-  GIDSetWrapperIdentifier(nil);
-  XCTAssertNil(GIDWrapperIdentifier());
+- (void)testWrapperIdentifier_RejectsOverLength {
+  // Test that a 33-character identifier is rejected.
+  NSString *overLength = @"abcdefghijklmnopqrstuvwxyz1234567"; // 33 chars
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:overLength],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_RejectsLeadingOrTrailingHyphen {
+  // Test that leading or trailing hyphens cause a rejection.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"-sdk"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"sdk-"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_FirstValidWriteWins {
+  // Test that the first valid write is persistent and subsequent differing writes are rejected.
+  [GIDSignInPreferences setWrapperIdentifier:@"first"];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"second"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"first");
+}
+
+- (void)testWrapperIdentifier_RepeatedIdenticalWriteIsAccepted {
+  // Test that writing the same valid value again does not throw or change the state.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"firebase"]);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
+}
+
+- (void)testWrapperIdentifier_NilResets {
+  // Test that passing nil resets the store, allowing a new first-write.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+
+  [GIDSignInPreferences setWrapperIdentifier:@"second"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"second");
+}
+
+- (void)testWrapperIdentifier_RejectedWriteLeavesPreviousValue {
+  // Test that a rejected write does not clear or change a previously set valid value.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"Invalid!"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
 }
 
 @end
