@@ -26,6 +26,9 @@ NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 // The name of the query parameter used for logging the Apple execution environment.
 NSString *const kEnvironmentLoggingParameter = @"gidenv";
 
+// The name of the query parameter used to log the embedding SDK / wrapper.
+NSString *const kSDKWrapperLoggingParameter = @"gidwrapper";
+
 // Supported Apple execution environments
 static NSString *const kAppleEnvironmentUnknown = @"unknown";
 static NSString *const kAppleEnvironmentIOS = @"ios";
@@ -33,6 +36,17 @@ static NSString *const kAppleEnvironmentIOSSimulator = @"ios-sim";
 static NSString *const kAppleEnvironmentMacOS = @"macos";
 static NSString *const kAppleEnvironmentMacOSIOSOnMac = @"macos-ios";
 static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
+
+static NSString *gWrapperIdentifier = nil;
+
+static NSObject* GIDWrapperLock(void) {
+  static NSObject *lock;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    lock = [[NSObject alloc] init];
+  });
+  return lock;
+}
 
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
@@ -78,6 +92,53 @@ NSString* GIDEnvironment(void) {
 #endif // TARGET_OS_MACCATALYST
 
   return appleEnvironment;
+}
+
+static NSString * _Nullable GIDSanitizeWrapperIdentifier(NSString * _Nullable raw) {
+  if (!raw) {
+    return nil;
+  }
+
+  // Trim leading/trailing whitespace and newlines.
+  NSString *sanitized = [raw stringByTrimmingCharactersInSet:
+      [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+  if (sanitized.length == 0) {
+    return nil;
+  }
+
+  // Lowercase (locale-independent).
+  sanitized = [sanitized lowercaseString];
+
+  // Keep only characters in the allowlist [A-Za-z0-9-._~]; drop everything else.
+  NSCharacterSet *allowed =
+      [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789-._~"];
+  sanitized = [[sanitized componentsSeparatedByCharactersInSet:[allowed invertedSet]]
+      componentsJoinedByString:@""];
+
+  if (sanitized.length == 0) {
+    return nil;
+  }
+
+  // If length > 32, take substringToIndex:32.
+  // Safe because the allowlist is ASCII, so each character is exactly one UTF-16 unit.
+  if (sanitized.length > 32) {
+    sanitized = [sanitized substringToIndex:32];
+  }
+
+  return sanitized;
+}
+
+NSString* GIDWrapperIdentifier(void) {
+  @synchronized(GIDWrapperLock()) {
+    return [gWrapperIdentifier copy];
+  }
+}
+
+void GIDSetWrapperIdentifier(NSString * _Nullable wrapper) {
+  NSString *sanitized = GIDSanitizeWrapperIdentifier(wrapper);
+  @synchronized(GIDWrapperLock()) {
+    gWrapperIdentifier = [sanitized copy];
+  }
 }
 
 @implementation GIDSignInPreferences

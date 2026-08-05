@@ -20,10 +20,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const kSDKVersionLoggingParameter;
 extern NSString *const kEnvironmentLoggingParameter;
+extern NSString *const kSDKWrapperLoggingParameter;
 
 NSString* GIDVersion(void);
 
 NSString* GIDEnvironment(void);
+
+// Returns the sanitized SDK wrapper identifier, or nil if none has been set.
+NSString* _Nullable GIDWrapperIdentifier(void);
+
+// Sets the SDK wrapper identifier. The value is sanitized (see implementation);
+// empty or fully-invalid input clears it. Last write wins. Thread-safe.
+void GIDSetWrapperIdentifier(NSString * _Nullable wrapper);
 
 @interface GIDSignInPreferences : NSObject
 
