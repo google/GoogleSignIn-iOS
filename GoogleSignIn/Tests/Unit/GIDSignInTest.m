@@ -389,6 +389,7 @@ static NSString *const kMultipleClaimsJsonString =
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
+  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
   [super tearDown];
 }
 
@@ -1166,6 +1167,77 @@ static NSString *const kMultipleClaimsJsonString =
 
   NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
   XCTAssertEqualObjects(params[@"hd"], kHostedDomain, @"hosted domain should match");
+}
+
+- (void)testWrapperIdentifier_PresentInAuthorizationRequestWhenSet {
+  GIDSignIn.sharedInstance.wrapperIdentifier = @"firebase";
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(params[@"gidwrapper"], @"firebase",
+                        @"The authorization request should contain the 'gidwrapper' parameter "
+                        "when set.");
+}
+
+- (void)testWrapperIdentifier_AbsentFromAuthorizationRequestWhenUnset {
+  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+  XCTAssertNil(params[@"gidwrapper"],
+               @"The authorization request should not contain the 'gidwrapper' parameter "
+               "when unset.");
+}
+
+- (void)testWrapperIdentifier_PropertyReflectsSanitizedValue {
+  GIDSignIn.sharedInstance.wrapperIdentifier = @"Fire Base!";
+  XCTAssertEqualObjects(GIDSignIn.sharedInstance.wrapperIdentifier, @"firebase",
+                        @"The wrapperIdentifier property should reflect the sanitized value.");
+}
+
+- (void)testWrapperIdentifier_PercentEncodedOnRevokeURL {
+  GIDSignIn.sharedInstance.wrapperIdentifier = @"my-sdk";
+
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  NSString *urlString = url.absoluteString;
+  XCTAssertTrue([urlString containsString:@"gidwrapper=my-sdk"],
+                @"The revoke URL should contain the percent-encoded 'gidwrapper' parameter.");
 }
 
 - (void)testOAuthLogin_ConsentCanceled {
