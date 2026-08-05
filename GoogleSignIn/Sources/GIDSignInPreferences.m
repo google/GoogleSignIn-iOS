@@ -14,6 +14,8 @@
 
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
+#import <os/lock.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const kLSOServer = @"accounts.google.com";
@@ -38,15 +40,7 @@ static NSString *const kAppleEnvironmentMacOSIOSOnMac = @"macos-ios";
 static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 
 static NSString *gWrapperIdentifier = nil;
-
-static NSObject* GIDWrapperLock(void) {
-  static NSObject *lock;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    lock = [[NSObject alloc] init];
-  });
-  return lock;
-}
+static os_unfair_lock gWrapperIdentifierLock = OS_UNFAIR_LOCK_INIT;
 
 #ifndef GID_SDK_VERSION
 #error "GID_SDK_VERSION is not defined: add -DGID_SDK_VERSION=x.x.x to the build invocation."
@@ -58,14 +52,35 @@ static NSObject* GIDWrapperLock(void) {
 #define STR(x) STR_EXPAND(x)
 #define STR_EXPAND(x) #x
 
-// The prefixed sdk version string to differentiate gid version values used with the legacy gpsdk
-// logging key.
-NSString* GIDVersion(void) {
+static BOOL GIDIsValidWrapperIdentifier(NSString * _Nullable candidate) {
+  if (candidate == nil) {
+    return NO;
+  }
+
+  if (candidate.length == 0 || candidate.length > 32) {
+    return NO;
+  }
+
+  NSCharacterSet *allowed =
+      [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789-"];
+  if ([candidate rangeOfCharacterFromSet:[allowed invertedSet]].location != NSNotFound) {
+    return NO;
+  }
+
+  if ([candidate hasPrefix:@"-"] || [candidate hasSuffix:@"-"]) {
+    return NO;
+  }
+
+  return YES;
+}
+
+@implementation GIDSignInPreferences
+
++ (NSString *)sdkVersion {
   return [NSString stringWithFormat:@"gid-%@", @STR(GID_SDK_VERSION)];
 }
 
-// Get the current Apple execution environment.
-NSString* GIDEnvironment(void) {
++ (NSString *)environment {
   NSString *appleEnvironment = kAppleEnvironmentUnknown;
 
 #if TARGET_OS_MACCATALYST
@@ -94,54 +109,51 @@ NSString* GIDEnvironment(void) {
   return appleEnvironment;
 }
 
-static NSString * _Nullable GIDSanitizeWrapperIdentifier(NSString * _Nullable raw) {
-  if (!raw) {
-    return nil;
-  }
-
-  // Trim leading/trailing whitespace and newlines.
-  NSString *sanitized = [raw stringByTrimmingCharactersInSet:
-      [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-  if (sanitized.length == 0) {
-    return nil;
-  }
-
-  // Lowercase (locale-independent).
-  sanitized = [sanitized lowercaseString];
-
-  // Keep only characters in the allowlist [A-Za-z0-9-._~]; drop everything else.
-  NSCharacterSet *allowed =
-      [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789-._~"];
-  sanitized = [[sanitized componentsSeparatedByCharactersInSet:[allowed invertedSet]]
-      componentsJoinedByString:@""];
-
-  if (sanitized.length == 0) {
-    return nil;
-  }
-
-  // If length > 32, take substringToIndex:32.
-  // Safe because the allowlist is ASCII, so each character is exactly one UTF-16 unit.
-  if (sanitized.length > 32) {
-    sanitized = [sanitized substringToIndex:32];
-  }
-
-  return sanitized;
++ (nullable NSString *)wrapperIdentifier {
+  os_unfair_lock_lock(&gWrapperIdentifierLock);
+  NSString *wrapper = [gWrapperIdentifier copy];
+  os_unfair_lock_unlock(&gWrapperIdentifierLock);
+  return wrapper;
 }
 
-NSString* GIDWrapperIdentifier(void) {
-  @synchronized(GIDWrapperLock()) {
-    return [gWrapperIdentifier copy];
++ (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
+  if (wrapperIdentifier == nil) {
+    os_unfair_lock_lock(&gWrapperIdentifierLock);
+    gWrapperIdentifier = nil;
+    os_unfair_lock_unlock(&gWrapperIdentifierLock);
+    return;
   }
+
+  if (!GIDIsValidWrapperIdentifier(wrapperIdentifier)) {
+#if DEBUG
+    NSAssert(NO, @"SDK wrapper '%@' rejected: must be 1-32 characters of [a-z0-9-] with no "
+                 @"leading or trailing '-'. Value ignored.", wrapperIdentifier);
+#endif
+    return;
+  }
+
+  os_unfair_lock_lock(&gWrapperIdentifierLock);
+  NSString *current = gWrapperIdentifier;
+  if (current != nil && ![current isEqualToString:wrapperIdentifier]) {
+    os_unfair_lock_unlock(&gWrapperIdentifierLock);
+#if DEBUG
+    NSAssert(NO, @"SDK wrapper already set to '%@'; ignoring '%@'. More than one "
+                 @"wrapper appears to be present.", current, wrapperIdentifier);
+#endif
+    return;
+  }
+  gWrapperIdentifier = [wrapperIdentifier copy];
+  os_unfair_lock_unlock(&gWrapperIdentifierLock);
 }
 
-void GIDSetWrapperIdentifier(NSString * _Nullable wrapper) {
-  NSString *sanitized = GIDSanitizeWrapperIdentifier(wrapper);
-  @synchronized(GIDWrapperLock()) {
-    gWrapperIdentifier = [sanitized copy];
++ (void)addLoggingParameters:(NSMutableDictionary<NSString *, NSString *> *)params {
+  params[kSDKVersionLoggingParameter] = [self sdkVersion];
+  params[kEnvironmentLoggingParameter] = [self environment];
+  NSString *wrapper = [self wrapperIdentifier];
+  if (wrapper != nil) {
+    params[kSDKWrapperLoggingParameter] = wrapper;
   }
 }
-
-@implementation GIDSignInPreferences
 
 + (NSString *)googleAuthorizationServer {
   return kLSOServer;

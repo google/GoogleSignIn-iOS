@@ -22,18 +22,26 @@ extern NSString *const kSDKVersionLoggingParameter;
 extern NSString *const kEnvironmentLoggingParameter;
 extern NSString *const kSDKWrapperLoggingParameter;
 
-NSString* GIDVersion(void);
-
-NSString* GIDEnvironment(void);
-
-// Returns the sanitized SDK wrapper identifier, or nil if none has been set.
-NSString* _Nullable GIDWrapperIdentifier(void);
-
-// Sets the SDK wrapper identifier. The value is sanitized (see implementation);
-// empty or fully-invalid input clears it. Last write wins. Thread-safe.
-void GIDSetWrapperIdentifier(NSString * _Nullable wrapper);
-
 @interface GIDSignInPreferences : NSObject
+
+// Returns the current Google Sign-In SDK version.
++ (NSString *)sdkVersion;
+
+// Returns the current Apple execution environment (e.g. ios, macos).
++ (NSString *)environment;
+
+// Returns the current identifier, or nil if none is set.
++ (nullable NSString *)wrapperIdentifier;
+
+// Sets the SDK wrapper identifier. Valid values are 1-32 characters of [a-z0-9-] with no leading
+// or trailing '-'; invalid input is ignored (and asserts in debug builds). The FIRST valid write
+// wins and later differing writes are ignored (also asserted in debug); passing nil resets the
+// stored value. This method is thread-safe.
++ (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
+
+// Populates the standard logging parameters (gpsdk, gidenv, and gidwrapper when set) on the
+// supplied dictionary.
++ (void)addLoggingParameters:(NSMutableDictionary<NSString *, NSString *> *)params;
 
 + (NSString *)googleAuthorizationServer;
 + (NSString *)googleTokenServer;
