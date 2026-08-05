@@ -44,4 +44,75 @@
   XCTAssertEqualObjects(environment, expectedEnvironment);
 }
 
+- (void)tearDown {
+  GIDSetWrapperIdentifier(nil);
+  [super tearDown];
+}
+
+- (void)testWrapperIdentifier_UnsetReturnsNil {
+  // Test that when no identifier is set (or it is explicitly cleared), nil is returned.
+  GIDSetWrapperIdentifier(nil);
+  XCTAssertNil(GIDWrapperIdentifier());
+}
+
+- (void)testWrapperIdentifier_RoundTripsSimpleValue {
+  // Test that a simple alphanumeric identifier is correctly stored and retrieved.
+  GIDSetWrapperIdentifier(@"firebase");
+  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+}
+
+- (void)testWrapperIdentifier_Lowercases {
+  // Test that identifiers are automatically lowercased when stored.
+  GIDSetWrapperIdentifier(@"FireBase");
+  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+}
+
+- (void)testWrapperIdentifier_StripsDisallowedCharacters {
+  // Test that spaces and disallowed punctuation are removed from the identifier.
+  GIDSetWrapperIdentifier(@"fire base!/&=?");
+  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+}
+
+- (void)testWrapperIdentifier_KeepsAllowedPunctuation {
+  // Test that allowed characters (A-Za-z0-9-._~) are preserved.
+  GIDSetWrapperIdentifier(@"my-sdk_1.2~x");
+  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"my-sdk_1.2~x");
+}
+
+- (void)testWrapperIdentifier_TrimsWhitespace {
+  // Test that leading and trailing whitespace is trimmed from the identifier.
+  GIDSetWrapperIdentifier(@"  firebase  ");
+  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"firebase");
+}
+
+- (void)testWrapperIdentifier_EmptyOrWhitespaceBecomesNil {
+  // Test that empty or whitespace-only strings result in a nil identifier.
+  GIDSetWrapperIdentifier(@"   ");
+  XCTAssertNil(GIDWrapperIdentifier());
+
+  // Test that a string consisting only of invalid characters results in a nil identifier.
+  GIDSetWrapperIdentifier(@"!!!");
+  XCTAssertNil(GIDWrapperIdentifier());
+}
+
+- (void)testWrapperIdentifier_CapsAtThirtyTwoCharacters {
+  // Test that the identifier is truncated to a maximum of 32 characters.
+  NSString *longString = @"abcdefghijklmnopqrstuvwxyz1234567890"; // 36 characters
+  GIDSetWrapperIdentifier(longString);
+  NSString *result = GIDWrapperIdentifier();
+  XCTAssertEqual(result.length, (NSUInteger)32);
+  XCTAssertEqualObjects(result, [longString.lowercaseString substringToIndex:32]);
+}
+
+- (void)testWrapperIdentifier_LastWriteWins {
+  // Test that subsequent writes overwrite the previous identifier.
+  GIDSetWrapperIdentifier(@"first");
+  GIDSetWrapperIdentifier(@"second");
+  XCTAssertEqualObjects(GIDWrapperIdentifier(), @"second");
+
+  // Test that setting it to nil clears the identifier.
+  GIDSetWrapperIdentifier(nil);
+  XCTAssertNil(GIDWrapperIdentifier());
+}
+
 @end
