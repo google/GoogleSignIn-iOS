@@ -582,6 +582,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                      GIDVersion(),
                      kEnvironmentLoggingParameter,
                      GIDEnvironment()];
+  NSString *wrapperIdentifier = GIDWrapperIdentifier();
+  if (wrapperIdentifier) {
+    NSMutableCharacterSet *unreservedSet =
+        [NSMutableCharacterSet alphanumericCharacterSet];
+    [unreservedSet addCharactersInString:@"-._~"];
+    NSString *encodedWrapper = [wrapperIdentifier
+        stringByAddingPercentEncodingWithAllowedCharacters:unreservedSet];
+    revokeURLString = [NSString stringWithFormat:@"%@&%@=%@",
+                       revokeURLString, kSDKWrapperLoggingParameter, encodedWrapper];
+  }
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
   [self startFetchURL:revokeURL
               fromAuthState:authState
@@ -623,6 +633,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
   });
   return sharedInstance;
+}
+
+- (nullable NSString *)wrapperIdentifier {
+  return GIDWrapperIdentifier();
+}
+
+- (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
+  GIDSetWrapperIdentifier(wrapperIdentifier);
 }
 
 #pragma mark - Configuring and pre-warming
@@ -921,6 +939,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
 
+  NSString *wrapperIdentifier = GIDWrapperIdentifier();
+  if (wrapperIdentifier) {
+    additionalParameters[kSDKWrapperLoggingParameter] = wrapperIdentifier;
+  }
+
   return additionalParameters;
 }
 
@@ -1056,6 +1079,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+
+  NSString *wrapperIdentifier = GIDWrapperIdentifier();
+  if (wrapperIdentifier) {
+    additionalParameters[kSDKWrapperLoggingParameter] = wrapperIdentifier;
+  }
 
   OIDTokenRequest *tokenRequest;
   if (!authState.lastTokenResponse.accessToken &&

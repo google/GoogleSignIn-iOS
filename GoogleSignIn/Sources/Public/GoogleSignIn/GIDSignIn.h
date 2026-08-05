@@ -73,6 +73,14 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// The active configuration for this instance of `GIDSignIn`.
 @property(nonatomic, nullable) GIDConfiguration *configuration;
 
+/// An optional identifier naming the SDK or wrapper that embeds Google Sign-In.
+/// Reported to Google as a diagnostic logging parameter for aggregate metrics only;
+/// it is never used for authentication or authorization. Set this once, before your
+/// first sign-in call. The value is sanitized: lowercased, restricted to the
+/// characters A-Z a-z 0-9 - . _ ~, and capped at 32 characters; input that does not
+/// conform is truncated or ignored.
+@property(nonatomic, nullable) NSString *wrapperIdentifier;
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 /// Configures `GIDSignIn` for use.
