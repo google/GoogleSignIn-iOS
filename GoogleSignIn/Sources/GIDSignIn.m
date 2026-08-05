@@ -573,26 +573,36 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
     return;
   }
-  NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
+  NSString *baseURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
       [GIDSignInPreferences googleAuthorizationServer], token];
-  // Append logging parameter
-  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@&%@=%@",
-                     revokeURLString,
-                     kSDKVersionLoggingParameter,
-                     GIDVersion(),
-                     kEnvironmentLoggingParameter,
-                     GIDEnvironment()];
-  NSString *wrapperIdentifier = GIDWrapperIdentifier();
-  if (wrapperIdentifier) {
-    NSMutableCharacterSet *unreservedSet =
-        [NSMutableCharacterSet alphanumericCharacterSet];
-    [unreservedSet addCharactersInString:@"-._~"];
-    NSString *encodedWrapper = [wrapperIdentifier
-        stringByAddingPercentEncodingWithAllowedCharacters:unreservedSet];
-    revokeURLString = [NSString stringWithFormat:@"%@&%@=%@",
-                       revokeURLString, kSDKWrapperLoggingParameter, encodedWrapper];
+  NSURLComponents *components = [NSURLComponents componentsWithString:baseURLString];
+  NSURL *revokeURL;
+  if (components) {
+    NSMutableArray<NSURLQueryItem *> *items =
+        [components.queryItems mutableCopy] ?: [NSMutableArray array];
+
+    NSMutableDictionary<NSString *, NSString *> *loggingParams = [[NSMutableDictionary alloc] init];
+    [GIDSignInPreferences addLoggingParameters:loggingParams];
+    for (NSString *name in [loggingParams.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+      [items addObject:[NSURLQueryItem queryItemWithName:name value:loggingParams[name]]];
+    }
+
+    components.queryItems = items;
+    revokeURL = components.URL;
   }
-  NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
+
+  if (!revokeURL) {
+    // The revoke URL could not be constructed, so the token was left untouched.
+    NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                         code:kGIDSignInErrorCodeUnknown
+                                     userInfo:nil];
+    if (completion) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        completion(error);
+      });
+    }
+    return;
+  }
   [self startFetchURL:revokeURL
               fromAuthState:authState
                 withComment:@"GIDSignIn: revoke tokens"
@@ -636,11 +646,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (nullable NSString *)wrapperIdentifier {
-  return GIDWrapperIdentifier();
+  return [GIDSignInPreferences wrapperIdentifier];
 }
 
 - (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
-  GIDSetWrapperIdentifier(wrapperIdentifier);
+  [GIDSignInPreferences setWrapperIdentifier:wrapperIdentifier];
 }
 
 #pragma mark - Configuring and pre-warming
@@ -936,13 +946,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  NSString *wrapperIdentifier = GIDWrapperIdentifier();
-  if (wrapperIdentifier) {
-    additionalParameters[kSDKWrapperLoggingParameter] = wrapperIdentifier;
-  }
+  [GIDSignInPreferences addLoggingParameters:additionalParameters];
 
   return additionalParameters;
 }
@@ -1077,13 +1081,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                    emmSupport:authFlow.emmSupport
                        isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
-
-  NSString *wrapperIdentifier = GIDWrapperIdentifier();
-  if (wrapperIdentifier) {
-    additionalParameters[kSDKWrapperLoggingParameter] = wrapperIdentifier;
-  }
+  [GIDSignInPreferences addLoggingParameters:additionalParameters];
 
   OIDTokenRequest *tokenRequest;
   if (!authState.lastTokenResponse.accessToken &&
