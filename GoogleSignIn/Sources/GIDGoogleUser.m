@@ -155,6 +155,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
   additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+  NSString *wrapperIdentifier = GIDWrapperIdentifier();
+  if (wrapperIdentifier) {
+    additionalParameters[kSDKWrapperLoggingParameter] = wrapperIdentifier;
+  }
 
   OIDTokenRequest *tokenRefreshRequest =
       [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
