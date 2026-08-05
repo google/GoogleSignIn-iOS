@@ -536,6 +536,44 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenInvalid {
+  // Assert that attempting to set an invalid identifier throws NSInternalInconsistencyException.
+  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"Fire Base!",
+                               NSException, NSInternalInconsistencyException);
+
+  // The rejection leaves the store nil.
+  XCTAssertNil(GIDSignIn.sharedInstance.wrapperIdentifier);
+
+  // Both tokens expired 10 seconds ago.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+
+  // Save the intermediate states.
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
+                                              NSError * _Nullable error) {
+    [expectation fulfill];
+  }];
+
+  // Assert the captured token request additionalParameters does NOT contain key @"gidwrapper".
+  XCTAssertNil(_savedTokenRequest.additionalParameters[@"gidwrapper"]);
+
+  // Assert it DOES contain kSDKVersionLoggingParameter and kEnvironmentLoggingParameter.
+  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion]);
+  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment]);
+
+  // Clean up the handler by providing a fake response.
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:_savedTokenRequest];
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 # pragma mark - Test `addScopes:`
 
 - (void)testAddScopes_success {
