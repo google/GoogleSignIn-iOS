@@ -1,5 +1,5 @@
 # Unreleased
-- Add `GIDSignIn.wrapperIdentifier`, an optional identifier that SDKs embedding Google Sign-In can set to self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. The value is sanitized and opt-in; default behavior is unchanged.
+- Add `GIDSignIn.wrapperIdentifier`, an optional property for SDKs embedding Google Sign-In to self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It accepts 1-32 characters of lowercase letters, digits and hyphens; non-conforming values are ignored. It is opt-in and default behavior is unchanged.
 
 # 9.2.0
 - Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))
