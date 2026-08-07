@@ -579,9 +579,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   revokeURLString = [NSString stringWithFormat:@"%@&%@=%@&%@=%@",
                      revokeURLString,
                      kSDKVersionLoggingParameter,
-                     GIDVersion(),
+                     [GIDSignInPreferences sdkVersion],
                      kEnvironmentLoggingParameter,
-                     GIDEnvironment()];
+                     [GIDSignInPreferences environment]];
   NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
   [self startFetchURL:revokeURL
               fromAuthState:authState
@@ -918,8 +918,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+  [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
   return additionalParameters;
 }
@@ -1054,8 +1053,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                    emmSupport:authFlow.emmSupport
                        isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  additionalParameters[kSDKVersionLoggingParameter] = GIDVersion();
-  additionalParameters[kEnvironmentLoggingParameter] = GIDEnvironment();
+  [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
   OIDTokenRequest *tokenRequest;
   if (!authState.lastTokenResponse.accessToken &&

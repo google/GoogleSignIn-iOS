@@ -21,11 +21,17 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString *const kSDKVersionLoggingParameter;
 extern NSString *const kEnvironmentLoggingParameter;
 
-NSString* GIDVersion(void);
-
-NSString* GIDEnvironment(void);
-
 @interface GIDSignInPreferences : NSObject
+
+/// Returns the current Google Sign-In SDK version, prefixed so that `gid` version values can
+/// be distinguished from other values reported under the legacy `gpsdk` logging key.
++ (NSString *)sdkVersion;
+
+/// Returns the current Apple execution environment, such as `ios` or `macos`.
++ (NSString *)environment;
+
+/// Returns the standard logging parameters to send with requests to Google's servers.
++ (NSDictionary<NSString *, NSString *> *)loggingParameters;
 
 + (NSString *)googleAuthorizationServer;
 + (NSString *)googleTokenServer;
