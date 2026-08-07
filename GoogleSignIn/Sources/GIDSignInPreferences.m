@@ -44,14 +44,13 @@ static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 #define STR(x) STR_EXPAND(x)
 #define STR_EXPAND(x) #x
 
-// The prefixed sdk version string to differentiate gid version values used with the legacy gpsdk
-// logging key.
-NSString* GIDVersion(void) {
+@implementation GIDSignInPreferences
+
++ (NSString *)sdkVersion {
   return [NSString stringWithFormat:@"gid-%@", @STR(GID_SDK_VERSION)];
 }
 
-// Get the current Apple execution environment.
-NSString* GIDEnvironment(void) {
++ (NSString *)environment {
   NSString *appleEnvironment = kAppleEnvironmentUnknown;
 
 #if TARGET_OS_MACCATALYST
@@ -80,7 +79,12 @@ NSString* GIDEnvironment(void) {
   return appleEnvironment;
 }
 
-@implementation GIDSignInPreferences
++ (NSDictionary<NSString *, NSString *> *)loggingParameters {
+  return @{
+    kSDKVersionLoggingParameter : [self sdkVersion],
+    kEnvironmentLoggingParameter : [self environment],
+  };
+}
 
 + (NSString *)googleAuthorizationServer {
   return kLSOServer;

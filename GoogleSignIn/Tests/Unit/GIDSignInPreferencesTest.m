@@ -21,13 +21,13 @@
 
 @implementation GIDSignInPreferencesTest
 
-- (void)testGIDVersion {
-  NSString *version = GIDVersion();
+- (void)testSDKVersion {
+  NSString *version = [GIDSignInPreferences sdkVersion];
   XCTAssertTrue([version hasPrefix:@"gid-"]);
 }
 
-- (void)testGIDEnvironment {
-  NSString *environment = GIDEnvironment();
+- (void)testEnvironment {
+  NSString *environment = [GIDSignInPreferences environment];
 
   NSString *expectedEnvironment;
 #if TARGET_OS_MACCATALYST
@@ -42,6 +42,16 @@
   expectedEnvironment = @"macos";
 #endif // TARGET_OS_MACCATALYST
   XCTAssertEqualObjects(environment, expectedEnvironment);
+}
+
+- (void)testLoggingParameters {
+  NSDictionary<NSString *, NSString *> *params = [GIDSignInPreferences loggingParameters];
+
+  XCTAssertEqual(params.count, (NSUInteger)2);
+  XCTAssertEqualObjects(params[kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion]);
+  XCTAssertEqualObjects(params[kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment]);
 }
 
 @end

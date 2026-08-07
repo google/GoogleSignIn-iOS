@@ -1723,9 +1723,11 @@ static NSString *const kMultipleClaimsJsonString =
   NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
   XCTAssertEqualObjects([params valueForKey:@"token"], token,
                         @"token parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion],
                         @"SDK version logging parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment],
                         @"Environment logging parameter should match");
   // Emulate result back from server.
   [self didFetch:nil error:nil];
@@ -1891,8 +1893,8 @@ static NSString *const kMultipleClaimsJsonString =
     XCTAssertNotNil(_savedAuthorizationRequest);
     NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
     XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
-    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], GIDVersion());
-    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], GIDEnvironment());
+    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], [GIDSignInPreferences sdkVersion]);
+    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], [GIDSignInPreferences environment]);
     XCTAssertNotNil(_savedAuthorizationCallback);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
