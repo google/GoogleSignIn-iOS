@@ -15,7 +15,7 @@
 #import <TargetConditionals.h>
 #import <Foundation/Foundation.h>
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || TARGET_OS_OSX
 #import <AppCheckCore/GACAppCheckProvider.h>
 
 @class GACAppCheckToken;
