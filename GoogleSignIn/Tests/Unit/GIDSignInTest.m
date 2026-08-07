@@ -1349,6 +1349,23 @@ static NSString *const kMultipleClaimsJsonString =
   [_tokenResponse verify];
 }
 
+// Verifies a token containing characters that are reserved in a URL query is percent-encoded
+// in the revoke URL, so that it arrives at the server intact.
+- (void)testDisconnectNoCallback_tokenWithReservedCharacters {
+  NSString *tokenWithReservedCharacters = @"token&with=reserved#characters";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithReservedCharacters] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+  [self verifyAndRevokeToken:tokenWithReservedCharacters
+                 hasCallback:NO
+      waitingForExpectations:@[]];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
 // Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshToken {
   [[[_authorization expect] andReturn:_authState] authState];
