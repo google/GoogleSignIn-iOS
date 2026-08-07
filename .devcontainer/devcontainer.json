@@ -1,0 +1,5 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {}
+}"ghcr.io/postfinance/devcontainer-features/dotnet:1": 
+"ghcr.io/devcontainers-extra/features/aws-cdk:2": {}"ghcr.io/devcontainers-extra/features/activemq-sdkman:2": {}
