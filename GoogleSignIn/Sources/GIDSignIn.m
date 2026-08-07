@@ -83,8 +83,14 @@ static NSString *const kTokenURLTemplate = @"https://%@/token";
 // The URL template for the URL to get user info.
 static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
 
-// The URL template for the URL to revoke the token.
-static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke?token=%@";
+// The path for the endpoint to revoke the token.
+static NSString *const kRevokeTokenPath = @"/o/oauth2/revoke";
+
+// The name of the query parameter carrying the token to be revoked.
+static NSString *const kRevokeTokenParameter = @"token";
+
+// The scheme used for requests to Google's servers.
+static NSString *const kHTTPSScheme = @"https";
 
 // Expected path in the URL scheme to be handled.
 static NSString *const kBrowserCallbackPath = @"/oauth2callback";
@@ -573,17 +579,22 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
     return;
   }
-  NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
-      [GIDSignInPreferences googleAuthorizationServer], token];
-  // Append logging parameter
-  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@&%@=%@",
-                     revokeURLString,
-                     kSDKVersionLoggingParameter,
-                     [GIDSignInPreferences sdkVersion],
-                     kEnvironmentLoggingParameter,
-                     [GIDSignInPreferences environment]];
-  NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [self startFetchURL:revokeURL
+  NSURLComponents *revokeURLComponents = [[NSURLComponents alloc] init];
+  revokeURLComponents.scheme = kHTTPSScheme;
+  revokeURLComponents.host = [GIDSignInPreferences googleAuthorizationServer];
+  revokeURLComponents.path = kRevokeTokenPath;
+
+  NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
+  [queryItems addObject:[NSURLQueryItem queryItemWithName:kRevokeTokenParameter value:token]];
+  NSDictionary<NSString *, NSString *> *loggingParameters =
+      [GIDSignInPreferences loggingParameters];
+  for (NSString *name in [loggingParameters.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+    [queryItems addObject:[NSURLQueryItem queryItemWithName:name
+                                                     value:loggingParameters[name]]];
+  }
+  revokeURLComponents.queryItems = queryItems;
+
+  [self startFetchURL:revokeURLComponents.URL
               fromAuthState:authState
                 withComment:@"GIDSignIn: revoke tokens"
       withCompletionHandler:^(NSData *data, NSError *error) {
