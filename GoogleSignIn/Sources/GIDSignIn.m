@@ -80,8 +80,11 @@ static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth
 // The URL template for the token endpoint.
 static NSString *const kTokenURLTemplate = @"https://%@/token";
 
-// The URL template for the URL to get user info.
-static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
+// The path for the endpoint to get user info.
+static NSString *const kUserInfoPath = @"/oauth2/v3/userinfo";
+
+// The name of the query parameter carrying the access token for the user info request.
+static NSString *const kAccessTokenParameter = @"access_token";
 
 // The path for the endpoint to revoke the token.
 static NSString *const kRevokeTokenPath = @"/o/oauth2/revoke";
@@ -1146,11 +1149,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
     if (!handlerAuthFlow.profileData) {
       [handlerAuthFlow wait];
-      NSURL *infoURL = [NSURL URLWithString:
-          [NSString stringWithFormat:kUserInfoURLTemplate,
-              [GIDSignInPreferences googleUserInfoServer],
-              authState.lastTokenResponse.accessToken]];
-      [self startFetchURL:infoURL
+      NSURLComponents *infoURLComponents = [[NSURLComponents alloc] init];
+      infoURLComponents.scheme = kHTTPSScheme;
+      infoURLComponents.host = [GIDSignInPreferences googleUserInfoServer];
+      infoURLComponents.path = kUserInfoPath;
+      infoURLComponents.queryItems = @[
+        [NSURLQueryItem queryItemWithName:kAccessTokenParameter
+                                    value:authState.lastTokenResponse.accessToken],
+      ];
+      [self startFetchURL:infoURLComponents.URL
                   fromAuthState:authState
                     withComment:@"GIDSignIn: fetch basic profile info"
           withCompletionHandler:^(NSData *data, NSError *error) {
