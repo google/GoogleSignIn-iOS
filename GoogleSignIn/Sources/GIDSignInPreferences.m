@@ -62,7 +62,8 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
     allowedSet = [NSCharacterSet characterSetWithRange:NSMakeRange(0x20, 0x5F)];
   });
 
-  // DROP CHECK FIRST: if it contains any character outside the printable ASCII range, drop it.
+  // The drop check happens before truncation: if the original string contains any character
+  // outside the printable ASCII range, we drop the entire value.
   if ([candidate rangeOfCharacterFromSet:[allowedSet invertedSet]].location != NSNotFound) {
     return nil;
   }
@@ -72,7 +73,7 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
     return nil;
   }
 
-  // TRUNCATE SECOND: A surviving string longer than 100 characters is truncated to 100.
+  // A surviving string longer than 100 characters is truncated to 100.
   if (candidate.length > 100) {
     // Truncating with -substringToIndex:100 is safe here precisely because the drop check has
     // already guaranteed every character is single-unit ASCII, so there is no risk of splitting

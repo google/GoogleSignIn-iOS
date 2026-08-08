@@ -536,9 +536,9 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
-- (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenInvalid {
-  // Assert that attempting to set an invalid identifier throws NSInternalInconsistencyException.
-  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"Fire Base!",
+- (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenDropped {
+  // Assert that attempting to set a dropped identifier throws NSInternalInconsistencyException.
+  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"firebasé",
                                NSException, NSInternalInconsistencyException);
 
   // The rejection leaves the store nil.

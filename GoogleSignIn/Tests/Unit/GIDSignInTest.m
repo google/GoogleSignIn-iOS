@@ -1217,12 +1217,12 @@ static NSString *const kMultipleClaimsJsonString =
                "when unset.");
 }
 
-- (void)testWrapperIdentifier_InvalidValueIsIgnored {
-  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"Fire Base!",
+- (void)testWrapperIdentifier_DroppedValueIsIgnored {
+  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"firebasé",
                                NSException, NSInternalInconsistencyException,
-                               @"Setting an invalid wrapper identifier should throw.");
+                               @"Setting a dropped wrapper identifier should throw.");
   XCTAssertNil(GIDSignIn.sharedInstance.wrapperIdentifier,
-               @"The wrapper identifier should be nil after an invalid assignment.");
+               @"The wrapper identifier should be nil after a dropped assignment.");
 }
 
 - (void)testWrapperIdentifier_PresentOnRevokeURL {
