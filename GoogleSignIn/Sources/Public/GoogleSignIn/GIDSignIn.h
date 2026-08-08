@@ -77,9 +77,10 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// reported to Google as a diagnostic parameter for aggregate metrics only; it
 /// is never used for authentication or authorization.
 ///
-/// Format: 1 to 32 characters, lowercase letters, digits and hyphens only, not
-/// starting or ending with a hyphen. Non-conforming values are ignored and
-/// assert in debug builds.
+/// Format: up to 100 printable ASCII characters (U+0020 to U+007E). A longer
+/// value is truncated to its first 100 characters. A value containing any
+/// non-ASCII character or any ASCII control character is dropped in its
+/// entirety, and asserts in debug builds.
 ///
 /// Policy:
 /// * Choose one stable name and keep it stable across your releases.

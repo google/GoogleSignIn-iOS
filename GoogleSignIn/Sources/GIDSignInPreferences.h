@@ -33,10 +33,10 @@ extern NSString *const kSDKWrapperLoggingParameter;
 // Returns the current identifier, or nil if none is set.
 + (nullable NSString *)wrapperIdentifier;
 
-// Sets the SDK wrapper identifier. Valid values are 1-32 characters of [a-z0-9-] with no leading
-// or trailing '-'; invalid input is ignored (and asserts in debug builds). The FIRST valid write
-// wins and later differing writes are ignored (also asserted in debug); passing nil resets the
-// stored value. This method is thread-safe.
+// Sets the SDK wrapper identifier. Values may be up to 100 printable ASCII characters; longer
+// values are truncated to 100; a value containing any non-ASCII or control character, or an empty
+// string, is dropped entirely (and asserts in debug builds); the first accepted write wins and
+// later differing writes are ignored; nil resets; the method is thread-safe.
 + (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
 
 // Populates the standard logging parameters (gpsdk, gidenv, and gidwrapper when set) on the

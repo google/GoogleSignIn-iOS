@@ -52,26 +52,35 @@ static os_unfair_lock gWrapperIdentifierLock = OS_UNFAIR_LOCK_INIT;
 #define STR(x) STR_EXPAND(x)
 #define STR_EXPAND(x) #x
 
-static BOOL GIDIsValidWrapperIdentifier(NSString * _Nullable candidate) {
-  if (candidate == nil) {
-    return NO;
+// Returns the sanitized form of `candidate`, or nil if it must be dropped.
+// Callers must not pass nil.
+static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
+  static NSCharacterSet *allowedSet;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    // The range of printable ASCII characters is U+0020 through U+007E inclusive.
+    allowedSet = [NSCharacterSet characterSetWithRange:NSMakeRange(0x20, 0x5F)];
+  });
+
+  // DROP CHECK FIRST: if it contains any character outside the printable ASCII range, drop it.
+  if ([candidate rangeOfCharacterFromSet:[allowedSet invertedSet]].location != NSNotFound) {
+    return nil;
   }
 
-  if (candidate.length == 0 || candidate.length > 32) {
-    return NO;
+  // An empty string is also discarded.
+  if (candidate.length == 0) {
+    return nil;
   }
 
-  NSCharacterSet *allowed =
-      [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789-"];
-  if ([candidate rangeOfCharacterFromSet:[allowed invertedSet]].location != NSNotFound) {
-    return NO;
+  // TRUNCATE SECOND: A surviving string longer than 100 characters is truncated to 100.
+  if (candidate.length > 100) {
+    // Truncating with -substringToIndex:100 is safe here precisely because the drop check has
+    // already guaranteed every character is single-unit ASCII, so there is no risk of splitting
+    // a surrogate pair.
+    return [candidate substringToIndex:100];
   }
 
-  if ([candidate hasPrefix:@"-"] || [candidate hasSuffix:@"-"]) {
-    return NO;
-  }
-
-  return YES;
+  return candidate;
 }
 
 @implementation GIDSignInPreferences
@@ -124,25 +133,26 @@ static BOOL GIDIsValidWrapperIdentifier(NSString * _Nullable candidate) {
     return;
   }
 
-  if (!GIDIsValidWrapperIdentifier(wrapperIdentifier)) {
+  NSString *sanitized = GIDSanitizedWrapperIdentifier(wrapperIdentifier);
+  if (sanitized == nil) {
 #if DEBUG
-    NSAssert(NO, @"SDK wrapper '%@' rejected: must be 1-32 characters of [a-z0-9-] with no "
-                 @"leading or trailing '-'. Value ignored.", wrapperIdentifier);
+    NSAssert(NO, @"SDK wrapper '%@' rejected: must not be empty and must only contain printable "
+                 @"ASCII characters (U+0020 to U+007E). Value ignored.", wrapperIdentifier);
 #endif
     return;
   }
 
   os_unfair_lock_lock(&gWrapperIdentifierLock);
   NSString *current = gWrapperIdentifier;
-  if (current != nil && ![current isEqualToString:wrapperIdentifier]) {
+  if (current != nil && ![current isEqualToString:sanitized]) {
     os_unfair_lock_unlock(&gWrapperIdentifierLock);
 #if DEBUG
     NSAssert(NO, @"SDK wrapper already set to '%@'; ignoring '%@'. More than one "
-                 @"wrapper appears to be present.", current, wrapperIdentifier);
+                 @"wrapper appears to be present.", current, sanitized);
 #endif
     return;
   }
-  gWrapperIdentifier = [wrapperIdentifier copy];
+  gWrapperIdentifier = [sanitized copy];
   os_unfair_lock_unlock(&gWrapperIdentifierLock);
 }
 
