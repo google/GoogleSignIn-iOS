@@ -559,6 +559,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   [self removeAllKeychainEntries];
 }
 
+// OAuth parameters are application/x-www-form-urlencoded (RFC 6749 Appendix B), where "+"
+// means a space, but NSURLComponents leaves "+" literal because RFC 3986 permits it in a
+// query. Percent-encode it so a "+" in a token survives form decoding on the server.
+static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
+  components.percentEncodedQuery =
+      [components.percentEncodedQuery stringByReplacingOccurrencesOfString:@"+"
+                                                                withString:@"%2B"];
+}
+
 - (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
   OIDAuthState *authState = _currentUser.authState;
   if (!authState) {
@@ -596,6 +605,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
                                                      value:loggingParameters[name]]];
   }
   revokeURLComponents.queryItems = queryItems;
+  GIDPercentEncodePlusInQuery(revokeURLComponents);
 
   [self startFetchURL:revokeURLComponents.URL
               fromAuthState:authState
@@ -1157,6 +1167,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
         [NSURLQueryItem queryItemWithName:kAccessTokenParameter
                                     value:authState.lastTokenResponse.accessToken],
       ];
+      GIDPercentEncodePlusInQuery(infoURLComponents);
       [self startFetchURL:infoURLComponents.URL
                   fromAuthState:authState
                     withComment:@"GIDSignIn: fetch basic profile info"

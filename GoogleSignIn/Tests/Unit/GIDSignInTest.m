@@ -1366,10 +1366,9 @@ static NSString *const kMultipleClaimsJsonString =
   [_tokenResponse verify];
 }
 
-// "+" is a sub-delimiter that RFC 3986 permits literally in a URL query, so it is left
-// unescaped in the revoke URL. While many servers decode query strings as
-// application/x-www-form-urlencoded, where "+" means a space, decoding an OAuth token that way
-// would be a server-side error.
+// OAuth parameters use application/x-www-form-urlencoded (RFC 6749 Appendix B), where "+"
+// means a space, so a literal "+" in a token is sent as "%2B" even though RFC 3986
+// would permit it unescaped in a query.
 - (void)testDisconnectNoCallback_tokenWithPlusCharacter {
   NSString *tokenWithPlusCharacter = @"token+with+plus";
   [[[_authorization expect] andReturn:_authState] authState];
@@ -1385,8 +1384,10 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
 
   NSString *query = [[self fetchedURL] query];
-  XCTAssertTrue([query containsString:@"token=token+with+plus"],
-                @"'+' should be preserved literally in the query string");
+  XCTAssertTrue([query containsString:@"token=token%2Bwith%2Bplus"],
+                @"'+' should be percent-encoded in the query string");
+  XCTAssertFalse([query containsString:@"token=token+with+plus"],
+                 @"'+' should not be literal in the query string");
 
   NSURLComponents *components =
       [NSURLComponents componentsWithURL:[self fetchedURL] resolvingAgainstBaseURL:NO];
