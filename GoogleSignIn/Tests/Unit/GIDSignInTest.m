@@ -1408,6 +1408,45 @@ static NSString *const kMultipleClaimsJsonString =
   [_tokenResponse verify];
 }
 
+// Guard the "+" to "%2B" rewrite, which is only safe if a space encodes as "%20", never as "+".
+// Whilst this is technically testing Foundation behaviour, it's undocumented behaviour.
+- (void)testDisconnectNoCallback_tokenWithSpace {
+  NSString *tokenWithSpace = @"token with space";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithSpace] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  NSString *query = [[self fetchedURL] query];
+  XCTAssertTrue([query containsString:@"token=token%20with%20space"],
+                @"a space should be percent-encoded in the query string");
+  XCTAssertFalse([query containsString:@"+"], @"a space should never be encoded as '+'");
+
+  [self didFetch:nil error:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Round-trip the revoke URL through OIDURLQueryComponent, a pretend server, to check "+" survives.
+- (void)testDisconnectNoCallback_tokenWithPlusCharacterFormDecoded {
+  NSString *tokenWithPlusCharacter = @"token+with+plus";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  [self verifyAndRevokeToken:tokenWithPlusCharacter
+                 hasCallback:NO
+      waitingForExpectations:@[]];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
 // Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshToken {
   [[[_authorization expect] andReturn:_authState] authState];
