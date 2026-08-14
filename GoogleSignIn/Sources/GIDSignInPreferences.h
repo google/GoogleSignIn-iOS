@@ -24,23 +24,31 @@ extern NSString *const kSDKWrapperLoggingParameter;
 
 @interface GIDSignInPreferences : NSObject
 
-// Returns the current Google Sign-In SDK version.
+/// Returns the current Google Sign-In SDK version.
 + (NSString *)sdkVersion;
 
-// Returns the current Apple execution environment (e.g. ios, macos).
+/// Returns the current Apple execution environment, such as `ios` or `macos`.
 + (NSString *)environment;
 
-// Returns the current identifier, or nil if none is set.
+/// Returns the current SDK wrapper identifier, or `nil` if none is set.
 + (nullable NSString *)wrapperIdentifier;
 
-// Sets the SDK wrapper identifier. Values may be up to 100 printable ASCII characters; longer
-// values are truncated to 100; a value containing any non-ASCII or control character, or an empty
-// string, is dropped entirely (and asserts in debug builds); the first accepted write wins and
-// later differing writes are ignored; nil resets; the method is thread-safe.
+/// Sets the SDK wrapper identifier.
+///
+/// A value may be up to 100 printable ASCII characters; a longer value is truncated to its first
+/// 100 characters. A value that is empty, or that contains any non-ASCII or ASCII control
+/// character, is dropped entirely and asserts in debug builds.
+///
+/// The first accepted write wins; later differing writes are ignored. This method is thread-safe.
+///
+/// @param wrapperIdentifier The identifier to report, or `nil` to reset it.
 + (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
 
-// Populates the standard logging parameters (gpsdk, gidenv, and gidwrapper when set) on the
-// supplied dictionary.
+/// Adds the standard logging parameters to the supplied dictionary.
+///
+/// The parameters are `gpsdk`, `gidenv`, and, when a wrapper identifier is set, `gidwrapper`.
+///
+/// @param params The dictionary to add the logging parameters to.
 + (void)addLoggingParameters:(NSMutableDictionary<NSString *, NSString *> *)params;
 
 + (NSString *)googleAuthorizationServer;
