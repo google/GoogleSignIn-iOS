@@ -1366,6 +1366,47 @@ static NSString *const kMultipleClaimsJsonString =
   [_tokenResponse verify];
 }
 
+// "+" is a sub-delimiter that RFC 3986 permits literally in a URL query, so it is left
+// unescaped in the revoke URL. While many servers decode query strings as
+// application/x-www-form-urlencoded, where "+" means a space, decoding an OAuth token that way
+// would be a server-side error.
+- (void)testDisconnectNoCallback_tokenWithPlusCharacter {
+  NSString *tokenWithPlusCharacter = @"token+with+plus";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
+  XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
+  XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
+
+  NSString *query = [[self fetchedURL] query];
+  XCTAssertTrue([query containsString:@"token=token+with+plus"],
+                @"'+' should be preserved literally in the query string");
+
+  NSURLComponents *components =
+      [NSURLComponents componentsWithURL:[self fetchedURL] resolvingAgainstBaseURL:NO];
+  NSURLQueryItem *tokenItem;
+  for (NSURLQueryItem *item in components.queryItems) {
+    if ([item.name isEqualToString:@"token"]) {
+      tokenItem = item;
+      break;
+    }
+  }
+  XCTAssertEqualObjects(tokenItem.value, tokenWithPlusCharacter);
+
+  [self didFetch:nil error:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
 // Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshToken {
   [[[_authorization expect] andReturn:_authState] authState];
