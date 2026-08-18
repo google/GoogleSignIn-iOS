@@ -21,6 +21,11 @@
 
 @implementation GIDSignInPreferencesTest
 
+- (void)tearDown {
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  [super tearDown];
+}
+
 - (void)testSDKVersion {
   NSString *version = [GIDSignInPreferences sdkVersion];
   XCTAssertTrue([version hasPrefix:@"gid-"]);
@@ -52,6 +57,159 @@
                         [GIDSignInPreferences sdkVersion]);
   XCTAssertEqualObjects(params[kEnvironmentLoggingParameter],
                         [GIDSignInPreferences environment]);
+}
+
+// Test that logging parameters include the wrapper identifier when set.
+- (void)testLoggingParameters_includesWrapperWhenSet {
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  NSDictionary<NSString *, NSString *> *params = [GIDSignInPreferences loggingParameters];
+
+  XCTAssertEqual(params.count, (NSUInteger)3);
+  XCTAssertEqualObjects(params[kSDKWrapperLoggingParameter], @"firebase");
+  XCTAssertEqualObjects(params[kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion]);
+  XCTAssertEqualObjects(params[kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment]);
+}
+
+- (void)testWrapperIdentifier_UnsetIsNil {
+  // Test that when no identifier is set, nil is returned.
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_AcceptsSimpleValue {
+  // Test that a simple lowercase alphanumeric identifier is accepted.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
+}
+
+- (void)testWrapperIdentifier_AcceptsHyphenatedValue {
+  // Test that a value with internal hyphens is accepted.
+  [GIDSignInPreferences setWrapperIdentifier:@"react-native"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"react-native");
+}
+
+- (void)testWrapperIdentifier_AcceptsDigits {
+  // Test that a value with digits is accepted.
+  [GIDSignInPreferences setWrapperIdentifier:@"wrapper2"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"wrapper2");
+}
+
+- (void)testWrapperIdentifier_AcceptsMaximumLength {
+  // Test that a 100-character valid identifier is accepted and not truncated.
+  NSString *maxLength = [@"a" stringByPaddingToLength:100 withString:@"a" startingAtIndex:0];
+  [GIDSignInPreferences setWrapperIdentifier:maxLength];
+  XCTAssertEqual([GIDSignInPreferences wrapperIdentifier].length, (NSUInteger)100);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], maxLength);
+}
+
+- (void)testWrapperIdentifier_AcceptsMixedCaseSpacesAndPunctuation {
+  // Test that mixed case, spaces and punctuation are accepted.
+  NSString *value = @"React Native SDK (v2.0)";
+  [GIDSignInPreferences setWrapperIdentifier:value];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], value);
+}
+
+- (void)testWrapperIdentifier_DropsEmptyString {
+  // Test that an empty string is dropped.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@""],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_FirstValidWriteWins {
+  // Test that the first valid write is persistent and subsequent differing writes are rejected.
+  [GIDSignInPreferences setWrapperIdentifier:@"first"];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"second"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"first");
+}
+
+- (void)testWrapperIdentifier_RepeatedIdenticalWriteIsAccepted {
+  // Test that writing the same valid value again does not throw or change the state.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"firebase"]);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
+}
+
+- (void)testWrapperIdentifier_NilResets {
+  // Test that passing nil resets the store, allowing a new first-write.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+
+  [GIDSignInPreferences setWrapperIdentifier:@"second"];
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"second");
+}
+
+- (void)testWrapperIdentifier_DroppedWriteLeavesPreviousValue {
+  // Test that a dropped write does not clear or change a previously set valid value.
+  [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"firebasé"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
+}
+
+- (void)testWrapperIdentifier_TruncatesOverLongValue {
+  // Test that a legal string longer than 100 characters is truncated to its first 100 characters.
+  NSString *overLong = [@"a" stringByPaddingToLength:150 withString:@"a" startingAtIndex:0];
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:overLong]);
+  XCTAssertEqual([GIDSignInPreferences wrapperIdentifier].length, (NSUInteger)100);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], [overLong substringToIndex:100]);
+}
+
+- (void)testWrapperIdentifier_DropsNonASCII {
+  // Test that a value containing a non-ASCII character throws and leaves the store nil.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"firebasé"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_DropsControlCharacters {
+  // Test that values containing ASCII control characters throw and leave the store nil.
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"fire\nbase"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"fire\tbase"],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+
+  [GIDSignInPreferences setWrapperIdentifier:nil];
+  NSString *del = [NSString stringWithFormat:@"fire%Cbase", (unichar)0x7F];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:del],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_DropsWhenDisallowedCharacterIsPastTruncationPoint {
+  // Test that the drop check deliberately runs on the untruncated string so a payload hidden
+  // past the truncation point cannot survive.
+  NSString *prefix = [@"a" stringByPaddingToLength:120 withString:@"a" startingAtIndex:0];
+  NSString *overLong = [prefix stringByReplacingCharactersInRange:NSMakeRange(110, 1)
+                                                       withString:@"é"];
+  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:overLong],
+                               NSException,
+                               NSInternalInconsistencyException);
+  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+}
+
+- (void)testWrapperIdentifier_WriteOnceComparesSanitizedValue {
+  // Test that the write-once check compares the sanitized value, allowing a repeated
+  // write of a value that truncates to the same result.
+  NSString *overLong = [@"a" stringByPaddingToLength:150 withString:@"a" startingAtIndex:0];
+  [GIDSignInPreferences setWrapperIdentifier:overLong];
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:overLong]);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], [overLong substringToIndex:100]);
 }
 
 @end
