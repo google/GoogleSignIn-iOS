@@ -649,11 +649,11 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   return sharedInstance;
 }
 
-- (nullable NSString *)wrapperIdentifier {
++ (nullable NSString *)wrapperIdentifier {
   return [GIDSignInPreferences wrapperIdentifier];
 }
 
-- (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
++ (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
   [GIDSignInPreferences setWrapperIdentifier:wrapperIdentifier];
 }
 
