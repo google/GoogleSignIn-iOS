@@ -22,7 +22,7 @@
 @implementation GIDSignInPreferencesTest
 
 - (void)tearDown {
-  [GIDSignInPreferences setWrapperIdentifier:nil];
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
   [super tearDown];
 }
 
@@ -74,7 +74,7 @@
 
 - (void)testWrapperIdentifier_UnsetIsNil {
   // Test that when no identifier is set, nil is returned.
-  [GIDSignInPreferences setWrapperIdentifier:nil];
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
@@ -113,18 +113,14 @@
 
 - (void)testWrapperIdentifier_DropsEmptyString {
   // Test that an empty string is dropped.
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@""],
-                               NSException,
-                               NSInternalInconsistencyException);
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@""]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
 - (void)testWrapperIdentifier_FirstValidWriteWins {
   // Test that the first valid write is persistent and subsequent differing writes are rejected.
   [GIDSignInPreferences setWrapperIdentifier:@"first"];
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"second"],
-                               NSException,
-                               NSInternalInconsistencyException);
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"second"]);
   XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"first");
 }
 
@@ -135,22 +131,20 @@
   XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
 }
 
-- (void)testWrapperIdentifier_NilResets {
-  // Test that passing nil resets the store, allowing a new first-write.
+- (void)testWrapperIdentifier_NilIsIgnored {
+  // Test that passing nil is ignored and does not reset the store.
   [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
   [GIDSignInPreferences setWrapperIdentifier:nil];
-  XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
 
   [GIDSignInPreferences setWrapperIdentifier:@"second"];
-  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"second");
+  XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
 }
 
 - (void)testWrapperIdentifier_DroppedWriteLeavesPreviousValue {
   // Test that a dropped write does not clear or change a previously set valid value.
   [GIDSignInPreferences setWrapperIdentifier:@"firebase"];
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"firebasé"],
-                               NSException,
-                               NSInternalInconsistencyException);
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"firebasé"]);
   XCTAssertEqualObjects([GIDSignInPreferences wrapperIdentifier], @"firebase");
 }
 
@@ -163,31 +157,23 @@
 }
 
 - (void)testWrapperIdentifier_DropsNonASCII {
-  // Test that a value containing a non-ASCII character throws and leaves the store nil.
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"firebasé"],
-                               NSException,
-                               NSInternalInconsistencyException);
+  // Test that a value containing a non-ASCII character is ignored and leaves the store nil.
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"firebasé"]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
 - (void)testWrapperIdentifier_DropsControlCharacters {
-  // Test that values containing ASCII control characters throw and leave the store nil.
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"fire\nbase"],
-                               NSException,
-                               NSInternalInconsistencyException);
+  // Test that values containing ASCII control characters are ignored and leave the store nil.
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"fire\nbase"]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 
-  [GIDSignInPreferences setWrapperIdentifier:nil];
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:@"fire\tbase"],
-                               NSException,
-                               NSInternalInconsistencyException);
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"fire\tbase"]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 
-  [GIDSignInPreferences setWrapperIdentifier:nil];
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
   NSString *del = [NSString stringWithFormat:@"fire%Cbase", (unichar)0x7F];
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:del],
-                               NSException,
-                               NSInternalInconsistencyException);
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:del]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
@@ -197,9 +183,7 @@
   NSString *prefix = [@"a" stringByPaddingToLength:120 withString:@"a" startingAtIndex:0];
   NSString *overLong = [prefix stringByReplacingCharactersInRange:NSMakeRange(110, 1)
                                                        withString:@"é"];
-  XCTAssertThrowsSpecificNamed([GIDSignInPreferences setWrapperIdentifier:overLong],
-                               NSException,
-                               NSInternalInconsistencyException);
+  XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:overLong]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 

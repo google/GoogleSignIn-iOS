@@ -94,7 +94,7 @@ static NSString *const kNewScope = @"newScope";
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
-  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
 }
 
 #pragma mark - Tests
@@ -485,7 +485,7 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testWrapperIdentifier_PresentOnRefreshRequestWhenSet {
-  GIDSignIn.sharedInstance.wrapperIdentifier = @"firebase";
+  GIDSignIn.wrapperIdentifier = @"firebase";
 
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
@@ -511,7 +511,7 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenUnset {
-  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
 
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
@@ -537,12 +537,11 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenDropped {
-  // Assert that attempting to set a dropped identifier throws NSInternalInconsistencyException.
-  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"firebasé",
-                               NSException, NSInternalInconsistencyException);
+  // Assert that attempting to set a dropped identifier is ignored.
+  XCTAssertNoThrow(GIDSignIn.wrapperIdentifier = @"firebasé");
 
   // The rejection leaves the store nil.
-  XCTAssertNil(GIDSignIn.sharedInstance.wrapperIdentifier);
+  XCTAssertNil(GIDSignIn.wrapperIdentifier);
 
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];

@@ -389,7 +389,7 @@ static NSString *const kMultipleClaimsJsonString =
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
-  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
   [super tearDown];
 }
 
@@ -1170,7 +1170,7 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 - (void)testWrapperIdentifier_PresentInAuthorizationRequestWhenSet {
-  GIDSignIn.sharedInstance.wrapperIdentifier = @"firebase";
+  GIDSignIn.wrapperIdentifier = @"firebase";
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
   ).andDo(^(NSInvocation *invocation) {
@@ -1194,7 +1194,7 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 - (void)testWrapperIdentifier_AbsentFromAuthorizationRequestWhenUnset {
-  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
   ).andDo(^(NSInvocation *invocation) {
@@ -1218,15 +1218,14 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 - (void)testWrapperIdentifier_DroppedValueIsIgnored {
-  XCTAssertThrowsSpecificNamed(GIDSignIn.sharedInstance.wrapperIdentifier = @"firebasé",
-                               NSException, NSInternalInconsistencyException,
-                               @"Setting a dropped wrapper identifier should throw.");
-  XCTAssertNil(GIDSignIn.sharedInstance.wrapperIdentifier,
+  XCTAssertNoThrow(GIDSignIn.wrapperIdentifier = @"firebasé",
+                   @"Setting a dropped wrapper identifier should be ignored.");
+  XCTAssertNil(GIDSignIn.wrapperIdentifier,
                @"The wrapper identifier should be nil after a dropped assignment.");
 }
 
 - (void)testWrapperIdentifier_PresentOnRevokeURL {
-  GIDSignIn.sharedInstance.wrapperIdentifier = @"my-sdk";
+  GIDSignIn.wrapperIdentifier = @"my-sdk";
 
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
@@ -1255,7 +1254,7 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 - (void)testWrapperIdentifier_AbsentFromRevokeURLWhenUnset {
-  GIDSignIn.sharedInstance.wrapperIdentifier = nil;
+  [GIDSignInPreferences resetWrapperIdentifierForTesting];
 
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
