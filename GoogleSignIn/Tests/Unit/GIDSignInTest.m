@@ -1349,6 +1349,104 @@ static NSString *const kMultipleClaimsJsonString =
   [_tokenResponse verify];
 }
 
+// Verifies a token containing characters that are reserved in a URL query is percent-encoded
+// in the revoke URL, so that it arrives at the server intact.
+- (void)testDisconnectNoCallback_tokenWithReservedCharacters {
+  NSString *tokenWithReservedCharacters = @"token&with=reserved#characters";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithReservedCharacters] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+  [self verifyAndRevokeToken:tokenWithReservedCharacters
+                 hasCallback:NO
+      waitingForExpectations:@[]];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// OAuth parameters use application/x-www-form-urlencoded (RFC 6749 Appendix B), where "+"
+// means a space, so a literal "+" in a token is sent as "%2B" even though RFC 3986
+// would permit it unescaped in a query.
+- (void)testDisconnectNoCallback_tokenWithPlusCharacter {
+  NSString *tokenWithPlusCharacter = @"token+with+plus";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
+  XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
+  XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
+
+  NSString *query = [[self fetchedURL] query];
+  XCTAssertTrue([query containsString:@"token=token%2Bwith%2Bplus"],
+                @"'+' should be percent-encoded in the query string");
+  XCTAssertFalse([query containsString:@"token=token+with+plus"],
+                 @"'+' should not be literal in the query string");
+
+  NSURLComponents *components =
+      [NSURLComponents componentsWithURL:[self fetchedURL] resolvingAgainstBaseURL:NO];
+  NSURLQueryItem *tokenItem;
+  for (NSURLQueryItem *item in components.queryItems) {
+    if ([item.name isEqualToString:@"token"]) {
+      tokenItem = item;
+      break;
+    }
+  }
+  XCTAssertEqualObjects(tokenItem.value, tokenWithPlusCharacter);
+
+  [self didFetch:nil error:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Guard the "+" to "%2B" rewrite, which is only safe if a space encodes as "%20", never as "+".
+// Whilst this is technically testing Foundation behaviour, it's undocumented behaviour.
+- (void)testDisconnectNoCallback_tokenWithSpace {
+  NSString *tokenWithSpace = @"token with space";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithSpace] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  NSString *query = [[self fetchedURL] query];
+  XCTAssertTrue([query containsString:@"token=token%20with%20space"],
+                @"a space should be percent-encoded in the query string");
+  XCTAssertFalse([query containsString:@"+"], @"a space should never be encoded as '+'");
+
+  [self didFetch:nil error:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Round-trip the revoke URL through OIDURLQueryComponent, a pretend server, to check "+" survives.
+- (void)testDisconnectNoCallback_tokenWithPlusCharacterFormDecoded {
+  NSString *tokenWithPlusCharacter = @"token+with+plus";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  [self verifyAndRevokeToken:tokenWithPlusCharacter
+                 hasCallback:NO
+      waitingForExpectations:@[]];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
 // Verifies disconnect calls callback with no errors if refresh token is present.
 - (void)testDisconnect_refreshToken {
   [[[_authorization expect] andReturn:_authState] authState];

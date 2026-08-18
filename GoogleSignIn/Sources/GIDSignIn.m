@@ -80,11 +80,20 @@ static NSString *const kAuthorizationURLTemplate = @"https://%@/o/oauth2/v2/auth
 // The URL template for the token endpoint.
 static NSString *const kTokenURLTemplate = @"https://%@/token";
 
-// The URL template for the URL to get user info.
-static NSString *const kUserInfoURLTemplate = @"https://%@/oauth2/v3/userinfo?access_token=%@";
+// The path for the endpoint to get user info.
+static NSString *const kUserInfoPath = @"/oauth2/v3/userinfo";
 
-// The URL template for the URL to revoke the token.
-static NSString *const kRevokeTokenURLTemplate = @"https://%@/o/oauth2/revoke?token=%@";
+// The name of the query parameter carrying the access token for the user info request.
+static NSString *const kAccessTokenParameter = @"access_token";
+
+// The path for the endpoint to revoke the token.
+static NSString *const kRevokeTokenPath = @"/o/oauth2/revoke";
+
+// The name of the query parameter carrying the token to be revoked.
+static NSString *const kRevokeTokenParameter = @"token";
+
+// The scheme used for requests to Google's servers.
+static NSString *const kHTTPSScheme = @"https";
 
 // Expected path in the URL scheme to be handled.
 static NSString *const kBrowserCallbackPath = @"/oauth2callback";
@@ -550,6 +559,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   [self removeAllKeychainEntries];
 }
 
+// OAuth parameters are application/x-www-form-urlencoded (RFC 6749 Appendix B), where "+"
+// means a space, but NSURLComponents leaves "+" literal because RFC 3986 permits it in a
+// query. Percent-encode it so a "+" in a token survives form decoding on the server.
+static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
+  components.percentEncodedQuery =
+      [components.percentEncodedQuery stringByReplacingOccurrencesOfString:@"+"
+                                                                withString:@"%2B"];
+}
+
 - (void)disconnectWithCompletion:(nullable GIDDisconnectCompletion)completion {
   OIDAuthState *authState = _currentUser.authState;
   if (!authState) {
@@ -573,17 +591,23 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     }
     return;
   }
-  NSString *revokeURLString = [NSString stringWithFormat:kRevokeTokenURLTemplate,
-      [GIDSignInPreferences googleAuthorizationServer], token];
-  // Append logging parameter
-  revokeURLString = [NSString stringWithFormat:@"%@&%@=%@&%@=%@",
-                     revokeURLString,
-                     kSDKVersionLoggingParameter,
-                     [GIDSignInPreferences sdkVersion],
-                     kEnvironmentLoggingParameter,
-                     [GIDSignInPreferences environment]];
-  NSURL *revokeURL = [NSURL URLWithString:revokeURLString];
-  [self startFetchURL:revokeURL
+  NSURLComponents *revokeURLComponents = [[NSURLComponents alloc] init];
+  revokeURLComponents.scheme = kHTTPSScheme;
+  revokeURLComponents.host = [GIDSignInPreferences googleAuthorizationServer];
+  revokeURLComponents.path = kRevokeTokenPath;
+
+  NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
+  [queryItems addObject:[NSURLQueryItem queryItemWithName:kRevokeTokenParameter value:token]];
+  NSDictionary<NSString *, NSString *> *loggingParameters =
+      [GIDSignInPreferences loggingParameters];
+  for (NSString *name in [loggingParameters.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+    [queryItems addObject:[NSURLQueryItem queryItemWithName:name
+                                                     value:loggingParameters[name]]];
+  }
+  revokeURLComponents.queryItems = queryItems;
+  GIDPercentEncodePlusInQuery(revokeURLComponents);
+
+  [self startFetchURL:revokeURLComponents.URL
               fromAuthState:authState
                 withComment:@"GIDSignIn: revoke tokens"
       withCompletionHandler:^(NSData *data, NSError *error) {
@@ -1135,11 +1159,16 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
     // If we can't retrieve profile data from the ID token, make a userInfo request to fetch them.
     if (!handlerAuthFlow.profileData) {
       [handlerAuthFlow wait];
-      NSURL *infoURL = [NSURL URLWithString:
-          [NSString stringWithFormat:kUserInfoURLTemplate,
-              [GIDSignInPreferences googleUserInfoServer],
-              authState.lastTokenResponse.accessToken]];
-      [self startFetchURL:infoURL
+      NSURLComponents *infoURLComponents = [[NSURLComponents alloc] init];
+      infoURLComponents.scheme = kHTTPSScheme;
+      infoURLComponents.host = [GIDSignInPreferences googleUserInfoServer];
+      infoURLComponents.path = kUserInfoPath;
+      infoURLComponents.queryItems = @[
+        [NSURLQueryItem queryItemWithName:kAccessTokenParameter
+                                    value:authState.lastTokenResponse.accessToken],
+      ];
+      GIDPercentEncodePlusInQuery(infoURLComponents);
+      [self startFetchURL:infoURLComponents.URL
                   fromAuthState:authState
                     withComment:@"GIDSignIn: fetch basic profile info"
           withCompletionHandler:^(NSData *data, NSError *error) {
