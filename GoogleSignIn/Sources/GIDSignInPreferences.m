@@ -34,8 +34,6 @@ NSString *const kSDKWrapperLoggingParameter = @"gidwrapper";
 static NSString *gWrapperIdentifier = nil;
 static os_unfair_lock gWrapperIdentifierLock = OS_UNFAIR_LOCK_INIT;
 
-
-
 // Supported Apple execution environments
 static NSString *const kAppleEnvironmentUnknown = @"unknown";
 static NSString *const kAppleEnvironmentIOS = @"ios";
@@ -130,18 +128,14 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
 
 + (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
   if (wrapperIdentifier == nil) {
-    os_unfair_lock_lock(&gWrapperIdentifierLock);
-    gWrapperIdentifier = nil;
-    os_unfair_lock_unlock(&gWrapperIdentifierLock);
     return;
   }
 
   NSString *sanitized = GIDSanitizedWrapperIdentifier(wrapperIdentifier);
   if (sanitized == nil) {
-#if DEBUG
-    NSAssert(NO, @"SDK wrapper '%@' rejected: must not be empty and must only contain printable "
-                 @"ASCII characters (U+0020 to U+007E). Value ignored.", wrapperIdentifier);
-#endif
+    NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier '%@' was ignored, because it must be "
+          "non-empty and contain only printable ASCII characters (U+0020 to U+007E).",
+          wrapperIdentifier);
     return;
   }
 
@@ -149,13 +143,17 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
   NSString *current = gWrapperIdentifier;
   if (current != nil && ![current isEqualToString:sanitized]) {
     os_unfair_lock_unlock(&gWrapperIdentifierLock);
-#if DEBUG
-    NSAssert(NO, @"SDK wrapper already set to '%@'; ignoring '%@'. More than one "
-                 @"wrapper appears to be present.", current, sanitized);
-#endif
+    NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier is already set to '%@', so '%@' was "
+          "ignored; more than one wrapper appears to be present.", current, sanitized);
     return;
   }
   gWrapperIdentifier = [sanitized copy];
+  os_unfair_lock_unlock(&gWrapperIdentifierLock);
+}
+
++ (void)resetWrapperIdentifierForTesting {
+  os_unfair_lock_lock(&gWrapperIdentifierLock);
+  gWrapperIdentifier = nil;
   os_unfair_lock_unlock(&gWrapperIdentifierLock);
 }
 
