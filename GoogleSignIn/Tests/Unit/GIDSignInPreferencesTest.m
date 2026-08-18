@@ -22,7 +22,7 @@
 @implementation GIDSignInPreferencesTest
 
 - (void)tearDown {
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
   [super tearDown];
 }
 
@@ -74,7 +74,7 @@
 
 - (void)testWrapperIdentifier_UnsetIsNil {
   // Test that when no identifier is set, nil is returned.
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 }
 
@@ -167,11 +167,11 @@
   XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"fire\nbase"]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
   XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:@"fire\tbase"]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);
 
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
   NSString *del = [NSString stringWithFormat:@"fire%Cbase", (unichar)0x7F];
   XCTAssertNoThrow([GIDSignInPreferences setWrapperIdentifier:del]);
   XCTAssertNil([GIDSignInPreferences wrapperIdentifier]);

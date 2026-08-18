@@ -151,7 +151,7 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
   os_unfair_lock_unlock(&gWrapperIdentifierLock);
 }
 
-+ (void)resetWrapperIdentifierForTesting {
++ (void)resetWrapperIdentifier {
   os_unfair_lock_lock(&gWrapperIdentifierLock);
   gWrapperIdentifier = nil;
   os_unfair_lock_unlock(&gWrapperIdentifierLock);

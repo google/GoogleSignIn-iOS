@@ -94,7 +94,7 @@ static NSString *const kNewScope = @"newScope";
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
 }
 
 #pragma mark - Tests
@@ -511,7 +511,7 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenUnset {
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
 
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];

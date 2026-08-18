@@ -40,19 +40,22 @@ extern NSString *const kSDKWrapperLoggingParameter;
 /// 100 characters. A value that is empty, or that contains any non-ASCII or ASCII control
 /// character, is dropped entirely.
 ///
-/// A nil argument is ignored. A value that is rejected, or that conflicts with an already-stored
-/// value, is logged rather than asserted.
+/// A nil argument is ignored; use `+resetWrapperIdentifier` to clear a stored value. A value
+/// that is rejected, or that conflicts with an already-stored value, is logged rather than
+/// asserted.
 ///
 /// The first accepted write wins; later differing writes are ignored. This method is thread-safe.
 ///
 /// @param wrapperIdentifier The identifier to report.
 + (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
 
-/// Resets the SDK wrapper identifier.
+/// Clears any stored SDK wrapper identifier.
 ///
-/// This exists solely so unit tests can restore process state between cases. Production code
-/// must not call it.
-+ (void)resetWrapperIdentifierForTesting;
+/// Callers should not normally need this method. The identifier is meant to be set once, early,
+/// and left alone; clearing it defeats the first-write-wins rule that protects a wrapper's
+/// registration from being overwritten. Its main use is letting unit tests restore process
+/// state between cases.
++ (void)resetWrapperIdentifier;
 
 /// Returns the standard logging parameters to send with requests to Google's servers.
 ///

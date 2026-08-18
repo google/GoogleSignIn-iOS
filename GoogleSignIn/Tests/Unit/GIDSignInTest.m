@@ -389,7 +389,7 @@ static NSString *const kMultipleClaimsJsonString =
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
   [super tearDown];
 }
 
@@ -1194,7 +1194,7 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 - (void)testWrapperIdentifier_AbsentFromAuthorizationRequestWhenUnset {
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
   ).andDo(^(NSInvocation *invocation) {
@@ -1254,7 +1254,7 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 - (void)testWrapperIdentifier_AbsentFromRevokeURLWhenUnset {
-  [GIDSignInPreferences resetWrapperIdentifierForTesting];
+  [GIDSignInPreferences resetWrapperIdentifier];
 
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
