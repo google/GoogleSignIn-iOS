@@ -95,6 +95,12 @@ static NSString *const kRevokeTokenParameter = @"token";
 // The scheme used for requests to Google's servers.
 static NSString *const kHTTPSScheme = @"https";
 
+// The HTTP method used to revoke a token, as required by RFC 7009 section 2.1.
+static NSString *const kHTTPMethodPost = @"POST";
+
+// The content type of a form-encoded request body.
+static NSString *const kContentTypeFormURLEncoded = @"application/x-www-form-urlencoded";
+
 // Expected path in the URL scheme to be handled.
 static NSString *const kBrowserCallbackPath = @"/oauth2callback";
 
@@ -596,21 +602,28 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   revokeURLComponents.host = [GIDSignInPreferences googleAuthorizationServer];
   revokeURLComponents.path = kRevokeTokenPath;
 
-  NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
-  [queryItems addObject:[NSURLQueryItem queryItemWithName:kRevokeTokenParameter value:token]];
+  // The token revocation endpoint expects the token in the body of a POST request (RFC 7009
+  // section 2.1). Build a form-encoded body, reusing the same encoding as a URL query so a "+"
+  // in the token survives form decoding on the server.
+  NSMutableArray<NSURLQueryItem *> *bodyItems = [NSMutableArray array];
+  [bodyItems addObject:[NSURLQueryItem queryItemWithName:kRevokeTokenParameter value:token]];
   NSDictionary<NSString *, NSString *> *loggingParameters =
       [GIDSignInPreferences loggingParameters];
   for (NSString *name in [loggingParameters.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
-    [queryItems addObject:[NSURLQueryItem queryItemWithName:name
+    [bodyItems addObject:[NSURLQueryItem queryItemWithName:name
                                                      value:loggingParameters[name]]];
   }
-  revokeURLComponents.queryItems = queryItems;
-  GIDPercentEncodePlusInQuery(revokeURLComponents);
+  NSURLComponents *bodyComponents = [[NSURLComponents alloc] init];
+  bodyComponents.queryItems = bodyItems;
+  GIDPercentEncodePlusInQuery(bodyComponents);
+  NSData *body = [bodyComponents.percentEncodedQuery dataUsingEncoding:NSUTF8StringEncoding];
 
   [self startFetchURL:revokeURLComponents.URL
-              fromAuthState:authState
-                withComment:@"GIDSignIn: revoke tokens"
-      withCompletionHandler:^(NSData *data, NSError *error) {
+               method:kHTTPMethodPost
+                 body:body
+         fromAuthState:authState
+           withComment:@"GIDSignIn: revoke tokens"
+   withCompletionHandler:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
     if (!error) {
       [self signOut];
@@ -1169,9 +1182,11 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       ];
       GIDPercentEncodePlusInQuery(infoURLComponents);
       [self startFetchURL:infoURLComponents.URL
-                  fromAuthState:authState
-                    withComment:@"GIDSignIn: fetch basic profile info"
-          withCompletionHandler:^(NSData *data, NSError *error) {
+                   method:@"GET"
+                     body:nil
+            fromAuthState:authState
+              withComment:@"GIDSignIn: fetch basic profile info"
+      withCompletionHandler:^(NSData *data, NSError *error) {
         if (data && !error) {
           NSError *jsonDeserializationError;
           NSDictionary<NSString *, NSString *> *profileDict =
@@ -1222,10 +1237,17 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 }
 
 - (void)startFetchURL:(NSURL *)URL
-            fromAuthState:(OIDAuthState *)authState
-              withComment:(NSString *)comment
-    withCompletionHandler:(void (^)(NSData *, NSError *))handler {
+               method:(NSString *)method
+                 body:(NSData *)body
+        fromAuthState:(OIDAuthState *)authState
+          withComment:(NSString *)comment
+withCompletionHandler:(void (^)(NSData *, NSError *))handler {
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+  request.HTTPMethod = method;
+  if (body) {
+    request.HTTPBody = body;
+    [request setValue:kContentTypeFormURLEncoded forHTTPHeaderField:@"Content-Type"];
+  }
   GTMSessionFetcher *fetcher;
   GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
   id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;

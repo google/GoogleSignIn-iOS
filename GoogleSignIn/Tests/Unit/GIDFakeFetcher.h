@@ -26,6 +26,12 @@
 /// The URL of the fetching request.
 - (NSURL *)requestURL;
 
+/// The HTTP method of the fetching request.
+- (NSString *)requestHTTPMethod;
+
+/// The HTTP body of the fetching request.
+- (NSData *)requestHTTPBody;
+
 // Emulates server returning with data and/or error.
 - (void)didFinishWithData:(NSData *)data error:(NSError *)error;
 

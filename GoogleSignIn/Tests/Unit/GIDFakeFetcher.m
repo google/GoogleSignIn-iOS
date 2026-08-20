@@ -20,12 +20,16 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 @implementation GIDFakeFetcher {
   FetchCompletionHandler _handler;
   NSURL *_requestURL;
+  NSString *_requestHTTPMethod;
+  NSData *_requestHTTPBody;
 }
 
 - (instancetype)initWithRequest:(NSURLRequest *)request {
   self = [super initWithRequest:request configuration:nil];
   if (self) {
     _requestURL = [[request URL] copy];
+    _requestHTTPMethod = [request.HTTPMethod copy];
+    _requestHTTPBody = [request.HTTPBody copy];
   }
   return self;
 }
@@ -63,6 +67,14 @@ typedef void (^FetchCompletionHandler)(NSData *, NSError *);
 
 - (NSURL *)requestURL {
   return _requestURL;
+}
+
+- (NSString *)requestHTTPMethod {
+  return _requestHTTPMethod;
+}
+
+- (NSData *)requestHTTPBody {
+  return _requestHTTPBody;
 }
 
 - (void)didFinishWithData:(NSData *)data error:(NSError *)error {

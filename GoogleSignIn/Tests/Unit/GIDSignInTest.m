@@ -61,7 +61,6 @@
 #import <AppAuth/OIDGrantTypes.h>
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
-#import <AppAuth/OIDURLQueryComponent.h>
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 #import <AppAuth/OIDAuthorizationService+IOS.h>
@@ -1350,7 +1349,7 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 // Verifies a token containing characters that are reserved in a URL query is percent-encoded
-// in the revoke URL, so that it arrives at the server intact.
+// in the revoke request body, so that it arrives at the server intact.
 - (void)testDisconnectNoCallback_tokenWithReservedCharacters {
   NSString *tokenWithReservedCharacters = @"token&with=reserved#characters";
   [[[_authorization expect] andReturn:_authState] authState];
@@ -1383,22 +1382,14 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
   XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
 
-  NSString *query = [[self fetchedURL] query];
-  XCTAssertTrue([query containsString:@"token=token%2Bwith%2Bplus"],
-                @"'+' should be percent-encoded in the query string");
-  XCTAssertFalse([query containsString:@"token=token+with+plus"],
-                 @"'+' should not be literal in the query string");
+  NSString *bodyString = [[NSString alloc] initWithData:[self fetchedHTTPBody]
+                                               encoding:NSUTF8StringEncoding];
+  XCTAssertTrue([bodyString containsString:@"token=token%2Bwith%2Bplus"],
+                @"'+' should be percent-encoded in the body");
+  XCTAssertFalse([bodyString containsString:@"token=token+with+plus"],
+                 @"'+' should not be literal in the body");
 
-  NSURLComponents *components =
-      [NSURLComponents componentsWithURL:[self fetchedURL] resolvingAgainstBaseURL:NO];
-  NSURLQueryItem *tokenItem;
-  for (NSURLQueryItem *item in components.queryItems) {
-    if ([item.name isEqualToString:@"token"]) {
-      tokenItem = item;
-      break;
-    }
-  }
-  XCTAssertEqualObjects(tokenItem.value, tokenWithPlusCharacter);
+  XCTAssertEqualObjects([self fetchedBodyParameters][@"token"], tokenWithPlusCharacter);
 
   [self didFetch:nil error:nil];
   XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
@@ -1418,10 +1409,11 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
 
-  NSString *query = [[self fetchedURL] query];
-  XCTAssertTrue([query containsString:@"token=token%20with%20space"],
-                @"a space should be percent-encoded in the query string");
-  XCTAssertFalse([query containsString:@"+"], @"a space should never be encoded as '+'");
+  NSString *bodyString = [[NSString alloc] initWithData:[self fetchedHTTPBody]
+                                               encoding:NSUTF8StringEncoding];
+  XCTAssertTrue([bodyString containsString:@"token=token%20with%20space"],
+                @"a space should be percent-encoded in the body");
+  XCTAssertFalse([bodyString containsString:@"+"], @"a space should never be encoded as '+'");
 
   [self didFetch:nil error:nil];
   XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
@@ -1430,7 +1422,8 @@ static NSString *const kMultipleClaimsJsonString =
   [_tokenResponse verify];
 }
 
-// Round-trip the revoke URL through OIDURLQueryComponent, a pretend server, to check "+" survives.
+// Round-trip the revoke request body through form decoding, a pretend server, to check "+"
+// survives.
 - (void)testDisconnectNoCallback_tokenWithPlusCharacterFormDecoded {
   NSString *tokenWithPlusCharacter = @"token+with+plus";
   [[[_authorization expect] andReturn:_authState] authState];
@@ -1791,6 +1784,29 @@ static NSString *const kMultipleClaimsJsonString =
   return [_fetcherService.fetchers[0] requestURL];
 }
 
+// Gets the HTTP method of the fetching request.
+- (NSString *)fetchedHTTPMethod {
+  return [_fetcherService.fetchers[0] requestHTTPMethod];
+}
+
+// Gets the HTTP body of the fetching request.
+- (NSData *)fetchedHTTPBody {
+  return [_fetcherService.fetchers[0] requestHTTPBody];
+}
+
+// Decodes the form-encoded HTTP body of the fetching request into a dictionary of parameters.
+- (NSDictionary<NSString *, NSString *> *)fetchedBodyParameters {
+  NSData *body = [self fetchedHTTPBody];
+  NSString *bodyString = [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding];
+  NSURLComponents *components = [[NSURLComponents alloc] init];
+  components.percentEncodedQuery = bodyString;
+  NSMutableDictionary<NSString *, NSString *> *parameters = [NSMutableDictionary dictionary];
+  for (NSURLQueryItem *item in components.queryItems) {
+    parameters[item.name] = item.value;
+  }
+  return parameters;
+}
+
 // Emulates server returning the data as in JSON.
 - (void)didFetch:(id)dataObject error:(NSError *)error {
   NSData *data = nil;
@@ -1817,14 +1833,14 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
   XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
   XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
-  OIDURLQueryComponent *queryComponent = [[OIDURLQueryComponent alloc] initWithURL:url];
-  NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
-  XCTAssertEqualObjects([params valueForKey:@"token"], token,
-                        @"token parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter],
+  XCTAssertNil([url query], @"revocation token must not be in the query string");
+  XCTAssertEqualObjects([self fetchedHTTPMethod], @"POST", @"HTTP method must be POST");
+  NSDictionary<NSString *, NSString *> *params = [self fetchedBodyParameters];
+  XCTAssertEqualObjects(params[@"token"], token, @"token parameter should match");
+  XCTAssertEqualObjects(params[kSDKVersionLoggingParameter],
                         [GIDSignInPreferences sdkVersion],
                         @"SDK version logging parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter],
+  XCTAssertEqualObjects(params[kEnvironmentLoggingParameter],
                         [GIDSignInPreferences environment],
                         @"Environment logging parameter should match");
   // Emulate result back from server.
