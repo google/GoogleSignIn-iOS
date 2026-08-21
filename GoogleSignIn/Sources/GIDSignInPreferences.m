@@ -52,19 +52,20 @@ static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 #define STR(x) STR_EXPAND(x)
 #define STR_EXPAND(x) #x
 
-// Enforces the format documented on `GIDSignIn.wrapperIdentifier`: returns the accepted
-// (possibly truncated) value, or nil if `candidate` must be rejected. `candidate` is non-nil.
+// Enforces the format documented on `GIDSignIn.wrapperIdentifier`: returns the accepted value,
+// or nil if `candidate` must be rejected. `candidate` is non-nil.
 static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
   static NSCharacterSet *allowedSet;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     // Printable ASCII is U+0020 through U+007E: length 0x5F starting at 0x20 (this is a
     // length, not an end index).
+    // Note that, if this set changes, the substringToIndex: in the truncation
+    // may also need to change.
     allowedSet = [NSCharacterSet characterSetWithRange:NSMakeRange(0x20, 0x5F)];
   });
 
-  // Validate the whole value before truncating: one out-of-range character anywhere rejects
-  // the entire value, so a valid 100-character prefix cannot rescue it.
+  // The whole value is validated before truncating.
   if ([candidate rangeOfCharacterFromSet:[allowedSet invertedSet]].location != NSNotFound) {
     return nil;
   }
@@ -74,8 +75,7 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
   }
 
   if (candidate.length > 100) {
-    // substringToIndex:100 is safe here only because the check above guaranteed every character
-    // is single-unit ASCII, so this cannot split a surrogate pair.
+    // This cannot split a surrogate pair because each value is single-unit ASCII.
     return [candidate substringToIndex:100];
   }
 

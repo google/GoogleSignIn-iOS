@@ -34,14 +34,11 @@ extern NSString *const kSDKWrapperLoggingParameter;
 /// Returns the current SDK wrapper identifier, or `nil` if none has been accepted.
 + (nullable NSString *)wrapperIdentifier;
 
-/// Sets the SDK wrapper identifier; a `nil` argument is ignored. See
-/// `GIDSignIn.wrapperIdentifier` for the accepted format, validation, and first-write-wins
-/// semantics. Thread-safe.
+/// Sets the SDK wrapper identifier.
+/// See `GIDSignIn.wrapperIdentifier` for additional information, including formatting rules.
 + (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
 
-/// Clears any stored SDK wrapper identifier. Intended for unit tests, which must restore
-/// process state between cases; production callers should not need it, and clearing defeats
-/// the first-write-wins rule. Thread-safe.
+/// Clears any stored SDK wrapper identifier. Thread-safe.
 + (void)resetWrapperIdentifier;
 
 /// Returns the standard logging parameters sent with requests to Google's servers: the SDK
