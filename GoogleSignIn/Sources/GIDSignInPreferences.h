@@ -31,35 +31,21 @@ extern NSString *const kSDKWrapperLoggingParameter;
 /// Returns the current Apple execution environment, such as `ios` or `macos`.
 + (NSString *)environment;
 
-/// Returns the current SDK wrapper identifier, or `nil` if none is set.
+/// Returns the current SDK wrapper identifier, or `nil` if none has been accepted.
 + (nullable NSString *)wrapperIdentifier;
 
-/// Sets the SDK wrapper identifier.
-///
-/// A value may be up to 100 printable ASCII characters; a longer value is truncated to its first
-/// 100 characters. A value that is empty, or that contains any non-ASCII or ASCII control
-/// character, is dropped entirely.
-///
-/// A nil argument is ignored; use `+resetWrapperIdentifier` to clear a stored value. A value
-/// that is rejected, or that conflicts with an already-stored value, is logged rather than
-/// asserted.
-///
-/// The first accepted write wins; later differing writes are ignored. This method is thread-safe.
-///
-/// @param wrapperIdentifier The identifier to report.
+/// Sets the SDK wrapper identifier; a `nil` argument is ignored. See
+/// `GIDSignIn.wrapperIdentifier` for the accepted format, validation, and first-write-wins
+/// semantics. Thread-safe.
 + (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
 
-/// Clears any stored SDK wrapper identifier.
-///
-/// Callers should not normally need this method. The identifier is meant to be set once, early,
-/// and left alone; clearing it defeats the first-write-wins rule that protects a wrapper's
-/// registration from being overwritten. Its main use is letting unit tests restore process
-/// state between cases.
+/// Clears any stored SDK wrapper identifier. Intended for unit tests, which must restore
+/// process state between cases; production callers should not need it, and clearing defeats
+/// the first-write-wins rule. Thread-safe.
 + (void)resetWrapperIdentifier;
 
-/// Returns the standard logging parameters to send with requests to Google's servers.
-///
-/// The parameters are `gpsdk`, `gidenv`, and, when a wrapper identifier is set, `gidwrapper`.
+/// Returns the standard logging parameters sent with requests to Google's servers: the SDK
+/// version and execution environment, plus the wrapper identifier when one is set.
 + (NSDictionary<NSString *, NSString *> *)loggingParameters;
 
 + (NSString *)googleAuthorizationServer;

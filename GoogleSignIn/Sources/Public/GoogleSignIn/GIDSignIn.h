@@ -77,9 +77,15 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Google as a diagnostic parameter for aggregate metrics only; it is never used for
 /// authentication or authorization.
 ///
-/// Format: up to 100 printable ASCII characters (U+0020 to U+007E). A longer value is
-/// truncated to its first 100 characters. A value that is empty, or that contains any
-/// non-ASCII character or any ASCII control character, is ignored in its entirety and logged.
+/// Format: 1–100 printable ASCII characters (U+0020–U+007E). The whole value is validated
+/// before any truncation: if it is empty or contains any character outside that range, the
+/// entire value is rejected — a valid 100-character prefix does not save it. A value that
+/// passes but is longer than 100 characters is then truncated to its first 100. A rejected
+/// value is logged and leaves any previously stored value unchanged.
+///
+/// The value is stored and sent verbatim — case- and whitespace-sensitive, never normalized —
+/// so "Firebase", "firebase", and "firebase " are distinct in Google's logs. Pick one
+/// canonical spelling.
 ///
 /// Policy:
 /// * Choose one stable name and keep it stable across your releases.
@@ -87,9 +93,9 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///   useless, and a value that has shipped cannot be retracted from Google's logs.
 /// * Never include anything user-specific, app-specific, or identifying.
 ///
-/// Set this once, before your first sign-in call. The first accepted value wins: later
-/// differing values are ignored and logged, and setting `nil` does not clear it. Reading this
-/// property returns the value in effect, which is `nil` until a value has been accepted.
+/// Set this once, before your first sign-in call. The first accepted value wins: a later
+/// differing value is ignored and logged, and setting `nil` is ignored (it does not clear a
+/// stored value). Reading returns the value in effect, or `nil` if none has been accepted.
 @property(class, nonatomic, nullable, copy) NSString *wrapperIdentifier;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST

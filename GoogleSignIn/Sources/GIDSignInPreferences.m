@@ -52,32 +52,30 @@ static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 #define STR(x) STR_EXPAND(x)
 #define STR_EXPAND(x) #x
 
-// Returns the sanitized form of `candidate`, or nil if it must be dropped.
-// Callers must not pass nil.
+// Enforces the format documented on `GIDSignIn.wrapperIdentifier`: returns the accepted
+// (possibly truncated) value, or nil if `candidate` must be rejected. `candidate` is non-nil.
 static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
   static NSCharacterSet *allowedSet;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    // The range of printable ASCII characters is U+0020 through U+007E inclusive.
+    // Printable ASCII is U+0020–U+007E: length 0x5F starting at 0x20 (this is a length, not an
+    // end index).
     allowedSet = [NSCharacterSet characterSetWithRange:NSMakeRange(0x20, 0x5F)];
   });
 
-  // The drop check happens before truncation: if the original string contains any character
-  // outside the printable ASCII range, we drop the entire value.
+  // Validate the whole value before truncating: one out-of-range character anywhere rejects
+  // the entire value, so a valid 100-character prefix cannot rescue it.
   if ([candidate rangeOfCharacterFromSet:[allowedSet invertedSet]].location != NSNotFound) {
     return nil;
   }
 
-  // An empty string is also discarded.
   if (candidate.length == 0) {
     return nil;
   }
 
-  // A surviving string longer than 100 characters is truncated to 100.
   if (candidate.length > 100) {
-    // Truncating with -substringToIndex:100 is safe here precisely because the drop check has
-    // already guaranteed every character is single-unit ASCII, so there is no risk of splitting
-    // a surrogate pair.
+    // substringToIndex:100 is safe here only because the check above guaranteed every character
+    // is single-unit ASCII, so this cannot split a surrogate pair.
     return [candidate substringToIndex:100];
   }
 
@@ -133,7 +131,7 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
 
   NSString *sanitized = GIDSanitizedWrapperIdentifier(wrapperIdentifier);
   if (sanitized == nil) {
-    NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier '%@' was ignored, because it must be "
+    NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier '%@' was rejected, because it must be "
           "non-empty and contain only printable ASCII characters (U+0020 to U+007E).",
           wrapperIdentifier);
     return;
