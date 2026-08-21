@@ -119,7 +119,7 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullabl
                                        userInfo:nil];
         }
 
-        if (result.token) {
+        if (!result.error) {
           [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         }
 
@@ -139,9 +139,9 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullabl
 - (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
     [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckTokenResult * _Nonnull result) {
-      if (result.token) {
-        [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
-      }
+        if (!result.error) {
+          [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
+        }
       if (completion) {
         completion(result.token, result.error);
       }
