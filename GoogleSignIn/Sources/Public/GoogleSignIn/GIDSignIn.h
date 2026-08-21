@@ -77,25 +77,16 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Google as a diagnostic parameter for aggregate metrics only; it is never used for
 /// authentication or authorization.
 ///
-/// Format: 1 to 100 printable ASCII characters (U+0020 through U+007E). The whole value is
-/// validated before any truncation. If it is empty or contains any character outside that
-/// range, the entire value is rejected; a valid 100-character prefix does not save it. A
-/// value that passes but is longer than 100 characters is then truncated to its first 100. A
-/// rejected value is logged and leaves any previously stored value unchanged.
-///
-/// The value is stored and sent verbatim. It is case-sensitive, whitespace-sensitive, and
-/// never normalized, so "Firebase", "firebase", and "firebase " are distinct in Google's
-/// logs. Pick one canonical spelling.
+/// Format:
+/// * 1 to 100 printable ASCII characters (U+0020 to U+007E).
+/// * Invalid values, including `nil`, will be dropped or truncated.
 ///
 /// Policy:
-/// * Choose one stable name and keep it stable across your releases.
-/// * Do NOT encode your version in it; per-release identifiers make aggregate metrics
-///   useless, and a value that has shipped cannot be retracted from Google's logs.
-/// * Never include anything user-specific, app-specific, or identifying.
+/// * Choose one stable name and keep it identical across your releases.
+/// * As the value is case- and whitespace-sensitive, we suggest a lowercase value with no
+///   spaces.
 ///
-/// Set this once, before your first sign-in call. The first accepted value wins: a later
-/// differing value is ignored and logged, and setting `nil` is ignored (it does not clear a
-/// stored value). Reading returns the value in effect, or `nil` if none has been accepted.
+/// Set this once, before the first sign-in call. The property is write-once.
 @property(class, nonatomic, nullable, copy) NSString *wrapperIdentifier;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
