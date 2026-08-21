@@ -36,7 +36,7 @@ jobs:
       # See #400 (https://github.com/google/GoogleSignIn-iOS/issues/400)
       run: |
         pod lib lint ${{ matrix.podspec }} --verbose \
-          ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}
+          ${{ matrix.includePodspecFlag }} ${{ matrix.flag }}  --sources=https://github.com/firebase/SpecsDev.git,https://github.com/firebase/SpecsStaging.git,https://cdn.cocoapods.org/
   spm-build-test:
     runs-on: ${{ matrix.os }}
     strategy:
