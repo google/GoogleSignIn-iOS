@@ -77,15 +77,15 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 /// Google as a diagnostic parameter for aggregate metrics only; it is never used for
 /// authentication or authorization.
 ///
-/// Format: 1–100 printable ASCII characters (U+0020–U+007E). The whole value is validated
-/// before any truncation: if it is empty or contains any character outside that range, the
-/// entire value is rejected — a valid 100-character prefix does not save it. A value that
-/// passes but is longer than 100 characters is then truncated to its first 100. A rejected
-/// value is logged and leaves any previously stored value unchanged.
+/// Format: 1 to 100 printable ASCII characters (U+0020 through U+007E). The whole value is
+/// validated before any truncation. If it is empty or contains any character outside that
+/// range, the entire value is rejected; a valid 100-character prefix does not save it. A
+/// value that passes but is longer than 100 characters is then truncated to its first 100. A
+/// rejected value is logged and leaves any previously stored value unchanged.
 ///
-/// The value is stored and sent verbatim — case- and whitespace-sensitive, never normalized —
-/// so "Firebase", "firebase", and "firebase " are distinct in Google's logs. Pick one
-/// canonical spelling.
+/// The value is stored and sent verbatim. It is case-sensitive, whitespace-sensitive, and
+/// never normalized, so "Firebase", "firebase", and "firebase " are distinct in Google's
+/// logs. Pick one canonical spelling.
 ///
 /// Policy:
 /// * Choose one stable name and keep it stable across your releases.

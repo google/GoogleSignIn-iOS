@@ -58,8 +58,8 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
   static NSCharacterSet *allowedSet;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    // Printable ASCII is U+0020–U+007E: length 0x5F starting at 0x20 (this is a length, not an
-    // end index).
+    // Printable ASCII is U+0020 through U+007E: length 0x5F starting at 0x20 (this is a
+    // length, not an end index).
     allowedSet = [NSCharacterSet characterSetWithRange:NSMakeRange(0x20, 0x5F)];
   });
 
