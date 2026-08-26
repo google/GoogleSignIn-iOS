@@ -36,7 +36,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
   s.dependency 'AppCheckCore', '~> 11.0'
   s.dependency 'AppAuth', '~> 3.0'
   s.dependency 'GTMAppAuth', '~> 6.0'
-  s.dependency 'GTMSessionFetcher/Core', '~> 3.3'
+  s.dependency 'GTMSessionFetcher/Core', '>= 3.3', '< 6.0'
   s.resource_bundle = {
     'GoogleSignIn' => ['GoogleSignIn/Sources/{Resources,Strings}/*']
   }

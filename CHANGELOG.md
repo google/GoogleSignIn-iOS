@@ -2,6 +2,7 @@
 - **BREAKING**: Updated the AppAuth dependency to 3.0.0 and the GTMAppAuth dependency to 6.0.0.
 - **BREAKING**: Raised the minimum deployment targets to iOS 15.0 and macOS 12.0, matching the new floor set by AppAuth 3.0.0. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0.
 - Renamed the version-specific Swift Package Manager manifest from `Package@swift-5.5.swift` to `Package@swift-5.7.swift`, since AppAuth 3.0.0 requires `swift-tools-version` 5.7 or later.
+- Widened the GTMSessionFetcher dependency to allow 4.x and 5.x, matching GTMAppAuth 6.0.0.
 
 # 9.2.0
 - Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))

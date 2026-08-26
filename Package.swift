@@ -52,7 +52,7 @@ let package = Package(
       from: "6.0.0"),
     .package(
       url: "https://github.com/google/gtm-session-fetcher.git",
-      from: "3.3.0"),
+      "3.3.0" ..< "6.0.0"),
     .package(
       url: "https://github.com/firebase/ocmock.git",
       revision: "7291762d3551c5c7e31c49cce40a0e391a52e889"),
