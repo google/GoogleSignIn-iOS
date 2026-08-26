@@ -490,7 +490,8 @@ static NSString *const kNewScope = @"newScope";
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  XCTestExpectation *expectation = [self expectationWithDescription:
+      @"refreshTokensIfNeededWithCompletion returns with wrapper identifier set"];
 
   // Save the intermediate states.
   [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
@@ -516,7 +517,8 @@ static NSString *const kNewScope = @"newScope";
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  XCTestExpectation *expectation = [self expectationWithDescription:
+      @"refreshTokensIfNeededWithCompletion returns with wrapper identifier unset"];
 
   // Save the intermediate states.
   [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
@@ -546,7 +548,8 @@ static NSString *const kNewScope = @"newScope";
   // Both tokens expired 10 seconds ago.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
 
-  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  XCTestExpectation *expectation = [self expectationWithDescription:
+      @"refreshTokensIfNeededWithCompletion returns with wrapper identifier dropped"];
 
   // Save the intermediate states.
   [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,

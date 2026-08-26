@@ -139,6 +139,7 @@ static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
 
   os_unfair_lock_lock(&gWrapperIdentifierLock);
   NSString *current = gWrapperIdentifier;
+  // Write-once, per the contract documented on `GIDSignIn.wrapperIdentifier`.
   if (current != nil && ![current isEqualToString:sanitized]) {
     os_unfair_lock_unlock(&gWrapperIdentifierLock);
     NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier is already set to '%@', so '%@' was "

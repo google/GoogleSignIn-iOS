@@ -79,7 +79,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
 ///
 /// Format:
 /// * 1 to 100 printable ASCII characters (U+0020 to U+007E).
-/// * Invalid values, including `nil`, will be dropped or truncated.
+/// * Invalid values are dropped, and over-long values are truncated. Assigning `nil` is a
+///   no-op: it does not clear a previously set value.
 ///
 /// Policy:
 /// * Choose one stable name and keep it identical across your releases.
