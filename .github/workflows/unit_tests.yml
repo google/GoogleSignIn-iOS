@@ -65,3 +65,35 @@ jobs:
           -destination ${{ matrix.destination }} \
           test-without-building
 
+  xcode-27-preview-test:
+    # Build and run the unit tests against the Xcode 27 preview image. Xcode 27
+    # beta is the only (thus, default) Xcode on that image, so no xcode-select
+    # step is needed. The image is preview, so this job does not block merges.
+    # https://github.com/actions/runner-images/issues/14404
+    runs-on: xcode-27
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ['macosx', 'iphonesimulator']
+        include:
+          - sdk: 'macosx'
+            destination: '"platform=macOS"'
+          - sdk: 'iphonesimulator'
+            destination: '"platform=iOS Simulator,name=iPhone 17,OS=27.0"'
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Build unit test target
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn-Package \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
+          build-for-testing
+    - name: Run unit test target
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn-Package \
+          -sdk ${{ matrix.sdk }} \
+          -destination ${{ matrix.destination }} \
+          test-without-building

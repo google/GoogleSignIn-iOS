@@ -33,3 +33,26 @@ jobs:
           archive \
           -scheme GoogleSignIn-Package \
           -destination "platform=OS X"
+
+  xcode-27-preview-archive:
+    # Archive every supported platform against the Xcode 27 preview image. The
+    # image is preview, so this job does not block merges.
+    # https://github.com/actions/runner-images/issues/14404
+    runs-on: xcode-27
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        destination: [
+          'generic/platform=iOS',
+          'platform=OS X'
+        ]
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Archive
+      run: |
+        xcodebuild \
+          archive \
+          -scheme GoogleSignIn-Package \
+          -destination "${{ matrix.destination }}"
