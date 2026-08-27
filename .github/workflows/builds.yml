@@ -9,6 +9,9 @@ on:
   schedule:
     - cron: '0 8 * * *' # Cron uses UTC; run at nightly at midnight PST
 
+permissions:
+  contents: read
+
 jobs:
   cron:
     runs-on: ${{ matrix.os }}
