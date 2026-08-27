@@ -1,3 +1,6 @@
+# Unreleased
+- Pinned the Swift names of the `GIDClaim` factory methods with explicit `NS_SWIFT_NAME` annotations. The imported Swift names are unchanged (`authTime()`, `essentialAuthTime()`, `amr()` and `essentialAMR()`); they no longer depend on the Objective-C importer's implicit renaming heuristics.
+
 # 9.2.0
 - Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))
 - Support requesting the `amr` (Authentication Methods References) claim ([#600](https://github.com/google/GoogleSignIn-iOS/pull/600))
