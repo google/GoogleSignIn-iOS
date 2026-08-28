@@ -1,4 +1,5 @@
 # Unreleased
+- Add `GIDSignIn.wrapperIdentifier` so SDKs that embed Google Sign-In can self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It is opt-in and default behavior is unchanged.
 - Pinned the Swift names of the `GIDClaim` factory methods with explicit `NS_SWIFT_NAME` annotations. The imported Swift names are unchanged (`authTime()`, `essentialAuthTime()`, `amr()` and `essentialAMR()`); they no longer depend on the Objective-C importer's implicit renaming heuristics.
 
 # 9.2.0
