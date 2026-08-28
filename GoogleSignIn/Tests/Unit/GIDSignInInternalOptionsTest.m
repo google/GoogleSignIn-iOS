@@ -111,6 +111,59 @@
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
+- (void)testOptionsWithExtraParameters_forContinuation_preservesNonceAndClaims {
+  id configuration = OCMStrictClassMock([GIDConfiguration class]);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  id presentingViewController = OCMStrictClassMock([UIViewController class]);
+#elif TARGET_OS_OSX
+  id presentingWindow = OCMStrictClassMock([NSWindow class]);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  NSString *loginHint = @"login_hint";
+  NSArray<NSString *> *scopes = @[@"scope1", @"scope2"];
+  NSString *nonce = @"test_nonce";
+  NSSet<GIDClaim *> *claims = [NSSet setWithObject:[GIDClaim authTimeClaim]];
+
+  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                     NSError * _Nullable error) {};
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                       presentingViewController:presentingViewController
+#elif TARGET_OS_OSX
+                                               presentingWindow:presentingWindow
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                                      loginHint:loginHint
+                                                  addScopesFlow:NO
+                                                         scopes:scopes
+                                                          nonce:nonce
+                                                         claims:claims
+                                                     completion:completion];
+
+  NSString *claimsAsJSON = @"{\"claim\":\"value\"}";
+  options.claimsAsJSON = claimsAsJSON;
+  NSDictionary *extraParams = @{@"extra_key" : @"extra_value"};
+  GIDSignInInternalOptions *continuationOptions =
+      [options optionsWithExtraParameters:extraParams forContinuation:YES];
+
+  XCTAssertEqualObjects(continuationOptions.nonce, nonce);
+  XCTAssertEqualObjects(continuationOptions.claims, claims);
+  XCTAssertEqualObjects(continuationOptions.claimsAsJSON, claimsAsJSON);
+  XCTAssertTrue(continuationOptions.continuation);
+  XCTAssertEqualObjects(continuationOptions.extraParams, extraParams);
+  XCTAssertEqualObjects(continuationOptions.loginHint, loginHint);
+  XCTAssertEqualObjects([NSSet setWithArray:continuationOptions.scopes],
+                        [NSSet setWithArray:options.scopes]);
+  XCTAssertFalse(continuationOptions.addScopesFlow);
+  XCTAssertTrue(continuationOptions.interactive);
+
+  OCMVerifyAll(configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  OCMVerifyAll(presentingViewController);
+#elif TARGET_OS_OSX
+  OCMVerifyAll(presentingWindow);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+}
+
 
 - (void)testSilentOptions {
   GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
