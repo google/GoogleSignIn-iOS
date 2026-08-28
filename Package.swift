@@ -23,8 +23,8 @@ let package = Package(
   name: "GoogleSignIn",
   defaultLocalization: "en",
   platforms: [
-    .macOS(.v10_15),
-    .iOS(.v12)
+    .macOS(.v12),
+    .iOS(.v15)
   ],
   products: [
     .library(
@@ -43,16 +43,16 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/openid/AppAuth-iOS.git",
-      from: "2.1.0"),
+      from: "3.0.0"),
     .package(
       url: "https://github.com/google/app-check.git",
       from: "11.0.0"),
     .package(
       url: "https://github.com/google/GTMAppAuth.git",
-      from: "5.0.0"),
+      from: "6.0.0"),
     .package(
       url: "https://github.com/google/gtm-session-fetcher.git",
-      from: "3.3.0"),
+      "3.3.0" ..< "6.0.0"),
     .package(
       url: "https://github.com/firebase/ocmock.git",
       revision: "7291762d3551c5c7e31c49cce40a0e391a52e889"),
