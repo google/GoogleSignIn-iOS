@@ -17,11 +17,14 @@
 #import "SignInViewController.h"
 
 @import GoogleSignIn;
+@import AppAuth;
+@import GTMAppAuth;
 
 #import "AuthInspectorViewController.h"
 #import "DataPickerState.h"
 #import "DataPickerViewController.h"
 #import <AppAuth/OIDTokenUtilities.h>
+#import <CommonCrypto/CommonDigest.h>
 
 static NSString *const kSignInViewTitle = @"Sign-In Sample";
 static NSString *const kPlaceholderUserName = @"<Name>";
@@ -37,6 +40,14 @@ static NSString *const kStyleCellLabel = @"Style";
 
 // Accessibility Identifiers.
 static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials";
+
+@interface SignInViewController ()
+
+- (void)logTestStateForEvent:(NSString *)event;
+- (nullable NSString *)fingerprintForToken:(nullable NSString *)token;
+- (void)forceTokenRefresh;
+
+@end
 
 @implementation SignInViewController {
   // This is an array of arrays, each one corresponding to the cell
@@ -114,7 +125,23 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  if ([defaults boolForKey:@"GSITestSignOutOnLaunch"]) {
+    [GIDSignIn.sharedInstance signOut];
+    NSLog(@"SignInSample test hook: signed out on launch");
+  }
+
+  self.signInButton.accessibilityIdentifier = @"sign_in_button";
+  self.signOutButton.accessibilityIdentifier = @"sign_out_button";
+  self.disconnectButton.accessibilityIdentifier = @"disconnect_button";
+  self.addScopesButton.accessibilityIdentifier = @"add_scopes_button";
   self.credentialsButton.accessibilityIdentifier = kCredentialsButtonAccessibilityIdentifier;
+
+  [self logTestStateForEvent:@"launch"];
+
+  if ([defaults boolForKey:@"GSITestForceRefreshOnLaunch"]) {
+    [self forceTokenRefresh];
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -184,6 +211,7 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
   }
 
   [self refreshUserInfo];
+  [self logTestStateForEvent:@"state_changed"];
 }
 
 // Update the interface elements containing user data to reflect the
@@ -430,6 +458,92 @@ static NSString *const kCredentialsButtonAccessibilityIdentifier = @"Credentials
                                       action:nil];
   [[self navigationItem] setBackBarButtonItem:newBackButton];
   [self.navigationController pushViewController:dataPicker animated:YES];
+}
+
+#pragma mark - Test hooks
+
+- (void)logTestStateForEvent:(NSString *)event {
+  GIDGoogleUser *currentUser = GIDSignIn.sharedInstance.currentUser;
+  BOOL signedIn = (currentUser != nil);
+  BOOL hasRefreshToken = (currentUser.refreshToken.tokenString.length > 0);
+  NSString *accessTokenFingerprint = [self fingerprintForToken:currentUser.accessToken.tokenString];
+
+  NSString *accessTokenExpiration = nil;
+  if (currentUser.accessToken.expirationDate) {
+    NSISO8601DateFormatter *formatter = [[NSISO8601DateFormatter alloc] init];
+    accessTokenExpiration = [formatter stringFromDate:currentUser.accessToken.expirationDate];
+  }
+
+  NSInteger grantedScopeCount = currentUser.grantedScopes.count;
+
+  NSDictionary *state = @{
+    @"event": event,
+    @"signedIn": @(signedIn),
+    @"hasRefreshToken": @(hasRefreshToken),
+    @"accessTokenFingerprint": accessTokenFingerprint ?: [NSNull null],
+    @"accessTokenExpiration": accessTokenExpiration ?: [NSNull null],
+    @"grantedScopeCount": @(grantedScopeCount)
+  };
+
+  NSError *error;
+  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:state options:0 error:&error];
+  if (jsonData) {
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSLog(@"GSI_TEST_STATE %@", jsonString);
+  }
+}
+
+- (nullable NSString *)fingerprintForToken:(nullable NSString *)token {
+  if (token.length == 0) {
+    return nil;
+  }
+  NSData *data = [token dataUsingEncoding:NSUTF8StringEncoding];
+  uint8_t digest[CC_SHA256_DIGEST_LENGTH];
+  CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
+  NSMutableString *output = [NSMutableString stringWithCapacity:8];
+  for (int i = 0; i < 4; i++) {
+    [output appendFormat:@"%02x", digest[i]];
+  }
+  return output;
+}
+
+- (void)forceTokenRefresh {
+  GIDGoogleUser *currentUser = GIDSignIn.sharedInstance.currentUser;
+  if (!currentUser) {
+    NSLog(@"SignInSample test hook: force refresh skipped, not signed in");
+    return;
+  }
+
+  id<GTMFetcherAuthorizationProtocol> authorizer = currentUser.fetcherAuthorizer;
+  if (![authorizer isKindOfClass:[GTMAuthSession class]]) {
+    NSLog(@"SignInSample test hook: fetcherAuthorizer is not a GTMAuthSession");
+    return;
+  }
+
+  GTMAuthSession *authSession = (GTMAuthSession *)authorizer;
+  NSString *oldFingerprint = [self fingerprintForToken:currentUser.accessToken.tokenString];
+
+  [authSession.authState setNeedsTokenRefresh];
+  __weak SignInViewController *weakSelf = self;
+  [authSession.authState performActionWithFreshTokens:^(NSString *_Nullable accessToken,
+                                                        NSString *_Nullable idToken,
+                                                        NSError *_Nullable error) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      SignInViewController *strongSelf = weakSelf;
+      if (!strongSelf) return;
+
+      if (error) {
+        NSLog(@"SignInSample test hook: force refresh failed: %@", error.localizedDescription);
+      } else {
+        NSString *newFingerprint = [strongSelf fingerprintForToken:
+            GIDSignIn.sharedInstance.currentUser.accessToken.tokenString];
+        NSLog(@"SignInSample test hook: force refresh succeeded; "
+              "access token fingerprint %@ -> %@",
+              oldFingerprint, newFingerprint);
+      }
+      [strongSelf logTestStateForEvent:@"force_refresh"];
+    });
+  }];
 }
 
 @end
