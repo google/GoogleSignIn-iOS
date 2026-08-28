@@ -11,8 +11,8 @@ Pod::Spec.new do |s|
     :git => 'https://github.com/google/GoogleSignIn-iOS.git',
     :tag => s.version.to_s
   }
-  ios_deployment_target = '13.0'
-  macos_deployment_target = '10.15' 
+  ios_deployment_target = '15.0'
+  macos_deployment_target = '12.0'
   s.ios.deployment_target = ios_deployment_target
   s.osx.deployment_target = macos_deployment_target
   s.module_name = 'GoogleSignInSwift'
