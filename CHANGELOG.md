@@ -5,6 +5,7 @@
 - Widened the GTMSessionFetcher dependency to allow 4.x and 5.x, matching GTMAppAuth 6.0.0.
 - Add `GIDSignIn.wrapperIdentifier` so SDKs that embed Google Sign-In can self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It is opt-in and default behavior is unchanged.
 - Pinned the Swift names of the `GIDClaim` factory methods with explicit `NS_SWIFT_NAME` annotations. The imported Swift names are unchanged (`authTime()`, `essentialAuthTime()`, `amr()` and `essentialAMR()`); they no longer depend on the Objective-C importer's implicit renaming heuristics.
+- Fix a custom `nonce` and requested token `claims` being dropped when a sign-in is continued after a Device Policy app restart.
 
 # 9.2.0
 - Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))
