@@ -389,6 +389,7 @@ static NSString *const kMultipleClaimsJsonString =
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
+  [GIDSignInPreferences resetWrapperIdentifier];
   [super tearDown];
 }
 
@@ -1168,6 +1169,120 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertEqualObjects(params[@"hd"], kHostedDomain, @"hosted domain should match");
 }
 
+- (void)testWrapperIdentifier_PresentInAuthorizationRequestWhenSet {
+  GIDSignIn.wrapperIdentifier = @"firebase";
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(params[@"gidwrapper"], @"firebase",
+                        @"The authorization request should contain the 'gidwrapper' parameter "
+                        "when set.");
+}
+
+- (void)testWrapperIdentifier_AbsentFromAuthorizationRequestWhenUnset {
+  [GIDSignInPreferences resetWrapperIdentifier];
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+  XCTAssertNil(params[@"gidwrapper"],
+               @"The authorization request should not contain the 'gidwrapper' parameter "
+               "when unset.");
+}
+
+- (void)testWrapperIdentifier_DroppedValueIsIgnored {
+  XCTAssertNoThrow(GIDSignIn.wrapperIdentifier = @"firebasé",
+                   @"Setting a dropped wrapper identifier should be ignored.");
+  XCTAssertNil(GIDSignIn.wrapperIdentifier,
+               @"The wrapper identifier should be nil after a dropped assignment.");
+}
+
+- (void)testWrapperIdentifier_PresentOnRevokeURL {
+  GIDSignIn.wrapperIdentifier = @"my-sdk";
+
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url
+                                           resolvingAgainstBaseURL:NO];
+  NSArray<NSURLQueryItem *> *queryItems = components.queryItems;
+
+  XCTAssertEqualObjects([self valueForQueryItemName:@"gidwrapper" inArray:queryItems],
+                        @"my-sdk", @"The revoke URL should contain the 'gidwrapper' parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kSDKVersionLoggingParameter inArray:queryItems],
+                        [GIDSignInPreferences sdkVersion],
+                        @"The revoke URL should contain the SDK version parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kEnvironmentLoggingParameter
+                                            inArray:queryItems],
+                        [GIDSignInPreferences environment],
+                        @"The revoke URL should contain the environment parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:@"token" inArray:queryItems],
+                        kAccessToken, @"The revoke URL should contain the 'token' parameter.");
+}
+
+- (void)testWrapperIdentifier_AbsentFromRevokeURLWhenUnset {
+  [GIDSignInPreferences resetWrapperIdentifier];
+
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url
+                                           resolvingAgainstBaseURL:NO];
+  NSArray<NSURLQueryItem *> *queryItems = components.queryItems;
+
+  XCTAssertNil([self valueForQueryItemName:@"gidwrapper" inArray:queryItems],
+               @"The revoke URL should not contain the 'gidwrapper' parameter when unset.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kSDKVersionLoggingParameter inArray:queryItems],
+                        [GIDSignInPreferences sdkVersion],
+                        @"The revoke URL should still contain the SDK version parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kEnvironmentLoggingParameter
+                                            inArray:queryItems],
+                        [GIDSignInPreferences environment],
+                        @"The revoke URL should still contain the environment parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:@"token" inArray:queryItems],
+                        kAccessToken,
+                        @"The revoke URL should still contain the 'token' parameter.");
+}
+
 - (void)testOAuthLogin_ConsentCanceled {
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:@"access_denied"
@@ -1778,6 +1893,17 @@ static NSString *const kMultipleClaimsJsonString =
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #pragma mark - Helpers
+
+// Returns the value for the query item with the given name in the array of query items.
+- (nullable NSString *)valueForQueryItemName:(NSString *)name
+                                     inArray:(NSArray<NSURLQueryItem *> *)queryItems {
+  for (NSURLQueryItem *item in queryItems) {
+    if ([item.name isEqualToString:name]) {
+      return item.value;
+    }
+  }
+  return nil;
+}
 
 // Whether or not a fetcher has been started.
 - (BOOL)isFetcherStarted {

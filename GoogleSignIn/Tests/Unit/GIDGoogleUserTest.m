@@ -23,6 +23,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
+#import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 #import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
@@ -67,10 +68,13 @@ static NSString *const kNewScope = @"newScope";
 @implementation GIDGoogleUserTest {
   // The saved token fetch handler.
   OIDTokenCallback _tokenFetchHandler;
+  // The saved token request.
+  OIDTokenRequest *_savedTokenRequest;
 }
 
 - (void)setUp {
   _tokenFetchHandler = nil;
+  _savedTokenRequest = nil;
   
   // We need to use swizzle here because OCMock can not stub class method with arguments.
   [GULSwizzler swizzleClass:[OIDAuthorizationService class]
@@ -80,7 +84,8 @@ static NSString *const kNewScope = @"newScope";
                               OIDTokenRequest *request,
                               OIDAuthorizationResponse *authorizationResponse,
                               OIDTokenCallback callback) {
-    // Save the OIDTokenCallback.
+    // Save the OIDTokenRequest and OIDTokenCallback.
+    self->_savedTokenRequest = request;
     self->_tokenFetchHandler = [callback copy];
   }];
 }
@@ -89,6 +94,7 @@ static NSString *const kNewScope = @"newScope";
   [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
                      selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
               isClassSelector:YES];
+  [GIDSignInPreferences resetWrapperIdentifier];
 }
 
 #pragma mark - Tests
@@ -475,6 +481,98 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertEqual(error.code, kGIDSignInErrorCodeRefreshTokenExpired);
   }];
     
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testWrapperIdentifier_PresentOnRefreshRequestWhenSet {
+  GIDSignIn.wrapperIdentifier = @"firebase";
+
+  // Both tokens expired 10 seconds ago.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:
+      @"refreshTokensIfNeededWithCompletion returns with wrapper identifier set"];
+
+  // Save the intermediate states.
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
+                                              NSError * _Nullable error) {
+    [expectation fulfill];
+  }];
+
+  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[@"gidwrapper"], @"firebase");
+
+  // Clean up the handler by providing a fake response to fulfill any internal state.
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:_savedTokenRequest];
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenUnset {
+  [GIDSignInPreferences resetWrapperIdentifier];
+
+  // Both tokens expired 10 seconds ago.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:
+      @"refreshTokensIfNeededWithCompletion returns with wrapper identifier unset"];
+
+  // Save the intermediate states.
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
+                                              NSError * _Nullable error) {
+    [expectation fulfill];
+  }];
+
+  XCTAssertNil(_savedTokenRequest.additionalParameters[@"gidwrapper"]);
+
+  // Clean up the handler by providing a fake response.
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:_savedTokenRequest];
+  _tokenFetchHandler(fakeResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testWrapperIdentifier_AbsentOnRefreshRequestWhenDropped {
+  // Assert that attempting to set a dropped identifier is ignored.
+  XCTAssertNoThrow(GIDSignIn.wrapperIdentifier = @"firebasé");
+
+  // The rejection leaves the store nil.
+  XCTAssertNil(GIDSignIn.wrapperIdentifier);
+
+  // Both tokens expired 10 seconds ago.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:-10];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:
+      @"refreshTokensIfNeededWithCompletion returns with wrapper identifier dropped"];
+
+  // Save the intermediate states.
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser * _Nullable user,
+                                              NSError * _Nullable error) {
+    [expectation fulfill];
+  }];
+
+  // Assert the captured token request additionalParameters does NOT contain key @"gidwrapper".
+  XCTAssertNil(_savedTokenRequest.additionalParameters[@"gidwrapper"]);
+
+  // Assert it DOES contain kSDKVersionLoggingParameter and kEnvironmentLoggingParameter.
+  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion]);
+  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment]);
+
+  // Clean up the handler by providing a fake response.
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:_savedTokenRequest];
+  _tokenFetchHandler(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 

@@ -14,6 +14,8 @@
 
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
 
+#import <os/lock.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const kLSOServer = @"accounts.google.com";
@@ -25,6 +27,12 @@ NSString *const kSDKVersionLoggingParameter = @"gpsdk";
 
 // The name of the query parameter used for logging the Apple execution environment.
 NSString *const kEnvironmentLoggingParameter = @"gidenv";
+
+// The name of the query parameter used for logging the SDK wrapper.
+NSString *const kSDKWrapperLoggingParameter = @"gidwrapper";
+
+static NSString *gWrapperIdentifier = nil;
+static os_unfair_lock gWrapperIdentifierLock = OS_UNFAIR_LOCK_INIT;
 
 // Supported Apple execution environments
 static NSString *const kAppleEnvironmentUnknown = @"unknown";
@@ -43,6 +51,36 @@ static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
 // https://www.guyrutenberg.com/2008/12/20/expanding-macros-into-string-constants-in-c/
 #define STR(x) STR_EXPAND(x)
 #define STR_EXPAND(x) #x
+
+// Enforces the format documented on `GIDSignIn.wrapperIdentifier`: returns the accepted value,
+// or nil if `candidate` must be rejected. `candidate` is non-nil.
+static NSString * _Nullable GIDSanitizedWrapperIdentifier(NSString *candidate) {
+  static NSCharacterSet *allowedSet;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    // Printable ASCII is U+0020 through U+007E: length 0x5F starting at 0x20 (this is a
+    // length, not an end index).
+    // Note that, if this set changes, the substringToIndex: in the truncation
+    // may also need to change.
+    allowedSet = [NSCharacterSet characterSetWithRange:NSMakeRange(0x20, 0x5F)];
+  });
+
+  // The whole value is validated before truncating.
+  if ([candidate rangeOfCharacterFromSet:[allowedSet invertedSet]].location != NSNotFound) {
+    return nil;
+  }
+
+  if (candidate.length == 0) {
+    return nil;
+  }
+
+  if (candidate.length > 100) {
+    // This cannot split a surrogate pair because each value is single-unit ASCII.
+    return [candidate substringToIndex:100];
+  }
+
+  return candidate;
+}
 
 @implementation GIDSignInPreferences
 
@@ -79,11 +117,56 @@ static NSString *const kAppleEnvironmentMacOSMacCatalyst = @"macos-cat";
   return appleEnvironment;
 }
 
++ (nullable NSString *)wrapperIdentifier {
+  os_unfair_lock_lock(&gWrapperIdentifierLock);
+  NSString *wrapper = [gWrapperIdentifier copy];
+  os_unfair_lock_unlock(&gWrapperIdentifierLock);
+  return wrapper;
+}
+
++ (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
+  if (wrapperIdentifier == nil) {
+    return;
+  }
+
+  NSString *sanitized = GIDSanitizedWrapperIdentifier(wrapperIdentifier);
+  if (sanitized == nil) {
+    NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier '%@' was rejected, because it must be "
+          "non-empty and contain only printable ASCII characters (U+0020 to U+007E).",
+          wrapperIdentifier);
+    return;
+  }
+
+  os_unfair_lock_lock(&gWrapperIdentifierLock);
+  NSString *current = gWrapperIdentifier;
+  // Write-once, per the contract documented on `GIDSignIn.wrapperIdentifier`.
+  if (current != nil && ![current isEqualToString:sanitized]) {
+    os_unfair_lock_unlock(&gWrapperIdentifierLock);
+    NSLog(@"[Google Sign-In iOS]: the SDK wrapper identifier is already set to '%@', so '%@' was "
+          "ignored; more than one wrapper appears to be present.", current, sanitized);
+    return;
+  }
+  gWrapperIdentifier = [sanitized copy];
+  os_unfair_lock_unlock(&gWrapperIdentifierLock);
+}
+
++ (void)resetWrapperIdentifier {
+  os_unfair_lock_lock(&gWrapperIdentifierLock);
+  gWrapperIdentifier = nil;
+  os_unfair_lock_unlock(&gWrapperIdentifierLock);
+}
+
 + (NSDictionary<NSString *, NSString *> *)loggingParameters {
-  return @{
+  NSMutableDictionary<NSString *, NSString *> *parameters = [@{
     kSDKVersionLoggingParameter : [self sdkVersion],
-    kEnvironmentLoggingParameter : [self environment],
-  };
+    kEnvironmentLoggingParameter : [self environment]
+  } mutableCopy];
+
+  NSString *wrapperIdentifier = [self wrapperIdentifier];
+  if (wrapperIdentifier) {
+    parameters[kSDKWrapperLoggingParameter] = wrapperIdentifier;
+  }
+  return [parameters copy];
 }
 
 + (NSString *)googleAuthorizationServer {
