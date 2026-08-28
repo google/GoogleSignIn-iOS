@@ -16,12 +16,8 @@
 
 import SwiftUI
 import GoogleSignIn
-import CryptoKit
-
-#if canImport(GTMAppAuth) && canImport(AppAuth)
 import GTMAppAuth
 import AppAuth
-#endif
 
 /// A class conforming to `ObservableObject` used to represent a user's authentication status.
 final class AuthenticationViewModel: ObservableObject {
@@ -106,32 +102,23 @@ final class AuthenticationViewModel: ObservableObject {
   /// Logs the current authentication state for automated testing.
   /// - parameter event: The name of the event being logged.
   func logTestState(event: String) {
-    var dictionary: [String: Any] = [
-      "event": event,
-      "signedIn": false,
-      "hasRefreshToken": false,
-      "accessTokenFingerprint": NSNull(),
-      "accessTokenExpiration": NSNull(),
-      "grantedScopeCount": 0
-    ]
+    var signedIn = false
+    var hasRefreshToken = false
+    var scopeCount = 0
+    var expiration = "none"
 
     if case .signedIn(let user) = state {
-      dictionary["signedIn"] = true
-      dictionary["hasRefreshToken"] = !user.refreshToken.tokenString.isEmpty
-      if let fingerprint = fingerprint(for: user.accessToken.tokenString) {
-        dictionary["accessTokenFingerprint"] = fingerprint
+      signedIn = true
+      hasRefreshToken = !user.refreshToken.tokenString.isEmpty
+      scopeCount = user.grantedScopes?.count ?? 0
+      if let date = user.accessToken.expirationDate {
+        expiration = ISO8601DateFormatter().string(from: date)
       }
-      if let expiration = user.accessToken.expirationDate {
-        dictionary["accessTokenExpiration"] = ISO8601DateFormatter().string(from: expiration)
-      }
-      dictionary["grantedScopeCount"] = user.grantedScopes?.count ?? 0
     }
 
-    guard let data = try? JSONSerialization.data(withJSONObject: dictionary, options: []),
-          let jsonString = String(data: data, encoding: .utf8) else {
-      return
-    }
-    NSLog("GSI_TEST_STATE \(jsonString)")
+    NSLog("GSI_TEST_STATE event=\(event) signedIn=\(signedIn ? 1 : 0) " +
+          "refreshToken=\(hasRefreshToken ? 1 : 0) scopes=\(scopeCount) " +
+          "expires=\(expiration)")
   }
 
   /// Forces a token refresh for automated testing.
@@ -140,38 +127,22 @@ final class AuthenticationViewModel: ObservableObject {
       NSLog("GSI test hook: force refresh skipped, not signed in")
       return
     }
-
-    #if canImport(GTMAppAuth) && canImport(AppAuth)
     guard let authSession = user.fetcherAuthorizer as? AuthSession else {
       NSLog("GSI test hook: fetcherAuthorizer is not an AuthSession")
       return
     }
-    let beforeFingerprint = fingerprint(for: user.accessToken.tokenString) ?? "null"
+
     authSession.authState.setNeedsTokenRefresh()
     authSession.authState.performAction { [weak self] _, _, error in
       DispatchQueue.main.async {
         if let error = error {
           NSLog("GSI test hook: force refresh failed: \(error)")
         } else {
-          let afterFingerprint = self?.fingerprint(
-            for: GIDSignIn.sharedInstance.currentUser?.accessToken.tokenString ?? ""
-          ) ?? "null"
-          NSLog("GSI test hook: force refresh succeeded; access token fingerprint " +
-                "\(beforeFingerprint) -> \(afterFingerprint)")
+          NSLog("GSI test hook: force refresh succeeded")
         }
         self?.logTestState(event: "force_refresh")
       }
     }
-    #else
-    NSLog("GSI test hook: force refresh unavailable in this build configuration")
-    #endif
-  }
-
-  private func fingerprint(for token: String) -> String? {
-    guard !token.isEmpty else { return nil }
-    let data = Data(token.utf8)
-    let hash = SHA256.hash(data: data)
-    return hash.compactMap { String(format: "%02x", $0) }.joined().prefix(8).lowercased()
   }
 }
 
