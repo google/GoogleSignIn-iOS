@@ -649,6 +649,14 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   return sharedInstance;
 }
 
++ (nullable NSString *)wrapperIdentifier {
+  return [GIDSignInPreferences wrapperIdentifier];
+}
+
++ (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier {
+  [GIDSignInPreferences setWrapperIdentifier:wrapperIdentifier];
+}
+
 #pragma mark - Configuring and pre-warming
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
