@@ -65,3 +65,37 @@ jobs:
           -destination ${{ matrix.destination }} \
           test-without-building
 
+  signin-sample-spm-build:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@v6
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Build SignInSample (SPM)
+      run: |
+        xcodebuild \
+          -project Samples/ObjC/SignInSample/SignInSample.xcodeproj \
+          -scheme SignInSample \
+          -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
+          build
+
+  signin-sample-pods-build:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@v6
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Update Bundler
+      run: bundle update --bundler
+    - name: Install Ruby gems with Bundler
+      run: bundle install
+    - name: Install pods
+      run: bundle exec pod install --project-directory=Samples/ObjC/SignInSample
+    - name: Build SignInSample (CocoaPods)
+      run: |
+        xcodebuild \
+          -workspace Samples/ObjC/SignInSample/SignInSampleForPod.xcworkspace \
+          -scheme SampleForPod \
+          -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
+          build
+
