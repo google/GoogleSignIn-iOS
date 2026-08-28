@@ -124,7 +124,9 @@ NS_ASSUME_NONNULL_BEGIN
     options->_loginHint = _loginHint;
     options->_completion = _completion;
     options->_scopes = _scopes;
+    options->_nonce = _nonce;
     options->_claims = _claims;
+    options->_claimsAsJSON = _claimsAsJSON;
     options->_extraParams = [extraParams copy];
   }
   return options;
