@@ -68,6 +68,40 @@ jobs:
           -destination ${{ matrix.destination }} \
           test-without-building
 
+  signin-sample-spm-build:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Build SignInSample (SPM)
+      run: |
+        xcodebuild \
+          -project Samples/ObjC/SignInSample/SignInSample.xcodeproj \
+          -scheme SignInSample \
+          -destination "generic/platform=iOS Simulator" \
+          build
+
+  signin-sample-pods-build:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Update Bundler
+      run: bundle update --bundler
+    - name: Install Ruby gems with Bundler
+      run: bundle install
+    - name: Install pods
+      run: bundle exec pod install --project-directory=Samples/ObjC/SignInSample
+    - name: Build SignInSample (CocoaPods)
+      run: |
+        xcodebuild \
+          -workspace Samples/ObjC/SignInSample/SignInSampleForPod.xcworkspace \
+          -scheme SampleForPod \
+          -destination "generic/platform=iOS Simulator" \
+          build
+
   xcode-27-preview-test:
     # Build and run the unit tests against the Xcode 27 preview image. Xcode 27
     # beta is the only (thus, default) Xcode on that image, so no xcode-select
