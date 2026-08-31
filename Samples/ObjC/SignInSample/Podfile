@@ -5,3 +5,17 @@ target 'SampleForPod' do
   pod 'GoogleSignIn', :path => '../../../', :testspecs => ['unit']
   project 'SignInSampleForPod.xcodeproj'
 end
+
+post_install do |installer|
+  # Xcode 27 refuses to build a target whose deployment target is below iOS 15.0.
+  # Several transitive pods still declare lower floors in their own podspecs, so
+  # raise the generated Pods project targets to match this sample's own minimum.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      ios = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if ios && Gem::Version.new(ios) < Gem::Version.new('15.0')
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
+end
