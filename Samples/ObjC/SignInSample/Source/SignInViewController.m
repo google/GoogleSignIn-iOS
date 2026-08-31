@@ -17,11 +17,11 @@
 #import "SignInViewController.h"
 
 @import GoogleSignIn;
+@import AppAuth;
 
 #import "AuthInspectorViewController.h"
 #import "DataPickerState.h"
 #import "DataPickerViewController.h"
-#import <AppAuth/OIDTokenUtilities.h>
 
 static NSString *const kSignInViewTitle = @"Sign-In Sample";
 static NSString *const kPlaceholderUserName = @"<Name>";
