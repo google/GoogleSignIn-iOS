@@ -1,10 +1,16 @@
-# Unreleased
-- **BREAKING**: Updated the AppAuth dependency to 3.0.0 and the GTMAppAuth dependency to 6.0.0.
-- **BREAKING**: Raised the minimum deployment targets to iOS 15.0 and macOS 12.0, matching the new floor set by AppAuth 3.0.0. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0.
-- Renamed the version-specific Swift Package Manager manifest from `Package@swift-5.5.swift` to `Package@swift-5.7.swift`, since AppAuth 3.0.0 requires `swift-tools-version` 5.7 or later.
-- Widened the GTMSessionFetcher dependency to allow 4.x and 5.x, matching GTMAppAuth 6.0.0.
-- Add `GIDSignIn.wrapperIdentifier` so SDKs that embed Google Sign-In can self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It is opt-in and default behavior is unchanged.
-- Pinned the Swift names of the `GIDClaim` factory methods with explicit `NS_SWIFT_NAME` annotations. The imported Swift names are unchanged (`authTime()`, `essentialAuthTime()`, `amr()` and `essentialAMR()`); they no longer depend on the Objective-C importer's implicit renaming heuristics.
+# 10.0.0
+- **BREAKING**: Update to AppAuth 3.0.0 and GTMAppAuth 6.0.0, which raises the minimum deployment targets to iOS 15.0 and macOS 12.0, widens the GTMSessionFetcher dependency to allow 4.x and 5.x, and renames the version-specific Swift Package Manager manifest to `Package@swift-5.7.swift`. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0. ([#628](https://github.com/google/GoogleSignIn-iOS/pull/628))
+- Add `GIDSignIn.wrapperIdentifier` so SDKs that embed Google Sign-In can self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It is opt-in and default behavior is unchanged. ([#625](https://github.com/google/GoogleSignIn-iOS/pull/625))
+- Update the sign-in button icon to the gradient Google G ([#633](https://github.com/google/GoogleSignIn-iOS/pull/633))
+- Pin the Swift names of the `GIDClaim` factory methods with explicit `NS_SWIFT_NAME` annotations; the imported Swift names are unchanged ([#627](https://github.com/google/GoogleSignIn-iOS/pull/627))
+- Use `NSURLComponents` to properly encode tokens ([#618](https://github.com/google/GoogleSignIn-iOS/pull/618))
+- Fix a crash in `additionalTokenRefreshParameters` when `emmSupport` is `nil` ([#608](https://github.com/google/GoogleSignIn-iOS/pull/608))
+- Internal
+  - Consolidate SDK logging parameters to prepare for new ones ([#616](https://github.com/google/GoogleSignIn-iOS/pull/616))
+  - Fix `swift-button-functional-test` ([#614](https://github.com/google/GoogleSignIn-iOS/pull/614))
+  - Fix the `SignInSample` import and add the sample to CI ([#632](https://github.com/google/GoogleSignIn-iOS/pull/632))
+  - Add non-blocking Xcode 27 preview jobs to CI ([#629](https://github.com/google/GoogleSignIn-iOS/pull/629))
+  - Bump the bundler group dependencies ([#594](https://github.com/google/GoogleSignIn-iOS/pull/594), [#630](https://github.com/google/GoogleSignIn-iOS/pull/630))
 
 # 9.2.0
 - Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))
