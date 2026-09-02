@@ -10,6 +10,7 @@
   - Fix `swift-button-functional-test` ([#614](https://github.com/google/GoogleSignIn-iOS/pull/614))
   - Fix the `SignInSample` import and add the sample to CI ([#632](https://github.com/google/GoogleSignIn-iOS/pull/632))
   - Add non-blocking Xcode 27 preview jobs to CI ([#629](https://github.com/google/GoogleSignIn-iOS/pull/629))
+  - Raise the sample Podfile deployment targets for Xcode 27 ([#634](https://github.com/google/GoogleSignIn-iOS/pull/634))
   - Bump the bundler group dependencies ([#594](https://github.com/google/GoogleSignIn-iOS/pull/594), [#630](https://github.com/google/GoogleSignIn-iOS/pull/630))
 
 # 9.2.0
