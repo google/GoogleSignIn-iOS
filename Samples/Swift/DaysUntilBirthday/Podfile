@@ -11,3 +11,22 @@ end
 target 'DaysUntilBirthdayForPod (macOS)' do
   platform :osx, '12.0'
 end
+
+post_install do |installer|
+  # Xcode 27 refuses to build a target whose deployment target is below iOS 15.0
+  # or macOS 12.0. Several transitive pods still declare lower floors in their
+  # own podspecs, so raise the generated Pods project targets to match this
+  # sample's own minimums.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      ios = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if ios && Gem::Version.new(ios) < Gem::Version.new('15.0')
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+      macos = config.build_settings['MACOSX_DEPLOYMENT_TARGET']
+      if macos && Gem::Version.new(macos) < Gem::Version.new('12.0')
+        config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '12.0'
+      end
+    end
+  end
+end
