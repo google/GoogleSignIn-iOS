@@ -53,6 +53,14 @@
 #import <OCMock/OCMock.h>
 #endif
 
+@interface GIDGoogleUser ()
+
+- (void)getAccessToken:(GIDToken *_Nullable *_Nullable)accessToken
+          refreshToken:(GIDToken *_Nullable *_Nullable)refreshToken
+               idToken:(GIDToken *_Nullable *_Nullable)idToken;
+
+@end
+
 static NSString *const kNewAccessToken = @"new_access_token";
 static NSString *const kNewRefreshToken = @"new_refresh_token";
 
@@ -220,6 +228,110 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
   XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
   XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+}
+
+- (void)testUpdateTokens_concurrentUpdates_leaveConsistentTokenSet {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  NSString *accessTokenA = @"access_token_A";
+  OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
+                                                       accessToken:accessTokenA
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
+  NSString *accessTokenB = @"access_token_B";
+  OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
+                                                       accessToken:accessTokenB
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Updates finished"];
+  XCTestExpectation *readExpectation = [self expectationWithDescription:@"Reads finished"];
+
+  dispatch_queue_t updateQueue = dispatch_queue_create("com.google.gidgoogleuser.testUpdateTokens.update",
+                                                       DISPATCH_QUEUE_CONCURRENT);
+  dispatch_queue_t readQueue = dispatch_queue_create("com.google.gidgoogleuser.testUpdateTokens.read",
+                                                     DISPATCH_QUEUE_CONCURRENT);
+
+  NSInteger iterations = 200;
+
+  // Concurrent updates
+  dispatch_async(updateQueue, ^{
+    dispatch_apply(iterations, updateQueue, ^(size_t i) {
+      OIDAuthState *state = (i % 2 == 0) ? authStateA : authStateB;
+      [user updateWithTokenResponse:state.lastTokenResponse
+              authorizationResponse:state.lastAuthorizationResponse
+                        profileData:nil];
+    });
+    [updateExpectation fulfill];
+  });
+
+  // Concurrent reads
+  dispatch_async(readQueue, ^{
+    dispatch_apply(iterations, readQueue, ^(size_t i) {
+      GIDToken *accessToken = nil;
+      GIDToken *refreshToken = nil;
+      GIDToken *idToken = nil;
+      [user getAccessToken:&accessToken refreshToken:&refreshToken idToken:&idToken];
+
+      // Consistency check: accessToken and idToken must both come from A or both from B.
+      // The consistency guarantee comes from the snapshot accessor's single lock acquisition.
+      // Reading the three properties individually would NOT be atomic even with the per-accessor
+      // locking, by design.
+      if ([accessToken.tokenString isEqualToString:accessTokenA]) {
+        XCTAssertEqualObjects(idToken.tokenString, idTokenA);
+        XCTAssertEqualObjects(refreshToken.tokenString, kNewRefreshToken);
+      } else if ([accessToken.tokenString isEqualToString:accessTokenB]) {
+        XCTAssertEqualObjects(idToken.tokenString, idTokenB);
+        XCTAssertEqualObjects(refreshToken.tokenString, kNewRefreshToken);
+      }
+    });
+    [readExpectation fulfill];
+  });
+
+  [self waitForExpectationsWithTimeout:5 handler:nil];
+
+  // Final state should be either A or B (whichever ran last)
+  BOOL matchesA = [user.accessToken.tokenString isEqualToString:accessTokenA] &&
+                  [user.idToken.tokenString isEqualToString:idTokenA];
+  BOOL matchesB = [user.accessToken.tokenString isEqualToString:accessTokenB] &&
+                  [user.idToken.tokenString isEqualToString:idTokenB];
+  XCTAssertTrue(matchesA || matchesB);
+
+  // This test is a reliable failure detector only under Thread Sanitizer.
+  // The consistency assertion above is what gives it meaning without TSan.
+}
+
+- (void)testRefreshTokensIfNeeded_readsConsistentSnapshot {
+  // Access token expired 10 seconds ago. ID token will expire in 10 minutes.
+  // This matches the shape in testRefreshTokensIfNeededWithCompletion_refresh_givenAccessTokenExpired.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10 idTokenExpiresIn:10 * 60];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+
+  // Call -refreshTokensIfNeededWithCompletion: and assert the completion fires with the user and no
+  // error, i.e. the decision path is unchanged by the snapshot refactor.
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser *_Nullable user, NSError *_Nullable error) {
+    [expectation fulfill];
+    XCTAssertNotNil(user);
+    XCTAssertNil(error);
+  }];
+
+  // We need to provide a response because the access token is expired, so it WILL attempt a refresh.
+  NSString *newIdToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:newIdToken
+                                                                 accessToken:kNewAccessToken
+                                                                   expiresIn:@(kAccessTokenExpiresIn)
+                                                                refreshToken:kRefreshToken
+                                                                tokenRequest:nil];
+  _tokenFetchHandler(fakeResponse, nil);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  // This is a guard against the snapshot refactor changing the refresh decision, not a race test.
 }
 
 - (void)testFetcherAuthorizer {
