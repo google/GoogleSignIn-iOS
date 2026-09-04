@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GIDAuthStateMigration ()
 
 + (nullable NSString *)passwordForService:(NSString *)service;
++ (void)deletePasswordForService:(NSString *)service;
 
 /// Returns a `GTMAuthSession` given the provided token URL.
 ///
@@ -192,6 +193,14 @@ NS_ASSUME_NONNULL_BEGIN
 
   [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
 
+  [[[_mockGIDAuthStateMigration expect] andReturn:kSavedFingerprint]
+      passwordForService:kFingerprintService];
+  [[[_mockGTMKeychainStore expect] andReturn:_mockKeychainHelper] keychainHelper];
+  [[_mockKeychainHelper expect] removePasswordForService:kSavedFingerprint error:OCMArg.anyObjectRef];
+  [[_mockGIDAuthStateMigration expect] deletePasswordForService:
+      [self additionalTokenRequestParametersKeyFromFingerprint:kSavedFingerprint]];
+  [[_mockGIDAuthStateMigration expect] deletePasswordForService:kFingerprintService];
+
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -207,6 +216,63 @@ NS_ASSUME_NONNULL_BEGIN
   OCMStub([_mockGTMKeychainStore saveAuthSession:OCMOCK_ANY error:[OCMArg setTo:keychainSaveError]]);
 
   [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
+                            callbackPath:kCallbackPath
+                          isFreshInstall:NO];
+}
+
+- (void)testMigrateIfNeeded_GTMAppAuthMigration_DeletesLegacyItems {
+  [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
+  [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kGTMAppAuthMigrationCheckPerformedKey];
+  [[_mockUserDefaults expect] setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
+
+  [[_mockGTMKeychainStore expect] saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef];
+
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+
+  // Deletion-related expectations
+  [[[_mockGIDAuthStateMigration expect] andReturn:kSavedFingerprint]
+      passwordForService:kFingerprintService];
+  [[[_mockGTMKeychainStore expect] andReturn:_mockKeychainHelper] keychainHelper];
+  [[_mockKeychainHelper expect] removePasswordForService:kSavedFingerprint error:OCMArg.anyObjectRef];
+
+  NSString *atrpService = [self additionalTokenRequestParametersKeyFromFingerprint:kSavedFingerprint];
+  NSMutableArray *deletedServices = [NSMutableArray array];
+  [[[_mockGIDAuthStateMigration expect] andDo:^(NSInvocation *invocation) {
+    [deletedServices addObject:atrpService];
+  }] deletePasswordForService:atrpService];
+  [[[_mockGIDAuthStateMigration expect] andDo:^(NSInvocation *invocation) {
+    [deletedServices addObject:kFingerprintService];
+  }] deletePasswordForService:kFingerprintService];
+
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
+  [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
+                            callbackPath:kCallbackPath
+                          isFreshInstall:NO];
+
+  // The additionalTokenRequestParametersKeyFromFingerprint item must be deleted before the
+  // fingerprint item, because it is addressed by the fingerprint value.
+  NSArray *expectedOrder = @[ atrpService, kFingerprintService ];
+  XCTAssertEqualObjects(deletedServices, expectedOrder,
+                        @"The additional token request parameters must be deleted before the fingerprint.");
+}
+
+- (void)testMigrateIfNeeded_GTMAppAuthMigration_KeychainFailure_KeepsLegacyItems {
+  [[[_mockUserDefaults stub] andReturn:_mockUserDefaults] standardUserDefaults];
+  [[[_mockUserDefaults expect] andReturnValue:@NO] boolForKey:kGTMAppAuthMigrationCheckPerformedKey];
+
+  NSError *keychainSaveError = [NSError new];
+  OCMStub([_mockGTMKeychainStore saveAuthSession:OCMOCK_ANY error:[OCMArg setTo:keychainSaveError]]);
+
+  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+
+  // A failed save must never destroy the only surviving copy of the credentials.
+  [[_mockKeychainHelper reject] removePasswordForService:OCMOCK_ANY error:OCMArg.anyObjectRef];
+  [[_mockGIDAuthStateMigration reject] deletePasswordForService:OCMOCK_ANY];
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_mockGTMKeychainStore];
