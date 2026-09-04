@@ -77,7 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Starts an interactive consent flow on iOS to add new scopes to the user's `grantedScopes`.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDSignInResult`
-/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
+/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.  If
+/// the user authenticates as a different Google account during the flow, the completion is
+/// called with `kGIDSignInErrorCodeMismatchWithCurrentUser`.
 ///
 /// @param scopes The scopes to ask the user to consent to.
 /// @param presentingViewController The view controller used to present `SFSafariViewController` on
@@ -96,7 +98,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Starts an interactive consent flow on macOS to add new scopes to the user's `grantedScopes`.
 ///
 /// The completion will be called at the end of this process.  If successful, a `GIDSignInResult`
-/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.
+/// instance will be returned reflecting the new scopes and saved sign-in state will be updated.  If
+/// the user authenticates as a different Google account during the flow, the completion is
+/// called with `kGIDSignInErrorCodeMismatchWithCurrentUser`.
 ///
 /// @param scopes An array of scopes to ask the user to consent to.
 /// @param presentingWindow The window used to supply `presentationContextProvider` for

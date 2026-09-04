@@ -957,6 +957,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
   OCMStub([_user authState]).andReturn(_authState);
+  // The identity guard in -addSaveAuthCallback: validates the user identity.
+  OCMStub([_user userID]).andReturn(kUserID);
 
   [self OAuthLoginWithAddScopesFlow:YES
                           authError:nil
@@ -1026,6 +1028,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([_user profile]).andReturn(profile);
   OCMStub([_user grantedScopes]).andReturn(@[kGrantedScope]);
   OCMStub([_user authState]).andReturn(_authState);
+  // The identity guard in -addSaveAuthCallback: validates the user identity.
+  OCMStub([_user userID]).andReturn(kUserID);
 
   [self OAuthLoginWithAddScopesFlow:YES
                           authError:nil
@@ -2194,6 +2198,9 @@ static NSString *const kMultipleClaimsJsonString =
     _saveAuthorizationReturnValue = NO;
   } else {
     if (addScopesFlow) {
+      // The identity guard in -addSaveAuthCallback: reads lastTokenResponse to compare the returned
+      // ID token's subject against the current user's; that consumes one expectation of its own.
+      [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[[_authState expect] andReturn:authResponse] lastAuthorizationResponse];
       [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
       [[_user expect] updateWithTokenResponse:SAVE_TO_ARG_BLOCK(updatedTokenResponse)

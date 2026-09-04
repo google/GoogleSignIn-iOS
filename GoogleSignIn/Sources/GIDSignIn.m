@@ -1128,6 +1128,23 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     OIDAuthState *authState = handlerAuthFlow.authState;
     if (authState && !handlerAuthFlow.error) {
+      // The login_hint sent by addScopes: is advisory and the account chooser can return a
+      // different account.
+      if (self->_currentOptions.addScopesFlow) {
+        NSString *expectedSub = self->_currentUser.userID;
+        NSString *idTokenString = authState.lastTokenResponse.idToken;
+        NSString *returnedSub = nil;
+        if (idTokenString) {
+          returnedSub = [[OIDIDToken alloc] initWithIDTokenString:idTokenString].subject;
+        }
+        if (expectedSub && returnedSub && ![expectedSub isEqual:returnedSub]) {
+          handlerAuthFlow.error = [NSError errorWithDomain:kGIDSignInErrorDomain
+                                                      code:kGIDSignInErrorCodeMismatchWithCurrentUser
+                                                  userInfo:nil];
+          return;
+        }
+      }
+
       if (![self saveAuthState:authState]) {
         handlerAuthFlow.error = [self errorWithString:kKeychainError
                                                  code:kGIDSignInErrorCodeKeychain];

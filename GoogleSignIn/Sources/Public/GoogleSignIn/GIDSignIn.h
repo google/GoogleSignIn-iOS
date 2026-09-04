@@ -50,7 +50,8 @@ typedef NS_ERROR_ENUM(kGIDSignInErrorDomain, GIDSignInErrorCode) {
   kGIDSignInErrorCodeAmbiguousClaims = -7,
   /// Indicates the requested scopes have already been granted to the `currentUser`.
   kGIDSignInErrorCodeScopesAlreadyGranted = -8,
-  /// Indicates there is an operation on a previous user.
+  /// Indicates there is an operation on a previous user or an interactive add-scopes flow
+  /// authenticated a different account than `currentUser`.
   kGIDSignInErrorCodeMismatchWithCurrentUser = -9,
   /// Indicates that an object could not be serialized into a `JSON` string.
   kGIDSignInErrorCodeJSONSerializationFailure = -10,
