@@ -130,6 +130,16 @@ static NSString *const kFingerprintService = @"fingerprint";
   if (authSession) {
     NSError *err;
     [self.keychainStore saveAuthSession:authSession error:&err];
+    if (err == nil) {
+      NSString *fingerprint = [GIDAuthStateMigration passwordForService:kFingerprintService];
+      if (fingerprint.length > 0) {
+        [self.keychainStore.keychainHelper removePasswordForService:fingerprint error:NULL];
+        NSString *additionalTokenRequestParametersService =
+            [fingerprint stringByAppendingString:@"~~atrp"];
+        [GIDAuthStateMigration deletePasswordForService:additionalTokenRequestParametersService];
+        [GIDAuthStateMigration deletePasswordForService:kFingerprintService];
+      }
+    }
   }
 
   // Mark the migration check as having been performed.
@@ -233,6 +243,20 @@ static NSString *const kFingerprintService = @"fingerprint";
   }
   NSString *password = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
   return password;
+}
+
+// Deletes the password string for a given service string stored by an old version of the SDK.
++ (void)deletePasswordForService:(NSString *)service {
+  if (!service.length) {
+    return;
+  }
+  NSDictionary<id, id> *query = @{
+    (id)kSecClass : (id)kSecClassGenericPassword,
+    (id)kSecAttrGeneric : kGenericAttribute,
+    (id)kSecAttrAccount : kOldKeychainAccount,
+    (id)kSecAttrService : service,
+  };
+  SecItemDelete((CFDictionaryRef)query);
 }
 #endif // TARGET_OS_OSX
 
