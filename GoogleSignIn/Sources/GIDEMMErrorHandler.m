@@ -57,30 +57,32 @@ typedef enum {
 }
 
 - (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)(void))completion {
+                     completion:(void (^)(BOOL handled))completion {
   ErrorCode errorCode = ErrorCodeNone;
   NSURL *appVerificationURL;
   @synchronized(self) {  // for accessing _pendingDialog
     if (!_pendingDialog && [UIAlertController class] &&
         [response isKindOfClass:[NSDictionary class]]) {
       id errorValue = response[kErrorKey];
-      if ([errorValue isEqual:kScreenlockRequiredError]) {
-        errorCode = ErrorCodeScreenlockRequired;
-      } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
-        errorCode = ErrorCodeAppVerificationRequired;
-        NSString *appVerificationString =
-            [errorValue substringFromIndex:kAppVerificationRequiredErrorPrefix.length];
-        if ([appVerificationString hasPrefix:kErrorPayloadSeparator]) {
-          appVerificationString =
-              [appVerificationString substringFromIndex:kErrorPayloadSeparator.length];
+      if ([errorValue isKindOfClass:[NSString class]]) {
+        if ([errorValue isEqual:kScreenlockRequiredError]) {
+          errorCode = ErrorCodeScreenlockRequired;
+        } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
+          errorCode = ErrorCodeAppVerificationRequired;
+          NSString *appVerificationString =
+              [errorValue substringFromIndex:kAppVerificationRequiredErrorPrefix.length];
+          if ([appVerificationString hasPrefix:kErrorPayloadSeparator]) {
+            appVerificationString =
+                [appVerificationString substringFromIndex:kErrorPayloadSeparator.length];
+          }
+          appVerificationString = [appVerificationString
+              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+          if (appVerificationString.length) {
+            appVerificationURL = [NSURL URLWithString:appVerificationString];
+          }
+        } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
+          errorCode = ErrorCodeDeviceNotCompliant;
         }
-        appVerificationString = [appVerificationString
-            stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-        if (appVerificationString.length) {
-          appVerificationURL = [NSURL URLWithString:appVerificationString];
-        }
-      } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
-        errorCode = ErrorCodeDeviceNotCompliant;
       }
       if (errorCode) {
         _pendingDialog = YES;
@@ -88,15 +90,20 @@ typedef enum {
     }
   }
   if (!errorCode) {
-    completion();
+    completion(NO);
     return NO;
   }
   // All UI must happen in the main thread.
   dispatch_async(dispatch_get_main_queue(), ^() {
+    void (^clearPendingDialog)(void) = ^{
+      @synchronized(self) { self->_pendingDialog = NO; }
+    };
+
     UIWindow *keyWindow = [self keyWindow];
     if (!keyWindow) {
       // Shouldn't happen, just in case.
-      completion();
+      clearPendingDialog();
+      completion(YES);
       return;
     }
     UIWindow *alertWindow;
@@ -119,8 +126,8 @@ typedef enum {
       alertWindow.hidden = YES;
       alertWindow.rootViewController = nil;
       [keyWindow makeKeyAndVisible];
-      self->_pendingDialog = NO;
-      completion();
+      clearPendingDialog();
+      completion(YES);
     };
     UIAlertController *alert;
     switch (errorCode) {
