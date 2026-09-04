@@ -14,7 +14,7 @@
 
 #import <TargetConditionals.h>
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || TARGET_OS_OSX
 
 #import <XCTest/XCTest.h>
 #import <AppCheckCore/GACAppCheckToken.h>
