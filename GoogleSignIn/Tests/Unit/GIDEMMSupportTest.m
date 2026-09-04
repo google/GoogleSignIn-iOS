@@ -220,7 +220,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                       userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^savedCompletion)(void);
+  __block void (^savedCompletion)(BOOL);
   [[[mockEMMErrorHandler stub] andReturnValue:@YES]
       handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
     savedCompletion = arg;
@@ -237,9 +237,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
     XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeEMM);
   }];
-  
+
   [self waitForExpectations:@[ notCalled ] timeout:1];
-  savedCompletion();
+  savedCompletion(YES);
   [self waitForExpectations:@[ called ] timeout:1];
 }
 
@@ -251,7 +251,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                       userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^savedCompletion)(void);
+  __block void (^savedCompletion)(BOOL);
   [[[mockEMMErrorHandler stub] andReturnValue:@NO]
       handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
     savedCompletion = arg;
@@ -261,7 +261,38 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
   notCalled.inverted = YES;
   XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
+
+  [GIDEMMSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
+    [notCalled fulfill];
+    [called fulfill];
+    XCTAssertEqualObjects(error.domain, @"anydomain");
+    XCTAssertEqual(error.code, 12345);
+  }];
   
+  [self waitForExpectations:@[ notCalled ] timeout:1];
+  savedCompletion(NO);
+  [self waitForExpectations:@[ called ] timeout:1];
+}
+
+- (void)testHandleTokenFetchEMMError_handledFlagComesFromCompletion {
+  // Set expectations.
+  NSDictionary *errorJSON = @{ @"error" : @"EMM Specific Error" };
+  NSError *emmError = [NSError errorWithDomain:@"anydomain"
+                                          code:12345
+                                      userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^savedCompletion)(BOOL);
+  [[[mockEMMErrorHandler stub] andReturnValue:@YES]
+      handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
+    savedCompletion = arg;
+    return YES;
+  }]];
+
+  XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
+  notCalled.inverted = YES;
+  XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
+
   [GIDEMMSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
     [notCalled fulfill];
     [called fulfill];
@@ -270,7 +301,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   }];
 
   [self waitForExpectations:@[ notCalled ] timeout:1];
-  savedCompletion();
+  savedCompletion(NO);
   [self waitForExpectations:@[ called ] timeout:1];
 }
 
