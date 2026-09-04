@@ -4,6 +4,7 @@
   observe a partially-updated set.
 - Fix a crash when a server error response carries a non-string value under its `error` key. The EMM error handler sent `-hasPrefix:` to whatever value was present, raising an unrecognized selector exception on a number, array or object.
 - Fix a custom `nonce` and requested token `claims` being dropped when a sign-in is continued after a Device Policy app restart.
+- Fix a data race on `GIDGoogleUser`'s access, refresh and ID tokens. Concurrent token refreshes could previously write the three properties from different queues at once, and readers could observe a partially-updated set.
 
 # 10.0.0
 - **BREAKING**: Update to AppAuth 3.0.0 and GTMAppAuth 6.0.0, which raises the minimum deployment targets to iOS 15.0 and macOS 12.0, widens the `GTMSessionFetcher` dependency to allow 4.x and 5.x, and renames the version-specific Swift Package Manager manifest to `Package@swift-5.7.swift`. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0. ([#628](https://github.com/google/GoogleSignIn-iOS/pull/628))
