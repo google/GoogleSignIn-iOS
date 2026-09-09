@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)testNoError {
   __block BOOL completionCalled = NO;
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"abc" : @123 }
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   XCTAssertFalse(result);
@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"invalid_token" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   XCTAssertFalse(result);
@@ -139,7 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_something_wrong" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
@@ -157,7 +157,7 @@ NS_ASSUME_NONNULL_BEGIN
   // Should handle no more error while the previous one is being handled.
   __block BOOL secondCompletionCalled = NO;
   BOOL secondResult = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     secondCompletionCalled = YES;
   }];
   XCTAssertFalse(secondResult);
@@ -186,6 +186,132 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertTrue(completionCalled);
 }
 
+// Verifies that the pending-dialog flag is cleared when there is no key window, so a later
+// EMM error can still present its dialog. `GIDEMMErrorHandler` is a process-wide singleton,
+// so before this fix a single windowless error suppressed every dialog that followed.
+- (void)testNoKeyWindow_ClearsPendingDialogForNextError {
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return nil; }];
+
+  __block BOOL completionCalled = NO;
+  __block BOOL completionHandled = NO;
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"emm_something_wrong" }
+                                                                  completion:^(BOOL handled) {
+    completionCalled = YES;
+    completionHandled = handled;
+  }];
+  XCTAssertTrue(result);
+
+  // Pump the main queue with an expectation named @"wait for main thread".
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue(completionCalled);
+  XCTAssertTrue(completionHandled);
+  XCTAssertNil(_presentedViewController);
+
+  // Restore a working key window.
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
+  UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return fakeKeyWindow; }];
+
+  __block BOOL secondCompletionCalled = NO;
+  __block BOOL secondCompletionHandled = NO;
+  BOOL secondResult = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"emm_something_wrong" }
+                                                                  completion:^(BOOL handled) {
+    secondCompletionCalled = YES;
+    secondCompletionHandled = handled;
+  }];
+  // Before the fix, this returned NO and did nothing: the pending-dialog flag was still YES.
+  if (![UIAlertController class]) {
+    XCTAssertTrue(secondResult);
+    XCTAssertTrue(secondCompletionCalled);
+    XCTAssertTrue(secondCompletionHandled);
+    return;
+  }
+  XCTAssertTrue(secondResult);
+
+  // Pump the main queue again with an expectation named @"wait for main thread 2".
+  XCTestExpectation *expectation2 = [self expectationWithDescription:@"wait for main thread 2"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation2 fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertGreaterThanOrEqual(alert.actions.count, 1);
+  UIAlertAction *action = alert.actions[0];
+  // Dismiss so the singleton's pending-dialog flag does not leak into the next test.
+  action.actionHandler(action);
+
+  XCTAssertTrue(secondCompletionCalled);
+  XCTAssertTrue(secondCompletionHandled);
+}
+
+// Verifies that the flag handed to the completion matches the method's return value on both
+// the non-EMM path (synchronous, NO) and the EMM path (after dialog dismissal, YES).
+- (void)testCompletionReceivesHandledFlag {
+  // First half — non-EMM.
+  __block BOOL completionCalled = NO;
+  __block BOOL completionHandled = YES;
+  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"invalid_token" }
+                                                                  completion:^(BOOL handled) {
+    completionCalled = YES;
+    completionHandled = handled;
+  }];
+  XCTAssertFalse(result);
+  XCTAssertTrue(completionCalled);
+  XCTAssertFalse(completionHandled);
+
+  // Second half — EMM.
+  __block BOOL emmCompletionCalled = NO;
+  __block BOOL emmCompletionHandled = NO;
+  BOOL emmResult = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"emm_something_wrong" }
+                                                                  completion:^(BOOL handled) {
+    emmCompletionCalled = YES;
+    emmCompletionHandled = handled;
+  }];
+  if (![UIAlertController class]) {
+    XCTAssertTrue(emmResult);
+    XCTAssertTrue(emmCompletionCalled);
+    XCTAssertTrue(emmCompletionHandled);
+    return;
+  }
+  XCTAssertTrue(emmResult);
+  XCTAssertFalse(emmCompletionCalled);
+
+  // Pump the main queue with an expectation named @"wait for main thread".
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  XCTAssertEqual(alert.actions.count, 1);
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"OK");
+  action.actionHandler(action);
+
+  XCTAssertTrue(emmCompletionCalled);
+  XCTAssertTrue(emmCompletionHandled);
+}
+
 // Verifies that the handler handles EMM screenlock required error with user tapping 'Cancel'.
 - (void)testScreenlockRequiredCancel {
   if (_isIOS10) {
@@ -195,7 +321,7 @@ NS_ASSUME_NONNULL_BEGIN
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
@@ -240,7 +366,7 @@ NS_ASSUME_NONNULL_BEGIN
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
@@ -286,7 +412,7 @@ NS_ASSUME_NONNULL_BEGIN
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
@@ -327,7 +453,7 @@ NS_ASSUME_NONNULL_BEGIN
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_app_verification_required" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
@@ -370,7 +496,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSDictionary<NSString *, NSString *> *response =
       @{ @"error" : @"emm_app_verification_required: https://host.domain/path" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
@@ -412,7 +538,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSDictionary<NSString *, NSString *> *response =
       @{ @"error" : @"emm_app_verification_required: https://host.domain/path" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
+                                                                  completion:^(BOOL handled) {
     completionCalled = YES;
   }];
   if (![UIAlertController class]) {
