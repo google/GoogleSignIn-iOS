@@ -993,7 +993,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
         [authFlow wait];
         BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
             handleErrorFromResponse:params
-                         completion:^{
+                         completion:^(BOOL handled) {
                            [authFlow next];
                          }];
         if (isEMMError) {

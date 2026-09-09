@@ -68,9 +68,8 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
                       completion:(void (^)(NSError *_Nullable))completion {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
   if (errorJSON) {
-    __block BOOL handled = NO;
-    handled = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:errorJSON
-                                                                completion:^() {
+    [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:errorJSON
+                                                      completion:^(BOOL handled) {
       if (handled) {
         completion([NSError errorWithDomain:kGIDSignInErrorDomain
                                        code:kGIDSignInErrorCodeEMM
