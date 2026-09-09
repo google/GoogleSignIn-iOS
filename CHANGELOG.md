@@ -1,3 +1,7 @@
+# Unreleased
+- Fix EMM remediation dialogs being suppressed for the rest of the app's lifetime after a single error arrived while no key window was available. The pending-dialog flag is now cleared on every exit path, and its clearing write is synchronized to match the read.
+- Fix the wrong error being reported when an EMM error was handled off the main thread. `GIDEMMErrorHandler`'s completion block is now passed a `BOOL handled` flag rather than callers reading a separate variable assigned from the return value.
+
 # 10.0.0
 - **BREAKING**: Update to AppAuth 3.0.0 and GTMAppAuth 6.0.0, which raises the minimum deployment targets to iOS 15.0 and macOS 12.0, widens the `GTMSessionFetcher` dependency to allow 4.x and 5.x, and renames the version-specific Swift Package Manager manifest to `Package@swift-5.7.swift`. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0. ([#628](https://github.com/google/GoogleSignIn-iOS/pull/628))
 - Add `GIDSignIn.wrapperIdentifier` so SDKs that embed Google Sign-In can self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It is opt-in and pre-existing behavior is unchanged. ([#625](https://github.com/google/GoogleSignIn-iOS/pull/625))
