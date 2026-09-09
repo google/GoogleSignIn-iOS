@@ -251,9 +251,19 @@ NS_ASSUME_NONNULL_BEGIN
   });
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  // Bail out rather than dereference nil. If this regresses, no dialog is presented, and
+  // invoking a nil action handler wedges the test host instead of reporting a failure.
+  // Returning early leaves the singleton's pending-dialog flag set, so other tests in this
+  // class may fail too — noisy, but visible, which a hang is not.
+  if (![_presentedViewController isKindOfClass:[UIAlertController class]]) {
+    XCTFail(@"Expected the second error to present a UIAlertController.");
+    return;
+  }
   UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertGreaterThanOrEqual(alert.actions.count, 1);
+  if (alert.actions.count < 1) {
+    XCTFail(@"Expected the alert to have at least one action.");
+    return;
+  }
   UIAlertAction *action = alert.actions[0];
   // Dismiss so the singleton's pending-dialog flag does not leak into the next test.
   action.actionHandler(action);
@@ -301,9 +311,18 @@ NS_ASSUME_NONNULL_BEGIN
   });
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
+  // Bail out rather than dereference nil — see the note in
+  // -testNoKeyWindow_ClearsPendingDialogForNextError.
+  if (![_presentedViewController isKindOfClass:[UIAlertController class]]) {
+    XCTFail(@"Expected the EMM error to present a UIAlertController.");
+    return;
+  }
   UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertEqual(alert.actions.count, 1);
+  if (alert.actions.count != 1) {
+    XCTFail(@"Expected the alert to have exactly one action, got %lu.",
+            (unsigned long)alert.actions.count);
+    return;
+  }
   UIAlertAction *action = alert.actions[0];
   XCTAssertEqualObjects(action.title, @"OK");
   action.actionHandler(action);
