@@ -120,6 +120,24 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertNil(_presentedViewController);
 }
 
+// Verifies that a non-string value under the `error` key is ignored rather than crashing.
+// The value comes straight from a server JSON response and is typed `id`, so it can be any
+// plist type. `-hasPrefix:` is an `NSString` method, so before the type check was added it
+// raised an unrecognized selector exception on a number, array or dictionary.
+- (void)testNonStringErrorValue {
+  NSArray *nonStringValues = @[ @123, @[ @"emm_passcode_required" ], @{ @"a" : @"b" } ];
+  for (id nonStringValue in nonStringValues) {
+    __block BOOL completionCalled = NO;
+    NSDictionary<NSString *, id> *response = @{ @"error" : nonStringValue };
+    BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                                    completion:^() {
+      completionCalled = YES;
+    }];
+    XCTAssertFalse(result);
+    XCTAssertTrue(completionCalled);
+  }
+}
+
 // Verifies that the handler doesn't handle non-EMM error.
 - (void)testNoEMMError {
   __block BOOL completionCalled = NO;
