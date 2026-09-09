@@ -26,12 +26,22 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           TITLE: ${{ github.event.pull_request.title }}
           LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+          REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          CREATOR: ${{ github.event.pull_request.user.login }}
+          STATE: ${{ github.event.pull_request.state }}
+          ASSIGNEES: ${{ join(github.event.pull_request.assignees.*.login, ', ') }}
+          REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}
           URL: ${{ github.event.pull_request.html_url }}
         run: |
           PAYLOAD=$(jq -n \
             --arg pr_num "$PR_NUMBER" \
             --arg title "$TITLE" \
             --arg labels "$LABELS" \
+            --arg repo "$REPO" \
+            --arg creator "$CREATOR" \
+            --arg state "$STATE" \
+            --arg assignees "$ASSIGNEES" \
+            --arg reviewers "$REVIEWERS" \
             --arg url "$URL" \
             '{
               cardsV2: [
@@ -47,14 +57,44 @@ jobs:
                         widgets: [
                           {
                             decoratedText: {
+                              topLabel: "Repo",
+                              text: $repo
+                            }
+                          },
+                          {
+                            decoratedText: {
                               topLabel: "Title",
                               text: $title
                             }
                           },
                           {
                             decoratedText: {
+                              topLabel: "Creator",
+                              text: $creator
+                            }
+                          },
+                          {
+                            decoratedText: {
+                              topLabel: "State",
+                              text: $state
+                            }
+                          },
+                          {
+                            decoratedText: {
+                              topLabel: "Assignees",
+                              text: (if $assignees != "" then "- " + $assignees else "None" end)
+                            }
+                          },
+                          {
+                            decoratedText: {
+                              topLabel: "Reviewers",
+                              text: (if $reviewers != "" then "- " + $reviewers else "None" end)
+                            }
+                          },
+                          {
+                            decoratedText: {
                               topLabel: "Labels",
-                              text: (if $labels != "" then $labels else "None" end)
+                              text: (if $labels != "" then "- " + $labels else "None" end)
                             }
                           },
                           {
