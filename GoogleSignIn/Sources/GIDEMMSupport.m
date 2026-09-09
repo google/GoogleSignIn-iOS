@@ -95,7 +95,7 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
   if (!emmSupport) {
-    return parameters;
+    return [GIDEMMSupport dictionaryWithStringValuesFromDictionary:parameters];
   }
   NSMutableDictionary *allParameters = [(parameters ?: @{}) mutableCopy];
   allParameters[kEMMSupportParameterName] = emmSupport;

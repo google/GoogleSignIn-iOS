@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
     (NSDictionary *)parameters;
 
 /// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
+///
+/// @note This function only returns parameter keys in the `NSDictionary` for string/number/bools.
 + (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;

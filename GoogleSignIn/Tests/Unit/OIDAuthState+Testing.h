@@ -31,12 +31,25 @@
 /**
  * @idToken The ID token.
  * @accessToken The access token string.
- * @accessTokenExipresIn The life time of the access token starting from the moment when `OIDTokenResponse` is created.
+ * @accessTokenExpiresIn The life time of the access token starting from the moment when `OIDTokenResponse` is created.
  * @refreshToken The refresh token string.
  */
 + (instancetype)testInstanceWithIDToken:(NSString *)idToken
                             accessToken:(NSString *)accessToken
                    accessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
                            refreshToken:(NSString *)refreshToken;
+
+/**
+ * @idToken The ID token.
+ * @accessToken The access token string.
+ * @accessTokenExpiresIn The life time of the access token starting from the moment when `OIDTokenResponse` is created.
+ * @refreshToken The refresh token string.
+ * @refreshTokenExpiresIn The life time of the refresh token starting from the moment when `OIDTokenResponse` is created.
+ */
++ (instancetype)testInstanceWithIDToken:(NSString *)idToken
+                            accessToken:(NSString *)accessToken
+                   accessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
+                           refreshToken:(NSString *)refreshToken
+                  refreshTokenExpiresIn:(NSTimeInterval)refreshTokenExpiresIn;
 
 @end

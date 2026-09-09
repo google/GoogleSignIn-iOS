@@ -20,12 +20,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const kSDKVersionLoggingParameter;
 extern NSString *const kEnvironmentLoggingParameter;
-
-NSString* GIDVersion(void);
-
-NSString* GIDEnvironment(void);
+extern NSString *const kSDKWrapperLoggingParameter;
 
 @interface GIDSignInPreferences : NSObject
+
+/// Returns the current Google Sign-In SDK version, prefixed so that `gid` version values can
+/// be distinguished from other values reported under the legacy `gpsdk` logging key.
++ (NSString *)sdkVersion;
+
+/// Returns the current Apple execution environment, such as `ios` or `macos`.
++ (NSString *)environment;
+
+/// Returns the current SDK wrapper identifier, or `nil` if none has been accepted.
++ (nullable NSString *)wrapperIdentifier;
+
+/// Sets the SDK wrapper identifier.
+/// See `GIDSignIn.wrapperIdentifier` for additional information, including formatting rules.
++ (void)setWrapperIdentifier:(nullable NSString *)wrapperIdentifier;
+
+/// Clears any stored SDK wrapper identifier. Thread-safe.
++ (void)resetWrapperIdentifier;
+
+/// Returns the standard logging parameters sent with requests to Google's servers: the SDK
+/// version and execution environment, plus the wrapper identifier when one is set.
++ (NSDictionary<NSString *, NSString *> *)loggingParameters;
 
 + (NSString *)googleAuthorizationServer;
 + (NSString *)googleTokenServer;

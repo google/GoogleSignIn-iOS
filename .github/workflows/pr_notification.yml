@@ -8,62 +8,85 @@ jobs:
   notify-pull-request:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull Request Details
-        run: |
-          echo "Pull Request: ${{ github.event.pull_request.number }}"
-          echo "Author: ${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
-        env:
-          GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
+    - name: Pull Request Details
+      run: |
+        echo "Pull Request: ${{ github.event.pull_request.number }}"
+        echo "Author: ${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
+      env:
+        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
 
-      - name: Google Chat Notification
-        shell: bash
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          TITLE: ${{ github.event.pull_request.title }}
-          LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
-          URL: ${{ github.event.pull_request.html_url }}
-        run: |
-          PAYLOAD=$(jq -n \
-            --arg pr_num "$PR_NUMBER" \
-            --arg title "$TITLE" \
-            --arg labels "$LABELS" \
-            --arg url "$URL" \
-            '{
-              cardsV2: [
+    - name: Google Chat Notification
+      shell: bash
+      env:
+        TITLE: ${{ github.event.pull_request.title }}
+        LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+        GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
+        GITHUB_EVENT_PULL_REQUEST_HTML_URL: ${{ github.event.pull_request.html_url }}
+      run: |
+        curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+          "cards": [
+            {
+              "header": {
+                "title": "Pull request notification",
+                "subtitle": "Pull request: #${{ github.event.pull_request.number }}"
+              },
+              "sections": [
                 {
-                  cardId: "prNotificationCard",
-                  card: {
-                    header: {
-                      title: "Pull request notification",
-                      subtitle: ("Pull request: #" + $pr_num)
+                  "widgets": [
+                    {
+                      "keyValue": {
+                        "topLabel": "Repo",
+                        "content": "${GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME}"
+                      }
                     },
-                    sections: [
-                      {
-                        widgets: [
-                          {
-                            decoratedText: {
-                              topLabel: "Title",
-                              text: $title
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Labels",
-                              text: (if $labels != "" then $labels else "None" end)
-                            }
-                          },
-                          {
-                            buttonList: {
-                              buttons: [
-                                {
-                                  text: "Open Pull Request",
-                                  onClick: {
-                                    openLink: {
-                                      url: $url
-                                    }
-                                  }
-                                }
-                              ]
+                    {
+                      "keyValue": {
+                        "topLabel": "Title",
+                        "content": "'"$TITLE"'"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Creator",
+                        "content": "${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "State",
+                        "content": "${{ github.event.pull_request.state }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Assignees",
+                        "content": "- ${{ join(github.event.pull_request.assignees.*.login, ', ') }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Reviewers",
+                        "content": "- ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
+                      }
+                    },
+                    {
+                      "keyValue": {
+                        "topLabel": "Labels",
+                        "content": "- '"$LABELS"'"
+                      }
+                    },
+                    {
+                      "buttons": [
+                        {
+                          "textButton": {
+                            "text": "Open Pull Request",
+                            "onClick": {
+                              "openLink": {
+                                "url": "${GITHUB_EVENT_PULL_REQUEST_HTML_URL}"
+                              }
                             }
                           }
                         ]

@@ -120,8 +120,6 @@ static NSString * const kEMMWrongActionURL =
      @"com.google.UnitTests:///emmcallback?action=unrecognized";
 static NSString * const kDevicePolicyAppBundleID = @"com.google.DevicePolicy";
 
-static NSString * const kAppHasRunBeforeKey = @"GPP_AppHasRunBefore";
-
 static NSString * const kFingerprintKeychainName = @"fingerprint";
 static NSString * const kVerifierKeychainName = @"verifier";
 static NSString * const kVerifierKey = @"verifier";
@@ -160,11 +158,18 @@ static NSString *const kEMMSupport = @"1";
 static NSString *const kGrantedScope = @"grantedScope";
 static NSString *const kNewScope = @"newScope";
 
-static NSString *const kEssentialAuthTimeClaimsJsonString =
+static NSString *const kEssentialAuthTimeClaimJsonString =
     @"{\"id_token\":{\"auth_time\":{\"essential\":true}}}";
-static NSString *const kNonEssentialAuthTimeClaimsJsonString =
+static NSString *const kNonEssentialAuthTimeClaimJsonString =
     @"{\"id_token\":{\"auth_time\":{\"essential\":false}}}";
 
+static NSString *const kEssentialAMRClaimJsonString =
+    @"{\"id_token\":{\"amr\":{\"essential\":true}}}";
+static NSString *const kNonEssentialAMRClaimJsonString =
+    @"{\"id_token\":{\"amr\":{\"essential\":false}}}";
+
+static NSString *const kMultipleClaimsJsonString =
+    @"{\"id_token\":{\"amr\":{\"essential\":false},\"auth_time\":{\"essential\":false}}}";
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
 // This category is used to allow the test to swizzle a private method.
@@ -310,6 +315,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   OCMStub([_authState alloc]).andReturn(_authState);
   OCMStub([_authState initWithAuthorizationResponse:OCMOCK_ANY]).andReturn(_authState);
   _tokenResponse = OCMStrictClassMock([OIDTokenResponse class]);
+  OCMStub([_tokenResponse additionalParameters]).andReturn(@{});
   _tokenRequest = OCMStrictClassMock([OIDTokenRequest class]);
   _authorization = OCMStrictClassMock([GTMAuthSession class]);
   _keychainStore = OCMStrictClassMock([GTMKeychainStore class]);
@@ -383,6 +389,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
   [_fakeMainBundle stopFaking];
+  [GIDSignInPreferences resetWrapperIdentifier];
   [super tearDown];
 }
 
@@ -751,7 +758,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertEqualObjects(_savedAuthorizationRequest.scope, expectedScopeString);
 }
 
-- (void)testOAuthLogin_WithClaims_FormatsParametersCorrectly {
+- (void)testOAuthLogin_WithAuthTimeClaim_FormatsParametersCorrectly {
   GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
   GIDClaim *essentialAuthTimeClaim = [GIDClaim essentialAuthTimeClaim];
 
@@ -776,7 +783,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                              claims:[NSSet setWithObject:essentialAuthTimeClaim]];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
-                        kEssentialAuthTimeClaimsJsonString,
+                        kEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 
   [self OAuthLoginWithAddScopesFlow:NO
@@ -795,12 +802,13 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                              claims:[NSSet setWithObject:authTimeClaim]];
 
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
-                        kNonEssentialAuthTimeClaimsJsonString,
+                        kNonEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 }
 
-- (void)testOAuthLogin_WithClaims_ReturnsIdTokenWithCorrectClaims {
-  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+- (void)testOAuthLogin_WithAMRClaim_FormatsParametersCorrectly {
+  GIDClaim *AMRClaim = [GIDClaim AMRClaim];
+  GIDClaim *essentialAMRClaim = [GIDClaim essentialAMRClaim];
 
   OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
           ).andDo(^(NSInvocation *invocation){
@@ -820,7 +828,86 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                 useAdditionalScopes:NO
                    additionalScopes:nil
                         manualNonce:nil
-                             claims:[NSSet setWithObject:authTimeClaim]];
+                             claims:[NSSet setWithObject:essentialAMRClaim]];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kEssentialAMRClaimJsonString,
+                        @"Claims JSON should be correctly formatted");
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:[NSSet setWithObject:AMRClaim]];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kNonEssentialAMRClaimJsonString,
+                        @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_WithMultipleClaims_FormatsParametersCorrectly {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *AMRClaim = [GIDClaim AMRClaim];
+  NSSet *claims = [NSSet setWithArray:@[authTimeClaim, AMRClaim]];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:claims];
+
+  XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
+                        kMultipleClaimsJsonString,
+                        @"Claims JSON should be correctly formatted");
+}
+
+- (void)testOAuthLogin_WithMultipleClaims_ReturnsIdTokenWithCorrectClaims {
+  GIDClaim *authTimeClaim = [GIDClaim authTimeClaim];
+  GIDClaim *AMRClaim = [GIDClaim AMRClaim];
+  NSSet *claims = [NSSet setWithArray:@[authTimeClaim, AMRClaim]];
+
+  OCMStub([_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+          ).andDo(^(NSInvocation *invocation){
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                        claimsError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO
+                useAdditionalScopes:NO
+                   additionalScopes:nil
+                        manualNonce:nil
+                             claims:claims];
 
   XCTAssertNotNil(_signIn.currentUser, @"The currentUser should not be nil after a successful sign-in.");
   NSString *idTokenString = _signIn.currentUser.idToken.tokenString;
@@ -830,10 +917,13 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   NSData *payloadData = [[NSData alloc]
       initWithBase64EncodedString:components[1]
                           options:NSDataBase64DecodingIgnoreUnknownCharacters];
-  NSDictionary *claims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
-  XCTAssertEqualObjects(claims[@"auth_time"],
+  NSDictionary *receivedClaims = [NSJSONSerialization JSONObjectWithData:payloadData options:0 error:nil];
+  XCTAssertEqualObjects(receivedClaims[@"auth_time"],
                         kAuthTime,
                         @"The 'auth_time' claim should be present and correct.");
+  XCTAssertEqualObjects(receivedClaims[@"amr"],
+                        [OIDTokenResponse stubbedAMRValues],
+                        @"The 'amr' claim should be present and correct.");
 }
 
 - (void)testAddScopes {
@@ -963,7 +1053,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   NSArray<NSString *> *expectedScopes = @[kNewScope, kGrantedScope];
   XCTAssertEqualObjects(grantedScopes, expectedScopes);
   XCTAssertEqualObjects(_savedAuthorizationRequest.additionalParameters[@"claims"],
-                        kNonEssentialAuthTimeClaimsJsonString,
+                        kNonEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 
   [_user verify];
@@ -1077,6 +1167,120 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 
   NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
   XCTAssertEqualObjects(params[@"hd"], kHostedDomain, @"hosted domain should match");
+}
+
+- (void)testWrapperIdentifier_PresentInAuthorizationRequestWhenSet {
+  GIDSignIn.wrapperIdentifier = @"firebase";
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(params[@"gidwrapper"], @"firebase",
+                        @"The authorization request should contain the 'gidwrapper' parameter "
+                        "when set.");
+}
+
+- (void)testWrapperIdentifier_AbsentFromAuthorizationRequestWhenUnset {
+  [GIDSignInPreferences resetWrapperIdentifier];
+  OCMStub(
+    [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
+  ).andDo(^(NSInvocation *invocation) {
+    self->_keychainSaved = self->_saveAuthorizationReturnValue;
+  });
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:nil
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
+  XCTAssertNil(params[@"gidwrapper"],
+               @"The authorization request should not contain the 'gidwrapper' parameter "
+               "when unset.");
+}
+
+- (void)testWrapperIdentifier_DroppedValueIsIgnored {
+  XCTAssertNoThrow(GIDSignIn.wrapperIdentifier = @"firebasé",
+                   @"Setting a dropped wrapper identifier should be ignored.");
+  XCTAssertNil(GIDSignIn.wrapperIdentifier,
+               @"The wrapper identifier should be nil after a dropped assignment.");
+}
+
+- (void)testWrapperIdentifier_PresentOnRevokeURL {
+  GIDSignIn.wrapperIdentifier = @"my-sdk";
+
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url
+                                           resolvingAgainstBaseURL:NO];
+  NSArray<NSURLQueryItem *> *queryItems = components.queryItems;
+
+  XCTAssertEqualObjects([self valueForQueryItemName:@"gidwrapper" inArray:queryItems],
+                        @"my-sdk", @"The revoke URL should contain the 'gidwrapper' parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kSDKVersionLoggingParameter inArray:queryItems],
+                        [GIDSignInPreferences sdkVersion],
+                        @"The revoke URL should contain the SDK version parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kEnvironmentLoggingParameter
+                                            inArray:queryItems],
+                        [GIDSignInPreferences environment],
+                        @"The revoke URL should contain the environment parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:@"token" inArray:queryItems],
+                        kAccessToken, @"The revoke URL should contain the 'token' parameter.");
+}
+
+- (void)testWrapperIdentifier_AbsentFromRevokeURLWhenUnset {
+  [GIDSignInPreferences resetWrapperIdentifier];
+
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url
+                                           resolvingAgainstBaseURL:NO];
+  NSArray<NSURLQueryItem *> *queryItems = components.queryItems;
+
+  XCTAssertNil([self valueForQueryItemName:@"gidwrapper" inArray:queryItems],
+               @"The revoke URL should not contain the 'gidwrapper' parameter when unset.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kSDKVersionLoggingParameter inArray:queryItems],
+                        [GIDSignInPreferences sdkVersion],
+                        @"The revoke URL should still contain the SDK version parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:kEnvironmentLoggingParameter
+                                            inArray:queryItems],
+                        [GIDSignInPreferences environment],
+                        @"The revoke URL should still contain the environment parameter.");
+  XCTAssertEqualObjects([self valueForQueryItemName:@"token" inArray:queryItems],
+                        kAccessToken,
+                        @"The revoke URL should still contain the 'token' parameter.");
 }
 
 - (void)testOAuthLogin_ConsentCanceled {
@@ -1211,6 +1415,19 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   XCTAssertFalse(_completionCalled, @"should not call delegate");
 }
 
+#pragma mark - Test Fresh Install
+
+- (void)testFreshInstall_removesKeychainEntries {
+  // Simulate that the app has been deleted and user defaults removed.
+  [NSUserDefaults.standardUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
+  // Initialization should check `isFreshInstall`.
+  GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
+                                     authStateMigrationService:_authStateMigrationService];
+  // If `isFreshInstall`, keychain entries should be removed.
+  XCTAssertNotNil(signIn);
+  XCTAssertTrue(self->_keychainRemoved);
+}
+
 #pragma mark - Tests - disconnectWithCallback:
 
 // Verifies disconnect calls callback with no errors if access token is present.
@@ -1242,6 +1459,104 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
   [self verifyAndRevokeToken:kAccessToken hasCallback:NO waitingForExpectations:@[]];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Verifies a token containing characters that are reserved in a URL query is percent-encoded
+// in the revoke URL, so that it arrives at the server intact.
+- (void)testDisconnectNoCallback_tokenWithReservedCharacters {
+  NSString *tokenWithReservedCharacters = @"token&with=reserved#characters";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithReservedCharacters] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+  [self verifyAndRevokeToken:tokenWithReservedCharacters
+                 hasCallback:NO
+      waitingForExpectations:@[]];
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// OAuth parameters use application/x-www-form-urlencoded (RFC 6749 Appendix B), where "+"
+// means a space, so a literal "+" in a token is sent as "%2B" even though RFC 3986
+// would permit it unescaped in a query.
+- (void)testDisconnectNoCallback_tokenWithPlusCharacter {
+  NSString *tokenWithPlusCharacter = @"token+with+plus";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  XCTAssertTrue([self isFetcherStarted], @"should start fetching");
+  NSURL *url = [self fetchedURL];
+  XCTAssertEqualObjects([url scheme], @"https", @"scheme must match");
+  XCTAssertEqualObjects([url host], @"accounts.google.com", @"host must match");
+  XCTAssertEqualObjects([url path], @"/o/oauth2/revoke", @"path must match");
+
+  NSString *query = [[self fetchedURL] query];
+  XCTAssertTrue([query containsString:@"token=token%2Bwith%2Bplus"],
+                @"'+' should be percent-encoded in the query string");
+  XCTAssertFalse([query containsString:@"token=token+with+plus"],
+                 @"'+' should not be literal in the query string");
+
+  NSURLComponents *components =
+      [NSURLComponents componentsWithURL:[self fetchedURL] resolvingAgainstBaseURL:NO];
+  NSURLQueryItem *tokenItem;
+  for (NSURLQueryItem *item in components.queryItems) {
+    if ([item.name isEqualToString:@"token"]) {
+      tokenItem = item;
+      break;
+    }
+  }
+  XCTAssertEqualObjects(tokenItem.value, tokenWithPlusCharacter);
+
+  [self didFetch:nil error:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Guard the "+" to "%2B" rewrite, which is only safe if a space encodes as "%20", never as "+".
+// Whilst this is technically testing Foundation behaviour, it's undocumented behaviour.
+- (void)testDisconnectNoCallback_tokenWithSpace {
+  NSString *tokenWithSpace = @"token with space";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithSpace] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  NSString *query = [[self fetchedURL] query];
+  XCTAssertTrue([query containsString:@"token=token%20with%20space"],
+                @"a space should be percent-encoded in the query string");
+  XCTAssertFalse([query containsString:@"+"], @"a space should never be encoded as '+'");
+
+  [self didFetch:nil error:nil];
+  XCTAssertTrue(_keychainRemoved, @"should clear saved keychain name");
+  [_authorization verify];
+  [_authState verify];
+  [_tokenResponse verify];
+}
+
+// Round-trip the revoke URL through OIDURLQueryComponent, a pretend server, to check "+" survives.
+- (void)testDisconnectNoCallback_tokenWithPlusCharacterFormDecoded {
+  NSString *tokenWithPlusCharacter = @"token+with+plus";
+  [[[_authorization expect] andReturn:_authState] authState];
+  [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
+  [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
+  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
+  [_signIn disconnectWithCompletion:nil];
+
+  [self verifyAndRevokeToken:tokenWithPlusCharacter
+                 hasCallback:NO
+      waitingForExpectations:@[]];
   [_authorization verify];
   [_authState verify];
   [_tokenResponse verify];
@@ -1579,6 +1894,17 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
 
 #pragma mark - Helpers
 
+// Returns the value for the query item with the given name in the array of query items.
+- (nullable NSString *)valueForQueryItemName:(NSString *)name
+                                     inArray:(NSArray<NSURLQueryItem *> *)queryItems {
+  for (NSURLQueryItem *item in queryItems) {
+    if ([item.name isEqualToString:name]) {
+      return item.value;
+    }
+  }
+  return nil;
+}
+
 // Whether or not a fetcher has been started.
 - (BOOL)isFetcherStarted {
   NSUInteger count = _fetcherService.fetchers.count;
@@ -1621,9 +1947,11 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
   NSDictionary<NSString *, NSObject<NSCopying> *> *params = queryComponent.dictionaryValue;
   XCTAssertEqualObjects([params valueForKey:@"token"], token,
                         @"token parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter], GIDVersion(),
+  XCTAssertEqualObjects([params valueForKey:kSDKVersionLoggingParameter],
+                        [GIDSignInPreferences sdkVersion],
                         @"SDK version logging parameter should match");
-  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter], GIDEnvironment(),
+  XCTAssertEqualObjects([params valueForKey:kEnvironmentLoggingParameter],
+                        [GIDSignInPreferences environment],
                         @"Environment logging parameter should match");
   // Emulate result back from server.
   [self didFetch:nil error:nil];
@@ -1688,7 +2016,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
                                                                nonce:nonce
                                                          errorString:authError];
 
-  NSString *idToken = claims ? [OIDTokenResponse fatIDTokenWithAuthTime] : [OIDTokenResponse fatIDToken];
+  NSString *idToken = claims ? [OIDTokenResponse fatIDTokenWithClaims] : [OIDTokenResponse fatIDToken];
   OIDTokenResponse *tokenResponse =
       [OIDTokenResponse testInstanceWithIDToken:idToken
                                     accessToken:restoredSignIn ? kAccessToken : nil
@@ -1789,8 +2117,8 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
     XCTAssertNotNil(_savedAuthorizationRequest);
     NSDictionary<NSString *, NSObject *> *params = _savedAuthorizationRequest.additionalParameters;
     XCTAssertEqualObjects(params[@"include_granted_scopes"], @"true");
-    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], GIDVersion());
-    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], GIDEnvironment());
+    XCTAssertEqualObjects(params[kSDKVersionLoggingParameter], [GIDSignInPreferences sdkVersion]);
+    XCTAssertEqualObjects(params[kEnvironmentLoggingParameter], [GIDSignInPreferences environment]);
     XCTAssertNotNil(_savedAuthorizationCallback);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
@@ -1958,7 +2286,7 @@ static NSString *const kNonEssentialAuthTimeClaimsJsonString =
     additionalParameters[@"emm_passcode_info_required"] = @"1";
   }
   if (claimsAsJSONRequired) {
-    additionalParameters[@"claims"] = kNonEssentialAuthTimeClaimsJsonString;
+    additionalParameters[@"claims"] = kNonEssentialAuthTimeClaimJsonString;
   }
 
   return [additionalParameters copy];

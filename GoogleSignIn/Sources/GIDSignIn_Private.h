@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDAppCheck;
 @class GIDAuthStateMigration;
 
+/// User preference key to detect fresh install of the app.
+extern NSString *const kAppHasRunBeforeKey;
+
 /// Represents a completion block that takes a `GIDSignInResult` on success or an error if the
 /// operation was unsuccessful.
 typedef void (^GIDSignInCompletion)(GIDSignInResult *_Nullable signInResult,

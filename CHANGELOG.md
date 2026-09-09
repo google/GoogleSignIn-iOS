@@ -1,3 +1,33 @@
+# 10.0.0
+- **BREAKING**: Update to AppAuth 3.0.0 and GTMAppAuth 6.0.0, which raises the minimum deployment targets to iOS 15.0 and macOS 12.0, widens the `GTMSessionFetcher` dependency to allow 4.x and 5.x, and renames the version-specific Swift Package Manager manifest to `Package@swift-5.7.swift`. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0. ([#628](https://github.com/google/GoogleSignIn-iOS/pull/628))
+- Add `GIDSignIn.wrapperIdentifier` so SDKs that embed Google Sign-In can self-identify in Google's diagnostic logs via a new `gidwrapper` parameter. It is opt-in and pre-existing behavior is unchanged. ([#625](https://github.com/google/GoogleSignIn-iOS/pull/625))
+- Update the sign-in button icon to the gradient Google G ([#633](https://github.com/google/GoogleSignIn-iOS/pull/633))
+- Pin the Swift names of the `GIDClaim` factory methods with explicit `NS_SWIFT_NAME` annotations; the imported Swift names are unchanged ([#627](https://github.com/google/GoogleSignIn-iOS/pull/627))
+- Use `NSURLComponents` to properly encode tokens ([#618](https://github.com/google/GoogleSignIn-iOS/pull/618))
+- Fix a crash in `additionalTokenRefreshParameters` when `emmSupport` is `nil` ([#608](https://github.com/google/GoogleSignIn-iOS/pull/608))
+- Internal
+  - Consolidate SDK logging parameters to prepare for new ones ([#616](https://github.com/google/GoogleSignIn-iOS/pull/616))
+  - Fix `swift-button-functional-test` ([#614](https://github.com/google/GoogleSignIn-iOS/pull/614))
+  - Fix the `SignInSample` import and add the sample to CI ([#632](https://github.com/google/GoogleSignIn-iOS/pull/632))
+  - Add non-blocking Xcode 27 preview jobs to CI ([#629](https://github.com/google/GoogleSignIn-iOS/pull/629))
+  - Raise the sample Podfile deployment targets for Xcode 27 ([#634](https://github.com/google/GoogleSignIn-iOS/pull/634))
+  - Bump the bundler group dependencies ([#594](https://github.com/google/GoogleSignIn-iOS/pull/594), [#630](https://github.com/google/GoogleSignIn-iOS/pull/630))
+
+# 9.2.0
+- Expose the refresh token expiration date ([#577](https://github.com/google/GoogleSignIn-iOS/pull/577))
+- Support requesting the `amr` (Authentication Methods References) claim ([#600](https://github.com/google/GoogleSignIn-iOS/pull/600))
+- Remove keychain entries on a fresh install ([#567](https://github.com/google/GoogleSignIn-iOS/pull/567))
+- Update the AppAuth-iOS dependency minimum to 2.1.0 ([#603](https://github.com/google/GoogleSignIn-iOS/pull/603))
+- Fix optional bundle handling for localized strings ([#373](https://github.com/google/GoogleSignIn-iOS/pull/373))
+- Include all public headers unconditionally in the umbrella header ([#595](https://github.com/google/GoogleSignIn-iOS/pull/595))
+- Move `GIDSignInButton` import outside of conditional compilation ([#591](https://github.com/google/GoogleSignIn-iOS/pull/591))
+- Internal
+  - Fix Swift Package Manager deprecation warnings ([#579](https://github.com/google/GoogleSignIn-iOS/pull/579))
+  - Improve doc comment for `GIDSignInButtonStyle` ([#204](https://github.com/google/GoogleSignIn-iOS/pull/204))
+  - Resolve unassigned child warning in the `AppIcon` asset catalog ([#348](https://github.com/google/GoogleSignIn-iOS/pull/348))
+  - Refactor GitHub Actions workflow ([#580](https://github.com/google/GoogleSignIn-iOS/pull/580))
+  - Upgrade GitHub Actions to the latest versions for Node 24 compatibility ([#592](https://github.com/google/GoogleSignIn-iOS/pull/592), [#593](https://github.com/google/GoogleSignIn-iOS/pull/593))
+
 # 9.1.0
 - Allow requesting `claims` (currently, only `auth_time`) via [Sign-in methods](https://github.com/google/GoogleSignIn-iOS/blob/gandhiakshat/update-changelog-for-9.1.0-release/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240) ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
 - Update `addScopes:` methods in `GIDSignIn` to include previously requested `claims` ([#557](https://github.com/google/GoogleSignIn-iOS/pull/557))

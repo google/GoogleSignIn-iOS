@@ -24,7 +24,7 @@ class DaysUntilBirthdayUITests_iOS: XCTestCase {
   private let signInDisclaimerHeaderText =
     "Sign in to DaysUntilBirthday (iOS)"
   private let returningUserSignInDisclaimerHeaderText =
-    "You’re signing back in to DaysUntilBirthday (iOS)"
+    "You're signing back in to DaysUntilBirthday (iOS)"
   private let additionalAccessHeaderText = "DaysUntilBirthday (iOS) wants additional access to your Google Account"
   private let appTrustWarningText = "Make sure you trust DaysUntilBirthday (iOS)"
   private let chooseAnAccountHeaderText = "Choose an account"
@@ -126,41 +126,23 @@ extension DaysUntilBirthdayUITests_iOS {
   /// This will assumme the full flow where a user must type in an email and
   /// password to sign in with.
   func signInForTheFirstTime() -> Bool {
-    guard sampleApp.textFields["Email or phone"]
-            .waitForExistence(timeout: timeout) else {
+    let emailField = sampleApp.textFields["Email or phone"]
+    guard emailField.waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find email textfield")
       return false
     }
-    guard sampleApp
-            .keyboards
-            .element
-            .buttons["return"]
-            .waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find 'return' button")
-      return false
-    }
 
-    sampleApp.textFields["Email or phone"].typeText(Credential.email.rawValue)
-    sampleApp.keyboards.element.buttons["return"].tap()
+    emailField.tap()
+    emailField.typeText("\(Credential.email.rawValue)\n")
 
-    guard sampleApp.secureTextFields["Enter your password"]
-            .waitForExistence(timeout: timeout) else {
+    let passwordField = sampleApp.secureTextFields["Enter your password"]
+    guard passwordField.waitForExistence(timeout: timeout) else {
       XCTFail("Failed to find password textfield")
       return false
     }
-    guard sampleApp
-            .keyboards
-            .element
-            .buttons["return"]
-            .waitForExistence(timeout: timeout) else {
-      XCTFail("Failed to find 'return' button")
-      return false
-    }
 
-    sampleApp
-      .secureTextFields["Enter your password"]
-      .typeText(Credential.password.rawValue)
-    sampleApp.keyboards.element.buttons["return"].tap()
+    passwordField.tap()
+    passwordField.typeText("\(Credential.password.rawValue)\n")
 
     if sampleApp
       .staticTexts[passwordManagerPrompt]

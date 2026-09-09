@@ -19,6 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const kAuthTimeClaimName;
+extern NSString *const kAMRClaimName;
 
 /**
  * An object representing a single OIDC claim to be requested for an ID token.
@@ -37,10 +38,16 @@ extern NSString *const kAuthTimeClaimName;
 #pragma mark - Factory Methods
 
 /// Creates a *non-essential* (voluntary) "auth_time" claim object.
-+ (instancetype)authTimeClaim;
++ (instancetype)authTimeClaim NS_SWIFT_NAME(authTime());
 
 /// Creates an *essential* "auth_time" claim object.
-+ (instancetype)essentialAuthTimeClaim;
++ (instancetype)essentialAuthTimeClaim NS_SWIFT_NAME(essentialAuthTime());
+
+/// Creates a *non-essential* (voluntary) "amr" claim object.
++ (instancetype)AMRClaim NS_SWIFT_NAME(amr());
+
+/// Creates an *essential* "amr" claim object.
++ (instancetype)essentialAMRClaim NS_SWIFT_NAME(essentialAMR());
 
 @end
 

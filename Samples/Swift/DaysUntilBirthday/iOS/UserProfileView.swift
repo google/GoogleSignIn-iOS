@@ -17,6 +17,27 @@
 import SwiftUI
 import GoogleSignIn
 
+/// A view that displays a list of ID token claims.
+struct ClaimsListView: View {
+  let claims: [Claim]
+  var body: some View {
+    List(claims) { claim in
+      VStack(alignment: .leading, spacing: 4) {
+        Text(claim.key)
+          .font(.caption)
+          .foregroundColor(.secondary)
+          .fontWeight(.semibold)
+
+        Text(claim.value)
+          .font(.body)
+          .lineLimit(4)
+      }
+      .padding(.vertical, 4)
+    }
+    .navigationTitle("ID Token Claims")
+  }
+}
+
 struct UserProfileView: View {
   @EnvironmentObject var authViewModel: AuthenticationViewModel
   @StateObject var birthdayViewModel = BirthdayViewModel()
@@ -35,8 +56,15 @@ struct UserProfileView: View {
               Text(userProfile.name)
                 .font(.headline)
               Text(userProfile.email)
-              if let authTimeString = authViewModel.formattedAuthTimeString {
-                Text("Last sign-in date: \(authTimeString)")
+
+              if !authViewModel.claims.isEmpty {
+                NavigationLink(destination: ClaimsListView(claims: authViewModel.claims)) {
+                  HStack {
+                    Image(systemName: "list.bullet.rectangle.portrait")
+                    Text("View ID Token Claims")
+                  }
+                  .foregroundColor(.blue)
+                }
               }
             }
           }
