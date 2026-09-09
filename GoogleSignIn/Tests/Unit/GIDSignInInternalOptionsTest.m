@@ -25,30 +25,88 @@
 #import <OCMock/OCMock.h>
 #endif
 
-@interface GIDSignInInternalOptionsTest : XCTestCase
+static NSString *const kLoginHint = @"login_hint";
+static NSString *const kScope1 = @"scope1";
+static NSString *const kScope2 = @"scope2";
+static NSString *const kNonce = @"test_nonce";
+static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
+
+@interface GIDSignInInternalOptionsTest : XCTestCase {
+  // Mock for the configuration passed to the option factories.
+  id _configuration;
+
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  // Mock for the presenting view controller passed to the option factories.
+  id _presentingViewController;
+#elif TARGET_OS_OSX
+  // Mock for the presenting window passed to the option factories.
+  id _presentingWindow;
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+}
 @end
 
 @implementation GIDSignInInternalOptionsTest
 
-- (void)testDefaultOptions {
-  id configuration = OCMStrictClassMock([GIDConfiguration class]);
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  id presentingViewController = OCMStrictClassMock([UIViewController class]);
-#elif TARGET_OS_OSX
-  id presentingWindow = OCMStrictClassMock([NSWindow class]);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  NSString *loginHint = @"login_hint";
+#pragma mark - Lifecycle
 
-  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
-                                     NSError * _Nullable error) {};
-  GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
+- (void)setUp {
+  [super setUp];
+  _configuration = OCMStrictClassMock([GIDConfiguration class]);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                       presentingViewController:presentingViewController
+  _presentingViewController = OCMStrictClassMock([UIViewController class]);
 #elif TARGET_OS_OSX
-                                               presentingWindow:presentingWindow
+  _presentingWindow = OCMStrictClassMock([NSWindow class]);
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                                      loginHint:loginHint
+}
+
+#pragma mark - Helpers
+
+// The claim set requested by `-optionsWithAllParameters`. `GIDClaim` implements
+// `-isEqual:` by name and essentiality, so a freshly built set compares equal.
+- (NSSet<GIDClaim *> *)expectedClaims {
+  return [NSSet setWithObject:[GIDClaim authTimeClaim]];
+}
+
+- (GIDSignInInternalOptions *)optionsWithAllParameters {
+  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                     NSError *_Nullable error) {};
+  return [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                          presentingViewController:_presentingViewController
+#elif TARGET_OS_OSX
+                                                  presentingWindow:_presentingWindow
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                                         loginHint:kLoginHint
+                                                     addScopesFlow:NO
+                                                            scopes:@[kScope1, kScope2]
+                                                             nonce:kNonce
+                                                            claims:[self expectedClaims]
+                                                        completion:completion];
+}
+
+// Verifies the mocks created in `-setUp` have no unfulfilled expectations.
+- (void)verifyConfigurationAndPresentationMocks {
+  OCMVerifyAll(_configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  OCMVerifyAll(_presentingViewController);
+#elif TARGET_OS_OSX
+  OCMVerifyAll(_presentingWindow);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+}
+
+#pragma mark - Tests
+
+- (void)testDefaultOptions {
+  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                     NSError *_Nullable error) {};
+  GIDSignInInternalOptions *options =
+      [GIDSignInInternalOptions defaultOptionsWithConfiguration:_configuration
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                       presentingViewController:_presentingViewController
+#elif TARGET_OS_OSX
+                                               presentingWindow:_presentingWindow
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+                                                      loginHint:kLoginHint
                                                   addScopesFlow:NO
                                                      completion:completion];
   XCTAssertTrue(options.interactive);
@@ -56,61 +114,50 @@
   XCTAssertFalse(options.addScopesFlow);
   XCTAssertNil(options.extraParams);
 
-  OCMVerifyAll(configuration);
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OCMVerifyAll(presentingViewController);
-#elif TARGET_OS_OSX
-  OCMVerifyAll(presentingWindow);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  [self verifyConfigurationAndPresentationMocks];
 }
 
 - (void)testDefaultOptions_withAllParameters_initializesPropertiesCorrectly {
-  id configuration = OCMStrictClassMock([GIDConfiguration class]);
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  id presentingViewController = OCMStrictClassMock([UIViewController class]);
-#elif TARGET_OS_OSX
-  id presentingWindow = OCMStrictClassMock([NSWindow class]);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  NSString *loginHint = @"login_hint";
-  NSArray<NSString *> *scopes = @[@"scope1", @"scope2"];
-  NSString *nonce = @"test_nonce";
-  NSSet<GIDClaim *> *claims = [NSSet setWithObject:[GIDClaim authTimeClaim]];
-  NSArray<NSString *> *expectedScopes = @[@"scope1", @"scope2", @"email", @"profile"];
+  NSArray<NSString *> *expectedScopes = @[kScope1, kScope2, @"email", @"profile"];
 
-  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
-                                     NSError * _Nullable error) {};
-  GIDSignInInternalOptions *options =
-      [GIDSignInInternalOptions defaultOptionsWithConfiguration:configuration
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                       presentingViewController:presentingViewController
-#elif TARGET_OS_OSX
-                                               presentingWindow:presentingWindow
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                                      loginHint:loginHint
-                                                  addScopesFlow:NO
-                                                         scopes:scopes
-                                                          nonce:nonce
-                                                         claims:claims
-                                                     completion:completion];
+  GIDSignInInternalOptions *options = [self optionsWithAllParameters];
+
   XCTAssertTrue(options.interactive);
   XCTAssertFalse(options.continuation);
   XCTAssertFalse(options.addScopesFlow);
   XCTAssertNil(options.extraParams);
 
   // Convert arrays to sets for comparison to make the test order-independent.
-  XCTAssertEqualObjects([NSSet setWithArray:options.scopes], [NSSet setWithArray:expectedScopes]);
-  XCTAssertEqualObjects(options.nonce, nonce);
-  XCTAssertEqualObjects(options.claims, claims);
+  XCTAssertEqualObjects([NSSet setWithArray:options.scopes],
+                        [NSSet setWithArray:expectedScopes]);
+  XCTAssertEqualObjects(options.nonce, kNonce);
+  XCTAssertEqualObjects(options.claims, [self expectedClaims]);
   XCTAssertNil(options.claimsAsJSON);
 
-  OCMVerifyAll(configuration);
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OCMVerifyAll(presentingViewController);
-#elif TARGET_OS_OSX
-  OCMVerifyAll(presentingWindow);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  [self verifyConfigurationAndPresentationMocks];
 }
 
+- (void)testOptionsWithExtraParameters_forContinuation_preservesAllPropertiesAndSetsContinuation {
+  GIDSignInInternalOptions *options = [self optionsWithAllParameters];
+  options.claimsAsJSON = kClaimsAsJSON;
+  NSDictionary *extraParams = @{@"extra_key" : @"extra_value"};
+
+  GIDSignInInternalOptions *continuationOptions =
+      [options optionsWithExtraParameters:extraParams forContinuation:YES];
+
+  XCTAssertEqualObjects(continuationOptions.nonce, kNonce);
+  XCTAssertEqualObjects(continuationOptions.claims, [self expectedClaims]);
+  XCTAssertEqualObjects(continuationOptions.claimsAsJSON, kClaimsAsJSON);
+  XCTAssertTrue(continuationOptions.continuation);
+  XCTAssertEqualObjects(continuationOptions.extraParams, extraParams);
+  XCTAssertEqualObjects(continuationOptions.loginHint, kLoginHint);
+  XCTAssertEqualObjects([NSSet setWithArray:continuationOptions.scopes],
+                        [NSSet setWithArray:options.scopes]);
+  XCTAssertFalse(continuationOptions.addScopesFlow);
+  XCTAssertTrue(continuationOptions.interactive);
+
+  [self verifyConfigurationAndPresentationMocks];
+}
 
 - (void)testSilentOptions {
   GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
