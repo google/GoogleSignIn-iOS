@@ -33,6 +33,11 @@ jobs:
           REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}
           URL: ${{ github.event.pull_request.html_url }}
         run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "WEBHOOK_URL secret is not set (e.g. fork PR). Skipping notification."
+            exit 0
+          fi
+        
           PAYLOAD=$(jq -n \
             --arg pr_num "$PR_NUMBER" \
             --arg title "$TITLE" \
@@ -43,60 +48,28 @@ jobs:
             --arg assignees "$ASSIGNEES" \
             --arg reviewers "$REVIEWERS" \
             --arg url "$URL" \
-            '{
+            '
+            def guard(val): if (val == null or val == "") then "None" else val end;
+            def guard_list(val): if (val == null or val == "") then "None" else "- " + val end;
+            {
               cardsV2: [
                 {
                   cardId: "prNotificationCard",
                   card: {
                     header: {
                       title: "Pull request notification",
-                      subtitle: ("Pull request: #" + $pr_num)
+                      subtitle: ("Pull request: #" + guard($pr_num))
                     },
                     sections: [
                       {
                         widgets: [
-                          {
-                            decoratedText: {
-                              topLabel: "Repo",
-                              text: $repo
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Title",
-                              text: $title
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Creator",
-                              text: $creator
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "State",
-                              text: $state
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Assignees",
-                              text: (if $assignees != "" then "- " + $assignees else "None" end)
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Reviewers",
-                              text: (if $reviewers != "" then "- " + $reviewers else "None" end)
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Labels",
-                              text: (if $labels != "" then "- " + $labels else "None" end)
-                            }
-                          },
+                          { decoratedText: { topLabel: "Repo", text: guard($repo) } },
+                          { decoratedText: { topLabel: "Title", text: guard($title) } },
+                          { decoratedText: { topLabel: "Creator", text: guard($creator) } },
+                          { decoratedText: { topLabel: "State", text: guard($state) } },
+                          { decoratedText: { topLabel: "Assignees", text: guard_list($assignees) } },
+                          { decoratedText: { topLabel: "Reviewers", text: guard_list($reviewers) } },
+                          { decoratedText: { topLabel: "Labels", text: guard_list($labels) } },
                           {
                             buttonList: {
                               buttons: [
@@ -119,7 +92,11 @@ jobs:
               ]
             }')
 
-          curl --location --request POST "$WEBHOOK_URL" \
+          RESPONSE=$(curl --fail-with-body --location --request POST "$WEBHOOK_URL" \
             --header 'Content-Type: application/json; charset=UTF-8' \
-            --data "$PAYLOAD"
+            --data-raw "$PAYLOAD" 2>&1) || {
+              echo "Failed to send Google Chat notification:"
+              echo "$RESPONSE"
+              exit 1
+          }
 
