@@ -23,6 +23,7 @@ jobs:
           PUSHER_NAME: ${{ github.event.pusher.name }}
 
       - name: Push Notification to Google Chat
+        continue-on-error: true
         shell: bash
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
@@ -31,35 +32,32 @@ jobs:
           REPO: ${{ github.event.repository.full_name }}
           COMPARE_URL: ${{ github.event.compare }}
         run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "WEBHOOK_URL secret is not set. Skipping notification."
+            exit 0
+          fi
+        
           PAYLOAD=$(jq -n \
             --arg commit "$COMMIT_MSG" \
             --arg author "$AUTHOR" \
             --arg repo "$REPO" \
             --arg compare "$COMPARE_URL" \
-            '{
+            '
+            def guard(val): if (val == null or val == "") then "None" else val end;
+            {
               cardsV2: [
                 {
                   cardId: "pushNotificationCard",
                   card: {
                     header: {
                       title: "Push to main branch",
-                      subtitle: $commit
+                      subtitle: guard($commit)
                     },
                     sections: [
                       {
                         widgets: [
-                          {
-                            decoratedText: {
-                              topLabel: "Repo",
-                              text: $repo
-                            }
-                          },
-                          {
-                            decoratedText: {
-                              topLabel: "Committed by",
-                              text: $author
-                            }
-                          },
+                          { decoratedText: { topLabel: "Repo", text: guard($repo) } },
+                          { decoratedText: { topLabel: "Committed by", text: guard($author) } },
                           {
                             buttonList: {
                               buttons: [
@@ -82,7 +80,11 @@ jobs:
               ]
             }')
 
-          curl --location --request POST "$WEBHOOK_URL" \
+          RESPONSE=$(curl --fail-with-body --location --request POST "$WEBHOOK_URL" \
             --header 'Content-Type: application/json; charset=UTF-8' \
-            --data "$PAYLOAD"
+            --data-raw "$PAYLOAD" 2>&1) || {
+              echo "Failed to send Google Chat notification:"
+              echo "$RESPONSE"
+              exit 1
+          }
 
