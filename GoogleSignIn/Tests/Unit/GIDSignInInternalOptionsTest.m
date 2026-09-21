@@ -32,14 +32,14 @@ static NSString *const kNonce = @"test_nonce";
 static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
 
 @interface GIDSignInInternalOptionsTest : XCTestCase {
-  // Mock for the configuration passed to the option factories.
+  /// Mock for the configuration passed to the option factories.
   id _configuration;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // Mock for the presenting view controller passed to the option factories.
+  /// Mock for the presenting view controller passed to the option factories.
   id _presentingViewController;
 #elif TARGET_OS_OSX
-  // Mock for the presenting window passed to the option factories.
+  /// Mock for the presenting window passed to the option factories.
   id _presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
@@ -61,8 +61,8 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
 
 #pragma mark - Helpers
 
-// The claim set requested by `-optionsWithAllParameters`. `GIDClaim` implements
-// `-isEqual:` by name and essentiality, so a freshly built set compares equal.
+/// The claim set requested by `-optionsWithAllParameters`. `GIDClaim` implements
+/// `-isEqual:` by name and essentiality, so a freshly built set compares equal.
 - (NSSet<GIDClaim *> *)expectedClaims {
   return [NSSet setWithObject:[GIDClaim authTimeClaim]];
 }
@@ -84,7 +84,7 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
                                                         completion:completion];
 }
 
-// Verifies the mocks created in `-setUp` have no unfulfilled expectations.
+/// Verifies the mocks created in `-setUp` have no unfulfilled expectations.
 - (void)verifyConfigurationAndPresentationMocks {
   OCMVerifyAll(_configuration);
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
