@@ -4,97 +4,100 @@ on:
   pull_request:
     types: [review_requested]
 
+permissions:
+  contents: read
+
 jobs:
   notify-pull-request:
     runs-on: ubuntu-latest
     steps:
-    - name: Pull Request Details
-      run: |
-        echo "Pull Request: ${{ github.event.pull_request.number }}"
-        echo "Author: ${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
-      env:
-        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
+      - name: Pull Request Details
+        run: |
+          echo "Pull Request: ${PR_NUMBER}"
+          echo "Author: ${AUTHOR}"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
 
-    - name: Google Chat Notification
-      shell: bash
-      env:
-        TITLE: ${{ github.event.pull_request.title }}
-        LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
-        GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
-        GITHUB_EVENT_PULL_REQUEST_USER_LOGIN: ${{ github.event.pull_request.user.login }}
-        GITHUB_EVENT_PULL_REQUEST_HTML_URL: ${{ github.event.pull_request.html_url }}
-      run: |
-        curl --location --request POST '${{ secrets.WEBHOOK_URL }}' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-          "cards": [
+      - name: Google Chat Notification
+        continue-on-error: true
+        shell: bash
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+          REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          CREATOR: ${{ github.event.pull_request.user.login }}
+          STATE: ${{ github.event.pull_request.state }}
+          ASSIGNEES: ${{ join(github.event.pull_request.assignees.*.login, ', ') }}
+          REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}
+          URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "WEBHOOK_URL secret is not set (e.g. fork PR). Skipping notification."
+            exit 0
+          fi
+        
+          PAYLOAD=$(jq -n \
+            --arg pr_num "$PR_NUMBER" \
+            --arg title "$TITLE" \
+            --arg labels "$LABELS" \
+            --arg repo "$REPO" \
+            --arg creator "$CREATOR" \
+            --arg state "$STATE" \
+            --arg assignees "$ASSIGNEES" \
+            --arg reviewers "$REVIEWERS" \
+            --arg url "$URL" \
+            '
+            def guard(val): if (val == null or val == "") then "None" else val end;
+            def guard_list(val): if (val == null or val == "") then "None" else "- " + val end;
             {
-              "header": {
-                "title": "Pull request notification",
-                "subtitle": "Pull request: #${{ github.event.pull_request.number }}"
-              },
-              "sections": [
+              cardsV2: [
                 {
-                  "widgets": [
-                    {
-                      "keyValue": {
-                        "topLabel": "Repo",
-                        "content": "${GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME}"
-                      }
+                  cardId: "prNotificationCard",
+                  card: {
+                    header: {
+                      title: "Pull request notification",
+                      subtitle: ("Pull request: #" + guard($pr_num))
                     },
-                    {
-                      "keyValue": {
-                        "topLabel": "Title",
-                        "content": "'"$TITLE"'"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Creator",
-                        "content": "${GITHUB_EVENT_PULL_REQUEST_USER_LOGIN}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "State",
-                        "content": "${{ github.event.pull_request.state }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Assignees",
-                        "content": "- ${{ join(github.event.pull_request.assignees.*.login, ', ') }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Reviewers",
-                        "content": "- ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
-                      }
-                    },
-                    {
-                      "keyValue": {
-                        "topLabel": "Labels",
-                        "content": "- '"$LABELS"'"
-                      }
-                    },
-                    {
-                      "buttons": [
-                        {
-                          "textButton": {
-                            "text": "Open Pull Request",
-                            "onClick": {
-                              "openLink": {
-                                "url": "${GITHUB_EVENT_PULL_REQUEST_HTML_URL}"
-                              }
+                    sections: [
+                      {
+                        widgets: [
+                          { decoratedText: { topLabel: "Repo", text: guard($repo) } },
+                          { decoratedText: { topLabel: "Title", text: guard($title) } },
+                          { decoratedText: { topLabel: "Creator", text: guard($creator) } },
+                          { decoratedText: { topLabel: "State", text: guard($state) } },
+                          { decoratedText: { topLabel: "Assignees", text: guard_list($assignees) } },
+                          { decoratedText: { topLabel: "Reviewers", text: guard_list($reviewers) } },
+                          { decoratedText: { topLabel: "Labels", text: guard_list($labels) } },
+                          {
+                            buttonList: {
+                              buttons: [
+                                {
+                                  text: "Open Pull Request",
+                                  onClick: {
+                                    openLink: {
+                                      url: $url
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
-                        }
-                      ]
-                    }
-                  ]
+                        ]
+                      }
+                    ]
+                  }
                 }
               ]
-            }
-          ]
-        }'
+            }')
+
+          RESPONSE=$(curl --fail-with-body --location --request POST "$WEBHOOK_URL" \
+            --header 'Content-Type: application/json; charset=UTF-8' \
+            --data-raw "$PAYLOAD" 2>&1) || {
+              echo "Failed to send Google Chat notification:"
+              echo "$RESPONSE"
+              exit 1
+          }
+
