@@ -64,23 +64,25 @@ typedef enum {
     if (!_pendingDialog && [UIAlertController class] &&
         [response isKindOfClass:[NSDictionary class]]) {
       id errorValue = response[kErrorKey];
-      if ([errorValue isEqual:kScreenlockRequiredError]) {
-        errorCode = ErrorCodeScreenlockRequired;
-      } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
-        errorCode = ErrorCodeAppVerificationRequired;
-        NSString *appVerificationString =
-            [errorValue substringFromIndex:kAppVerificationRequiredErrorPrefix.length];
-        if ([appVerificationString hasPrefix:kErrorPayloadSeparator]) {
-          appVerificationString =
-              [appVerificationString substringFromIndex:kErrorPayloadSeparator.length];
+      if ([errorValue isKindOfClass:[NSString class]]) {
+        if ([errorValue isEqual:kScreenlockRequiredError]) {
+          errorCode = ErrorCodeScreenlockRequired;
+        } else if ([errorValue hasPrefix:kAppVerificationRequiredErrorPrefix]) {
+          errorCode = ErrorCodeAppVerificationRequired;
+          NSString *appVerificationString =
+              [errorValue substringFromIndex:kAppVerificationRequiredErrorPrefix.length];
+          if ([appVerificationString hasPrefix:kErrorPayloadSeparator]) {
+            appVerificationString =
+                [appVerificationString substringFromIndex:kErrorPayloadSeparator.length];
+          }
+          appVerificationString = [appVerificationString
+              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+          if (appVerificationString.length) {
+            appVerificationURL = [NSURL URLWithString:appVerificationString];
+          }
+        } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
+          errorCode = ErrorCodeDeviceNotCompliant;
         }
-        appVerificationString = [appVerificationString
-            stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-        if (appVerificationString.length) {
-          appVerificationURL = [NSURL URLWithString:appVerificationString];
-        }
-      } else if ([errorValue hasPrefix:kGeneralErrorPrefix]) {
-        errorCode = ErrorCodeDeviceNotCompliant;
       }
       if (errorCode) {
         _pendingDialog = YES;
