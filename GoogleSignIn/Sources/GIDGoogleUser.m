@@ -63,6 +63,44 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 @end
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+// An immutable snapshot of a user's tokens. It is replaced as a whole, so readers never see a mix
+// of old and new tokens.
+@interface GIDGoogleUserTokens : NSObject
+
+@property(nonatomic, readonly) GIDToken *accessToken;
+@property(nonatomic, readonly) GIDToken *refreshToken;
+@property(nonatomic, readonly, nullable) GIDToken *idToken;
+
+- (instancetype)initWithAccessToken:(GIDToken *)accessToken
+                       refreshToken:(GIDToken *)refreshToken
+                            idToken:(nullable GIDToken *)idToken NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
+@implementation GIDGoogleUserTokens
+
+- (instancetype)initWithAccessToken:(GIDToken *)accessToken
+                       refreshToken:(GIDToken *)refreshToken
+                            idToken:(nullable GIDToken *)idToken {
+  self = [super init];
+  if (self) {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    _idToken = idToken;
+  }
+  return self;
+}
+
+@end
+
+@interface GIDGoogleUser ()
+
+// The user's current tokens. The getter and setter take `_tokenLock`, so the property is atomic.
+@property(atomic, strong, nullable) GIDGoogleUserTokens *tokens;
+
+@end
+
 @interface GIDGoogleUser (Internal)
 
 - (void)getAccessToken:(GIDToken *_Nullable *_Nullable)accessToken
@@ -78,13 +116,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   // Access to this ivar should be synchronized.
   NSMutableArray<GIDGoogleUserCompletion> *_tokenRefreshHandlerQueue;
 
-  GIDToken *_accessToken;
-  GIDToken *_refreshToken;
-  GIDToken *_idToken;
+  GIDGoogleUserTokens *_tokens;
 
-  // Guards `_accessToken`, `_refreshToken`, `_idToken` and `_cachedConfiguration`. It must never
-  // be held while calling methods on other objects, KVO notification methods, or any method on
-  // self that could take `_tokenLock` again, since it is not recursive.
+  // Guards `_tokens` and `_cachedConfiguration`. It is only ever held for a single read or write
+  // of those ivars, never while calling out to other code.
   os_unfair_lock _tokenLock;
 
   // Serializes -updateWithTokenResponse:authorizationResponse:profileData:. It is held while
@@ -94,73 +129,65 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   os_unfair_lock _authStateUpdateLock;
 
   // Serializes -updateTokensWithAuthState: so concurrent updates apply in the order they read
-  // authState. Only writers take it; readers take `_tokenLock` alone, so they are never blocked
-  // by token parsing or KVO observers. KVO observers run while it is held, so they must not
+  // authState. Only writers take it; readers take only `_tokenLock`, so token parsing and KVO
+  // observers never block them. KVO observers run while it is held, so they must not
   // synchronously update this user's tokens.
   os_unfair_lock _tokenUpdateLock;
 }
 
-@synthesize accessToken = _accessToken;
-@synthesize refreshToken = _refreshToken;
-@synthesize idToken = _idToken;
-
-- (GIDToken *)accessToken {
+- (nullable GIDGoogleUserTokens *)tokens {
   os_unfair_lock_lock(&_tokenLock);
-  GIDToken *accessToken = _accessToken;
+  GIDGoogleUserTokens *tokens = _tokens;
   os_unfair_lock_unlock(&_tokenLock);
-  return accessToken;
+  return tokens;
 }
 
-- (void)setAccessToken:(GIDToken *)accessToken {
+- (void)setTokens:(nullable GIDGoogleUserTokens *)tokens {
   os_unfair_lock_lock(&_tokenLock);
-  _accessToken = accessToken;
+  _tokens = tokens;
   os_unfair_lock_unlock(&_tokenLock);
+}
+
+- (GIDToken *)accessToken {
+  return self.tokens.accessToken;
 }
 
 - (GIDToken *)refreshToken {
-  os_unfair_lock_lock(&_tokenLock);
-  GIDToken *refreshToken = _refreshToken;
-  os_unfair_lock_unlock(&_tokenLock);
-  return refreshToken;
-}
-
-- (void)setRefreshToken:(GIDToken *)refreshToken {
-  os_unfair_lock_lock(&_tokenLock);
-  _refreshToken = refreshToken;
-  os_unfair_lock_unlock(&_tokenLock);
+  return self.tokens.refreshToken;
 }
 
 - (nullable GIDToken *)idToken {
-  os_unfair_lock_lock(&_tokenLock);
-  GIDToken *idToken = _idToken;
-  os_unfair_lock_unlock(&_tokenLock);
-  return idToken;
+  return self.tokens.idToken;
 }
 
-- (void)setIdToken:(nullable GIDToken *)idToken {
-  os_unfair_lock_lock(&_tokenLock);
-  _idToken = idToken;
-  os_unfair_lock_unlock(&_tokenLock);
+// The token properties are derived from `tokens`, so KVO observers of each one are notified
+// whenever `tokens` is replaced.
++ (NSSet<NSString *> *)keyPathsForValuesAffectingAccessToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingRefreshToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingIdToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
 }
 
 - (void)getAccessToken:(GIDToken *_Nullable *_Nullable)accessToken
           refreshToken:(GIDToken *_Nullable *_Nullable)refreshToken
                idToken:(GIDToken *_Nullable *_Nullable)idToken {
-  // Snapshot the tokens under the lock, then write them out with the lock released.
-  os_unfair_lock_lock(&_tokenLock);
-  GIDToken *currentAccessToken = _accessToken;
-  GIDToken *currentRefreshToken = _refreshToken;
-  GIDToken *currentIdToken = _idToken;
-  os_unfair_lock_unlock(&_tokenLock);
+  // A single read of `tokens` gives a consistent snapshot of all three.
+  GIDGoogleUserTokens *tokens = self.tokens;
 
   if (accessToken) {
-    *accessToken = currentAccessToken;
+    *accessToken = tokens.accessToken;
   }
   if (refreshToken) {
-    *refreshToken = currentRefreshToken;
+    *refreshToken = tokens.refreshToken;
   }
   if (idToken) {
-    *idToken = currentIdToken;
+    *idToken = tokens.idToken;
   }
 }
 
@@ -395,9 +422,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
   os_unfair_lock_lock(&_tokenUpdateLock);
+  GIDGoogleUserTokens *current = self.tokens;
 
-  // Phase A: build the new tokens without holding `_tokenLock`, since parsing the ID token can be
-  // slow.
   GIDToken *accessToken =
       [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
                              expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
@@ -425,52 +451,24 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     idToken = nil;
   }
 
-  // Phase B: take the lock just long enough to see which tokens would actually change.
-  os_unfair_lock_lock(&_tokenLock);
-  BOOL accessTokenChanged = ![_accessToken isEqualToToken:accessToken];
-  BOOL refreshTokenChanged = ![_refreshToken isEqualToToken:refreshToken];
-  BOOL idTokenChanged = (_idToken || idToken) && ![_idToken isEqualToToken:idToken];
-  os_unfair_lock_unlock(&_tokenLock);
-
-  if (!accessTokenChanged && !refreshTokenChanged && !idTokenChanged) {
-    os_unfair_lock_unlock(&_tokenUpdateLock);
-    return;
+  // Keep the existing token objects when they are unchanged, so an update that changes nothing
+  // leaves `tokens` untouched and sends no KVO notifications.
+  if ([current.accessToken isEqualToToken:accessToken]) {
+    accessToken = current.accessToken;
+  }
+  if ([current.refreshToken isEqualToToken:refreshToken]) {
+    refreshToken = current.refreshToken;
+  }
+  if ([current.idToken isEqualToToken:idToken]) {
+    idToken = current.idToken;
   }
 
-  // Phase C: the changed tokens are swapped together under a single lock so that readers never
-  // see a mix of old and new tokens. The KVO notifications are sent with no lock held.
-  if (accessTokenChanged) {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
+  if (!current || accessToken != current.accessToken ||
+      refreshToken != current.refreshToken || idToken != current.idToken) {
+    self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
+                                                      refreshToken:refreshToken
+                                                           idToken:idToken];
   }
-  if (refreshTokenChanged) {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(refreshToken))];
-  }
-  if (idTokenChanged) {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(idToken))];
-  }
-
-  os_unfair_lock_lock(&_tokenLock);
-  if (accessTokenChanged) {
-    _accessToken = accessToken;
-  }
-  if (refreshTokenChanged) {
-    _refreshToken = refreshToken;
-  }
-  if (idTokenChanged) {
-    _idToken = idToken;
-  }
-  os_unfair_lock_unlock(&_tokenLock);
-
-  if (idTokenChanged) {
-    [self didChangeValueForKey:NSStringFromSelector(@selector(idToken))];
-  }
-  if (refreshTokenChanged) {
-    [self didChangeValueForKey:NSStringFromSelector(@selector(refreshToken))];
-  }
-  if (accessTokenChanged) {
-    [self didChangeValueForKey:NSStringFromSelector(@selector(accessToken))];
-  }
-
   os_unfair_lock_unlock(&_tokenUpdateLock);
 }
 

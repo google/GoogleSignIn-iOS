@@ -32,12 +32,6 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 /// Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser () <OIDAuthStateChangeDelegate>
 
-@property(nonatomic, readwrite) GIDToken *accessToken;
-
-@property(nonatomic, readwrite) GIDToken *refreshToken;
-
-@property(nonatomic, readwrite, nullable) GIDToken *idToken;
-
 /// A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
 
