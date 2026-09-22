@@ -334,6 +334,62 @@ static NSString *const kNewScope = @"newScope";
   // This is a guard against the snapshot refactor changing the refresh decision, not a race test.
 }
 
+// Races concurrent token updates against plain reads of the three public token properties, which
+// is how apps read them. Without Thread Sanitizer this only checks that nothing crashes; under
+// Thread Sanitizer (`-enableThreadSanitizer YES`) it fails if any of the three properties is read
+// without the lock that `-updateTokensWithAuthState:` writes them under.
+- (void)testTokenProperties_concurrentUpdatesAndReads {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
+                                                       accessToken:@"access_token_A"
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
+  OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
+                                                       accessToken:@"access_token_B"
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Updates finished"];
+  XCTestExpectation *readExpectation = [self expectationWithDescription:@"Reads finished"];
+
+  dispatch_queue_t updateQueue =
+      dispatch_queue_create("com.google.gidgoogleuser.testTokenProperties.update",
+                            DISPATCH_QUEUE_CONCURRENT);
+  dispatch_queue_t readQueue =
+      dispatch_queue_create("com.google.gidgoogleuser.testTokenProperties.read",
+                            DISPATCH_QUEUE_CONCURRENT);
+
+  size_t iterations = 2000;
+
+  dispatch_async(updateQueue, ^{
+    dispatch_apply(iterations, updateQueue, ^(size_t i) {
+      OIDAuthState *state = (i % 2 == 0) ? authStateA : authStateB;
+      [user updateWithTokenResponse:state.lastTokenResponse
+              authorizationResponse:state.lastAuthorizationResponse
+                        profileData:nil];
+    });
+    [updateExpectation fulfill];
+  });
+
+  dispatch_async(readQueue, ^{
+    dispatch_apply(iterations, readQueue, ^(size_t i) {
+      (void)user.accessToken.tokenString;
+      (void)user.refreshToken.tokenString;
+      (void)user.idToken.tokenString;
+    });
+    [readExpectation fulfill];
+  });
+
+  [self waitForExpectationsWithTimeout:30 handler:nil];
+
+  XCTAssertNotNil(user.accessToken);
+}
+
 - (void)testFetcherAuthorizer {
   // This is really hard to test without assuming how GTMAppAuthFetcherAuthorization works
   // internally, so let's just take the shortcut here by asserting we get a
