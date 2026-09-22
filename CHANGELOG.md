@@ -1,7 +1,4 @@
 # Unreleased
-- Fix a data race on `GIDGoogleUser`'s access, refresh and ID tokens. Concurrent token refreshes
-  could previously write the three properties from different queues at once, and readers could
-  observe a partially-updated set.
 - Fix a crash when a server error response carries a non-string value under its `error` key. The EMM error handler sent `-hasPrefix:` to whatever value was present, raising an unrecognized selector exception on a number, array or object.
 - Fix a custom `nonce` and requested token `claims` being dropped when a sign-in is continued after a Device Policy app restart.
 - Fix a data race on `GIDGoogleUser`'s access, refresh and ID tokens. Concurrent token refreshes could previously write the three properties from different queues at once, and readers could observe a partially-updated set.
