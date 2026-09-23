@@ -200,7 +200,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (nullable NSArray<NSString *> *)grantedScopes {
   NSArray<NSString *> *grantedScopes;
+  [_authStateLock lock];
   NSString *grantedScopeString = self.authState.lastTokenResponse.scope;
+  [_authStateLock unlock];
   if (grantedScopeString) {
     // If we have a 'scope' parameter from the backend, this is authoritative.
     // Remove leading and trailing whitespace.
@@ -225,6 +227,19 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     return configuration;
   }
 
+  // Reads the auth state under `_authStateLock` so the configuration is never computed from a
+  // half-updated auth state.
+  [_authStateLock lock];
+
+  os_unfair_lock_lock(&_tokenLock);
+  configuration = _cachedConfiguration;
+  os_unfair_lock_unlock(&_tokenLock);
+  if (configuration) {
+    // Another thread filled the cache while we waited for `_authStateLock`.
+    [_authStateLock unlock];
+    return configuration;
+  }
+
   NSString *clientID = self.authState.lastAuthorizationResponse.request.clientID;
   NSString *serverClientID =
       self.authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
@@ -237,11 +252,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                                                  openIDRealm:openIDRealm];
 
   os_unfair_lock_lock(&_tokenLock);
-  if (!_cachedConfiguration) {
-    _cachedConfiguration = configuration;
-  }
-  configuration = _cachedConfiguration;
+  _cachedConfiguration = configuration;
   os_unfair_lock_unlock(&_tokenLock);
+
+  [_authStateLock unlock];
 
   return configuration;
 }
@@ -368,8 +382,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (nullable NSString *)emmSupport {
-  return self.authState.lastAuthorizationResponse
+  [_authStateLock lock];
+  NSString *emmSupport = self.authState.lastAuthorizationResponse
       .request.additionalParameters[kEMMSupportParameterName];
+  [_authStateLock unlock];
+  return emmSupport;
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
