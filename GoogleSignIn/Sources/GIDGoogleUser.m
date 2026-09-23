@@ -293,6 +293,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   }
   // This is the first handler in the queue, a fetch is needed.
   NSMutableDictionary *additionalParameters = [@{} mutableCopy];
+  // Read the auth state under `_authStateLock` so building the request cannot interleave with
+  // -updateWithTokenResponse:authorizationResponse:profileData:.
+  [_authStateLock lock];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDEMMSupport updatedEMMParametersWithParameters:
@@ -303,12 +306,18 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
+  OIDAuthorizationResponse *authorizationResponse = self.authState.lastAuthorizationResponse;
   OIDTokenRequest *tokenRefreshRequest =
       [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  [_authStateLock unlock];
+
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
-                 originalAuthorizationResponse:self.authState.lastAuthorizationResponse
+                 originalAuthorizationResponse:authorizationResponse
                                       callback:^(OIDTokenResponse *_Nullable tokenResponse,
                                                  NSError *_Nullable error) {
+    // Update the auth state under `_authStateLock` so this refresh cannot interleave with
+    // -updateWithTokenResponse:authorizationResponse:profileData:.
+    [self->_authStateLock lock];
     if (tokenResponse) {
       [self.authState updateWithTokenResponse:tokenResponse error:nil];
     } else {
@@ -316,6 +325,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
         [self.authState updateWithAuthorizationError:error];
       }
     }
+    [self->_authStateLock unlock];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
