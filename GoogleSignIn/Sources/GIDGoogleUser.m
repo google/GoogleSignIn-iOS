@@ -122,18 +122,25 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   // read or write of those ivars, never while calling out to other code.
   os_unfair_lock _tokenLock;
 
-  // Serializes every change GoogleSignIn makes to `authState`, as well as the token snapshot
-  // updates in -updateTokensWithAuthState:. It is recursive because AppAuth calls
-  // -didChangeState: synchronously while an update holds it, and because KVO observers of the
-  // token properties run while it is held and may call back into this user on the same thread.
-  // The lock order is `_authStateLock`, then `_tokenLock`; `_tokenLock` is never held while
-  // taking `_authStateLock`.
+  // Guards `authState` updates and reads that span several of its fields. Recursive because
+  // AppAuth calls -didChangeState: synchronously while it is held, and token KVO observers may
+  // re-enter (see -testTokenObserver_reentersUserDuringUpdate). Take it via -lockAuthState.
   NSRecursiveLock *_authStateLock;
 }
 
 // `profile` is readonly and its getter below is hand-written, which turns off autosynthesis, so
 // the backing ivar is synthesized explicitly.
 @synthesize profile = _profile;
+
+// Lock order: `_authStateLock`, then `_tokenLock`.
+- (void)lockAuthState {
+  os_unfair_lock_assert_not_owner(&_tokenLock);
+  [_authStateLock lock];
+}
+
+- (void)unlockAuthState {
+  [_authStateLock unlock];
+}
 
 - (nullable GIDGoogleUserTokens *)tokens {
   os_unfair_lock_lock(&_tokenLock);
@@ -211,9 +218,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (nullable NSArray<NSString *> *)grantedScopes {
   NSArray<NSString *> *grantedScopes;
-  [_authStateLock lock];
+  [self lockAuthState];
   NSString *grantedScopeString = self.authState.lastTokenResponse.scope;
-  [_authStateLock unlock];
+  [self unlockAuthState];
   if (grantedScopeString) {
     // If we have a 'scope' parameter from the backend, this is authoritative.
     // Remove leading and trailing whitespace.
@@ -240,14 +247,14 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
   // Reads the auth state under `_authStateLock` so the configuration is never computed from a
   // half-updated auth state.
-  [_authStateLock lock];
+  [self lockAuthState];
 
   os_unfair_lock_lock(&_tokenLock);
   configuration = _cachedConfiguration;
   os_unfair_lock_unlock(&_tokenLock);
   if (configuration) {
     // Another thread filled the cache while we waited for `_authStateLock`.
-    [_authStateLock unlock];
+    [self unlockAuthState];
     return configuration;
   }
 
@@ -266,7 +273,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   _cachedConfiguration = configuration;
   os_unfair_lock_unlock(&_tokenLock);
 
-  [_authStateLock unlock];
+  [self unlockAuthState];
 
   return configuration;
 }
@@ -306,7 +313,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   NSMutableDictionary *additionalParameters = [@{} mutableCopy];
   // Read the auth state under `_authStateLock` so building the request cannot interleave with
   // -updateWithTokenResponse:authorizationResponse:profileData:.
-  [_authStateLock lock];
+  [self lockAuthState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
       [GIDEMMSupport updatedEMMParametersWithParameters:
@@ -320,7 +327,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   OIDAuthorizationResponse *authorizationResponse = self.authState.lastAuthorizationResponse;
   OIDTokenRequest *tokenRefreshRequest =
       [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
-  [_authStateLock unlock];
+  [self unlockAuthState];
 
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
                  originalAuthorizationResponse:authorizationResponse
@@ -328,7 +335,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                                                  NSError *_Nullable error) {
     // Update the auth state under `_authStateLock` so this refresh cannot interleave with
     // -updateWithTokenResponse:authorizationResponse:profileData:.
-    [self->_authStateLock lock];
+    [self lockAuthState];
     if (tokenResponse) {
       [self.authState updateWithTokenResponse:tokenResponse error:nil];
     } else {
@@ -336,7 +343,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
         [self.authState updateWithAuthorizationError:error];
       }
     }
-    [self->_authStateLock unlock];
+    [self unlockAuthState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
@@ -403,10 +410,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (nullable NSString *)emmSupport {
-  [_authStateLock lock];
+  [self lockAuthState];
   NSString *emmSupport = self.authState.lastAuthorizationResponse
       .request.additionalParameters[kEMMSupportParameterName];
-  [_authStateLock unlock];
+  [self unlockAuthState];
   return emmSupport;
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -415,8 +422,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
-    // Initialize the locks first, -updateTokensWithAuthState: below takes `_authStateLock` and
-    // `_tokenLock`.
+    // Initialize the locks before -updateTokensWithAuthState: below uses them.
     _tokenLock = OS_UNFAIR_LOCK_INIT;
     _authStateLock = [[NSRecursiveLock alloc] init];
 
@@ -439,7 +445,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 - (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
-  [_authStateLock lock];
+  [self lockAuthState];
   os_unfair_lock_lock(&_tokenLock);
   _profile = profileData;
   os_unfair_lock_unlock(&_tokenLock);
@@ -452,11 +458,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
   self.authState.stateChangeDelegate = self;
   [self.authState updateWithTokenResponse:tokenResponse error:nil];
-  [_authStateLock unlock];
+  [self unlockAuthState];
 }
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  [_authStateLock lock];
+  [self lockAuthState];
   GIDGoogleUserTokens *current = self.tokens;
 
   GIDToken *accessToken =
@@ -504,7 +510,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                                                       refreshToken:refreshToken
                                                            idToken:idToken];
   }
-  [_authStateLock unlock];
+  [self unlockAuthState];
 }
 
 #pragma mark - Helpers
@@ -554,10 +560,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
   // Holds `_authStateLock` so the encoded profile and auth state come from the same update.
-  [_authStateLock lock];
+  [self lockAuthState];
   [encoder encodeObject:self.profile forKey:kProfileDataKey];
   [encoder encodeObject:self.authState forKey:kAuthStateKey];
-  [_authStateLock unlock];
+  [self unlockAuthState];
 }
 
 @end
