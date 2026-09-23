@@ -118,8 +118,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
   GIDGoogleUserTokens *_tokens;
 
-  // Guards `_tokens` and `_cachedConfiguration`. It is only ever held for a single read or write
-  // of those ivars, never while calling out to other code.
+  // Guards `_tokens`, `_cachedConfiguration` and `_profile`. It is only ever held for a single
+  // read or write of those ivars, never while calling out to other code.
   os_unfair_lock _tokenLock;
 
   // Serializes every change GoogleSignIn makes to `authState`, as well as the token snapshot
@@ -130,6 +130,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   // taking `_authStateLock`.
   NSRecursiveLock *_authStateLock;
 }
+
+// `profile` is readonly and its getter below is hand-written, which turns off autosynthesis, so
+// the backing ivar is synthesized explicitly.
+@synthesize profile = _profile;
 
 - (nullable GIDGoogleUserTokens *)tokens {
   os_unfair_lock_lock(&_tokenLock);
@@ -154,6 +158,13 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (nullable GIDToken *)idToken {
   return self.tokens.idToken;
+}
+
+- (nullable GIDProfileData *)profile {
+  os_unfair_lock_lock(&_tokenLock);
+  GIDProfileData *profile = _profile;
+  os_unfair_lock_unlock(&_tokenLock);
+  return profile;
 }
 
 // The token properties are derived from `tokens`, so KVO observers of each one are notified
@@ -429,7 +440,9 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
   [_authStateLock lock];
+  os_unfair_lock_lock(&_tokenLock);
   _profile = profileData;
+  os_unfair_lock_unlock(&_tokenLock);
 
   // We don't want to trigger the delegate before we update authState completely. So we unset the
   // delegate before the first update. Also the order of updates is important because
@@ -540,8 +553,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-  [encoder encodeObject:_profile forKey:kProfileDataKey];
+  // Holds `_authStateLock` so the encoded profile and auth state come from the same update.
+  [_authStateLock lock];
+  [encoder encodeObject:self.profile forKey:kProfileDataKey];
   [encoder encodeObject:self.authState forKey:kAuthStateKey];
+  [_authStateLock unlock];
 }
 
 @end
