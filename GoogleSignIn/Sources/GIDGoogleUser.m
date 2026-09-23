@@ -122,17 +122,13 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   // of those ivars, never while calling out to other code.
   os_unfair_lock _tokenLock;
 
-  // Serializes -updateWithTokenResponse:authorizationResponse:profileData:. It is held while
-  // AppAuth runs and calls back synchronously into -didChangeState:. That is safe because
-  // -didChangeState: takes `_tokenUpdateLock` and `_tokenLock`, never `_authStateUpdateLock`. The
-  // lock order is therefore _authStateUpdateLock, then _tokenUpdateLock, then _tokenLock.
-  os_unfair_lock _authStateUpdateLock;
-
-  // Serializes -updateTokensWithAuthState: so concurrent updates apply in the order they read
-  // authState. Only writers take it; readers take only `_tokenLock`, so token parsing and KVO
-  // observers never block them. KVO observers run while it is held, so they must not
-  // synchronously update this user's tokens.
-  os_unfair_lock _tokenUpdateLock;
+  // Serializes every change GoogleSignIn makes to `authState`, as well as the token snapshot
+  // updates in -updateTokensWithAuthState:. It is recursive because AppAuth calls
+  // -didChangeState: synchronously while an update holds it, and because KVO observers of the
+  // token properties run while it is held and may call back into this user on the same thread.
+  // The lock order is `_authStateLock`, then `_tokenLock`; `_tokenLock` is never held while
+  // taking `_authStateLock`.
+  NSRecursiveLock *_authStateLock;
 }
 
 - (nullable GIDGoogleUserTokens *)tokens {
@@ -381,11 +377,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
-    // Initialize the locks first, -updateTokensWithAuthState: below takes `_tokenUpdateLock` and
+    // Initialize the locks first, -updateTokensWithAuthState: below takes `_authStateLock` and
     // `_tokenLock`.
     _tokenLock = OS_UNFAIR_LOCK_INIT;
-    _authStateUpdateLock = OS_UNFAIR_LOCK_INIT;
-    _tokenUpdateLock = OS_UNFAIR_LOCK_INIT;
+    _authStateLock = [[NSRecursiveLock alloc] init];
 
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
     _profile = profileData;
@@ -406,7 +401,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 - (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
-  os_unfair_lock_lock(&_authStateUpdateLock);
+  [_authStateLock lock];
   _profile = profileData;
 
   // We don't want to trigger the delegate before we update authState completely. So we unset the
@@ -417,11 +412,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
   self.authState.stateChangeDelegate = self;
   [self.authState updateWithTokenResponse:tokenResponse error:nil];
-  os_unfair_lock_unlock(&_authStateUpdateLock);
+  [_authStateLock unlock];
 }
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  os_unfair_lock_lock(&_tokenUpdateLock);
+  [_authStateLock lock];
   GIDGoogleUserTokens *current = self.tokens;
 
   GIDToken *accessToken =
@@ -469,7 +464,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                                                       refreshToken:refreshToken
                                                            idToken:idToken];
   }
-  os_unfair_lock_unlock(&_tokenUpdateLock);
+  [_authStateLock unlock];
 }
 
 #pragma mark - Helpers
