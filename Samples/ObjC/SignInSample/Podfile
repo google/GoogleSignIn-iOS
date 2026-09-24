@@ -1,3 +1,6 @@
+source 'https://github.com/firebase/SpecsStaging.git'
+source 'https://cdn.cocoapods.org/'
+
 platform :ios, '15.0'
 use_frameworks!
 
