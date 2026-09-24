@@ -33,6 +33,9 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 @interface GIDGoogleUser () <OIDAuthStateChangeDelegate>
 
 /// A representation of the state of the OAuth session for this instance.
+// TODO: Reads through this property bypass the lock GIDGoogleUser takes around its own auth
+// state updates, and apps can reach the same object through `fetcherAuthorizer`. Fixing this
+// may need a public API change.
 @property(nonatomic, readonly) OIDAuthState *authState;
 
 #pragma clang diagnostic push
