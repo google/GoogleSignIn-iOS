@@ -63,17 +63,21 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 @end
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-// An immutable snapshot of a user's tokens. It is replaced as a whole, so readers never see a mix
-// of old and new tokens.
+// An immutable snapshot of a user's tokens and the values derived from the same auth state. It is
+// replaced as a whole, so readers never see a mix of old and new values.
 @interface GIDGoogleUserTokens : NSObject
 
 @property(nonatomic, readonly) GIDToken *accessToken;
 @property(nonatomic, readonly) GIDToken *refreshToken;
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
+@property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
+@property(nonatomic, readonly) GIDConfiguration *configuration;
 
 - (instancetype)initWithAccessToken:(GIDToken *)accessToken
                        refreshToken:(GIDToken *)refreshToken
-                            idToken:(nullable GIDToken *)idToken NS_DESIGNATED_INITIALIZER;
+                            idToken:(nullable GIDToken *)idToken
+                      grantedScopes:(nullable NSArray<NSString *> *)grantedScopes
+                      configuration:(GIDConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
@@ -82,12 +86,16 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (instancetype)initWithAccessToken:(GIDToken *)accessToken
                        refreshToken:(GIDToken *)refreshToken
-                            idToken:(nullable GIDToken *)idToken {
+                            idToken:(nullable GIDToken *)idToken
+                      grantedScopes:(nullable NSArray<NSString *> *)grantedScopes
+                      configuration:(GIDConfiguration *)configuration {
   self = [super init];
   if (self) {
     _accessToken = accessToken;
     _refreshToken = refreshToken;
     _idToken = idToken;
+    _grantedScopes = [grantedScopes copy];
+    _configuration = configuration;
   }
   return self;
 }
@@ -109,17 +117,43 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 @end
 
+// Parses the `scope` parameter returned by the backend, which is authoritative when present.
+static NSArray<NSString *> *_Nullable GIDGrantedScopesFromScopeString(
+    NSString *_Nullable scopeString) {
+  if (!scopeString) {
+    return nil;
+  }
+  // Remove leading and trailing whitespace.
+  scopeString =
+      [scopeString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+  // Tokenize with space as a delimiter.
+  NSMutableArray<NSString *> *parsedScopes =
+      [[scopeString componentsSeparatedByString:@" "] mutableCopy];
+  // Remove empty strings.
+  [parsedScopes removeObject:@""];
+  return [parsedScopes copy];
+}
+
+// Returns the hosted domain claim of the given ID token, if it has one.
+static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable idTokenString) {
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
+    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
+      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
+    }
+  }
+  return nil;
+}
+
 @implementation GIDGoogleUser {
-  GIDConfiguration *_cachedConfiguration;
-  
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
   NSMutableArray<GIDGoogleUserCompletion> *_tokenRefreshHandlerQueue;
 
   GIDGoogleUserTokens *_tokens;
 
-  // Guards `_tokens`, `_cachedConfiguration` and `_profile`. It is only ever held for a single
-  // read or write of those ivars, never while calling out to other code.
+  // Guards `_tokens` and `_profile`. It is only ever held for a single read or write of those
+  // ivars, never while calling out to other code.
   os_unfair_lock _tokenLock;
 
   // Guards `authState` updates and reads that span several of its fields. Recursive because
@@ -217,65 +251,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (nullable NSArray<NSString *> *)grantedScopes {
-  NSArray<NSString *> *grantedScopes;
-  [self lockAuthState];
-  NSString *grantedScopeString = self.authState.lastTokenResponse.scope;
-  [self unlockAuthState];
-  if (grantedScopeString) {
-    // If we have a 'scope' parameter from the backend, this is authoritative.
-    // Remove leading and trailing whitespace.
-    grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
-        [NSCharacterSet whitespaceCharacterSet]];
-    // Tokenize with space as a delimiter.
-    NSMutableArray<NSString *> *parsedScopes =
-        [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
-    // Remove empty strings.
-    [parsedScopes removeObject:@""];
-    grantedScopes = [parsedScopes copy];
-  }
-  return grantedScopes;
+  return self.tokens.grantedScopes;
 }
 
 - (GIDConfiguration *)configuration {
-  // Caches the configuration since it would not change for one GIDGoogleUser instance.
-  os_unfair_lock_lock(&_tokenLock);
-  GIDConfiguration *configuration = _cachedConfiguration;
-  os_unfair_lock_unlock(&_tokenLock);
-  if (configuration) {
-    return configuration;
-  }
-
-  // Reads the auth state under `_authStateLock` so the configuration is never computed from a
-  // half-updated auth state.
-  [self lockAuthState];
-
-  os_unfair_lock_lock(&_tokenLock);
-  configuration = _cachedConfiguration;
-  os_unfair_lock_unlock(&_tokenLock);
-  if (configuration) {
-    // Another thread filled the cache while we waited for `_authStateLock`.
-    [self unlockAuthState];
-    return configuration;
-  }
-
-  NSString *clientID = self.authState.lastAuthorizationResponse.request.clientID;
-  NSString *serverClientID =
-      self.authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
-  NSString *openIDRealm =
-      self.authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
-
-  configuration = [[GIDConfiguration alloc] initWithClientID:clientID
-                                              serverClientID:serverClientID
-                                                hostedDomain:[self hostedDomain]
-                                                 openIDRealm:openIDRealm];
-
-  os_unfair_lock_lock(&_tokenLock);
-  _cachedConfiguration = configuration;
-  os_unfair_lock_unlock(&_tokenLock);
-
-  [self unlockAuthState];
-
-  return configuration;
+  return self.tokens.configuration;
 }
 
 - (void)refreshTokensIfNeededWithCompletion:(GIDGoogleUserCompletion)completion {
@@ -492,6 +472,27 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     idToken = nil;
   }
 
+  NSArray<NSString *> *grantedScopes =
+      GIDGrantedScopesFromScopeString(authState.lastTokenResponse.scope);
+
+  GIDConfiguration *configuration;
+  if (current.configuration) {
+    // The configuration is fixed for the lifetime of a user, so it is computed once.
+    configuration = current.configuration;
+  } else {
+    NSString *clientID = authState.lastAuthorizationResponse.request.clientID;
+    NSString *serverClientID =
+        authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
+    NSString *openIDRealm =
+        authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
+
+    configuration = [[GIDConfiguration alloc]
+        initWithClientID:clientID
+          serverClientID:serverClientID
+            hostedDomain:GIDHostedDomainFromIDTokenString(idToken.tokenString)
+             openIDRealm:openIDRealm];
+  }
+
   // Keep the existing token objects when they are unchanged, so an update that changes nothing
   // leaves `tokens` untouched and sends no KVO notifications.
   if ([current.accessToken isEqualToToken:accessToken]) {
@@ -504,26 +505,19 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     idToken = current.idToken;
   }
 
+  BOOL grantedScopesChanged = !((!grantedScopes && !current.grantedScopes) ||
+      [grantedScopes isEqualToArray:current.grantedScopes]);
+
   if (!current || accessToken != current.accessToken ||
-      refreshToken != current.refreshToken || idToken != current.idToken) {
+      refreshToken != current.refreshToken || idToken != current.idToken ||
+      grantedScopesChanged) {
     self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
                                                       refreshToken:refreshToken
-                                                           idToken:idToken];
+                                                           idToken:idToken
+                                                     grantedScopes:grantedScopes
+                                                     configuration:configuration];
   }
   [self unlockAuthState];
-}
-
-#pragma mark - Helpers
-
-- (nullable NSString *)hostedDomain {
-  NSString *idTokenString = self.idToken.tokenString;
-  if (idTokenString) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
-    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
-      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
-    }
-  }
-  return nil;
 }
 
 #pragma mark - OIDAuthStateChangeDelegate
