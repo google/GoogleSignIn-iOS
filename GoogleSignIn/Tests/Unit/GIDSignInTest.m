@@ -532,7 +532,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
 
-  // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
+  // Mock generating the token snapshot (tokens, granted scopes and GIDConfiguration) when
+  // initializing GIDGoogleUser.
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstance];
 
@@ -542,6 +543,7 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
+  OCMStub([_tokenResponse scope]).andReturn(nil);
 
   [_signIn restorePreviousSignInNoRefresh];
 
