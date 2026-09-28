@@ -41,7 +41,6 @@
 		73A464052A1C3B3400BA8528 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		73A4640A2A1C3B3500BA8528 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		73DB85BB2B23DAEC00D051BA /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = SDKROOT; };
-		91F3A930BB86D9E0648046BC /* Pods_AppAttestExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AppAttestExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,7 +126,6 @@
 			isa = PBXGroup;
 			children = (
 				73DB85BB2B23DAEC00D051BA /* CoreAudioTypes.framework */,
-				91F3A930BB86D9E0648046BC /* Pods_AppAttestExample.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
