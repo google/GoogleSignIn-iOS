@@ -87,6 +87,44 @@ NS_ASSUME_NONNULL_BEGIN
   [super tearDown];
 }
 
+// Waits until work already dispatched to the main queue (such as the handler presenting
+// its dialog) has run.
+- (void)waitForMainQueue {
+  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main queue"];
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+// Returns the presented UIAlertController, or records a test failure and returns nil.
+- (nullable UIAlertController *)presentedAlert {
+  if (![_presentedViewController isKindOfClass:[UIAlertController class]]) {
+    XCTFail(@"Expected a presented UIAlertController, got %@.", _presentedViewController);
+    return nil;
+  }
+  return (UIAlertController *)_presentedViewController;
+}
+
+// Asserts that the alert has a title and message and that its actions have the expected titles.
+- (void)assertAlert:(UIAlertController *)alert hasActionTitles:(NSArray<NSString *> *)titles {
+  XCTAssertNotNil(alert.title);
+  XCTAssertNotNil(alert.message);
+  XCTAssertEqualObjects([alert.actions valueForKey:@"title"], titles);
+}
+
+// Invokes the handler of the alert action with the given title, or records a test failure.
+- (void)tapActionTitled:(NSString *)title inAlert:(UIAlertController *)alert {
+  for (UIAlertAction *action in alert.actions) {
+    if ([action.title isEqualToString:title]) {
+      action.actionHandler(action);
+      return;
+    }
+  }
+  XCTFail(@"No action titled '%@' in alert (found: %@).",
+          title, [alert.actions valueForKey:@"title"]);
+}
+
 // Expects opening a particular URL string in performing an action.
 - (void)expectOpenURLString:(NSString *)urlString inAction:(void (^)(void))action {
   // Swizzle and mock [UIApplication sharedApplication] since it is unavailable in unit tests.
@@ -172,24 +210,14 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
+  [self waitForMainQueue];
   XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 1);
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
+  XCTAssertFalse(completionCalled);
 
-  // Pretend to touch the "OK" button.
-  UIAlertAction *action = alert.actions[0];
-  XCTAssertEqualObjects(action.title, @"OK");
-  action.actionHandler(action);
+  [self tapActionTitled:@"OK" inAlert:alert];
   XCTAssertTrue(completionCalled);
 }
 
@@ -206,24 +234,14 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
+  [self waitForMainQueue];
   XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 2);
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Settings" ]];
+  XCTAssertFalse(completionCalled);
 
-  // Pretend to touch the "Cancel" button.
-  UIAlertAction *action = alert.actions[0];
-  XCTAssertEqualObjects(action.title, @"Cancel");
-  action.actionHandler(action);
+  [self tapActionTitled:@"Cancel" inAlert:alert];
   XCTAssertTrue(completionCalled);
 }
 
@@ -240,25 +258,15 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
+  [self waitForMainQueue];
   XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 2);
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Settings" ]];
+  XCTAssertFalse(completionCalled);
 
-  // Pretend to touch the "Settings" button.
-  UIAlertAction *action = alert.actions[1];
-  XCTAssertEqualObjects(action.title, @"Settings");
   [self expectOpenURLString:UIApplicationOpenSettingsURLString inAction:^() {
-    action.actionHandler(action);
+    [self tapActionTitled:@"Settings" inAlert:alert];
   }];
   XCTAssertTrue(completionCalled);
 }
@@ -276,24 +284,14 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
+  [self waitForMainQueue];
   XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 1);
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
+  XCTAssertFalse(completionCalled);
 
-  // Pretend to touch the "OK" button.
-  UIAlertAction *action = alert.actions[0];
-  XCTAssertEqualObjects(action.title, @"OK");
-  action.actionHandler(action);
+  [self tapActionTitled:@"OK" inAlert:alert];
   XCTAssertTrue(completionCalled);
 }
 
@@ -312,24 +310,14 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
+  [self waitForMainQueue];
   XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 2);
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Connect" ]];
+  XCTAssertFalse(completionCalled);
 
-  // Pretend to touch the "Cancel" button.
-  UIAlertAction *action = alert.actions[0];
-  XCTAssertEqualObjects(action.title, @"Cancel");
-  action.actionHandler(action);
+  [self tapActionTitled:@"Cancel" inAlert:alert];
   XCTAssertTrue(completionCalled);
 }
 
@@ -347,25 +335,15 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
+  [self waitForMainQueue];
   XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 2);
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Connect" ]];
+  XCTAssertFalse(completionCalled);
 
-  // Pretend to touch the "Connect" button.
-  UIAlertAction *action = alert.actions[1];
-  XCTAssertEqualObjects(action.title, @"Connect");
   [self expectOpenURLString:@"https://host.domain/path" inAction:^() {
-    action.actionHandler(action);
+    [self tapActionTitled:@"Connect" inAlert:alert];
   }];
   XCTAssertTrue(completionCalled);
 }
