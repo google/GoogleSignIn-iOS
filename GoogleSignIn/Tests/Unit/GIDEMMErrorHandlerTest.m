@@ -40,9 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation GIDEMMErrorHandlerTest {
-  // Whether or not the current device runs on iOS 10.
-  BOOL _isIOS10;
-
   // Whether key window has been set.
   BOOL _keyWindowSet;
 
@@ -52,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUp {
   [super setUp];
-  _isIOS10 = [UIDevice currentDevice].systemVersion.integerValue == 10;
   _keyWindowSet = NO;
   _presentedViewController = nil;
   UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -160,13 +156,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                                   completion:^() {
     completionCalled = YES;
   }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
   XCTAssertTrue(result);
   XCTAssertFalse(completionCalled);
   XCTAssertFalse(_keyWindowSet);
@@ -206,23 +195,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Verifies that the handler handles EMM screenlock required error with user tapping 'Cancel'.
 - (void)testScreenlockRequiredCancel {
-  if (_isIOS10) {
-    // The dialog is different on iOS 10.
-    return;
-  }
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
                                                                   completion:^() {
     completionCalled = YES;
   }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
   XCTAssertTrue(result);
   XCTAssertFalse(completionCalled);
   XCTAssertFalse(_keyWindowSet);
@@ -251,23 +229,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Verifies that the handler handles EMM screenlock required error with user tapping 'Settings'.
 - (void)testScreenlockRequiredSettings {
-  if (_isIOS10) {
-    // The dialog is different on iOS 10.
-    return;
-  }
   __block BOOL completionCalled = NO;
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
   BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
                                                                   completion:^() {
     completionCalled = YES;
   }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
   XCTAssertTrue(result);
   XCTAssertFalse(completionCalled);
   XCTAssertFalse(_keyWindowSet);
@@ -296,50 +263,6 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertTrue(completionCalled);
 }
 
-- (void)testScreenlockRequiredOkOnIOS10 {
-  if (!_isIOS10) {
-    // A more useful dialog is used for other iOS versions.
-    return;
-  }
-  __block BOOL completionCalled = NO;
-  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
-  XCTAssertFalse(_keyWindowSet);
-  XCTAssertNil(_presentedViewController);
-
-  // Wait for the code under test to be executed on the main thread.
-  XCTestExpectation *expectation = [self expectationWithDescription:@"wait for main thread"];
-  dispatch_async(dispatch_get_main_queue(), ^() {
-    [expectation fulfill];
-  });
-  [self waitForExpectationsWithTimeout:1 handler:nil];
-  XCTAssertFalse(completionCalled);
-  XCTAssertTrue(_keyWindowSet);
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
-  XCTAssertNotNil(alert.title);
-  XCTAssertNotNil(alert.message);
-  XCTAssertEqual(alert.actions.count, 1);
-
-  // Pretend to touch the "OK" button.
-  UIAlertAction *action = alert.actions[0];
-  XCTAssertEqualObjects(action.title, @"OK");
-  action.actionHandler(action);
-  XCTAssertTrue(completionCalled);
-}
-
 // Verifies that the handler handles EMM app verification required error without a URL.
 - (void)testAppVerificationNoURL {
   __block BOOL completionCalled = NO;
@@ -348,13 +271,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                                   completion:^() {
     completionCalled = YES;
   }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
   XCTAssertTrue(result);
   XCTAssertFalse(completionCalled);
   XCTAssertFalse(_keyWindowSet);
@@ -391,13 +307,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                                   completion:^() {
     completionCalled = YES;
   }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
   XCTAssertTrue(result);
   XCTAssertFalse(completionCalled);
   XCTAssertFalse(_keyWindowSet);
@@ -433,13 +342,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                                   completion:^() {
     completionCalled = YES;
   }];
-  if (![UIAlertController class]) {
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
-    XCTAssertFalse(_keyWindowSet);
-    XCTAssertNil(_presentedViewController);
-    return;
-  }
   XCTAssertTrue(result);
   XCTAssertFalse(completionCalled);
   XCTAssertFalse(_keyWindowSet);
