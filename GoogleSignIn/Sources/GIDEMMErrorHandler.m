@@ -56,8 +56,8 @@ typedef enum {
   return sharedInstance;
 }
 
-- (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)(void))completion {
+- (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
+                     completion:(void (^)(BOOL handled))completion {
   ErrorCode errorCode = ErrorCodeNone;
   NSURL *appVerificationURL;
   @synchronized(self) {  // for accessing _pendingDialog
@@ -90,15 +90,19 @@ typedef enum {
     }
   }
   if (!errorCode) {
-    completion();
-    return NO;
+    completion(NO);
+    return;
   }
   // All UI must happen in the main thread.
   dispatch_async(dispatch_get_main_queue(), ^() {
+    void (^clearPendingDialog)(void) = ^{
+      @synchronized(self) { self->_pendingDialog = NO; }
+    };
     UIWindow *keyWindow = [self keyWindow];
     if (!keyWindow) {
       // Shouldn't happen, just in case.
-      completion();
+      clearPendingDialog();
+      completion(YES);
       return;
     }
     UIWindow *alertWindow;
@@ -121,8 +125,8 @@ typedef enum {
       alertWindow.hidden = YES;
       alertWindow.rootViewController = nil;
       [keyWindow makeKeyAndVisible];
-      self->_pendingDialog = NO;
-      completion();
+      clearPendingDialog();
+      completion(YES);
     };
     UIAlertController *alert;
     switch (errorCode) {
@@ -145,7 +149,6 @@ typedef enum {
       finish();
     }
   });
-  return YES;
 }
 
 // This method is exposed to the unit test.

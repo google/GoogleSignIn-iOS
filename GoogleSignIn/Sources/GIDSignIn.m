@@ -984,29 +984,21 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       [self maybeFetchToken:authFlow];
     } else {
       // There was a failure, convert to appropriate error code.
-      NSString *errorString;
-      GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
-
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (authFlow.emmSupport) {
         [authFlow wait];
-        BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
-            handleErrorFromResponse:params
-                         completion:^{
-                           [authFlow next];
-                         }];
-        if (isEMMError) {
-          errorCode = kGIDSignInErrorCodeEMM;
-        }
-      }
+        [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params
+                                                          completion:^(BOOL handled) {
+          // Set the error before -next, which runs the queued callbacks that read it.
+          authFlow.error = [self authorizationErrorWithParameters:params isEMMError:handled];
+          [authFlow next];
+        }];
+      } else
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      errorString = (NSString *)params[kOAuth2ErrorKeyName];
-      if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-        errorCode = kGIDSignInErrorCodeCanceled;
+      {
+        authFlow.error = [self authorizationErrorWithParameters:params isEMMError:NO];
       }
-
-      authFlow.error = [self errorWithString:errorString code:errorCode];
     }
   } else {
     NSString *errorString = [error localizedDescription];
@@ -1288,6 +1280,18 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 }
 
 #pragma mark - Helpers
+
+// Returns the error for an authorization response that carried no authorization code.
+- (NSError *)authorizationErrorWithParameters:(NSDictionary<NSString *, NSObject *> *)params
+                                   isEMMError:(BOOL)isEMMError {
+  NSString *errorString = (NSString *)params[kOAuth2ErrorKeyName];
+  GIDSignInErrorCode errorCode =
+      isEMMError ? kGIDSignInErrorCodeEMM : kGIDSignInErrorCodeUnknown;
+  if ([errorString isEqualToString:kOAuth2AccessDenied]) {
+    errorCode = kGIDSignInErrorCodeCanceled;
+  }
+  return [self errorWithString:errorString code:errorCode];
+}
 
 - (NSError *)errorWithString:(NSString *)errorString code:(GIDSignInErrorCode)code {
   if (errorString == nil) {
