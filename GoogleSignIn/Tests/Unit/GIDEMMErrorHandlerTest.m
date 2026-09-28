@@ -35,6 +35,25 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// Records how, and whether, a GIDEMMErrorHandler completion was called.
+@interface GIDEMMCompletionSpy : NSObject
+@property(nonatomic, readonly) NSInteger callCount;
+@property(nonatomic, readonly) BOOL handled;
+// A completion to pass to -handleErrorFromResponse:completion:.
+- (void (^)(BOOL handled))completion;
+@end
+
+@implementation GIDEMMCompletionSpy
+
+- (void (^)(BOOL handled))completion {
+  return ^(BOOL handled) {
+    self->_callCount++;
+    self->_handled = handled;
+  };
+}
+
+@end
+
 // Unit test for GIDEMMErrorHandler.
 @interface GIDEMMErrorHandlerTest : XCTestCase
 @end
@@ -143,13 +162,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Verifies that the handler doesn't handle non-exist error.
 - (void)testNoError {
-  __block BOOL completionCalled = NO;
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"abc" : @123 }
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertFalse(result);
-  XCTAssertTrue(completionCalled);
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"abc" : @123 }
+                                                    completion:spy.completion];
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertFalse(spy.handled);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 }
@@ -161,52 +178,44 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)testNonStringErrorValue {
   NSArray *nonStringValues = @[ @123, @[ @"emm_passcode_required" ], @{ @"a" : @"b" } ];
   for (id nonStringValue in nonStringValues) {
-    __block BOOL completionCalled = NO;
+    GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
     NSDictionary<NSString *, id> *response = @{ @"error" : nonStringValue };
-    BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                    completion:^() {
-      completionCalled = YES;
-    }];
-    XCTAssertFalse(result);
-    XCTAssertTrue(completionCalled);
+    [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                      completion:spy.completion];
+    XCTAssertEqual(spy.callCount, 1);
+    XCTAssertFalse(spy.handled);
   }
 }
 
 // Verifies that the handler doesn't handle non-EMM error.
 - (void)testNoEMMError {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"invalid_token" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertFalse(result);
-  XCTAssertTrue(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertFalse(spy.handled);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 }
 
 // Verifies that the handler handles general EMM error with user tapping 'OK'.
 - (void)testGeneralEMMErrorOK {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_something_wrong" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  // The dialog is presented asynchronously on the main queue, so nothing has happened yet.
+  XCTAssertEqual(spy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
   // Should handle no more error while the previous one is being handled.
-  __block BOOL secondCompletionCalled = NO;
-  BOOL secondResult = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    secondCompletionCalled = YES;
-  }];
-  XCTAssertFalse(secondResult);
-  XCTAssertTrue(secondCompletionCalled);
+  GIDEMMCompletionSpy *secondSpy = [[GIDEMMCompletionSpy alloc] init];
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:secondSpy.completion];
+  XCTAssertEqual(secondSpy.callCount, 1);
+  XCTAssertFalse(secondSpy.handled);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
@@ -215,22 +224,95 @@ NS_ASSUME_NONNULL_BEGIN
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
   [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
-  XCTAssertFalse(completionCalled);
+  XCTAssertEqual(spy.callCount, 0);
 
   [self tapActionTitled:@"OK" inAlert:alert];
-  XCTAssertTrue(completionCalled);
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertTrue(spy.handled);
+}
+
+// Verifies that the pending-dialog flag is cleared when there is no key window, so a later
+// EMM error can still present its dialog. `GIDEMMErrorHandler` is a process-wide singleton,
+// so before this fix a single windowless error suppressed every dialog that followed.
+- (void)testNoKeyWindow_ClearsPendingDialogForNextError {
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return nil; }];
+
+  GIDEMMCompletionSpy *firstSpy = [[GIDEMMCompletionSpy alloc] init];
+  NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_something_wrong" };
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:firstSpy.completion];
+
+  [self waitForMainQueue];
+  XCTAssertEqual(firstSpy.callCount, 1);
+  XCTAssertTrue(firstSpy.handled);
+  XCTAssertNil(_presentedViewController);
+
+  // Restore a working key window.
+  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
+                     selector:@selector(keyWindow)
+              isClassSelector:NO];
+  UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
+                   selector:@selector(keyWindow)
+            isClassSelector:NO
+                  withBlock:^() { return fakeKeyWindow; }];
+
+  GIDEMMCompletionSpy *secondSpy = [[GIDEMMCompletionSpy alloc] init];
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:secondSpy.completion];
+  // Before the fix, this completed immediately with NO: the pending-dialog flag was still YES.
+  XCTAssertEqual(secondSpy.callCount, 0);
+
+  [self waitForMainQueue];
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
+  [self tapActionTitled:@"OK" inAlert:alert];
+  XCTAssertEqual(secondSpy.callCount, 1);
+  XCTAssertTrue(secondSpy.handled);
+}
+
+// Verifies the flag handed to the completion on both the non-EMM path (synchronous, NO) and
+// the EMM path (after dialog dismissal, YES).
+- (void)testCompletionReceivesHandledFlag {
+  // First half — non-EMM.
+  GIDEMMCompletionSpy *nonEMMSpy = [[GIDEMMCompletionSpy alloc] init];
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"invalid_token" }
+                                                    completion:nonEMMSpy.completion];
+  XCTAssertEqual(nonEMMSpy.callCount, 1);
+  XCTAssertFalse(nonEMMSpy.handled);
+
+  // Second half — EMM.
+  GIDEMMCompletionSpy *emmSpy = [[GIDEMMCompletionSpy alloc] init];
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"emm_something_wrong" }
+                                                    completion:emmSpy.completion];
+  XCTAssertEqual(emmSpy.callCount, 0);
+
+  [self waitForMainQueue];
+  UIAlertController *alert = [self presentedAlert];
+  if (!alert) return;
+  [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
+  XCTAssertEqual(emmSpy.callCount, 0);
+
+  [self tapActionTitled:@"OK" inAlert:alert];
+  XCTAssertEqual(emmSpy.callCount, 1);
+  XCTAssertTrue(emmSpy.handled);
 }
 
 // Verifies that the handler handles EMM screenlock required error with user tapping 'Cancel'.
 - (void)testScreenlockRequiredCancel {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  // The dialog is presented asynchronously on the main queue, so nothing has happened yet.
+  XCTAssertEqual(spy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
@@ -239,22 +321,21 @@ NS_ASSUME_NONNULL_BEGIN
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
   [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Settings" ]];
-  XCTAssertFalse(completionCalled);
+  XCTAssertEqual(spy.callCount, 0);
 
   [self tapActionTitled:@"Cancel" inAlert:alert];
-  XCTAssertTrue(completionCalled);
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertTrue(spy.handled);
 }
 
 // Verifies that the handler handles EMM screenlock required error with user tapping 'Settings'.
 - (void)testScreenlockRequiredSettings {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_passcode_required" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  // The dialog is presented asynchronously on the main queue, so nothing has happened yet.
+  XCTAssertEqual(spy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
@@ -263,24 +344,23 @@ NS_ASSUME_NONNULL_BEGIN
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
   [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Settings" ]];
-  XCTAssertFalse(completionCalled);
+  XCTAssertEqual(spy.callCount, 0);
 
   [self expectOpenURLString:UIApplicationOpenSettingsURLString inAction:^() {
     [self tapActionTitled:@"Settings" inAlert:alert];
   }];
-  XCTAssertTrue(completionCalled);
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertTrue(spy.handled);
 }
 
 // Verifies that the handler handles EMM app verification required error without a URL.
 - (void)testAppVerificationNoURL {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"emm_app_verification_required" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  // The dialog is presented asynchronously on the main queue, so nothing has happened yet.
+  XCTAssertEqual(spy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
@@ -289,24 +369,22 @@ NS_ASSUME_NONNULL_BEGIN
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
   [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
-  XCTAssertFalse(completionCalled);
+  XCTAssertEqual(spy.callCount, 0);
 
   [self tapActionTitled:@"OK" inAlert:alert];
-  XCTAssertTrue(completionCalled);
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertTrue(spy.handled);
 }
-
 
 // Verifies that the handler handles EMM app verification required error user tapping 'Cancel'.
 - (void)testAppVerificationCancel {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response =
       @{ @"error" : @"emm_app_verification_required: https://host.domain/path" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  // The dialog is presented asynchronously on the main queue, so nothing has happened yet.
+  XCTAssertEqual(spy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
@@ -315,23 +393,22 @@ NS_ASSUME_NONNULL_BEGIN
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
   [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Connect" ]];
-  XCTAssertFalse(completionCalled);
+  XCTAssertEqual(spy.callCount, 0);
 
   [self tapActionTitled:@"Cancel" inAlert:alert];
-  XCTAssertTrue(completionCalled);
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertTrue(spy.handled);
 }
 
 // Verifies that the handler handles EMM app verification required error user tapping 'Connect'.
 - (void)testAppVerificationConnect {
-  __block BOOL completionCalled = NO;
+  GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   NSDictionary<NSString *, NSString *> *response =
       @{ @"error" : @"emm_app_verification_required: https://host.domain/path" };
-  BOOL result = [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
-                                                                  completion:^() {
-    completionCalled = YES;
-  }];
-  XCTAssertTrue(result);
-  XCTAssertFalse(completionCalled);
+  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
+                                                    completion:spy.completion];
+  // The dialog is presented asynchronously on the main queue, so nothing has happened yet.
+  XCTAssertEqual(spy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
@@ -340,12 +417,13 @@ NS_ASSUME_NONNULL_BEGIN
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
   [self assertAlert:alert hasActionTitles:@[ @"Cancel", @"Connect" ]];
-  XCTAssertFalse(completionCalled);
+  XCTAssertEqual(spy.callCount, 0);
 
   [self expectOpenURLString:@"https://host.domain/path" inAction:^() {
     [self tapActionTitled:@"Connect" inAlert:alert];
   }];
-  XCTAssertTrue(completionCalled);
+  XCTAssertEqual(spy.callCount, 1);
+  XCTAssertTrue(spy.handled);
 }
 
 // Verifies that the handler can handle sequential errors independently.
