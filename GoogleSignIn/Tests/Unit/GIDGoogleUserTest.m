@@ -556,7 +556,7 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertNotNil(user.accessToken);
 }
 
-// KVO observers of the token properties run while the user holds its lock. This checks
+// KVO observers of the token properties run while the user holds its auth state lock. This checks
 // that an observer can call back into the user on the same thread, including starting another
 // token update, without deadlocking or aborting.
 - (void)testTokenObserver_reentersUserDuringUpdate {
