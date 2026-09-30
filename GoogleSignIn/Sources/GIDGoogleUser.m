@@ -61,12 +61,54 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 @end
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
+@implementation GIDGoogleUserTokens
+
+- (instancetype)initWithAccessToken:(GIDToken *)accessToken
+                       refreshToken:(GIDToken *)refreshToken
+                            idToken:(nullable GIDToken *)idToken {
+  self = [super init];
+  if (self) {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    _idToken = idToken;
+  }
+  return self;
+}
+
+@end
+
 @implementation GIDGoogleUser {
   GIDConfiguration *_cachedConfiguration;
   
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
   NSMutableArray<GIDGoogleUserCompletion> *_tokenRefreshHandlerQueue;
+}
+
+- (GIDToken *)accessToken {
+  return self.tokens.accessToken;
+}
+
+- (GIDToken *)refreshToken {
+  return self.tokens.refreshToken;
+}
+
+- (nullable GIDToken *)idToken {
+  return self.tokens.idToken;
+}
+
+// The three token properties are derived from `tokens`, so KVO observers of each one are notified
+// whenever `tokens` is replaced (a change to any of them notifies observers of all three).
++ (NSSet<NSString *> *)keyPathsForValuesAffectingAccessToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingRefreshToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingIdToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
 }
 
 - (nullable NSString *)userID {
@@ -118,14 +160,19 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)refreshTokensIfNeededWithCompletion:(GIDGoogleUserCompletion)completion {
-  if (!([self.accessToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
-      (self.idToken && [self.idToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
+  // A single read here avoids accidnetally reading tokens from multiple snapshots.
+  GIDGoogleUserTokens *tokens = self.tokens;
+
+  if (!([tokens.accessToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
+      (tokens.idToken &&
+       [tokens.idToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire))) {
     dispatch_async(dispatch_get_main_queue(), ^{
       completion(self, nil);
     });
     return;
   }
-  if (self.refreshToken.expirationDate && [self.refreshToken.expirationDate timeIntervalSinceNow] <= 0) {
+  if (tokens.refreshToken.expirationDate &&
+      [tokens.refreshToken.expirationDate timeIntervalSinceNow] <= 0) {
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeRefreshTokenExpired
                                      userInfo:nil];
@@ -276,41 +323,63 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   }
 }
 
+// KVO observers of the token properties run while `@synchronized(self)` is held; same-thread
+// re-entry is fine because it is recursive, but an observer must not synchronously wait on another
+// thread that is updating the same user.
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  GIDToken *accessToken =
-      [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
-                             expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
-  if (![self.accessToken isEqualToToken:accessToken]) {
-    self.accessToken = accessToken;
-  }
-  
-  NSDictionary *additionalParameters = authState.lastTokenResponse.additionalParameters;
-  NSNumber *refreshTokenExpiresIn = nil;
-  NSDate *refreshTokenExpirationDate = nil;
-  id expiresInValue = additionalParameters[@"refresh_token_expires_in"];
-  if ([expiresInValue isKindOfClass:[NSNumber class]]) {
-    refreshTokenExpiresIn = (NSNumber *)expiresInValue;
-    NSTimeInterval interval = [refreshTokenExpiresIn doubleValue];
-    refreshTokenExpirationDate = [NSDate dateWithTimeIntervalSinceNow:interval];
-  }
-  GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
-                                                  expirationDate:refreshTokenExpirationDate];
-  if (![self.refreshToken isEqualToToken:refreshToken]) {
-    self.refreshToken = refreshToken;
-  }
-  
-  GIDToken *idToken;
-  NSString *idTokenString = authState.lastTokenResponse.idToken;
-  if (idTokenString) {
-    NSDate *idTokenExpirationDate =
-        [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
-    idToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                     expirationDate:idTokenExpirationDate];
-  } else {
-    idToken = nil;
-  }
-  if ((self.idToken || idToken) && ![self.idToken isEqualToToken:idToken]) {
-    self.idToken = idToken;
+  @synchronized(self) {
+    GIDGoogleUserTokens *current = self.tokens;
+
+    // Build the access token
+    GIDToken *accessToken =
+        [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                               expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
+
+    // Build the refresh token
+    NSDictionary *additionalParameters = authState.lastTokenResponse.additionalParameters;
+    NSNumber *refreshTokenExpiresIn = nil;
+    NSDate *refreshTokenExpirationDate = nil;
+    id expiresInValue = additionalParameters[@"refresh_token_expires_in"];
+    if ([expiresInValue isKindOfClass:[NSNumber class]]) {
+      refreshTokenExpiresIn = (NSNumber *)expiresInValue;
+      NSTimeInterval interval = [refreshTokenExpiresIn doubleValue];
+      refreshTokenExpirationDate = [NSDate dateWithTimeIntervalSinceNow:interval];
+    }
+    GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+                                                    expirationDate:refreshTokenExpirationDate];
+
+    // Build the ID token
+    GIDToken *idToken;
+    NSString *idTokenString = authState.lastTokenResponse.idToken;
+    if (idTokenString) {
+      NSDate *idTokenExpirationDate =
+          [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
+      idToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                       expirationDate:idTokenExpirationDate];
+    } else {
+      idToken = nil;
+    }
+
+    // If the computed values are equal to the existing ones, keep the existing ones. In that case,
+    // an update leaves `tokens` untouched and sends no KVO notifications.
+    if ([current.accessToken isEqualToToken:accessToken]) {
+      accessToken = current.accessToken;
+    }
+    if ([current.refreshToken isEqualToToken:refreshToken]) {
+      refreshToken = current.refreshToken;
+    }
+    if ([current.idToken isEqualToToken:idToken]) {
+      idToken = current.idToken;
+    }
+
+    if (!current ||
+        accessToken != current.accessToken ||
+        refreshToken != current.refreshToken ||
+        idToken != current.idToken) {
+      self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
+                                                        refreshToken:refreshToken
+                                                             idToken:idToken];
+    }
   }
 }
 
@@ -340,23 +409,19 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (nullable instancetype)initWithCoder:(NSCoder *)decoder {
-  self = [super init];
-  if (self) {
-    GIDProfileData *profile =
-        [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
-    
-    OIDAuthState *authState;
-    if ([decoder containsValueForKey:kAuthStateKey]) { // Current encoding
-      authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
-    } else { // Old encoding
-      GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
-                                                                forKey:@"authentication"];
-      authState = authentication.authState;
-    }
-    
-    self = [self initWithAuthState:authState profileData:profile];
+  GIDProfileData *profile =
+      [decoder decodeObjectOfClass:[GIDProfileData class] forKey:kProfileDataKey];
+
+  OIDAuthState *authState;
+  if ([decoder containsValueForKey:kAuthStateKey]) { // Current encoding
+    authState = [decoder decodeObjectOfClass:[OIDAuthState class] forKey:kAuthStateKey];
+  } else { // Old encoding
+    GIDAuthentication *authentication = [decoder decodeObjectOfClass:[GIDAuthentication class]
+                                                              forKey:@"authentication"];
+    authState = authentication.authState;
   }
-  return self;
+
+  return [self initWithAuthState:authState profileData:profile];
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {

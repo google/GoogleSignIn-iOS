@@ -53,6 +53,31 @@
 #import <OCMock/OCMock.h>
 #endif
 
+// Observer that runs `onChange` and `onChangeWithDictionary` whenever an observed key path changes.
+@interface GIDGoogleUserTestKVOObserver : NSObject
+
+@property(nonatomic, copy, nullable) void (^onChange)(void);
+@property(nonatomic, copy, nullable)
+    void (^onChangeWithDictionary)(NSDictionary<NSKeyValueChangeKey, id> *_Nullable change);
+
+@end
+
+@implementation GIDGoogleUserTestKVOObserver
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change
+                       context:(void *)context {
+  if (self.onChange) {
+    self.onChange();
+  }
+  if (self.onChangeWithDictionary) {
+    self.onChangeWithDictionary(change);
+  }
+}
+
+@end
+
 static NSString *const kNewAccessToken = @"new_access_token";
 static NSString *const kNewRefreshToken = @"new_refresh_token";
 
@@ -220,6 +245,211 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
   XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
   XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+}
+
+- (void)testUpdateTokens_concurrentUpdates_leaveConsistentTokenSet {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  NSString *initialAccessToken = user.accessToken.tokenString;
+  NSString *initialIDToken = user.idToken.tokenString;
+
+  NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  NSString *accessTokenA = @"access_token_A";
+  OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
+                                                       accessToken:accessTokenA
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
+  NSString *accessTokenB = @"access_token_B";
+  OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
+                                                       accessToken:accessTokenB
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Updates finished"];
+  XCTestExpectation *readExpectation = [self expectationWithDescription:@"Reads finished"];
+
+  dispatch_queue_t updateQueue = dispatch_queue_create("com.google.gidgoogleuser.testUpdateTokens.update",
+                                                       DISPATCH_QUEUE_CONCURRENT);
+  dispatch_queue_t readQueue = dispatch_queue_create("com.google.gidgoogleuser.testUpdateTokens.read",
+                                                     DISPATCH_QUEUE_CONCURRENT);
+
+  NSInteger iterations = 200;
+
+  // Concurrent updates
+  dispatch_async(updateQueue, ^{
+    dispatch_apply(iterations, updateQueue, ^(size_t i) {
+      OIDAuthState *state = (i % 2 == 0) ? authStateA : authStateB;
+      [user updateWithTokenResponse:state.lastTokenResponse
+              authorizationResponse:state.lastAuthorizationResponse
+                        profileData:nil];
+    });
+    [updateExpectation fulfill];
+  });
+
+  // Concurrent reads
+  dispatch_async(readQueue, ^{
+    dispatch_apply(iterations, readQueue, ^(size_t i) {
+      GIDGoogleUserTokens *tokens = user.tokens;
+
+      // Consistency check: the three tokens come from one snapshot read, so accessToken and
+      // idToken must both come from the initial state, both from A, or both from B.
+      if ([tokens.accessToken.tokenString isEqualToString:accessTokenA]) {
+        XCTAssertEqualObjects(tokens.idToken.tokenString, idTokenA);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, kNewRefreshToken);
+      } else if ([tokens.accessToken.tokenString isEqualToString:accessTokenB]) {
+        XCTAssertEqualObjects(tokens.idToken.tokenString, idTokenB);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, kNewRefreshToken);
+      } else {
+        XCTAssertEqualObjects(tokens.accessToken.tokenString, initialAccessToken);
+        XCTAssertEqualObjects(tokens.idToken.tokenString, initialIDToken);
+      }
+    });
+    [readExpectation fulfill];
+  });
+
+  [self waitForExpectationsWithTimeout:5 handler:nil];
+
+  // Final state should be either A or B (whichever ran last)
+  BOOL matchesA = [user.accessToken.tokenString isEqualToString:accessTokenA] &&
+                  [user.idToken.tokenString isEqualToString:idTokenA];
+  BOOL matchesB = [user.accessToken.tokenString isEqualToString:accessTokenB] &&
+                  [user.idToken.tokenString isEqualToString:idTokenB];
+  XCTAssertTrue(matchesA || matchesB);
+
+  // This test is a reliable failure detector only under Thread Sanitizer.
+  // The consistency assertion above is what gives it meaning without TSan.
+}
+
+// Races concurrent token updates against plain reads of the three public token properties, which
+// is how apps read them. Without Thread Sanitizer this only checks that nothing crashes; under
+// Thread Sanitizer (`-enableThreadSanitizer YES`) it fails if any of the three properties is read
+// without the lock that `-updateTokensWithAuthState:` writes them under.
+- (void)testTokenProperties_concurrentUpdatesAndReads {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
+                                                       accessToken:@"access_token_A"
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
+  OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
+                                                       accessToken:@"access_token_B"
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Updates finished"];
+  XCTestExpectation *readExpectation = [self expectationWithDescription:@"Reads finished"];
+
+  dispatch_queue_t updateQueue =
+      dispatch_queue_create("com.google.gidgoogleuser.testTokenProperties.update",
+                            DISPATCH_QUEUE_CONCURRENT);
+  dispatch_queue_t readQueue =
+      dispatch_queue_create("com.google.gidgoogleuser.testTokenProperties.read",
+                            DISPATCH_QUEUE_CONCURRENT);
+
+  size_t iterations = 2000;
+
+  dispatch_async(updateQueue, ^{
+    dispatch_apply(iterations, updateQueue, ^(size_t i) {
+      OIDAuthState *state = (i % 2 == 0) ? authStateA : authStateB;
+      [user updateWithTokenResponse:state.lastTokenResponse
+              authorizationResponse:state.lastAuthorizationResponse
+                        profileData:nil];
+    });
+    [updateExpectation fulfill];
+  });
+
+  dispatch_async(readQueue, ^{
+    dispatch_apply(iterations, readQueue, ^(size_t i) {
+      (void)user.accessToken.tokenString;
+      (void)user.refreshToken.tokenString;
+      (void)user.idToken.tokenString;
+    });
+    [readExpectation fulfill];
+  });
+
+  [self waitForExpectationsWithTimeout:30 handler:nil];
+
+  XCTAssertNotNil(user.accessToken);
+}
+
+// KVO observers of the token properties run while the user holds its lock. This checks
+// that an observer can call back into the user on the same thread, including starting another
+// token update, without deadlocking or aborting.
+- (void)testTokenObserver_reentersUserDuringUpdate {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
+                                                       accessToken:@"access_token_A"
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
+  OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
+                                                       accessToken:@"access_token_B"
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:kNewRefreshToken];
+
+  NSString *accessTokenKeyPath = NSStringFromSelector(@selector(accessToken));
+  GIDGoogleUserTestKVOObserver *observer = [[GIDGoogleUserTestKVOObserver alloc] init];
+  __block NSInteger notificationCount = 0;
+  __weak GIDGoogleUser *weakUser = user;
+
+  observer.onChange = ^{
+    notificationCount += 1;
+    // Only the first notification re-enters, so the re-entrant update cannot recurse forever.
+    if (notificationCount > 1) {
+      return;
+    }
+    GIDGoogleUser *strongUser = weakUser;
+
+    // These reads take the user's auth state lock again on this thread.
+    (void)strongUser.grantedScopes;
+    (void)strongUser.profile;
+    XCTAssertNotNil(strongUser.configuration);
+
+    // A re-entrant token update from inside the notification.
+    [strongUser updateWithTokenResponse:authStateB.lastTokenResponse
+                  authorizationResponse:authStateB.lastAuthorizationResponse
+                            profileData:nil];
+  };
+
+  GIDGoogleUserTestKVOObserver *secondObserver = [[GIDGoogleUserTestKVOObserver alloc] init];
+  NSMutableArray<NSString *> *observedTokenStrings = [NSMutableArray array];
+  secondObserver.onChangeWithDictionary = ^(NSDictionary<NSKeyValueChangeKey, id> *change) {
+    GIDToken *newToken = change[NSKeyValueChangeNewKey];
+    if (newToken.tokenString) {
+      [observedTokenStrings addObject:newToken.tokenString];
+    }
+  };
+
+  [user addObserver:observer forKeyPath:accessTokenKeyPath options:0 context:NULL];
+  [user addObserver:secondObserver
+         forKeyPath:accessTokenKeyPath
+            options:NSKeyValueObservingOptionNew
+            context:NULL];
+
+  [user updateWithTokenResponse:authStateA.lastTokenResponse
+          authorizationResponse:authStateA.lastAuthorizationResponse
+                    profileData:nil];
+
+  [user removeObserver:observer forKeyPath:accessTokenKeyPath context:NULL];
+  [user removeObserver:secondObserver forKeyPath:accessTokenKeyPath context:NULL];
+
+  // Both the outer update and the re-entrant one notify, and the re-entrant one is applied last.
+  XCTAssertGreaterThanOrEqual(notificationCount, 2);
+  XCTAssertEqualObjects(user.accessToken.tokenString, @"access_token_B");
+  // KVO may deliver the nested B notification to `secondObserver` before A's, so only the last
+  // recorded value is asserted.
+  XCTAssertGreaterThanOrEqual(observedTokenStrings.count, (NSUInteger)1);
+  XCTAssertEqualObjects(observedTokenStrings.lastObject, @"access_token_B");
 }
 
 - (void)testFetcherAuthorizer {
