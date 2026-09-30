@@ -127,6 +127,22 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
   // from no profile having been supplied, which keeps the current one.
   GIDProfileData *_pendingProfile;
   BOOL _hasPendingProfile;
+
+  // Guards `authState` updates and reads that span several of its fields. Recursive because
+  // AppAuth calls -didChangeState: synchronously while it is held, and KVO observers of the
+  // token and profile properties also run while it is held: same-thread re-entry is fine
+  // (see -testTokenObserver_reentersUserDuringUpdate), but an observer must not synchronously
+  // wait on another thread that is updating the same user, as that would deadlock. Take it via
+  // -lockAuthState.
+  NSRecursiveLock *_authStateLock;
+}
+
+- (void)lockAuthState {
+  [_authStateLock lock];
+}
+
+- (void)unlockAuthState {
+  [_authStateLock unlock];
 }
 
 - (GIDToken *)accessToken {
@@ -215,23 +231,36 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     }
   }
   // This is the first handler in the queue, a fetch is needed.
+  // Read the auth state under `_authStateLock` so building the request cannot interleave with
+  // -updateWithTokenResponse:authorizationResponse:profileData:, and build the parameter
+  // dictionary outside the lock so helper calls do not run while it is held.
+  [self lockAuthState];
+  NSDictionary<NSString *, NSString *> *lastTokenAdditionalParameters =
+      self.authState.lastTokenResponse.request.additionalParameters;
+  [self unlockAuthState];
+
   NSMutableDictionary *additionalParameters = [@{} mutableCopy];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport updatedEMMParametersWithParameters:
-          self.authState.lastTokenResponse.request.additionalParameters]];
+      [GIDEMMSupport updatedEMMParametersWithParameters:lastTokenAdditionalParameters]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      self.authState.lastTokenResponse.request.additionalParameters];
+  [additionalParameters addEntriesFromDictionary:lastTokenAdditionalParameters];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
+  [self lockAuthState];
+  OIDAuthorizationResponse *authorizationResponse = self.authState.lastAuthorizationResponse;
   OIDTokenRequest *tokenRefreshRequest =
       [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  [self unlockAuthState];
+
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
-                 originalAuthorizationResponse:self.authState.lastAuthorizationResponse
+                 originalAuthorizationResponse:authorizationResponse
                                       callback:^(OIDTokenResponse *_Nullable tokenResponse,
                                                  NSError *_Nullable error) {
+    // Update the auth state under `_authStateLock` so this refresh cannot interleave with
+    // -updateWithTokenResponse:authorizationResponse:profileData:.
+    [self lockAuthState];
     if (tokenResponse) {
       [self.authState updateWithTokenResponse:tokenResponse error:nil];
     } else {
@@ -239,6 +268,7 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
         [self.authState updateWithAuthorizationError:error];
       }
     }
+    [self unlockAuthState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
@@ -305,8 +335,11 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (nullable NSString *)emmSupport {
-  return self.authState.lastAuthorizationResponse
+  [self lockAuthState];
+  NSString *emmSupport = self.authState.lastAuthorizationResponse
       .request.additionalParameters[kEMMSupportParameterName];
+  [self unlockAuthState];
+  return emmSupport;
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -314,6 +347,9 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
+    // Initialize the lock before -updateTokensWithAuthState: below uses it.
+    _authStateLock = [[NSRecursiveLock alloc] init];
+
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
 
     // Park the profile for the first snapshot, built by -updateTokensWithAuthState: below.
@@ -336,119 +372,119 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 - (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
-  @synchronized(self) {
-    // Park the profile for the snapshot built when the token response update below calls back
-    // through -didChangeState:.
-    _pendingProfile = profileData;
-    _hasPendingProfile = YES;
+  [self lockAuthState];
+  // Park the profile for the snapshot built when the token response update below calls back
+  // through -didChangeState:.
+  _pendingProfile = profileData;
+  _hasPendingProfile = YES;
 
-    // We don't want to trigger the delegate before we update authState completely. So we unset the
-    // delegate before the first update. Also the order of updates is important because
-    // `updateWithAuthorizationResponse` would clear the last token reponse and refresh token.
-    // TODO: Rewrite authState update logic when the issue is addressed.(openid/AppAuth-iOS#728)
-    self.authState.stateChangeDelegate = nil;
-    [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
-    self.authState.stateChangeDelegate = self;
-    [self.authState updateWithTokenResponse:tokenResponse error:nil];
-    // AppAuth does not call -didChangeState: for a nil token response, so if the profile was not
-    // folded into a snapshot above, build one here.
-    if (_hasPendingProfile) {
-      [self updateTokensWithAuthState:self.authState];
-    }
+  // We don't want to trigger the delegate before we update authState completely. So we unset the
+  // delegate before the first update. Also the order of updates is important because
+  // `updateWithAuthorizationResponse` would clear the last token reponse and refresh token.
+  // TODO: Rewrite authState update logic when the issue is addressed.(openid/AppAuth-iOS#728)
+  self.authState.stateChangeDelegate = nil;
+  [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
+  self.authState.stateChangeDelegate = self;
+  [self.authState updateWithTokenResponse:tokenResponse error:nil];
+  // AppAuth does not call -didChangeState: for a nil token response, so if the profile was not
+  // folded into a snapshot above, build one here.
+  if (_hasPendingProfile) {
+    [self updateTokensWithAuthState:self.authState];
   }
+  [self unlockAuthState];
 }
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  @synchronized(self) {
-    GIDGoogleUserTokens *current = self.tokens;
-    GIDProfileData *profile = _hasPendingProfile ? _pendingProfile : current.profile;
-    _pendingProfile = nil;
-    _hasPendingProfile = NO;
+  [self lockAuthState];
+  GIDGoogleUserTokens *current = self.tokens;
+  GIDProfileData *profile = _hasPendingProfile ? _pendingProfile : current.profile;
+  _pendingProfile = nil;
+  _hasPendingProfile = NO;
 
-    // Build the access token
-    GIDToken *accessToken =
-        [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
-                               expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
+  // Build the access token
+  GIDToken *accessToken =
+      [[GIDToken alloc] initWithTokenString:authState.lastTokenResponse.accessToken
+                             expirationDate:authState.lastTokenResponse.accessTokenExpirationDate];
 
-    // Build the refresh token
-    NSDictionary *additionalParameters = authState.lastTokenResponse.additionalParameters;
-    NSNumber *refreshTokenExpiresIn = nil;
-    NSDate *refreshTokenExpirationDate = nil;
-    id expiresInValue = additionalParameters[@"refresh_token_expires_in"];
-    if ([expiresInValue isKindOfClass:[NSNumber class]]) {
-      refreshTokenExpiresIn = (NSNumber *)expiresInValue;
-      NSTimeInterval interval = [refreshTokenExpiresIn doubleValue];
-      refreshTokenExpirationDate = [NSDate dateWithTimeIntervalSinceNow:interval];
-    }
-    GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
-                                                    expirationDate:refreshTokenExpirationDate];
-
-    // Build the ID token
-    GIDToken *idToken;
-    NSString *idTokenString = authState.lastTokenResponse.idToken;
-    if (idTokenString) {
-      NSDate *idTokenExpirationDate =
-          [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
-      idToken = [[GIDToken alloc] initWithTokenString:idTokenString
-                                       expirationDate:idTokenExpirationDate];
-    } else {
-      idToken = nil;
-    }
-
-    NSArray<NSString *> *grantedScopes =
-        GIDGrantedScopesFromScopeString(authState.lastTokenResponse.scope);
-
-    GIDConfiguration *configuration;
-    if (current.configuration) {
-      // The configuration is fixed for the lifetime of a user, so it is computed once.
-      configuration = current.configuration;
-    } else {
-      NSString *clientID = authState.lastAuthorizationResponse.request.clientID;
-      NSString *serverClientID =
-          authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
-      NSString *openIDRealm =
-          authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
-
-      configuration = [[GIDConfiguration alloc]
-          initWithClientID:clientID
-            serverClientID:serverClientID
-              hostedDomain:GIDHostedDomainFromIDTokenString(idToken.tokenString)
-               openIDRealm:openIDRealm];
-    }
-
-    // If the computed values are equal to the existing ones, keep the existing ones. In that case,
-    // an update leaves `tokens` untouched and sends no KVO notifications.
-    if ([current.accessToken isEqualToToken:accessToken]) {
-      accessToken = current.accessToken;
-    }
-    if ([current.refreshToken isEqualToToken:refreshToken]) {
-      refreshToken = current.refreshToken;
-    }
-    if ([current.idToken isEqualToToken:idToken]) {
-      idToken = current.idToken;
-    }
-    // Both nil must be checked explicitly: isEqualToArray: returns NO when either side is nil.
-    if ((!grantedScopes && !current.grantedScopes) ||
-        [grantedScopes isEqualToArray:current.grantedScopes]) {
-      grantedScopes = current.grantedScopes;
-    }
-
-    if (!current ||
-        accessToken != current.accessToken ||
-        refreshToken != current.refreshToken ||
-        idToken != current.idToken ||
-        grantedScopes != current.grantedScopes ||
-        profile != current.profile) {
-      // Replacing `tokens` notifies KVO observers of the derived properties while the lock is
-      // held; see the key-value observing note on GIDGoogleUser in GIDGoogleUser.h.
-      self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
-                                                        refreshToken:refreshToken
-                                                             idToken:idToken
-                                                       grantedScopes:grantedScopes
-                                                       configuration:configuration
-                                                             profile:profile];
-    }
+  // Build the refresh token
+  NSDictionary *additionalParameters = authState.lastTokenResponse.additionalParameters;
+  NSNumber *refreshTokenExpiresIn = nil;
+  NSDate *refreshTokenExpirationDate = nil;
+  id expiresInValue = additionalParameters[@"refresh_token_expires_in"];
+  if ([expiresInValue isKindOfClass:[NSNumber class]]) {
+    refreshTokenExpiresIn = (NSNumber *)expiresInValue;
+    NSTimeInterval interval = [refreshTokenExpiresIn doubleValue];
+    refreshTokenExpirationDate = [NSDate dateWithTimeIntervalSinceNow:interval];
   }
+  GIDToken *refreshToken = [[GIDToken alloc] initWithTokenString:authState.refreshToken
+                                                  expirationDate:refreshTokenExpirationDate];
+
+  // Build the ID token
+  GIDToken *idToken;
+  NSString *idTokenString = authState.lastTokenResponse.idToken;
+  if (idTokenString) {
+    NSDate *idTokenExpirationDate =
+        [[[OIDIDToken alloc] initWithIDTokenString:idTokenString] expiresAt];
+    idToken = [[GIDToken alloc] initWithTokenString:idTokenString
+                                     expirationDate:idTokenExpirationDate];
+  } else {
+    idToken = nil;
+  }
+
+  NSArray<NSString *> *grantedScopes =
+      GIDGrantedScopesFromScopeString(authState.lastTokenResponse.scope);
+
+  GIDConfiguration *configuration;
+  if (current.configuration) {
+    // The configuration is fixed for the lifetime of a user, so it is computed once.
+    configuration = current.configuration;
+  } else {
+    NSString *clientID = authState.lastAuthorizationResponse.request.clientID;
+    NSString *serverClientID =
+        authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
+    NSString *openIDRealm =
+        authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
+
+    configuration = [[GIDConfiguration alloc]
+        initWithClientID:clientID
+          serverClientID:serverClientID
+            hostedDomain:GIDHostedDomainFromIDTokenString(idToken.tokenString)
+             openIDRealm:openIDRealm];
+  }
+
+  // If the computed values are equal to the existing ones, keep the existing ones. In that case,
+  // an update leaves `tokens` untouched and sends no KVO notifications.
+  if ([current.accessToken isEqualToToken:accessToken]) {
+    accessToken = current.accessToken;
+  }
+  if ([current.refreshToken isEqualToToken:refreshToken]) {
+    refreshToken = current.refreshToken;
+  }
+  if ([current.idToken isEqualToToken:idToken]) {
+    idToken = current.idToken;
+  }
+  // Both nil must be checked explicitly: isEqualToArray: returns NO when either side is nil.
+  if ((!grantedScopes && !current.grantedScopes) ||
+      [grantedScopes isEqualToArray:current.grantedScopes]) {
+    grantedScopes = current.grantedScopes;
+  }
+
+  if (!current ||
+      accessToken != current.accessToken ||
+      refreshToken != current.refreshToken ||
+      idToken != current.idToken ||
+      grantedScopes != current.grantedScopes ||
+      profile != current.profile) {
+    // Replacing `tokens` notifies KVO observers of the derived properties while the lock is
+    // held; see the key-value observing note on GIDGoogleUser in GIDGoogleUser.h.
+    self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
+                                                      refreshToken:refreshToken
+                                                           idToken:idToken
+                                                     grantedScopes:grantedScopes
+                                                     configuration:configuration
+                                                           profile:profile];
+  }
+  [self unlockAuthState];
 }
 
 #pragma mark - OIDAuthStateChangeDelegate
@@ -480,8 +516,11 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
+  // Holds `_authStateLock` so the encoded profile and auth state come from the same update.
+  [self lockAuthState];
   [encoder encodeObject:self.profile forKey:kProfileDataKey];
   [encoder encodeObject:self.authState forKey:kAuthStateKey];
+  [self unlockAuthState];
 }
 
 @end
