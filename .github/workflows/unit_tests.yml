@@ -44,11 +44,21 @@ jobs:
       matrix:
         os: [macos-15]
         sdk: ['macosx', 'iphonesimulator']
+        # Also run the iOS unit tests with Thread Sanitizer as well.
+        # It is iOS simulator only: macOS's libobjc inlines the uncontended fast
+        # path of the lock behind atomic properties, and Thread Sanitizer, which 
+        # only sees lock function calls, then reports false data races on them.
+        # The simulator's libobjc calls the lock functions, so Thread Sanitizer
+        # sees the synchronization.
+        thread-sanitizer: [false, true]
         include:
           - sdk: 'macosx'
             destination: '"platform=OS X,arch=x86_64"'
           - sdk: 'iphonesimulator'
             destination: '"platform=iOS Simulator,name=iPhone 16,OS=18.6"'
+        exclude:
+          - sdk: 'macosx'
+            thread-sanitizer: true
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Select Xcode
@@ -59,14 +69,16 @@ jobs:
           -scheme GoogleSignIn-Package \
           -sdk ${{ matrix.sdk }} \
           -destination ${{ matrix.destination }} \
-          build-for-testing
+          build-for-testing \
+          ${{ matrix.thread-sanitizer && '-enableThreadSanitizer YES' || '' }}
     - name: Run unit test target
       run: |
         xcodebuild \
           -scheme GoogleSignIn-Package \
           -sdk ${{ matrix.sdk }} \
           -destination ${{ matrix.destination }} \
-          test-without-building
+          test-without-building \
+          ${{ matrix.thread-sanitizer && '-enableThreadSanitizer YES' || '' }}
 
   signin-sample-spm-build:
     runs-on: macos-15
