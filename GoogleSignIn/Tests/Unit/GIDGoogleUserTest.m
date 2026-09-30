@@ -247,6 +247,51 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
 }
 
+- (void)testUpdateAuthState_publishesProfileWithTokens {
+  NSString *idToken = [self idTokenWithExpiresIn:kIDTokenExpiresIn];
+  OIDAuthState *authState = [OIDAuthState testInstanceWithIDToken:idToken
+                                                      accessToken:kAccessToken
+                                             accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                     refreshToken:kRefreshToken];
+
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+
+  GIDToken *accessTokenBeforeUpdate = user.accessToken;
+  GIDToken *refreshTokenBeforeUpdate = user.refreshToken;
+  GIDToken *idTokenBeforeUpdate = user.idToken;
+  GIDProfileData *updatedProfileData = [GIDProfileData testInstance];
+
+  [user updateWithTokenResponse:authState.lastTokenResponse
+          authorizationResponse:authState.lastAuthorizationResponse
+                    profileData:updatedProfileData];
+
+  XCTAssertEqual(user.profile, updatedProfileData);
+  XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
+  XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
+  XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+}
+
+- (void)testConfiguration_isFixedAfterTokenUpdate {
+  // The configuration is computed once at init and is fixed for the user's lifetime.
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  GIDConfiguration *configurationBefore = user.configuration;
+
+  NSString *updatedIDToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDAuthState *updatedAuthState = [OIDAuthState testInstanceWithIDToken:updatedIDToken
+                                                             accessToken:kNewAccessToken
+                                                    accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                            refreshToken:kNewRefreshToken];
+
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
+                    profileData:nil];
+
+  XCTAssertIdentical(user.configuration, configurationBefore);
+  XCTAssertEqualObjects(user.configuration.clientID, OIDAuthorizationRequestTestingClientID);
+  XCTAssertEqualObjects(user.configuration.hostedDomain, kHostedDomain);
+}
+
 - (void)testUpdateTokens_concurrentUpdates_leaveConsistentTokenSet {
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
                                                 idTokenExpiresIn:kIDTokenExpiresIn];
@@ -540,6 +585,29 @@ static NSString *const kNewScope = @"newScope";
   // recorded value is asserted.
   XCTAssertGreaterThanOrEqual(observedTokenStrings.count, (NSUInteger)1);
   XCTAssertEqualObjects(observedTokenStrings.lastObject, @"access_token_B");
+}
+
+- (void)testProfile_notifiesKVOObserversOnUpdate {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  NSString *profileKeyPath = NSStringFromSelector(@selector(profile));
+  GIDGoogleUserTestKVOObserver *observer = [[GIDGoogleUserTestKVOObserver alloc] init];
+  __block NSInteger notificationCount = 0;
+  observer.onChange = ^{
+    notificationCount += 1;
+  };
+
+  [user addObserver:observer forKeyPath:profileKeyPath options:0 context:NULL];
+
+  OIDAuthState *authState = [OIDAuthState testInstance];
+  [user updateWithTokenResponse:authState.lastTokenResponse
+          authorizationResponse:authState.lastAuthorizationResponse
+                    profileData:[GIDProfileData testInstance]];
+
+  [user removeObserver:observer forKeyPath:profileKeyPath context:NULL];
+
+  XCTAssertGreaterThanOrEqual(notificationCount, 1);
 }
 
 - (void)testFetcherAuthorizer {
