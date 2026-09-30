@@ -1041,6 +1041,40 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testRefreshTokensIfNeeded_dropsResponseForReplacedAuthorization {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser *_Nullable refreshedUser,
+                                              NSError *_Nullable error) {
+    [expectation fulfill];
+    XCTAssertNotNil(refreshedUser);
+    XCTAssertNil(error);
+  }];
+
+  NSString *updatedIDToken = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  OIDAuthState *updatedAuthState =
+      [OIDAuthState testInstanceWithIDToken:updatedIDToken
+                                accessToken:@"access_token_after_add_scopes"
+                       accessTokenExpiresIn:kAccessTokenExpiresIn
+                               refreshToken:kNewRefreshToken];
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
+                    profileData:nil];
+
+  OIDTokenResponse *staleResponse =
+      [OIDTokenResponse testInstanceWithIDToken:updatedIDToken
+                                    accessToken:kNewAccessToken
+                                      expiresIn:@(kAccessTokenExpiresIn)
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:nil];
+  _tokenFetchHandler(staleResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertEqualObjects(user.accessToken.tokenString, @"access_token_after_add_scopes");
+}
+
 - (void)testWrapperIdentifier_PresentOnRefreshRequestWhenSet {
   GIDSignIn.wrapperIdentifier = @"firebase";
 
