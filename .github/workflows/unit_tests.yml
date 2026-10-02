@@ -68,6 +68,31 @@ jobs:
           -destination ${{ matrix.destination }} \
           test-without-building
 
+  thread-sanitizer-test:
+    # Run the iOS unit tests with Thread Sanitizer so data races (for example on
+    # GIDGoogleUser's token properties) fail CI instead of shipping silently.
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Build unit test target with Thread Sanitizer
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn-Package \
+          -sdk iphonesimulator \
+          -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
+          -enableThreadSanitizer YES \
+          build-for-testing
+    - name: Run unit test target with Thread Sanitizer
+      run: |
+        xcodebuild \
+          -scheme GoogleSignIn-Package \
+          -sdk iphonesimulator \
+          -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
+          -enableThreadSanitizer YES \
+          test-without-building
+
   signin-sample-spm-build:
     runs-on: macos-15
     steps:
