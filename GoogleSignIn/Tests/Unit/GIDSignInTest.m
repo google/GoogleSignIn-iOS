@@ -1819,9 +1819,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^completion)(void);
+  __block void (^completion)(BOOL handled);
   NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"EMM Specific Error" };
-  [[[mockEMMErrorHandler expect] andReturnValue:@YES]
+  [[mockEMMErrorHandler expect]
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
 
 
@@ -1837,7 +1837,7 @@ static NSString *const kMultipleClaimsJsonString =
 
   [mockEMMErrorHandler verify];
   [mockEMMErrorHandler stopMocking];
-  completion();
+  completion(YES);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
