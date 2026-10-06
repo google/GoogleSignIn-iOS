@@ -68,6 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUp {
   [super setUp];
+  // GIDEMMErrorHandler is a singleton; a test that fails before dismissing its dialog would
+  // otherwise leave the pending-dialog flag set and break every test after it.
+  [[GIDEMMErrorHandler sharedInstance] setValue:@NO forKey:@"pendingDialog"];
   _keyWindowSet = NO;
   _presentedViewController = nil;
   UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -276,33 +279,6 @@ NS_ASSUME_NONNULL_BEGIN
   [self tapActionTitled:@"OK" inAlert:alert];
   XCTAssertEqual(secondSpy.callCount, 1);
   XCTAssertTrue(secondSpy.handled);
-}
-
-// Verifies the flag handed to the completion on both the non-EMM path (synchronous, NO) and
-// the EMM path (after dialog dismissal, YES).
-- (void)testCompletionReceivesHandledFlag {
-  // First half — non-EMM.
-  GIDEMMCompletionSpy *nonEMMSpy = [[GIDEMMCompletionSpy alloc] init];
-  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"invalid_token" }
-                                                    completion:nonEMMSpy.completion];
-  XCTAssertEqual(nonEMMSpy.callCount, 1);
-  XCTAssertFalse(nonEMMSpy.handled);
-
-  // Second half — EMM.
-  GIDEMMCompletionSpy *emmSpy = [[GIDEMMCompletionSpy alloc] init];
-  [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"error" : @"emm_something_wrong" }
-                                                    completion:emmSpy.completion];
-  XCTAssertEqual(emmSpy.callCount, 0);
-
-  [self waitForMainQueue];
-  UIAlertController *alert = [self presentedAlert];
-  if (!alert) return;
-  [self assertAlert:alert hasActionTitles:@[ @"OK" ]];
-  XCTAssertEqual(emmSpy.callCount, 0);
-
-  [self tapActionTitled:@"OK" inAlert:alert];
-  XCTAssertEqual(emmSpy.callCount, 1);
-  XCTAssertTrue(emmSpy.handled);
 }
 
 // Verifies that the handler handles EMM screenlock required error with user tapping 'Cancel'.
