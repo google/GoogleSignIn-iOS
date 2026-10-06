@@ -1849,6 +1849,78 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
 }
 
+// Verifies that an authorization error the EMM handler declines is reported as unknown.
+- (void)testAuthEndpointEMMError_NotHandled {
+  if (!_isEligibleForEMM) {
+    return;
+  }
+
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^completion)(BOOL handled);
+  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"invalid_request" };
+  [[mockEMMErrorHandler expect]
+      handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  [mockEMMErrorHandler verify];
+  [mockEMMErrorHandler stopMocking];
+  completion(NO);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertNotNil(_authError, @"should have error");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeUnknown);
+  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+}
+
+// Verifies that access_denied is reported as canceled even when the EMM handler claims it.
+- (void)testAuthEndpointEMMError_AccessDeniedTakesPriority {
+  if (!_isEligibleForEMM) {
+    return;
+  }
+
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^completion)(BOOL handled);
+  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"access_denied" };
+  [[mockEMMErrorHandler expect]
+      handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  [mockEMMErrorHandler verify];
+  [mockEMMErrorHandler stopMocking];
+  completion(YES);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
+  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+}
+
 - (void)testTokenEndpointEMMError {
   if (!_isEligibleForEMM) {
     return;
