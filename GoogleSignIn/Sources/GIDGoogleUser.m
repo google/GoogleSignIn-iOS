@@ -160,7 +160,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)refreshTokensIfNeededWithCompletion:(GIDGoogleUserCompletion)completion {
-  // A single read here avoids accidnetally reading tokens from multiple snapshots.
+  // A single read here avoids accidentally reading tokens from multiple snapshots.
   GIDGoogleUserTokens *tokens = self.tokens;
 
   if (!([tokens.accessToken.expirationDate timeIntervalSinceNow] < kMinimalTimeToExpire ||
