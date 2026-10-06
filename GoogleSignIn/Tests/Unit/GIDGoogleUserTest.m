@@ -251,21 +251,24 @@ static NSString *const kNewScope = @"newScope";
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
                                                 idTokenExpiresIn:kIDTokenExpiresIn];
   NSString *initialAccessToken = user.accessToken.tokenString;
+  NSString *initialRefreshToken = user.refreshToken.tokenString;
   NSString *initialIDToken = user.idToken.tokenString;
 
   NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
   NSString *accessTokenA = @"access_token_A";
+  NSString *refreshTokenA = @"refresh_token_A";
   OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
                                                        accessToken:accessTokenA
                                               accessTokenExpiresIn:kAccessTokenExpiresIn
-                                                      refreshToken:kNewRefreshToken];
+                                                      refreshToken:refreshTokenA];
 
   NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
   NSString *accessTokenB = @"access_token_B";
+  NSString *refreshTokenB = @"refresh_token_B";
   OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
                                                        accessToken:accessTokenB
                                               accessTokenExpiresIn:kAccessTokenExpiresIn
-                                                      refreshToken:kNewRefreshToken];
+                                                      refreshToken:refreshTokenB];
 
   XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Updates finished"];
   XCTestExpectation *readExpectation = [self expectationWithDescription:@"Reads finished"];
@@ -293,17 +296,18 @@ static NSString *const kNewScope = @"newScope";
     dispatch_apply(iterations, readQueue, ^(size_t i) {
       GIDGoogleUserTokens *tokens = user.tokens;
 
-      // Consistency check: the three tokens come from one snapshot read, so accessToken and
-      // idToken must both come from the initial state, both from A, or both from B.
+      // Consistency check: the three tokens come from one snapshot read, so all three tokens
+      // (access, refresh and ID) must come from the same state (initial, A, or B).
       if ([tokens.accessToken.tokenString isEqualToString:accessTokenA]) {
         XCTAssertEqualObjects(tokens.idToken.tokenString, idTokenA);
-        XCTAssertEqualObjects(tokens.refreshToken.tokenString, kNewRefreshToken);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, refreshTokenA);
       } else if ([tokens.accessToken.tokenString isEqualToString:accessTokenB]) {
         XCTAssertEqualObjects(tokens.idToken.tokenString, idTokenB);
-        XCTAssertEqualObjects(tokens.refreshToken.tokenString, kNewRefreshToken);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, refreshTokenB);
       } else {
         XCTAssertEqualObjects(tokens.accessToken.tokenString, initialAccessToken);
         XCTAssertEqualObjects(tokens.idToken.tokenString, initialIDToken);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, initialRefreshToken);
       }
     });
     [readExpectation fulfill];
@@ -313,8 +317,94 @@ static NSString *const kNewScope = @"newScope";
 
   // Final state should be either A or B (whichever ran last)
   BOOL matchesA = [user.accessToken.tokenString isEqualToString:accessTokenA] &&
+                  [user.refreshToken.tokenString isEqualToString:refreshTokenA] &&
                   [user.idToken.tokenString isEqualToString:idTokenA];
   BOOL matchesB = [user.accessToken.tokenString isEqualToString:accessTokenB] &&
+                  [user.refreshToken.tokenString isEqualToString:refreshTokenB] &&
+                  [user.idToken.tokenString isEqualToString:idTokenB];
+  XCTAssertTrue(matchesA || matchesB);
+
+  // This test is a reliable failure detector only under Thread Sanitizer.
+  // The consistency assertion above is what gives it meaning without TSan.
+}
+
+// Races the `-didChangeState:` entry point (the one AppAuth calls when a token refresh updates the
+// auth state) against snapshot reads. States A and B use different refresh tokens so a snapshot
+// that mixes them fails.
+- (void)testDidChangeState_concurrentUpdates_leaveConsistentTokenSet {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  NSString *initialAccessToken = user.accessToken.tokenString;
+  NSString *initialRefreshToken = user.refreshToken.tokenString;
+  NSString *initialIDToken = user.idToken.tokenString;
+
+  NSString *idTokenA = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn];
+  NSString *accessTokenA = @"access_token_A";
+  NSString *refreshTokenA = @"refresh_token_A";
+  OIDAuthState *authStateA = [OIDAuthState testInstanceWithIDToken:idTokenA
+                                                       accessToken:accessTokenA
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:refreshTokenA];
+
+  NSString *idTokenB = [self idTokenWithExpiresIn:kNewIDTokenExpiresIn + 1];
+  NSString *accessTokenB = @"access_token_B";
+  NSString *refreshTokenB = @"refresh_token_B";
+  OIDAuthState *authStateB = [OIDAuthState testInstanceWithIDToken:idTokenB
+                                                       accessToken:accessTokenB
+                                              accessTokenExpiresIn:kAccessTokenExpiresIn
+                                                      refreshToken:refreshTokenB];
+
+  XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Updates finished"];
+  XCTestExpectation *readExpectation = [self expectationWithDescription:@"Reads finished"];
+
+  dispatch_queue_t updateQueue =
+      dispatch_queue_create("com.google.gidgoogleuser.testDidChangeState.update",
+                            DISPATCH_QUEUE_CONCURRENT);
+  dispatch_queue_t readQueue =
+      dispatch_queue_create("com.google.gidgoogleuser.testDidChangeState.read",
+                            DISPATCH_QUEUE_CONCURRENT);
+
+  NSInteger iterations = 200;
+
+  // Concurrent updates
+  dispatch_async(updateQueue, ^{
+    dispatch_apply(iterations, updateQueue, ^(size_t i) {
+      OIDAuthState *state = (i % 2 == 0) ? authStateA : authStateB;
+      [user didChangeState:state];
+    });
+    [updateExpectation fulfill];
+  });
+
+  // Concurrent reads
+  dispatch_async(readQueue, ^{
+    dispatch_apply(iterations, readQueue, ^(size_t i) {
+      GIDGoogleUserTokens *tokens = user.tokens;
+
+      // Consistency check: the three tokens come from one snapshot read, so all three tokens
+      // (access, refresh and ID) must come from the same state (initial, A, or B).
+      if ([tokens.accessToken.tokenString isEqualToString:accessTokenA]) {
+        XCTAssertEqualObjects(tokens.idToken.tokenString, idTokenA);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, refreshTokenA);
+      } else if ([tokens.accessToken.tokenString isEqualToString:accessTokenB]) {
+        XCTAssertEqualObjects(tokens.idToken.tokenString, idTokenB);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, refreshTokenB);
+      } else {
+        XCTAssertEqualObjects(tokens.accessToken.tokenString, initialAccessToken);
+        XCTAssertEqualObjects(tokens.idToken.tokenString, initialIDToken);
+        XCTAssertEqualObjects(tokens.refreshToken.tokenString, initialRefreshToken);
+      }
+    });
+    [readExpectation fulfill];
+  });
+
+  [self waitForExpectationsWithTimeout:5 handler:nil];
+
+  // Final state should be either A or B (whichever ran last)
+  BOOL matchesA = [user.accessToken.tokenString isEqualToString:accessTokenA] &&
+                  [user.refreshToken.tokenString isEqualToString:refreshTokenA] &&
+                  [user.idToken.tokenString isEqualToString:idTokenA];
+  BOOL matchesB = [user.accessToken.tokenString isEqualToString:accessTokenB] &&
+                  [user.refreshToken.tokenString isEqualToString:refreshTokenB] &&
                   [user.idToken.tokenString isEqualToString:idTokenB];
   XCTAssertTrue(matchesA || matchesB);
 
