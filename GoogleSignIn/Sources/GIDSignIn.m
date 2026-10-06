@@ -985,8 +985,10 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
     } else {
       // There was a failure, convert to appropriate error code.
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
+      BOOL deferredToEMMHandler = NO;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (authFlow.emmSupport) {
+        deferredToEMMHandler = YES;
         [authFlow wait];
         [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params
                                                           completion:^(BOOL handled) {
@@ -994,9 +996,9 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
           authFlow.error = [self authorizationErrorWithParameters:params isEMMError:handled];
           [authFlow next];
         }];
-      } else
+      }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      {
+      if (!deferredToEMMHandler) {
         authFlow.error = [self authorizationErrorWithParameters:params isEMMError:NO];
       }
     }
