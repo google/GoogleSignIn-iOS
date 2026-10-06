@@ -5,7 +5,7 @@
 - `GIDGoogleUser`'s `accessToken`, `refreshToken` and `idToken` are now all derived from that snapshot, so key-value observers of any one of them are notified whenever any of them changes, not only when that property's own value changes.
 - Key-value observers of those properties are notified while `GIDGoogleUser` holds its internal lock. Calling back into the same user from the observer is fine, but an observer must not synchronously wait (for example with `dispatch_sync`) on another thread that is updating the same user.
 - Fix EMM remediation dialogs being suppressed for the rest of the app's lifetime after a single error arrived while no key window was available. The pending-dialog flag is now cleared on every exit path, and its clearing write is synchronized to match the read.
-- Fix a token request that failed with an EMM error sometimes being reported with the underlying OAuth error instead of `kGIDSignInErrorCodeEMM` when it completed off the main thread.
+- Fix a token request that failed with an EMM error sometimes being reported with the underlying OAuth error instead of `kGIDSignInErrorCodeEMM` when no remediation dialog could be presented.
 
 # 10.0.0
 - **BREAKING**: Update to AppAuth 3.0.0 and GTMAppAuth 6.0.0, which raises the minimum deployment targets to iOS 15.0 and macOS 12.0, widens the `GTMSessionFetcher` dependency to allow 4.x and 5.x, and renames the version-specific Swift Package Manager manifest to `Package@swift-5.7.swift`. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0. ([#628](https://github.com/google/GoogleSignIn-iOS/pull/628))
