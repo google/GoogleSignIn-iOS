@@ -1,6 +1,6 @@
-[![Version](https://img.shields.io/cocoapods/v/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
-[![Platform](https://img.shields.io/cocoapods/p/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
-[![License](https://img.shields.io/cocoapods/l/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
+[![Release](https://img.shields.io/github/v/release/google/GoogleSignIn-iOS?style=flat)](https://github.com/google/GoogleSignIn-iOS/releases)
+[![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-brightgreen?style=flat)](https://swift.org/package-manager/)
+[![License](https://img.shields.io/github/license/google/GoogleSignIn-iOS?style=flat)](LICENSE)
 [![unit_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml)
 [![integration_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml)
 
