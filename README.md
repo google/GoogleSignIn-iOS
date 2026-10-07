@@ -4,6 +4,9 @@
 [![unit_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml)
 [![integration_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml)
 
+> [!IMPORTANT]
+> **CocoaPods distribution is deprecated.** CocoaPods trunk becomes read-only on December 2, 2026, and future Google Sign-In releases will be distributed through Swift Package Manager only. See [Migrating from CocoaPods to Swift Package Manager](MIGRATING_FROM_COCOAPODS.md).
+
 # Google Sign-In for iOS and macOS
 
 Get users into your apps quickly and securely, using a registration system they
@@ -18,7 +21,7 @@ service.
 Try either the [Objective-C](Samples/ObjC) or [Swift](Samples/Swift) sample app.
 For example, to demo the Objective-C sample project, you have two options:
 
-1. Using CocoaPod's `install` method:
+1. Using CocoaPod's `install` method (deprecated; see [MIGRATING_FROM_COCOAPODS.md](MIGRATING_FROM_COCOAPODS.md)):
 
 ```
 git clone https://github.com/google/GoogleSignIn-iOS
