@@ -1,6 +1,6 @@
 # Migrating from CocoaPods to Swift Package Manager
 
-CocoaPods trunk becomes read-only on December 2, 2026. Google Sign-In <FINAL_POD_VERSION> is the last version published to CocoaPods (both the `GoogleSignIn` and `GoogleSignInSwiftSupport` pods). Existing pod versions remain installable, but future Google Sign-In releases are distributed via Swift Package Manager only.
+CocoaPods trunk becomes read-only on December 2, 2026. Google Sign-In 10.1.0 is the last version published to CocoaPods (both the `GoogleSignIn` and `GoogleSignInSwiftSupport` pods). Existing pod versions remain installable, but future Google Sign-In releases are distributed via Swift Package Manager only.
 
 ## Steps
 
@@ -26,7 +26,7 @@ Google Sign-In depends on `AppAuth`, `GTMAppAuth`, `GTMSessionFetcher`, and `App
 
 ## If you can't migrate yet
 
-You can stay on Google Sign-In <FINAL_POD_VERSION> via CocoaPods.
+You can stay on Google Sign-In 10.1.0 via CocoaPods.
 
 ## Cross-platform wrappers
 
