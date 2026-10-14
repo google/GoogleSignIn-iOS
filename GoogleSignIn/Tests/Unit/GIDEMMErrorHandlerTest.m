@@ -219,7 +219,8 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
-  // Should handle no more error while the previous one is being handled.
+  // A second EMM error while the first dialog is pending is reported as handled, but must not
+  // present a second dialog.
   GIDEMMCompletionSpy *secondSpy = [[GIDEMMCompletionSpy alloc] init];
   [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
                                                     completion:secondSpy.completion];
@@ -229,7 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   [self waitForMainQueue];
   XCTAssertEqual(secondSpy.callCount, 1);
-  XCTAssertFalse(secondSpy.handled);
+  XCTAssertTrue(secondSpy.handled);
   XCTAssertTrue(_keyWindowSet);
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
