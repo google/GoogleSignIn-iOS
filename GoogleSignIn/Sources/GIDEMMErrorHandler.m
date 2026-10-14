@@ -90,7 +90,9 @@ typedef enum {
     }
   }
   if (!errorCode) {
-    completion(NO);
+    dispatch_async(dispatch_get_main_queue(), ^() {
+      completion(NO);
+    });
     return;
   }
   // All UI must happen in the main thread.
