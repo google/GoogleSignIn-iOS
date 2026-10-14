@@ -60,9 +60,9 @@ typedef enum {
                      completion:(void (^)(BOOL handled))completion {
   ErrorCode errorCode = ErrorCodeNone;
   NSURL *appVerificationURL;
+  BOOL dialogAlreadyPending = NO;
   @synchronized(self) {  // for accessing _pendingDialog
-    if (!_pendingDialog && [UIAlertController class] &&
-        [response isKindOfClass:[NSDictionary class]]) {
+    if ([UIAlertController class] && [response isKindOfClass:[NSDictionary class]]) {
       id errorValue = response[kErrorKey];
       if ([errorValue isKindOfClass:[NSString class]]) {
         if ([errorValue isEqual:kScreenlockRequiredError]) {
@@ -85,13 +85,25 @@ typedef enum {
         }
       }
       if (errorCode) {
-        _pendingDialog = YES;
+        if (_pendingDialog) {
+          dialogAlreadyPending = YES;
+        } else {
+          _pendingDialog = YES;
+        }
       }
     }
   }
   if (!errorCode) {
     dispatch_async(dispatch_get_main_queue(), ^() {
       completion(NO);
+    });
+    return;
+  }
+  if (dialogAlreadyPending) {
+    // Another EMM dialog is on screen; report this error as EMM without stacking a second
+    // dialog on top of it.
+    dispatch_async(dispatch_get_main_queue(), ^() {
+      completion(YES);
     });
     return;
   }
