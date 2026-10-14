@@ -168,6 +168,8 @@ NS_ASSUME_NONNULL_BEGIN
   GIDEMMCompletionSpy *spy = [[GIDEMMCompletionSpy alloc] init];
   [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:@{ @"abc" : @123 }
                                                     completion:spy.completion];
+  XCTAssertEqual(spy.callCount, 0);
+  [self waitForMainQueue];
   XCTAssertEqual(spy.callCount, 1);
   XCTAssertFalse(spy.handled);
   XCTAssertFalse(_keyWindowSet);
@@ -185,6 +187,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSDictionary<NSString *, id> *response = @{ @"error" : nonStringValue };
     [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
                                                       completion:spy.completion];
+    XCTAssertEqual(spy.callCount, 0);
+    [self waitForMainQueue];
     XCTAssertEqual(spy.callCount, 1);
     XCTAssertFalse(spy.handled);
   }
@@ -196,6 +200,8 @@ NS_ASSUME_NONNULL_BEGIN
   NSDictionary<NSString *, NSString *> *response = @{ @"error" : @"invalid_token" };
   [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
                                                     completion:spy.completion];
+  XCTAssertEqual(spy.callCount, 0);
+  [self waitForMainQueue];
   XCTAssertEqual(spy.callCount, 1);
   XCTAssertFalse(spy.handled);
   XCTAssertFalse(_keyWindowSet);
@@ -217,12 +223,13 @@ NS_ASSUME_NONNULL_BEGIN
   GIDEMMCompletionSpy *secondSpy = [[GIDEMMCompletionSpy alloc] init];
   [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:response
                                                     completion:secondSpy.completion];
-  XCTAssertEqual(secondSpy.callCount, 1);
-  XCTAssertFalse(secondSpy.handled);
+  XCTAssertEqual(secondSpy.callCount, 0);
   XCTAssertFalse(_keyWindowSet);
   XCTAssertNil(_presentedViewController);
 
   [self waitForMainQueue];
+  XCTAssertEqual(secondSpy.callCount, 1);
+  XCTAssertFalse(secondSpy.handled);
   XCTAssertTrue(_keyWindowSet);
   UIAlertController *alert = [self presentedAlert];
   if (!alert) return;
