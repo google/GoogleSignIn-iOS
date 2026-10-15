@@ -34,7 +34,6 @@
 #import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
-#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDTimedLoader/GIDTimedLoader.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -185,6 +184,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   GIDClaimsInternalOptions *_claimsInternalOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheck *_appCheck API_AVAILABLE(ios(14));
+  GIDEMMSupport *_emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.
   OIDServiceConfiguration *_appAuthConfiguration;
@@ -273,7 +273,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                      profileData:profileData
-                                            authorizationService:_authorizationService];
+                                            authorizationService:_authorizationService
+                                                          signIn:self];
   self.currentUser = user;
   return YES;
 }
@@ -731,6 +732,9 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
     _authorizationService = authorizationService;
     _fetcherService = fetcherService;
     _claimsInternalOptions = [[GIDClaimsInternalOptions alloc] init];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    _emmSupport = [[GIDEMMSupport alloc] init];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
     // Try to set the active configuration from the bundle's Info.plist.
     _configuration = [GIDSignIn configurationFromBundle:_bundle];
@@ -777,6 +781,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   return [self initWithKeychainStore:keychainStore
            authStateMigrationService:authStateMigrationService
                             appCheck:appCheck
+                          emmSupport:[[GIDEMMSupport alloc] init]
                               bundle:bundle
                         userDefaults:userDefaults
                 authorizationService:[[OIDAuthorizationService alloc] init]
@@ -785,7 +790,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 - (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
-                             appCheck:(GIDAppCheck *)appCheck
+                             appCheck:(nullable GIDAppCheck *)appCheck
+                           emmSupport:(GIDEMMSupport *)emmSupport
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults
                  authorizationService:(OIDAuthorizationService *)authorizationService
@@ -800,6 +806,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   if (self) {
     _appCheck = appCheck;
     _configureAppCheckCalled = NO;
+    _emmSupport = emmSupport;
   }
   return self;
 }
@@ -1012,9 +1019,9 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:options.extraParams
-                                   emmSupport:emmSupport
-                       isPasscodeInfoRequired:NO]];
+      [_emmSupport parametersWithParameters:options.extraParams
+                                 emmSupport:emmSupport
+                     isPasscodeInfoRequired:NO]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:options.extraParams];
 #endif // TARGET_OS_OSX || TARGET_OS_MACCATALYST
@@ -1059,8 +1066,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       if (authFlow.emmSupport) {
         deferredToEMMHandler = YES;
         [authFlow wait];
-        [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params
-                                                          completion:^(BOOL handled) {
+        [self->_emmSupport handleErrorFromResponse:params
+                                        completion:^(BOOL handled) {
           // Set the error before -next, which runs the queued callbacks that read it.
           authFlow.error = [self authorizationErrorWithParameters:params isEMMError:handled];
           [authFlow next];
@@ -1144,9 +1151,9 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       authState.lastAuthorizationResponse.additionalParameters;
   NSString *passcodeInfoRequired = (NSString *)params[kEMMPasscodeInfoRequiredKeyName];
   [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport parametersWithParameters:@{}
-                                   emmSupport:authFlow.emmSupport
-                       isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
+      [_emmSupport parametersWithParameters:@{}
+                                 emmSupport:authFlow.emmSupport
+                     isPasscodeInfoRequired:passcodeInfoRequired.length > 0]];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
@@ -1171,7 +1178,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (authFlow.emmSupport) {
-      [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
+      [self->_emmSupport handleTokenFetchEMMError:error completion:^(NSError *error) {
         authFlow.error = error;
         [authFlow next];
       }];
@@ -1204,7 +1211,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
                                                            profileData:handlerAuthFlow.profileData
-                                                  authorizationService:self->_authorizationService];
+                                                  authorizationService:self->_authorizationService
+                                                                signIn:self];
         self.currentUser = user;
       }
     }

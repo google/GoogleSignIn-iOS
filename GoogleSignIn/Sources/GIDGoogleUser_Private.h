@@ -22,6 +22,7 @@
 #import <AppAuth/AppAuth.h>
 #endif
 
+@class GIDSignIn;
 @class GIDToken;
 @class OIDAuthState;
 
@@ -66,12 +67,18 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 @property(nonatomic, readonly, nullable) NSString *emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-/// Creates an instance with an auth state, profile data, and the service used to refresh
-/// tokens. The designated initializer.
+/// Creates an instance with an auth state, profile data, the service used to refresh tokens, and
+/// the sign-in instance that produced the user (nil for users restored from an archive). The
+/// designated initializer.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData
              authorizationService:(OIDAuthorizationService *)authorizationService
-    NS_DESIGNATED_INITIALIZER;
+                           signIn:(nullable GIDSignIn *)signIn NS_DESIGNATED_INITIALIZER;
+
+/// Creates an instance with no owning `GIDSignIn`.
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(nullable GIDProfileData *)profileData
+             authorizationService:(OIDAuthorizationService *)authorizationService;
 
 /// Creates an instance with an auth state and profile data, using a new
 /// `OIDAuthorizationService` to refresh tokens.

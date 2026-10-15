@@ -38,6 +38,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates an instance using `+[GIDEMMErrorHandler sharedInstance]` and `[UIDevice currentDevice]`.
 - (instancetype)init;
 
+/// Handles an EMM-specific error returned by the authorization endpoint. See
+/// `-[GIDEMMErrorHandler handleErrorFromResponse:completion:]` for the contract.
+- (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
+                     completion:(void (^)(BOOL handled))completion;
+
 /// Handles potential EMM error from token fetch response.
 - (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion;

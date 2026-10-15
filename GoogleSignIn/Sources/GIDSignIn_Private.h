@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class GIDSignInInternalOptions;
 @class GIDAppCheck;
 @class GIDAuthStateMigration;
+@class GIDEMMSupport;
 @class OIDAuthorizationService;
 @protocol GTMAuthSessionStore;
 @protocol GTMSessionFetcherServiceProtocol;
@@ -105,10 +106,12 @@ API_AVAILABLE(ios(14));
     NS_DESIGNATED_INITIALIZER;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-/// Same as above, also taking the `GIDAppCheck` to use.
+/// Same as above, also taking the `GIDAppCheck` to use (nil disables App Check) and the
+/// `GIDEMMSupport` that reports EMM errors.
 - (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
-                             appCheck:(GIDAppCheck *)appCheck
+                             appCheck:(nullable GIDAppCheck *)appCheck
+                           emmSupport:(GIDEMMSupport *)emmSupport
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults
                  authorizationService:(OIDAuthorizationService *)authorizationService

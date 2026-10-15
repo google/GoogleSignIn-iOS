@@ -81,6 +81,11 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
                              device:[UIDevice currentDevice]];
 }
 
+- (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
+                     completion:(void (^)(BOOL handled))completion {
+  [_errorHandler handleErrorFromResponse:response completion:completion];
+}
+
 - (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];

@@ -81,6 +81,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   GIDConfiguration *_cachedConfiguration;
   // AppAuth service that performs the token refresh requests.
   OIDAuthorizationService *_authorizationService;
+  __weak GIDSignIn *_signIn;
   
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
@@ -258,7 +259,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                   completion:(nullable void (^)(GIDSignInResult *_Nullable signInResult,
                                                 NSError *_Nullable error))completion {
-  if (self != GIDSignIn.sharedInstance.currentUser) {
+  GIDSignIn *signIn = _signIn ?: GIDSignIn.sharedInstance;
+  if (self != signIn.currentUser) {
     NSError *error = [NSError errorWithDomain:kGIDSignInErrorDomain
                                          code:kGIDSignInErrorCodeMismatchWithCurrentUser
                                      userInfo:nil];
@@ -270,13 +272,13 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     return;
   }
   
-  [GIDSignIn.sharedInstance addScopes:scopes
+  [signIn addScopes:scopes
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-             presentingViewController:presentingViewController
+      presentingViewController:presentingViewController
 #elif TARGET_OS_OSX
-                     presentingWindow:presentingWindow
+              presentingWindow:presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                           completion:completion];
+                    completion:completion];
 }
 
 #pragma mark - Private Methods
@@ -292,17 +294,29 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
                       profileData:(nullable GIDProfileData *)profileData {
   return [self initWithAuthState:authState
                      profileData:profileData
-            authorizationService:[[OIDAuthorizationService alloc] init]];
+            authorizationService:[[OIDAuthorizationService alloc] init]
+                          signIn:nil];
 }
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData
              authorizationService:(OIDAuthorizationService *)authorizationService {
+  return [self initWithAuthState:authState
+                     profileData:profileData
+            authorizationService:authorizationService
+                          signIn:nil];
+}
+
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(nullable GIDProfileData *)profileData
+             authorizationService:(OIDAuthorizationService *)authorizationService
+                           signIn:(nullable GIDSignIn *)signIn {
   self = [super init];
   if (self) {
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
     _profile = profileData;
     _authorizationService = authorizationService;
+    _signIn = signIn;
     
     GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
