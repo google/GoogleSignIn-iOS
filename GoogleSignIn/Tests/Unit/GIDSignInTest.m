@@ -171,17 +171,6 @@ static NSString *const kNonEssentialAMRClaimJsonString =
 static NSString *const kMultipleClaimsJsonString =
     @"{\"id_token\":{\"amr\":{\"essential\":false},\"auth_time\":{\"essential\":false}}}";
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// This category is used to allow the test to swizzle a private method.
-@interface UIViewController (Testing)
-
-// This private method provides access to the window. It's declared here to avoid a warning about
-// an unrecognized selector in the test.
-- (UIWindow *)_window;
-
-@end
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
 // This class extension exposes GIDSignIn methods to our tests.
 @interface GIDSignIn ()
 
@@ -215,11 +204,11 @@ static NSString *const kMultipleClaimsJsonString =
   id _keychainStore;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // Mock |UIViewController|.
-  id _presentingViewController;
+  // The presenting view controller passed to the sign-in calls.
+  UIViewController *_presentingViewController;
 #elif TARGET_OS_OSX
-  // Mock |NSWindow|.
-  id _presentingWindow;
+  // The presenting window passed to the sign-in calls.
+  NSWindow *_presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
   // Mock for |GIDGoogleUser|.
@@ -240,7 +229,7 @@ static NSString *const kMultipleClaimsJsonString =
   // Fake fetcher service to emulate network requests.
   GIDFakeFetcherService *_fetcherService;
 
-  // Fake [NSBundle mainBundle];
+  // The bundle injected into |GIDSignIn| in place of the host app's main bundle.
   GIDFakeMainBundle *_fakeMainBundle;
 
   // Whether |saveParamsToKeychainForName:authentication:| has been called.
@@ -284,7 +273,7 @@ static NSString *const kMultipleClaimsJsonString =
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
 
-  // Test userDefaults for use with `GIDAppCheck`
+  // Test user defaults injected into |GIDSignIn| (and used by |GIDAppCheck|).
   NSUserDefaults *_testUserDefaults;
 }
 @end
@@ -307,9 +296,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   // Mocks
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  _presentingViewController = OCMStrictClassMock([UIViewController class]);
+  _presentingViewController = [[UIViewController alloc] init];
 #elif TARGET_OS_OSX
-  _presentingWindow = OCMStrictClassMock([NSWindow class]);
+  _presentingWindow = [[NSWindow alloc] init];
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _authState = OCMClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
@@ -348,8 +337,7 @@ static NSString *const kMultipleClaimsJsonString =
   // Fakes
   _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
   _fetcherService = [[GIDFakeFetcherService alloc] init];
-  _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithClientID:kClientId];
+  _fakeMainBundle = [[GIDFakeMainBundle alloc] initWithClientID:kClientId];
   [_fakeMainBundle fakeAllSchemesSupported];
 
   // Object under test
@@ -357,7 +345,9 @@ static NSString *const kMultipleClaimsJsonString =
   [_testUserDefaults setBool:YES forKey:kAppHasRunBeforeKey];
 
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                           authStateMigrationService:_authStateMigrationService];
+                           authStateMigrationService:_authStateMigrationService
+                                              bundle:_fakeMainBundle
+                                        userDefaults:_testUserDefaults];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -380,15 +370,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMVerifyAll(_user);
   OCMVerifyAll(_oidAuthorizationService);
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OCMVerifyAll(_presentingViewController);
-#elif TARGET_OS_OSX
-  OCMVerifyAll(_presentingWindow);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
-  [_fakeMainBundle stopFaking];
   [GIDSignInPreferences resetWrapperIdentifier];
   [super tearDown];
 }
@@ -410,7 +393,9 @@ static NSString *const kMultipleClaimsJsonString =
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                        authStateMigrationService:_authStateMigrationService
-                                                        appCheck:appCheck];
+                                                        appCheck:appCheck
+                                                          bundle:_fakeMainBundle
+                                                    userDefaults:_testUserDefaults];
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
@@ -434,7 +419,9 @@ static NSString *const kMultipleClaimsJsonString =
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                        authStateMigrationService:_authStateMigrationService
-                                                        appCheck:appCheck];
+                                                        appCheck:appCheck
+                                                          bundle:_fakeMainBundle
+                                                    userDefaults:_testUserDefaults];
 
     // Should fail if missing both token and error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
@@ -453,7 +440,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -469,7 +458,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -482,7 +473,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -498,7 +491,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -512,7 +507,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:kKeychainName];
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                                     authStateMigrationService:_authStateMigrationService];
+                                     authStateMigrationService:_authStateMigrationService
+                                                        bundle:_fakeMainBundle
+                                                  userDefaults:_testUserDefaults];
 
   XCTAssertNotNil(signIn.configuration);
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -1418,11 +1415,13 @@ static NSString *const kMultipleClaimsJsonString =
 #pragma mark - Test Fresh Install
 
 - (void)testFreshInstall_removesKeychainEntries {
-  // Simulate that the app has been deleted and user defaults removed.
-  [NSUserDefaults.standardUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
+  // Simulate that the app has been deleted and the key removed from the test user defaults.
+  [_testUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
   // Initialization should check `isFreshInstall`.
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                                     authStateMigrationService:_authStateMigrationService];
+                                     authStateMigrationService:_authStateMigrationService
+                                                        bundle:_fakeMainBundle
+                                                  userDefaults:_testUserDefaults];
   // If `isFreshInstall`, keychain entries should be removed.
   XCTAssertNotNil(signIn);
   XCTAssertTrue(self->_keychainRemoved);
