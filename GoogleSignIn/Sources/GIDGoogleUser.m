@@ -65,24 +65,67 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (instancetype)initWithAccessToken:(GIDToken *)accessToken
                        refreshToken:(GIDToken *)refreshToken
-                            idToken:(nullable GIDToken *)idToken {
+                            idToken:(nullable GIDToken *)idToken
+                      grantedScopes:(nullable NSArray<NSString *> *)grantedScopes
+                      configuration:(GIDConfiguration *)configuration
+                            profile:(nullable GIDProfileData *)profile {
   self = [super init];
   if (self) {
     _accessToken = accessToken;
     _refreshToken = refreshToken;
     _idToken = idToken;
+    _grantedScopes = [grantedScopes copy];
+    _configuration = configuration;
+    _profile = profile;
   }
   return self;
 }
 
 @end
 
+// Parses the `scope` parameter of a token response, which is authoritative when present
+// (https://datatracker.ietf.org/doc/html/rfc6749#section-5.1). Scopes are space-delimited
+// (https://datatracker.ietf.org/doc/html/rfc6749#section-3.3); surrounding whitespace and runs of
+// spaces are tolerated. Returns nil when the response carries no `scope` parameter.
+static NSArray<NSString *> *_Nullable GIDGrantedScopesFromScopeString(
+    NSString *_Nullable scopeString) {
+  if (!scopeString) {
+    return nil;
+  }
+  // Remove leading and trailing whitespace.
+  scopeString =
+      [scopeString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+  // Tokenize with space as a delimiter.
+  NSMutableArray<NSString *> *parsedScopes =
+      [[scopeString componentsSeparatedByString:@" "] mutableCopy];
+  // Remove empty strings.
+  [parsedScopes removeObject:@""];
+  return [parsedScopes copy];
+}
+
+// Returns the hosted domain claim of the given ID token, if it has one.
+static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable idTokenString) {
+  if (idTokenString) {
+    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
+    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
+      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
+    }
+  }
+  return nil;
+}
+
 @implementation GIDGoogleUser {
-  GIDConfiguration *_cachedConfiguration;
-  
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
   NSMutableArray<GIDGoogleUserCompletion> *_tokenRefreshHandlerQueue;
+
+  // The profile is not part of the auth state, so a profile supplied to
+  // -initWithAuthState:profileData: or -updateWithTokenResponse:authorizationResponse:profileData:
+  // is parked here and folded into the next snapshot that -updateTokensWithAuthState: builds.
+  // `_hasPendingProfile` distinguishes a supplied nil profile, which replaces the current one,
+  // from no profile having been supplied, which keeps the current one.
+  GIDProfileData *_pendingProfile;
+  BOOL _hasPendingProfile;
 }
 
 - (GIDToken *)accessToken {
@@ -97,8 +140,13 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   return self.tokens.idToken;
 }
 
-// The three token properties are derived from `tokens`, so KVO observers of each one are notified
-// whenever `tokens` is replaced (a change to any of them notifies observers of all three).
+- (nullable GIDProfileData *)profile {
+  return self.tokens.profile;
+}
+
+// The token and profile properties are derived from `tokens`, so KVO observers of each one are
+// notified whenever `tokens` is replaced (a change to any of them notifies observers of all of
+// them).
 + (NSSet<NSString *> *)keyPathsForValuesAffectingAccessToken {
   return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
 }
@@ -108,6 +156,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingIdToken {
+  return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingProfile {
   return [NSSet setWithObject:NSStringFromSelector(@selector(tokens))];
 }
 
@@ -123,40 +175,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (nullable NSArray<NSString *> *)grantedScopes {
-  NSArray<NSString *> *grantedScopes;
-  NSString *grantedScopeString = self.authState.lastTokenResponse.scope;
-  if (grantedScopeString) {
-    // If we have a 'scope' parameter from the backend, this is authoritative.
-    // Remove leading and trailing whitespace.
-    grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
-        [NSCharacterSet whitespaceCharacterSet]];
-    // Tokenize with space as a delimiter.
-    NSMutableArray<NSString *> *parsedScopes =
-        [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
-    // Remove empty strings.
-    [parsedScopes removeObject:@""];
-    grantedScopes = [parsedScopes copy];
-  }
-  return grantedScopes;
+  return self.tokens.grantedScopes;
 }
 
 - (GIDConfiguration *)configuration {
-  @synchronized(self) {
-    // Caches the configuration since it would not change for one GIDGoogleUser instance.
-    if (!_cachedConfiguration) {
-      NSString *clientID = self.authState.lastAuthorizationResponse.request.clientID;
-      NSString *serverClientID =
-          self.authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
-      NSString *openIDRealm =
-          self.authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
-      
-      _cachedConfiguration = [[GIDConfiguration alloc] initWithClientID:clientID
-                                                         serverClientID:serverClientID
-                                                           hostedDomain:[self hostedDomain]
-                                                            openIDRealm:openIDRealm];
-    };
-  }
-  return _cachedConfiguration;
+  return self.tokens.configuration;
 }
 
 - (void)refreshTokensIfNeededWithCompletion:(GIDGoogleUserCompletion)completion {
@@ -291,7 +314,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   self = [super init];
   if (self) {
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
-    _profile = profileData;
+
+    // Park the profile for the first snapshot, built by -updateTokensWithAuthState: below.
+    _pendingProfile = profileData;
+    _hasPendingProfile = YES;
     
     GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -310,8 +336,11 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
   @synchronized(self) {
-    _profile = profileData;
-    
+    // Park the profile for the snapshot built when the token response update below calls back
+    // through -didChangeState:.
+    _pendingProfile = profileData;
+    _hasPendingProfile = YES;
+
     // We don't want to trigger the delegate before we update authState completely. So we unset the
     // delegate before the first update. Also the order of updates is important because
     // `updateWithAuthorizationResponse` would clear the last token reponse and refresh token.
@@ -320,15 +349,20 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
     self.authState.stateChangeDelegate = self;
     [self.authState updateWithTokenResponse:tokenResponse error:nil];
+    // AppAuth does not call -didChangeState: for a nil token response, so if the profile was not
+    // folded into a snapshot above, build one here.
+    if (_hasPendingProfile) {
+      [self updateTokensWithAuthState:self.authState];
+    }
   }
 }
 
-// KVO observers of the token properties run while `@synchronized(self)` is held; same-thread
-// re-entry is fine because it is recursive, but an observer must not synchronously wait on another
-// thread that is updating the same user.
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
   @synchronized(self) {
     GIDGoogleUserTokens *current = self.tokens;
+    GIDProfileData *profile = _hasPendingProfile ? _pendingProfile : current.profile;
+    _pendingProfile = nil;
+    _hasPendingProfile = NO;
 
     // Build the access token
     GIDToken *accessToken =
@@ -360,6 +394,27 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
       idToken = nil;
     }
 
+    NSArray<NSString *> *grantedScopes =
+        GIDGrantedScopesFromScopeString(authState.lastTokenResponse.scope);
+
+    GIDConfiguration *configuration;
+    if (current.configuration) {
+      // The configuration is fixed for the lifetime of a user, so it is computed once.
+      configuration = current.configuration;
+    } else {
+      NSString *clientID = authState.lastAuthorizationResponse.request.clientID;
+      NSString *serverClientID =
+          authState.lastTokenResponse.request.additionalParameters[kAudienceParameter];
+      NSString *openIDRealm =
+          authState.lastTokenResponse.request.additionalParameters[kOpenIDRealmParameter];
+
+      configuration = [[GIDConfiguration alloc]
+          initWithClientID:clientID
+            serverClientID:serverClientID
+              hostedDomain:GIDHostedDomainFromIDTokenString(idToken.tokenString)
+               openIDRealm:openIDRealm];
+    }
+
     // If the computed values are equal to the existing ones, keep the existing ones. In that case,
     // an update leaves `tokens` untouched and sends no KVO notifications.
     if ([current.accessToken isEqualToToken:accessToken]) {
@@ -371,29 +426,27 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
     if ([current.idToken isEqualToToken:idToken]) {
       idToken = current.idToken;
     }
+    if ((!grantedScopes && !current.grantedScopes) ||
+        [grantedScopes isEqualToArray:current.grantedScopes]) {
+      grantedScopes = current.grantedScopes;
+    }
 
     if (!current ||
         accessToken != current.accessToken ||
         refreshToken != current.refreshToken ||
-        idToken != current.idToken) {
+        idToken != current.idToken ||
+        grantedScopes != current.grantedScopes ||
+        profile != current.profile) {
+      // Replacing `tokens` notifies KVO observers of the derived properties while the lock is
+      // held; see the key-value observing note on GIDGoogleUser in GIDGoogleUser.h.
       self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
                                                         refreshToken:refreshToken
-                                                             idToken:idToken];
+                                                             idToken:idToken
+                                                       grantedScopes:grantedScopes
+                                                       configuration:configuration
+                                                             profile:profile];
     }
   }
-}
-
-#pragma mark - Helpers
-
-- (nullable NSString *)hostedDomain {
-  NSString *idTokenString = self.idToken.tokenString;
-  if (idTokenString) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
-    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
-      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
-    }
-  }
-  return nil;
 }
 
 #pragma mark - OIDAuthStateChangeDelegate
@@ -425,7 +478,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-  [encoder encodeObject:_profile forKey:kProfileDataKey];
+  [encoder encodeObject:self.profile forKey:kProfileDataKey];
   [encoder encodeObject:self.authState forKey:kAuthStateKey];
 }
 
