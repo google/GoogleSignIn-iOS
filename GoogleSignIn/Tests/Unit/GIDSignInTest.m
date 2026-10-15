@@ -35,7 +35,7 @@
 #import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -421,13 +421,16 @@ static NSString *const kMultipleClaimsJsonString =
   }
 }
 
-- (void)testConfigureFailsNoTokenOrError {
+- (void)testConfigureFailsWithProviderError {
   if (@available(iOS 14, *)) {
     XCTestExpectation *configureFailsExpecation =
     [self expectationWithDescription:@"Configure fails expectation"];
 
+    NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                                 code:kGIDAppCheckProviderFakeError
+                                             userInfo:nil];
     GIDAppCheckProviderFake *fakeProvider =
-        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
     GIDAppCheck *appCheck =
         [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
                                          userDefaults:_testUserDefaults];
@@ -436,10 +439,10 @@ static NSString *const kMultipleClaimsJsonString =
                                        authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck];
 
-    // Should fail if missing both token and error
+    // Should fail and stay unprepared when the provider returns an error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
-      XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+      XCTAssertEqualObjects(error, expectedError);
       [configureFailsExpecation fulfill];
     }];
 

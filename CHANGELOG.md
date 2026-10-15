@@ -1,6 +1,9 @@
 # Unreleased
 - Fix a crash when a server error response carries a non-string value under its `error` key. The EMM error handler sent `-hasPrefix:` to whatever value was present, raising an unrecognized selector exception on a number, array or object.
 - Fix a custom `nonce` and requested token `claims` being dropped when a sign-in is continued after a Device Policy app restart.
+- Add Swift Package Manager support for AppCheckCore 12.x, enabling compatibility with Firebase 13. CocoaPods installations remain restricted to AppCheckCore 11.x. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
+- Fix a failed App Check preparation being recorded as successful, which made later calls to `-[GIDSignIn configureWithCompletion:]` report success without retrying. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
+- With AppCheckCore 11.x (including all CocoaPods installations), a custom App Check provider that returns neither a token nor an error is now treated as success instead of failing with `kGIDAppCheckUnexpectedError`. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
 - Fix a data race on `GIDGoogleUser`'s tokens. Concurrent token updates could write the access, refresh and ID tokens from different threads at once, and readers could observe a partially updated set. The three tokens are now published together as one snapshot.
 - `GIDGoogleUser`'s `accessToken`, `refreshToken` and `idToken` are now all derived from that snapshot, so key-value observers of any one of them are notified whenever any of them changes, not only when that property's own value changes.
 - Key-value observers of those properties are notified while `GIDGoogleUser` holds its internal lock. Calling back into the same user from the observer is fine, but an observer must not synchronously wait (for example with `dispatch_sync`) on another thread that is updating the same user.
