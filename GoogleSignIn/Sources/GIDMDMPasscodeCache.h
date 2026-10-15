@@ -19,6 +19,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/GIDLocalAuthentication/API/GIDLocalAuthenticationContext.h"
+
 @class GIDMDMPasscodeState;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,6 +35,16 @@ NS_ASSUME_NONNULL_BEGIN
  * Returns a shared instance of the cache.
  */
 + (instancetype)sharedInstance;
+
+/**
+ * Creates a cache that probes the passcode state through `localAuthenticationContext`. Pass nil
+ * when LocalAuthentication is unavailable; the cache then reports only the Keychain probe.
+ */
+- (instancetype)initWithLocalAuthenticationContext:
+    (nullable id<GIDLocalAuthenticationContext>)localAuthenticationContext NS_DESIGNATED_INITIALIZER;
+
+/** Unavailable; use `+sharedInstance` or the designated initializer. */
+- (instancetype)init NS_UNAVAILABLE;
 
 /**
  * Retrieves the current passcode state.

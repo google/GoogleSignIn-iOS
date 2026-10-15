@@ -22,6 +22,7 @@
 #import <Security/Security.h>
 #import <UIKit/UIKit.h>
 
+#import "GoogleSignIn/Sources/GIDLocalAuthentication/Implementation/LAContext+GIDLocalAuthenticationContext.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState_Private.h"
 
@@ -55,6 +56,8 @@ static const NSTimeInterval kKeychainInfoCacheTime = 5;
 static const int64_t kObtainKeychainInfoWaitTime = 3 * NSEC_PER_SEC;
 
 @implementation GIDMDMPasscodeCache {
+  id<GIDLocalAuthenticationContext> _localAuthenticationContext;
+
   /** Whether or not LocalAuthentication API is available. */
   BOOL _hasLocalAuthentication;
 
@@ -77,10 +80,12 @@ static const int64_t kObtainKeychainInfoWaitTime = 3 * NSEC_PER_SEC;
   GIDMDMPasscodeState *_cachedState;
 }
 
-- (instancetype)init {
+- (instancetype)initWithLocalAuthenticationContext:
+    (nullable id<GIDLocalAuthenticationContext>)localAuthenticationContext {
   self = [super init];
   if (self) {
-    _hasLocalAuthentication = [self hasLocalAuthentication];
+    _localAuthenticationContext = localAuthenticationContext;
+    _hasLocalAuthentication = (localAuthenticationContext != nil) && [self hasLocalAuthentication];
     _hasKeychain = [self hasKeychain];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                             selector:@selector(applicationDidEnterBackground:)
@@ -98,7 +103,14 @@ static const int64_t kObtainKeychainInfoWaitTime = 3 * NSEC_PER_SEC;
   static GIDMDMPasscodeCache *sharedInstance;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    sharedInstance = [[GIDMDMPasscodeCache alloc] init];
+    LAContext *context;
+    @try {
+      context = [[LAContext alloc] init];
+    } @catch (NSException *) {
+      // In theory there should be no exceptions but in practice there may be: b/23200390, b/23218643.
+      context = nil;
+    }
+    sharedInstance = [[GIDMDMPasscodeCache alloc] initWithLocalAuthenticationContext:context];
   });
   return sharedInstance;
 }
@@ -185,18 +197,11 @@ static const int64_t kObtainKeychainInfoWaitTime = 3 * NSEC_PER_SEC;
   NSLog(@"Calling LocalAuthentication API for device passcode state...");
 #endif
   _hasEnteredBackground = NO;
-  static LAContext *context;
-  @try {
-    if (!context) {
-      context = [[LAContext alloc] init];
-    }
-  } @catch (NSException *) {
-    // In theory there should be no exceptions but in practice there may be: b/23200390, b/23218643.
-    return;
-  }
   int result;
   NSError *error;
-  result = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error] ? 1 : 0;
+  result =
+      [_localAuthenticationContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
+                                               error:&error] ? 1 : 0;
   if (error) {
     _localAuthenticationInfo = @{
       kResultKey : @(result),
