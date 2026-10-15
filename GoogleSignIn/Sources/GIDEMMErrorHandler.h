@@ -27,13 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 // Retrieve the shared instance of this class.
 + (instancetype)sharedInstance;
 
-// Handles EMM specific error that is returned in server response.
-// Returns whether or not an EMM-specific error is being handled by this invocation.
-// If the return value is |YES|, |completion| will be called asynchronously in the main thread
-// after the user interacts with the error dialog;
-// if the return value is |NO|, |completion| will be called before returning.
-- (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)(void))completion;
+// Handles EMM-specific errors in the server |response|. |completion| is always called
+// exactly once, asynchronously on the main thread, with |YES| if |response| carries an EMM
+// error and |NO| otherwise. For an EMM error, a remediation dialog is presented and
+// |completion| is called after the user dismisses it — unless another EMM dialog is already
+// pending or no dialog can be presented, in which case it is called as soon as possible.
+- (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
+                     completion:(void (^)(BOOL handled))completion;
 
 @end
 
