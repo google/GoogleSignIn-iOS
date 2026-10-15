@@ -66,7 +66,13 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 @property(nonatomic, readonly, nullable) NSString *emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-// Create a object with an auth state, scopes, and profile data.
+// Create a object with an auth state, profile data, and the service used to refresh tokens.
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(nullable GIDProfileData *)profileData
+             authorizationService:(OIDAuthorizationService *)authorizationService
+    NS_DESIGNATED_INITIALIZER;
+
+// Same as above, using a new `OIDAuthorizationService`.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData;
 

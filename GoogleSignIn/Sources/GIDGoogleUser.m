@@ -79,6 +79,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 @implementation GIDGoogleUser {
   GIDConfiguration *_cachedConfiguration;
+  OIDAuthorizationService *_authorizationService;
   
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
   // Access to this ivar should be synchronized.
@@ -204,10 +205,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
   OIDTokenRequest *tokenRefreshRequest =
       [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
-  [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
-                 originalAuthorizationResponse:self.authState.lastAuthorizationResponse
-                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                                                 NSError *_Nullable error) {
+  [_authorizationService performTokenRequest:tokenRefreshRequest
+               originalAuthorizationResponse:self.authState.lastAuthorizationResponse
+                                    callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                               NSError *_Nullable error) {
     if (tokenResponse) {
       [self.authState updateWithTokenResponse:tokenResponse error:nil];
     } else {
@@ -288,10 +289,19 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData {
+  return [self initWithAuthState:authState
+                     profileData:profileData
+            authorizationService:[[OIDAuthorizationService alloc] init]];
+}
+
+- (instancetype)initWithAuthState:(OIDAuthState *)authState
+                      profileData:(nullable GIDProfileData *)profileData
+             authorizationService:(OIDAuthorizationService *)authorizationService {
   self = [super init];
   if (self) {
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
     _profile = profileData;
+    _authorizationService = authorizationService;
     
     GTMAuthSession *authSession = [[GTMAuthSession alloc] initWithAuthState:authState];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST

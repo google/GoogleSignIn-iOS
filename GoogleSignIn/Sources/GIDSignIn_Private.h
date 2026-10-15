@@ -30,9 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class GIDGoogleUser;
 @class GIDSignInInternalOptions;
-@class GTMKeychainStore;
 @class GIDAppCheck;
 @class GIDAuthStateMigration;
+@class OIDAuthorizationService;
+@protocol GTMAuthSessionStore;
+@protocol GTMSessionFetcherServiceProtocol;
 
 /// User preference key to detect fresh install of the app.
 extern NSString *const kAppHasRunBeforeKey;
@@ -51,38 +53,63 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
 /// Redeclare |currentUser| as readwrite for internal use.
 @property(nonatomic, readwrite, nullable) GIDGoogleUser *currentUser;
 
-/// Private initializer taking a `GTMKeychainStore`.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+/// Private initializer taking the store for the signed-in `GTMAuthSession`.
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-/// Private initializer taking a `GTMKeychainStore` and `GIDAppCheckProvider`.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+/// Private initializer taking the store for the signed-in `GTMAuthSession` and `GIDAppCheckProvider`.
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck
 API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
 
-/// Creates an instance with the keychain store, the migration service, the bundle whose Info.plist
-/// supplies the configuration and URL schemes, and the user defaults that record whether the app
-/// has run before. The designated initializer; the other initializers call through to it.
+/// Creates an instance with the store for the signed-in `GTMAuthSession`, the migration service,
+/// the bundle whose Info.plist supplies the configuration and URL schemes, and the user defaults
+/// that record whether the app has run before. The designated initializer; the other initializers
+/// call through to it.
 ///
 /// `bundle` must describe the running app. The OS delivers sign-in callbacks to the URL schemes
 /// declared in the main bundle's Info.plist, and `-signInWithOptions:` raises
 /// `NSInvalidArgumentException` when the bundle it is given does not declare them. Production code
 /// passes `NSBundle.mainBundle`; anything else is for tests only.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults NS_DESIGNATED_INITIALIZER;
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 /// Same as above, also taking the `GIDAppCheck` to use.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults
+API_AVAILABLE(ios(14));
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+/// Private initializer taking every collaborator: the auth session store, the migration service,
+/// the bundle whose Info.plist supplies the configuration, the user defaults that record whether
+/// the app has run before, the AppAuth service that presents authorization requests and performs
+/// token requests, and the fetcher service for the SDK's own HTTPS requests (nil uses
+/// `+[GTMSessionFetcher fetcherWithRequest:]`).
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults
+                 authorizationService:(OIDAuthorizationService *)authorizationService
+                       fetcherService:(nullable id<GTMSessionFetcherServiceProtocol>)fetcherService;
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+/// Same as above, also taking the `GIDAppCheck` to use.
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                             appCheck:(GIDAppCheck *)appCheck
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults
+                 authorizationService:(OIDAuthorizationService *)authorizationService
+                       fetcherService:(nullable id<GTMSessionFetcherServiceProtocol>)fetcherService
 API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 

@@ -190,10 +190,14 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   OIDServiceConfiguration *_appAuthConfiguration;
   // AppAuth external user-agent session state.
   id<OIDExternalUserAgentSession> _currentAuthorizationFlow;
+  // AppAuth service for presenting authorization requests and performing token requests.
+  OIDAuthorizationService *_authorizationService;
+  // Fetcher service for the SDK's own HTTPS requests.
+  id<GTMSessionFetcherServiceProtocol> _fetcherService;
   // Flag to indicate that the auth flow is restarting.
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
-  GTMKeychainStore *_keychainStore;
+  id<GTMAuthSessionStore> _keychainStore;
   // The bundle whose Info.plist supplies the configuration and URL schemes.
   id<GIDBundle> _bundle;
   // The user defaults that record whether the app has run before.
@@ -267,7 +271,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       [[OIDIDToken alloc] initWithIDTokenString:authState.lastTokenResponse.idToken];
   GIDProfileData *profileData = [self profileDataWithIDToken:idToken];
 
-  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:profileData];
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                     profileData:profileData
+                                            authorizationService:_authorizationService];
   self.currentUser = user;
   return YES;
 }
@@ -613,7 +619,6 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   GIDPercentEncodePlusInQuery(revokeURLComponents);
 
   [self startFetchURL:revokeURLComponents.URL
-              fromAuthState:authState
                 withComment:@"GIDSignIn: revoke tokens"
       withCompletionHandler:^(NSData *data, NSError *error) {
     // Revoking an already revoked token seems always successful, which helps us here.
@@ -691,7 +696,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 #pragma mark - Private methods
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService {
   return [self initWithKeychainStore:keychainStore
            authStateMigrationService:authStateMigrationService
@@ -699,15 +704,31 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
                         userDefaults:NSUserDefaults.standardUserDefaults];
 }
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults {
+  return [self initWithKeychainStore:keychainStore
+           authStateMigrationService:authStateMigrationService
+                              bundle:bundle
+                        userDefaults:userDefaults
+                authorizationService:[[OIDAuthorizationService alloc] init]
+                      fetcherService:nil];
+}
+
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults
+                 authorizationService:(OIDAuthorizationService *)authorizationService
+                       fetcherService:(nullable id<GTMSessionFetcherServiceProtocol>)fetcherService {
   self = [super init];
   if (self) {
     _bundle = bundle;
     _userDefaults = userDefaults;
     _keychainStore = keychainStore;
+    _authorizationService = authorizationService;
+    _fetcherService = fetcherService;
     _claimsInternalOptions = [[GIDClaimsInternalOptions alloc] init];
 
     // Try to set the active configuration from the bundle's Info.plist.
@@ -737,7 +758,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck {
   return [self initWithKeychainStore:keychainStore
@@ -747,15 +768,33 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
                         userDefaults:NSUserDefaults.standardUserDefaults];
 }
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults {
+  return [self initWithKeychainStore:keychainStore
+           authStateMigrationService:authStateMigrationService
+                            appCheck:appCheck
+                              bundle:bundle
+                        userDefaults:userDefaults
+                authorizationService:[[OIDAuthorizationService alloc] init]
+                      fetcherService:nil];
+}
+
+- (instancetype)initWithKeychainStore:(id<GTMAuthSessionStore>)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                             appCheck:(GIDAppCheck *)appCheck
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults
+                 authorizationService:(OIDAuthorizationService *)authorizationService
+                       fetcherService:(nullable id<GTMSessionFetcherServiceProtocol>)fetcherService {
   self = [self initWithKeychainStore:keychainStore
            authStateMigrationService:authStateMigrationService
                               bundle:bundle
-                        userDefaults:userDefaults];
+                        userDefaults:userDefaults
+                authorizationService:authorizationService
+                      fetcherService:fetcherService];
   if (self) {
     _appCheck = appCheck;
     _configureAppCheckCalled = NO;
@@ -854,15 +893,15 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
                              completion:^(OIDAuthorizationRequest * _Nullable request,
                                           NSError * _Nullable error) {
     self->_currentAuthorizationFlow =
-        [OIDAuthorizationService presentAuthorizationRequest:request
+        [self->_authorizationService presentAuthorizationRequest:request
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                                    presentingViewController:options.presentingViewController
+                                        presentingViewController:options.presentingViewController
 #elif TARGET_OS_OSX
-                                       presentingWindow:options.presentingWindow
+                                                presentingWindow:options.presentingWindow
 #endif // TARGET_OS_OSX
-                                                    callback:
-                                                      ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                                        NSError *_Nullable error) {
+                                                        callback:
+                                                          ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
+                                                            NSError *_Nullable error) {
       [self processAuthorizationResponse:authorizationResponse
                                    error:error
                               emmSupport:emmSupport];
@@ -1121,10 +1160,10 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   }
 
   [authFlow wait];
-  [OIDAuthorizationService performTokenRequest:tokenRequest
-                 originalAuthorizationResponse:authFlow.authState.lastAuthorizationResponse
-                                      callback:^(OIDTokenResponse *_Nullable tokenResponse,
-                                                 NSError *_Nullable error) {
+  [_authorizationService performTokenRequest:tokenRequest
+               originalAuthorizationResponse:authFlow.authState.lastAuthorizationResponse
+                                    callback:^(OIDTokenResponse *_Nullable tokenResponse,
+                                               NSError *_Nullable error) {
     [authState updateWithTokenResponse:tokenResponse error:error];
     authFlow.error = error;
 
@@ -1162,7 +1201,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
                                         profileData:handlerAuthFlow.profileData];
       } else {
         GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
-                                                           profileData:handlerAuthFlow.profileData];
+                                                           profileData:handlerAuthFlow.profileData
+                                                  authorizationService:self->_authorizationService];
         self.currentUser = user;
       }
     }
@@ -1199,7 +1239,6 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       ];
       GIDPercentEncodePlusInQuery(infoURLComponents);
       [self startFetchURL:infoURLComponents.URL
-                  fromAuthState:authState
                     withComment:@"GIDSignIn: fetch basic profile info"
           withCompletionHandler:^(NSData *data, NSError *error) {
         if (data && !error) {
@@ -1252,15 +1291,12 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 }
 
 - (void)startFetchURL:(NSURL *)URL
-            fromAuthState:(OIDAuthState *)authState
               withComment:(NSString *)comment
     withCompletionHandler:(void (^)(NSData *, NSError *))handler {
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
   GTMSessionFetcher *fetcher;
-  GTMAuthSession *authorization = [[GTMAuthSession alloc] initWithAuthState:authState];
-  id<GTMSessionFetcherServiceProtocol> fetcherService = authorization.fetcherService;
-  if (fetcherService) {
-    fetcher = [fetcherService fetcherWithRequest:request];
+  if (_fetcherService) {
+    fetcher = [_fetcherService fetcherWithRequest:request];
   } else {
     fetcher = [GTMSessionFetcher fetcherWithRequest:request];
   }
