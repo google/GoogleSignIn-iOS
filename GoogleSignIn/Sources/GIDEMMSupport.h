@@ -22,22 +22,49 @@
 
 @import GTMAppAuth;
 
+#import "GoogleSignIn/Sources/GIDDevice/API/GIDDevice.h"
+#import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// A class to support EMM (Enterprise Mobility Management).
 @interface GIDEMMSupport : NSObject<GTMAuthSessionDelegate>
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+/// Creates an instance that reports EMM errors through `errorHandler` and describes the device
+/// to the EMM backend using `device`.
+- (instancetype)initWithErrorHandler:(GIDEMMErrorHandler *)errorHandler
+                              device:(id<GIDDevice>)device NS_DESIGNATED_INITIALIZER;
+
+/// Creates an instance using `+[GIDEMMErrorHandler sharedInstance]` and `[UIDevice currentDevice]`.
+- (instancetype)init;
 
 /// Handles potential EMM error from token fetch response.
+- (void)handleTokenFetchEMMError:(nullable NSError *)error
+                      completion:(void (^)(NSError *_Nullable))completion;
+
+/// Gets a new set of URL parameters that contains updated EMM-related URL parameters if needed.
+- (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
+    (NSDictionary *)parameters;
+
+/// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
+///
+/// @note This function only returns parameter keys in the `NSDictionary` for string/number/bools.
+- (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+                                                       emmSupport:(nullable NSString *)emmSupport
+                                           isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;
+
+/// Handles potential EMM error from token fetch response.
+/// Equivalent to calling the instance method on `[[GIDEMMSupport alloc] init]`.
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion;
 
 /// Gets a new set of URL parameters that contains updated EMM-related URL parameters if needed.
+/// Equivalent to calling the instance method on `[[GIDEMMSupport alloc] init]`.
 + (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
     (NSDictionary *)parameters;
 
 /// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
+/// Equivalent to calling the instance method on `[[GIDEMMSupport alloc] init]`.
 ///
 /// @note This function only returns parameter keys in the `NSDictionary` for string/number/bools.
 + (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters

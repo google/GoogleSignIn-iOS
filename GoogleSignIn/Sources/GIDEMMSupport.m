@@ -22,6 +22,7 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+#import "GoogleSignIn/Sources/GIDDevice/Implementation/UIDevice+GIDDevice.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
 
@@ -58,18 +59,32 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   ErrorCodeAppVerificationRequired,
 };
 
-@implementation GIDEMMSupport
-
-- (instancetype)init {
-  return [super init];
+@implementation GIDEMMSupport {
+  GIDEMMErrorHandler *_errorHandler;
+  id<GIDDevice> _device;
 }
 
-+ (void)handleTokenFetchEMMError:(nullable NSError *)error
+- (instancetype)initWithErrorHandler:(GIDEMMErrorHandler *)errorHandler
+                              device:(id<GIDDevice>)device {
+  self = [super init];
+  if (self) {
+    _errorHandler = errorHandler;
+    _device = device;
+  }
+  return self;
+}
+
+- (instancetype)init {
+  return [self initWithErrorHandler:[GIDEMMErrorHandler sharedInstance]
+                             device:[UIDevice currentDevice]];
+}
+
+- (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion {
   NSDictionary *errorJSON = error.userInfo[OIDOAuthErrorResponseErrorKey];
   if (errorJSON) {
-    [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:errorJSON
-                                                      completion:^(BOOL handled) {
+    [_errorHandler handleErrorFromResponse:errorJSON
+                                completion:^(BOOL handled) {
       if (handled) {
         completion([NSError errorWithDomain:kGIDSignInErrorDomain
                                        code:kGIDSignInErrorCodeEMM
@@ -83,14 +98,14 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   }
 }
 
-+ (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
+- (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
     (NSDictionary *)parameters {
   return [self parametersWithParameters:parameters
                              emmSupport:parameters[kEMMSupportParameterName]
                  isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
 }
 
-+ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+- (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
   if (!emmSupport) {
@@ -98,7 +113,7 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   }
   NSMutableDictionary *allParameters = [(parameters ?: @{}) mutableCopy];
   allParameters[kEMMSupportParameterName] = emmSupport;
-  UIDevice *device = [UIDevice currentDevice];
+  id<GIDDevice> device = _device;
   NSString *systemName = device.systemName;
   if ([systemName isEqualToString:kOldIOSSystemName]) {
     systemName = kNewIOSSystemName;
@@ -111,18 +126,36 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   return [GIDEMMSupport dictionaryWithStringValuesFromDictionary:allParameters];
 }
 
++ (void)handleTokenFetchEMMError:(nullable NSError *)error
+                      completion:(void (^)(NSError *_Nullable))completion {
+  [[[self alloc] init] handleTokenFetchEMMError:error completion:completion];
+}
+
++ (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
+    (NSDictionary *)parameters {
+  return [[[self alloc] init] updatedEMMParametersWithParameters:parameters];
+}
+
++ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+                                                       emmSupport:(nullable NSString *)emmSupport
+                                           isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
+  return [[[self alloc] init] parametersWithParameters:parameters
+                                            emmSupport:emmSupport
+                                isPasscodeInfoRequired:isPasscodeInfoRequired];
+}
+
 #pragma mark - GTMAuthSessionDelegate
 
 - (nullable NSDictionary<NSString *,NSString *> *)
 additionalTokenRefreshParametersForAuthSession:(GTMAuthSession *)authSession {
-  return [GIDEMMSupport updatedEMMParametersWithParameters:
+  return [self updatedEMMParametersWithParameters:
           authSession.authState.lastTokenResponse.additionalParameters];
 }
 
 - (void)updateErrorForAuthSession:(GTMAuthSession *)authSession
                     originalError:(NSError *)originalError
                        completion:(void (^)(NSError * _Nullable))completion {
-  [GIDEMMSupport handleTokenFetchEMMError:originalError completion:^(NSError *_Nullable error) {
+  [self handleTokenFetchEMMError:originalError completion:^(NSError *_Nullable error) {
     completion(error);
   }];
 }
