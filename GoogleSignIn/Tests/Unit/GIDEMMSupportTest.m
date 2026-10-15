@@ -21,11 +21,16 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+@import GTMAppAuth;
+
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+#import "GoogleSignIn/Sources/GIDApplication/Fake/GIDFakeApplication.h"
+#import "GoogleSignIn/Sources/GIDDevice/Fake/GIDFakeDevice.h"
+#import "GoogleSignIn/Sources/GIDEMMAlertPresenter/Fake/GIDFakeEMMAlertPresenter.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
@@ -36,14 +41,8 @@
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GoogleUtilities_MethodSwizzler;
-@import GoogleUtilities_SwizzlerTestHelpers;
-@import OCMock;
 #else
-#import <GoogleUtilities/GULSwizzler.h>
-#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
 #import <AppAuth/OIDError.h>
-#import <OCMock/OCMock.h>
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -54,25 +53,55 @@ static NSString *const kOldIOSName = @"iPhone OS";
 // The system name in new iOS versions.
 static NSString *const kNewIOSName = @"iOS";
 
+// The system version reported by the fake device.
+static NSString *const kSystemVersion = @"17.1";
+
 // They keys in EMM dictionary.
 static NSString *const kEMMKey = @"emm_support";
 static NSString *const kDeviceOSKey = @"device_os";
 static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 
 @interface GIDEMMSupportTest : XCTestCase
-  // The view controller that has been presented, if any.
-@property(nonatomic, strong, nullable) UIViewController *presentedViewController;
-
 @end
 
-@implementation GIDEMMSupportTest
+@implementation GIDEMMSupportTest {
+  // Fake device providing system name and version.
+  GIDFakeDevice *_device;
+
+  // Fake application providing the key window.
+  GIDFakeApplication *_application;
+
+  // Fake presenter capturing EMM alerts.
+  GIDFakeEMMAlertPresenter *_alertPresenter;
+
+  // Real EMM error handler backed by the fake application and alert presenter.
+  GIDEMMErrorHandler *_errorHandler;
+
+  // The system under test.
+  GIDEMMSupport *_emmSupport;
+}
+
+- (void)setUp {
+  [super setUp];
+  _device = [[GIDFakeDevice alloc] initWithSystemName:kNewIOSName systemVersion:kSystemVersion];
+  _application = [[GIDFakeApplication alloc] init];
+  _application.keyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  _alertPresenter = [[GIDFakeEMMAlertPresenter alloc] init];
+  _errorHandler = [[GIDEMMErrorHandler alloc] initWithApplication:_application
+                                                   alertPresenter:_alertPresenter];
+  _emmSupport = [[GIDEMMSupport alloc] initWithErrorHandler:_errorHandler device:_device];
+}
 
 - (void)testEMMSupportDelegate {
-  [self setupSwizzlers];
   XCTestExpectation *emmErrorExpectation = [self expectationWithDescription:@"EMM AppAuth error"];
 
   GIDFailingOIDAuthState *failingAuthState = [GIDFailingOIDAuthState testInstance];
   GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:failingAuthState profileData:nil];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  GTMAuthSession *authSession = (GTMAuthSession *)user.fetcherAuthorizer;
+#pragma clang diagnostic pop
+  authSession.delegate = _emmSupport;
   GIDFakeFetcherService *fakeFetcherService = [[GIDFakeFetcherService alloc]
                                                 initWithAuthorizer:user.fetcherAuthorizer];
 
@@ -100,8 +129,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   });
   [self waitForExpectations:@[mainThreadExpectation] timeout:1];
 
-  XCTAssertTrue([_presentedViewController isKindOfClass:[UIAlertController class]]);
-  UIAlertController *alert = (UIAlertController *)_presentedViewController;
+  UIAlertController *alert = _alertPresenter.presentedAlert;
+  XCTAssertNotNil(alert);
+  XCTAssertEqual(_alertPresenter.presentedOverKeyWindow, _application.keyWindow);
   XCTAssertNotNil(alert.title);
   XCTAssertNotNil(alert.message);
   XCTAssertEqual(alert.actions.count, 2);
@@ -112,7 +142,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   action.actionHandler(action);
 
   [self waitForExpectations:@[emmErrorExpectation] timeout:1];
-  [self unswizzle];
+  XCTAssertNil(_alertPresenter.presentedAlert);
+  XCTAssertEqual(_alertPresenter.dismissCount, 1u);
 }
 
 - (void)testUpdatedEMMParametersWithParameters_NoEMMKey {
@@ -121,71 +152,48 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   };
 
   NSDictionary *updatedEMMParameters =
-      [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
+      [_emmSupport updatedEMMParametersWithParameters:originalParameters];
 
   XCTAssertEqualObjects(updatedEMMParameters, originalParameters);
 }
 
 - (void)testUpdateEMMParametersWithParameters_systemName {
-  [GULSwizzler swizzleClass:[UIDevice class]
-                   selector:@selector(systemName)
-            isClassSelector:NO
-                  withBlock:^(id sender) { return kNewIOSName; }];
-
   NSDictionary *originalParameters = @{
     kEMMKey : @"xyz",
   };
 
   NSDictionary *updatedEMMParameters =
-      [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
+      [_emmSupport updatedEMMParametersWithParameters:originalParameters];
 
   NSDictionary *expectedParameters = @{
     kEMMKey : @"xyz",
-    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, [self systemVersion]]
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, kSystemVersion]
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
-
-  [self addTeardownBlock:^{
-    [GULSwizzler unswizzleClass:[UIDevice class]
-                       selector:@selector(systemName)
-                isClassSelector:NO];
-  }];
 }
 
 // When the systemName is @"iPhone OS" we still get "iOS".
 - (void)testUpdateEMMParametersWithParameters_systemNameNormalization {
-  [GULSwizzler swizzleClass:[UIDevice class]
-                    selector:@selector(systemName)
-             isClassSelector:NO
-                   withBlock:^(id sender) { return kOldIOSName; }];
+  _device.systemName = kOldIOSName;
 
   NSDictionary *originalParameters = @{
     kEMMKey : @"xyz",
   };
 
   NSDictionary *updatedEMMParameters =
-      [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
+      [_emmSupport updatedEMMParametersWithParameters:originalParameters];
 
   NSDictionary *expectedParameters = @{
     kEMMKey : @"xyz",
-    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, [self systemVersion]]
+    kDeviceOSKey : [NSString stringWithFormat:@"%@ %@", kNewIOSName, kSystemVersion]
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
-
-  [self addTeardownBlock:^{
-    [GULSwizzler unswizzleClass:[UIDevice class]
-                       selector:@selector(systemName)
-                isClassSelector:NO];
-  }];
 }
 
 - (void)testUpdateEMMParametersWithParameters_passcodInfo {
-  [GULSwizzler swizzleClass:[UIDevice class]
-                   selector:@selector(systemName)
-            isClassSelector:NO
-                  withBlock:^(id sender) { return kOldIOSName; }];
+  _device.systemName = kOldIOSName;
 
   NSDictionary *originalParameters = @{
     kEMMKey : @"xyz",
@@ -194,7 +202,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   };
 
   NSDictionary *updatedEMMParameters =
-      [GIDEMMSupport updatedEMMParametersWithParameters:originalParameters];
+      [_emmSupport updatedEMMParametersWithParameters:originalParameters];
 
   NSDictionary *expectedParameters = @{
     kEMMKey : @"xyz",
@@ -203,75 +211,52 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   };
 
   XCTAssertEqualObjects(updatedEMMParameters, expectedParameters);
-
-  [self addTeardownBlock:^{
-    [GULSwizzler unswizzleClass:[UIDevice class]
-                       selector:@selector(systemName)
-                isClassSelector:NO];
-  }];
-  
 }
 
 - (void)testHandleTokenFetchEMMError_errorIsEMM {
-  // Set expectations.
-  NSDictionary *errorJSON = @{ @"error" : @"EMM Specific Error" };
+  NSDictionary *errorJSON = @{ @"error" : @"emm_passcode_required" };
   NSError *emmError = [NSError errorWithDomain:@"anydomain"
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
-  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
-  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^savedCompletion)(BOOL);
-  [[mockEMMErrorHandler stub]
-      handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
-    savedCompletion = arg;
-    return YES;
-  }]];
 
   XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
   notCalled.inverted = YES;
   XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
 
-  [GIDEMMSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
+  [_emmSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
     [notCalled fulfill];
     [called fulfill];
     XCTAssertEqualObjects(error.domain, kGIDSignInErrorDomain);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeEMM);
   }];
-  
+
   [self waitForExpectations:@[ notCalled ] timeout:1];
-  savedCompletion(YES);
+  UIAlertController *alert = _alertPresenter.presentedAlert;
+  XCTAssertNotNil(alert);
+  XCTAssertEqual(alert.actions.count, 2u);
+  UIAlertAction *action = alert.actions[0];
+  XCTAssertEqualObjects(action.title, @"Cancel");
+  action.actionHandler(action);
   [self waitForExpectations:@[ called ] timeout:1];
 }
 
 - (void)testHandleTokenFetchEMMError_errorIsNotEMM {
-  // Set expectations.
-  NSDictionary *errorJSON = @{ @"error" : @"Not EMM Specific Error" };
+  NSDictionary *errorJSON = @{ @"error" : @"invalid_grant" };
   NSError *emmError = [NSError errorWithDomain:@"anydomain"
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
-  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
-  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^savedCompletion)(BOOL);
-  [[mockEMMErrorHandler stub]
-      handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
-    savedCompletion = arg;
-    return YES;
-  }]];
 
-  XCTestExpectation *notCalled = [self expectationWithDescription:@"Callback is not called"];
-  notCalled.inverted = YES;
   XCTestExpectation *called = [self expectationWithDescription:@"Callback is called"];
-  
-  [GIDEMMSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
-    [notCalled fulfill];
+  __block NSError *receivedError;
+  [_emmSupport handleTokenFetchEMMError:emmError completion:^(NSError *error) {
+    receivedError = error;
     [called fulfill];
-    XCTAssertEqualObjects(error.domain, @"anydomain");
-    XCTAssertEqual(error.code, 12345);
   }];
 
-  [self waitForExpectations:@[ notCalled ] timeout:1];
-  savedCompletion(NO);
   [self waitForExpectations:@[ called ] timeout:1];
+  XCTAssertEqualObjects(receivedError, emmError);
+  XCTAssertNil(_alertPresenter.presentedAlert);
+  XCTAssertEqual(_alertPresenter.dismissCount, 0u);
 }
 
 # pragma mark - String Conversion Tests
@@ -279,9 +264,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withAnyNumber_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @12345 };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
@@ -292,9 +277,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withNumberOne_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @1 };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"1",
                         @"The NSNumber should be converted to a string.");
@@ -305,9 +290,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withNumberZero_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @0};
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"0",
                         @"The NSNumber should be converted to a string.");
@@ -318,9 +303,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withBooleanYes_isConvertedToTrueString {
   NSDictionary *inputParameters = @{ @"bool_key": @YES };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"true",
                         @"The boolean YES should be converted to the string 'true'.");
@@ -331,9 +316,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withBooleanNo_isConvertedToFalseString {
   NSDictionary *inputParameters = @{ @"bool_key": @NO };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"bool_key"], @"false",
                         @"The boolean NO should be converted to the string 'false'.");
@@ -344,9 +329,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withString_remainsUnchanged {
   NSDictionary *inputParameters = @{ @"string_key": @"hello" };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"string_key"], @"hello",
                         @"The original string value should be preserved.");
@@ -357,9 +342,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withEMMSupportNil_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @12345 };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:nil
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:nil
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
@@ -370,9 +355,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withArbitraryEMMSupport_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @12345 };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"False"
-                                                         isPasscodeInfoRequired:NO];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"False"
+                                                       isPasscodeInfoRequired:NO];
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
@@ -387,9 +372,9 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 - (void)testParametersWithParameters_withPasscodeInfoRequired_isConvertedToString {
   NSDictionary *inputParameters = @{ @"number_key": @12345 };
 
-  NSDictionary *stringifiedParameters = [GIDEMMSupport parametersWithParameters:inputParameters
-                                                                     emmSupport:@"1"
-                                                         isPasscodeInfoRequired:YES];
+  NSDictionary *stringifiedParameters = [_emmSupport parametersWithParameters:inputParameters
+                                                                   emmSupport:@"1"
+                                                       isPasscodeInfoRequired:YES];
 
   XCTAssertEqualObjects(stringifiedParameters[@"number_key"], @"12345",
                         @"The NSNumber should be converted to a string.");
@@ -404,29 +389,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
 # pragma mark - Helpers
 
 - (NSString *)systemVersion {
-  return [UIDevice currentDevice].systemVersion;
-}
-
-- (void)setupSwizzlers {
-  UIWindow *fakeKeyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  [GULSwizzler swizzleClass:[GIDEMMErrorHandler class]
-                   selector:@selector(keyWindow)
-            isClassSelector:NO
-                  withBlock:^() { return fakeKeyWindow; }];
-  [GULSwizzler swizzleClass:[UIViewController class]
-                   selector:@selector(presentViewController:animated:completion:)
-            isClassSelector:NO
-                  withBlock:^(id obj, id arg1) { self->_presentedViewController = arg1; }];
-}
-
-- (void)unswizzle {
-  [GULSwizzler unswizzleClass:[GIDEMMErrorHandler class]
-                     selector:@selector(keyWindow)
-              isClassSelector:NO];
-  [GULSwizzler unswizzleClass:[UIViewController class]
-                     selector:@selector(presentViewController:animated:completion:)
-              isClassSelector:NO];
-  self.presentedViewController = nil;
+  return kSystemVersion;
 }
 
 @end
