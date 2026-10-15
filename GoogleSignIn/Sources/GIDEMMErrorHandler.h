@@ -18,6 +18,10 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import "GoogleSignIn/Sources/GIDApplication/API/GIDApplication.h"
+#import "GoogleSignIn/Sources/GIDEMMAlertPresenter/API/GIDEMMAlertPresenter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,6 +30,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Retrieve the shared instance of this class.
 + (instancetype)sharedInstance;
+
+// Creates a handler that finds the key window and opens URLs through `application`, and shows its
+// alerts through `alertPresenter`.
+- (instancetype)initWithApplication:(id<GIDApplication>)application
+                     alertPresenter:(id<GIDEMMAlertPresenter>)alertPresenter
+    NS_DESIGNATED_INITIALIZER;
+
+// Creates a handler backed by `UIApplication.sharedApplication` and a `GIDEMMAlertWindowPresenter`.
+- (instancetype)init;
+
+// Returns the application's key window, or nil if there is none.
+// Exposed for the unit tests.
+- (nullable UIWindow *)keyWindow;
 
 // Handles EMM-specific errors in the server |response|. |completion| is always called
 // exactly once, asynchronously on the main thread, with |YES| if |response| carries an EMM
