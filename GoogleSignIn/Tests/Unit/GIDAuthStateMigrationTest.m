@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Fake/GIDFakeLegacyKeychain.h"
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDBundle/Fake/GIDFakeBundle.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
@@ -26,11 +27,9 @@
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
 @import GTMAppAuthTestHelpers;
-@import OCMock;
 #else
 #import <AppAuth/AppAuth.h>
 // GTMKeychainHelperFake is only available through the GTMAppAuthTestHelpers SwiftPM product.
-#import <OCMock/OCMock.h>
 #endif
 
 static NSString *const kTokenURL = @"https://host.com/example/token/url";
@@ -65,8 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface GIDAuthStateMigration ()
 
-+ (nullable NSString *)passwordForService:(NSString *)service;
-
 /// Returns a `GTMAuthSession` given the provided token URL.
 ///
 /// This method enables using an instance of `GIDAuthStateMigration` that is created with a fake
@@ -82,14 +79,14 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation GIDAuthStateMigrationTest {
   // Suite-scoped user defaults injected into the migration under test.
   NSUserDefaults *_userDefaults;
-  id _mockGIDAuthStateMigration;
+  // Stands in for the pre-5.0 keychain items.
+  GIDFakeLegacyKeychain *_legacyKeychain;
   // In-memory keychain backing |_keychainStore|.
   GTMKeychainHelperFake *_keychainHelper;
   // The store the migration writes the migrated session to.
   GTMKeychainStore *_keychainStore;
   // The bundle injected into the migration under test.
   GIDFakeBundle *_bundle;
-  id _mockGIDSignInCallbackSchemes;
 #if TARGET_OS_OSX
   id _realLegacyGTMKeychainStore;
 #endif // TARGET_OS_OSX
@@ -101,11 +98,10 @@ NS_ASSUME_NONNULL_BEGIN
   _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
   [_userDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
   _bundle = [[GIDFakeBundle alloc] initWithBundleIdentifier:kBundleID infoDictionary:@{}];
-  _mockGIDAuthStateMigration = OCMStrictClassMock([GIDAuthStateMigration class]);
+  _legacyKeychain = [[GIDFakeLegacyKeychain alloc] init];
   _keychainHelper = [[GTMKeychainHelperFake alloc] initWithKeychainAttributes:[NSSet set]];
   _keychainStore = [[GTMKeychainStore alloc] initWithItemName:kKeychainName
                                                keychainHelper:_keychainHelper];
-  _mockGIDSignInCallbackSchemes = OCMStrictClassMock([GIDSignInCallbackSchemes class]);
 #if TARGET_OS_OSX
   GTMKeychainAttribute *fileBasedKeychain = [GTMKeychainAttribute useFileBasedKeychain];
   NSSet *attributes = [NSSet setWithArray:@[fileBasedKeychain]];
@@ -116,10 +112,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)tearDown {
   [_userDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
-  [_mockGIDAuthStateMigration verify];
-  [_mockGIDAuthStateMigration stopMocking];
-  [_mockGIDSignInCallbackSchemes verify];
-  [_mockGIDSignInCallbackSchemes stopMocking];
 #if TARGET_OS_OSX
   [_realLegacyGTMKeychainStore removeAuthSessionWithError:nil];
 #endif // TARGET_OS_OSX
@@ -140,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -165,6 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -177,10 +171,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (void)testMigrateIfNeeded_NoPreviousMigration_GTMAppAuthMigration {
-  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+  [self seedLegacyAuthStateWithFingerprint:kSavedFingerprint];
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -192,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)testMigrateIfNeeded_KeychainFailure_GTMAppAuthMigration {
-  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+  [self seedLegacyAuthStateWithFingerprint:kSavedFingerprint];
   NSError *keychainSaveError = [NSError errorWithDomain:@"com.google.GIDAuthStateMigrationTest"
                                                    code:1
                                                userInfo:nil];
@@ -200,6 +195,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -211,10 +207,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)testExtractAuthorization {
-  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint];
+  [self seedLegacyAuthStateWithFingerprint:kSavedFingerprint];
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   GTMAuthSession *authorization =
@@ -222,13 +219,17 @@ NS_ASSUME_NONNULL_BEGIN
                                    callbackPath:kCallbackPath];
 
   XCTAssertNotNil(authorization);
+  XCTAssertEqualObjects(
+      authorization.authState.lastTokenResponse.request.additionalParameters[@"param3"],
+      @"value3");
 }
 
 - (void)testExtractAuthorization_HostedDomain {
-  [self setUpCommonExtractAuthorizationMocksWithFingerPrint:kSavedFingerprint_HostedDomain];
+  [self seedLegacyAuthStateWithFingerprint:kSavedFingerprint_HostedDomain];
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   GTMAuthSession *authorization =
@@ -236,6 +237,23 @@ NS_ASSUME_NONNULL_BEGIN
                                    callbackPath:kCallbackPath];
 
   XCTAssertNotNil(authorization);
+  XCTAssertEqualObjects(
+      authorization.authState.lastTokenResponse.request.additionalParameters[@"param3"],
+      @"value3");
+}
+
+- (void)testExtractAuthorization_NoFingerprint {
+  GIDAuthStateMigration *migration =
+      [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
+                                              userDefaults:_userDefaults
+                                                    bundle:_bundle];
+  GTMAuthSession *authorization =
+      [migration extractAuthSessionWithTokenURL:[NSURL URLWithString:kTokenURL]
+                                   callbackPath:kCallbackPath];
+
+  XCTAssertNil(authorization);
+  XCTAssertNil([_keychainStore retrieveAuthSessionWithError:NULL]);
 }
 #endif // TARGET_OS_OSX
 
@@ -248,6 +266,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -264,6 +283,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)testMigrateIfNeeded_isFreshInstall {
   GIDAuthStateMigration *migration =
       [[GIDAuthStateMigration alloc] initWithKeychainStore:_keychainStore
+                                            legacyKeychain:_legacyKeychain
                                               userDefaults:_userDefaults
                                                     bundle:_bundle];
   [migration migrateIfNeededWithTokenURL:[NSURL URLWithString:kTokenURL]
@@ -286,18 +306,15 @@ NS_ASSUME_NONNULL_BEGIN
   return [NSString stringWithFormat:@"%@%@", fingerprint, kAdditionalTokenRequestParametersPostfix];
 }
 
-- (void)setUpCommonExtractAuthorizationMocksWithFingerPrint:(NSString *)fingerprint {
-  [[[_mockGIDAuthStateMigration expect] andReturn:fingerprint]
-      passwordForService:kFingerprintService];
+// Seed the legacy keychain items that a pre-5.0 authorization with `fingerprint` would have stored.
+- (void)seedLegacyAuthStateWithFingerprint:(NSString *)fingerprint {
+  [_legacyKeychain setPassword:fingerprint forService:kFingerprintService];
   XCTAssertTrue([_keychainHelper setPassword:kGTMOAuth2PersistenceString
                                   forService:fingerprint
                                        error:NULL]);
-  [[[_mockGIDSignInCallbackSchemes expect] andReturn:_mockGIDSignInCallbackSchemes] alloc];
-  (void)[[[_mockGIDSignInCallbackSchemes expect] andReturn:_mockGIDSignInCallbackSchemes]
-      initWithClientIdentifier:kClientID bundle:OCMOCK_ANY];
-  [[[_mockGIDSignInCallbackSchemes expect] andReturn:kDotReversedClientID] clientIdentifierScheme];
-  [[[_mockGIDAuthStateMigration expect] andReturn:kAdditionalTokenRequestParameters]
-      passwordForService:[self additionalTokenRequestParametersKeyFromFingerprint:fingerprint]];
+  [_legacyKeychain
+      setPassword:kAdditionalTokenRequestParameters
+       forService:[self additionalTokenRequestParametersKeyFromFingerprint:fingerprint]];
 }
 
 @end
