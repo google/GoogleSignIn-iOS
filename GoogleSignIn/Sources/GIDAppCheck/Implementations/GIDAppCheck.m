@@ -119,7 +119,7 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullabl
                                        userInfo:nil];
         }
 
-        if (result.token && !maybeError) {
+        if (result.token && !result.error) {
           [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         }
 
