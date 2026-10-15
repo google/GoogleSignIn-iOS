@@ -19,12 +19,6 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDConfiguration.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDClaim.h"
 
-#ifdef SWIFT_PACKAGE
-@import OCMock;
-#else
-#import <OCMock/OCMock.h>
-#endif
-
 static NSString *const kLoginHint = @"login_hint";
 static NSString *const kScope1 = @"scope1";
 static NSString *const kScope2 = @"scope2";
@@ -32,15 +26,15 @@ static NSString *const kNonce = @"test_nonce";
 static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
 
 @interface GIDSignInInternalOptionsTest : XCTestCase {
-  /// Mock for the configuration passed to the option factories.
-  id _configuration;
+  /// The configuration passed to the option factories.
+  GIDConfiguration *_configuration;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  /// Mock for the presenting view controller passed to the option factories.
-  id _presentingViewController;
+  /// The presenting view controller passed to the option factories.
+  UIViewController *_presentingViewController;
 #elif TARGET_OS_OSX
-  /// Mock for the presenting window passed to the option factories.
-  id _presentingWindow;
+  /// The presenting window passed to the option factories.
+  NSWindow *_presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 @end
@@ -51,11 +45,11 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
 
 - (void)setUp {
   [super setUp];
-  _configuration = OCMStrictClassMock([GIDConfiguration class]);
+  _configuration = [[GIDConfiguration alloc] initWithClientID:@"client_id"];
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  _presentingViewController = OCMStrictClassMock([UIViewController class]);
+  _presentingViewController = [[UIViewController alloc] init];
 #elif TARGET_OS_OSX
-  _presentingWindow = OCMStrictClassMock([NSWindow class]);
+  _presentingWindow = [[NSWindow alloc] init];
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
@@ -84,16 +78,6 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
                                                         completion:completion];
 }
 
-/// Verifies the mocks created in `-setUp` have no unfulfilled expectations.
-- (void)verifyConfigurationAndPresentationMocks {
-  OCMVerifyAll(_configuration);
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OCMVerifyAll(_presentingViewController);
-#elif TARGET_OS_OSX
-  OCMVerifyAll(_presentingWindow);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-}
-
 #pragma mark - Tests
 
 - (void)testDefaultOptions {
@@ -113,8 +97,12 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
   XCTAssertFalse(options.continuation);
   XCTAssertFalse(options.addScopesFlow);
   XCTAssertNil(options.extraParams);
-
-  [self verifyConfigurationAndPresentationMocks];
+  XCTAssertEqual(options.configuration, _configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  XCTAssertEqual(options.presentingViewController, _presentingViewController);
+#elif TARGET_OS_OSX
+  XCTAssertEqual(options.presentingWindow, _presentingWindow);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
 - (void)testDefaultOptions_withAllParameters_initializesPropertiesCorrectly {
@@ -133,8 +121,12 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
   XCTAssertEqualObjects(options.nonce, kNonce);
   XCTAssertEqualObjects(options.claims, [self expectedClaims]);
   XCTAssertNil(options.claimsAsJSON);
-
-  [self verifyConfigurationAndPresentationMocks];
+  XCTAssertEqual(options.configuration, _configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  XCTAssertEqual(options.presentingViewController, _presentingViewController);
+#elif TARGET_OS_OSX
+  XCTAssertEqual(options.presentingWindow, _presentingWindow);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
 - (void)testOptionsWithExtraParameters_forContinuation_preservesAllPropertiesAndSetsContinuation {
@@ -155,8 +147,12 @@ static NSString *const kClaimsAsJSON = @"{\"claim\":\"value\"}";
                         [NSSet setWithArray:options.scopes]);
   XCTAssertFalse(continuationOptions.addScopesFlow);
   XCTAssertTrue(continuationOptions.interactive);
-
-  [self verifyConfigurationAndPresentationMocks];
+  XCTAssertEqual(continuationOptions.configuration, _configuration);
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+  XCTAssertEqual(continuationOptions.presentingViewController, _presentingViewController);
+#elif TARGET_OS_OSX
+  XCTAssertEqual(continuationOptions.presentingWindow, _presentingWindow);
+#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 }
 
 - (void)testSilentOptions {
