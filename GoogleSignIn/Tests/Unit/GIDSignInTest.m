@@ -28,7 +28,6 @@
 
 @import GTMAppAuth;
 
-#import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignIn_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -38,7 +37,12 @@
 #import <AppCheckCore/GACAppCheckToken.h>
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
+#import "GoogleSignIn/Sources/GIDApplication/Fake/GIDFakeApplication.h"
+#import "GoogleSignIn/Sources/GIDDevice/Fake/GIDFakeDevice.h"
+#import "GoogleSignIn/Sources/GIDEMMAlertPresenter/Fake/GIDFakeEMMAlertPresenter.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
+#import "GoogleSignIn/Sources/GIDEMMSupport.h"
+#import "GoogleSignIn/Tests/Unit/UIAlertAction+Testing.h"
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/Fake/GIDFakeAuthStateMigration.h"
@@ -56,7 +60,6 @@
 @import AppAuthTestHelpers;
 @import GTMAppAuthTestHelpers;
 @import GTMSessionFetcherCore;
-@import OCMock;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
@@ -77,7 +80,6 @@
 
 // GTMAuthSessionStoreFake is only available through the GTMAppAuthTestHelpers SwiftPM product.
 #import <GTMSessionFetcher/GTMSessionFetcher.h>
-#import <OCMock/OCMock.h>
 #endif
 
 /// `NSUserDefaults` suite name for testing with `GIDAppCheck`.
@@ -151,7 +153,9 @@ static NSString *const kMultipleClaimsJsonString =
   GIDSignInResult *_signInResult;    // result passed to _completion
   NSError *_authError;               // error passed to _completion
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  BOOL _isEligibleForEMM;            // whether the current iOS version supports EMM
+  GIDFakeApplication *_application;
+  GIDFakeEMMAlertPresenter *_alertPresenter;
+  GIDEMMSupport *_emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 @end
@@ -163,7 +167,15 @@ static NSString *const kMultipleClaimsJsonString =
 - (void)setUp {
   [super setUp];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  _isEligibleForEMM = [UIDevice currentDevice].systemVersion.integerValue >= 9;
+  _application = [[GIDFakeApplication alloc] init];
+  _application.keyWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  _alertPresenter = [[GIDFakeEMMAlertPresenter alloc] init];
+  GIDEMMErrorHandler *errorHandler =
+      [[GIDEMMErrorHandler alloc] initWithApplication:_application
+                                       alertPresenter:_alertPresenter];
+  GIDFakeDevice *device =
+      [[GIDFakeDevice alloc] initWithSystemName:@"iOS" systemVersion:@"17.1"];
+  _emmSupport = [[GIDEMMSupport alloc] initWithErrorHandler:errorHandler device:device];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -211,6 +223,7 @@ static NSString *const kMultipleClaimsJsonString =
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_authSessionStore
                                        authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck
+                                                      emmSupport:_emmSupport
                                                           bundle:_fakeMainBundle
                                                     userDefaults:_testUserDefaults
                                             authorizationService:_authorizationService
@@ -238,6 +251,7 @@ static NSString *const kMultipleClaimsJsonString =
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_authSessionStore
                                        authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck
+                                                      emmSupport:_emmSupport
                                                           bundle:_fakeMainBundle
                                                     userDefaults:_testUserDefaults
                                             authorizationService:_authorizationService
@@ -1247,40 +1261,20 @@ static NSString *const kMultipleClaimsJsonString =
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil nonce:nil errorString:nil];
 
-  NSString *systemName = [UIDevice currentDevice].systemName;
-  if ([systemName isEqualToString:@"iPhone OS"]) {
-    systemName = @"iOS";
-  }
-  NSString *expectedOSVersion = [NSString stringWithFormat:@"%@ %@",
-      systemName, [UIDevice currentDevice].systemVersion];
   NSDictionary<NSString *, NSObject *> *authParams =
       _authorizationService.lastAuthorizationRequest.additionalParameters;
   NSDictionary<NSString *, NSString *> *tokenParams =
       _authorizationService.lastTokenRequest.additionalParameters;
-  if (_isEligibleForEMM) {
-    XCTAssertEqualObjects(authParams[@"emm_support"], kEMMSupport,
-                          @"EMM support should match in auth request");
-    XCTAssertEqualObjects(authParams[@"device_os"], expectedOSVersion,
-                          @"OS version should match in auth request");
-    XCTAssertEqualObjects(tokenParams[@"emm_support"], kEMMSupport,
-                          @"EMM support should match in token request");
-    XCTAssertEqualObjects(tokenParams[@"device_os"],
-                          expectedOSVersion,
-                          @"OS version should match in token request");
-    XCTAssertNil(tokenParams[@"emm_passcode_info"],
-                 @"no passcode info should be in token request");
-  } else {
-    XCTAssertNil(authParams[@"emm_support"],
-                 @"EMM support should not be in auth request for unsupported OS");
-    XCTAssertNil(authParams[@"device_os"],
-                 @"OS version should not be in auth request for unsupported OS");
-    XCTAssertNil(tokenParams[@"emm_support"],
-                 @"EMM support should not be in token request for unsupported OS");
-    XCTAssertNil(tokenParams[@"device_os"],
-                 @"OS version should not be in token request for unsupported OS");
-    XCTAssertNil(tokenParams[@"emm_passcode_info"],
-                 @"passcode info should not be in token request for unsupported OS");
-  }
+  XCTAssertEqualObjects(authParams[@"emm_support"], kEMMSupport,
+                        @"EMM support should match in auth request");
+  XCTAssertEqualObjects(authParams[@"device_os"], @"iOS 17.1",
+                        @"OS version should match in auth request");
+  XCTAssertEqualObjects(tokenParams[@"emm_support"], kEMMSupport,
+                        @"EMM support should match in token request");
+  XCTAssertEqualObjects(tokenParams[@"device_os"], @"iOS 17.1",
+                        @"OS version should match in token request");
+  XCTAssertNil(tokenParams[@"emm_passcode_info"],
+               @"no passcode info should be in token request");
 }
 
 - (void)testEmmPasscodeInfo {
@@ -1291,164 +1285,103 @@ static NSString *const kMultipleClaimsJsonString =
                                         errorString:nil];
   NSDictionary<NSString *, NSString *> *tokenParams =
       _authorizationService.lastTokenRequest.additionalParameters;
-  if (_isEligibleForEMM) {
-    XCTAssertNotNil(tokenParams[@"emm_passcode_info"],
-                    @"passcode info should be in token request");
-  } else {
-    XCTAssertNil(tokenParams[@"emm_passcode_info"],
-                 @"passcode info should not be in token request for unsupported OS");
-  }
+  XCTAssertNotNil(tokenParams[@"emm_passcode_info"],
+                  @"passcode info should be in token request");
 }
 
 - (void)testAuthEndpointEMMError {
-  if (!_isEligibleForEMM) {
-    return;
-  }
-
-  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
-  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^completion)(BOOL handled);
-  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"EMM Specific Error" };
-  [[mockEMMErrorHandler expect]
-      handleErrorFromResponse:callbackParams
-                   completion:[OCMArg checkWithBlock:^BOOL(id arg) {
-                     completion = [arg copy];
-                     return YES;
-                   }]];
-
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil
                                               nonce:nil
-                                        errorString:callbackParams[@"error"]];
+                                        errorString:@"emm_passcode_required"];
 
-  [mockEMMErrorHandler verify];
-  [mockEMMErrorHandler stopMocking];
-  XCTAssertNotNil(completion);
-  completion(YES);
+  XCTestExpectation *mainQueueExpectation =
+      [self expectationWithDescription:@"Main queue drained"];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [mainQueueExpectation fulfill];
+  });
+  [self waitForExpectations:@[ mainQueueExpectation ] timeout:1];
 
+  UIAlertController *alert = _alertPresenter.presentedAlert;
+  XCTAssertNotNil(alert);
+  XCTAssertEqualObjects([alert.actions valueForKey:@"title"], (@[ @"Cancel", @"Settings" ]));
+  XCTAssertFalse(_completionCalled);
+
+  alert.actions[0].actionHandler(alert.actions[0]);
   [self waitForCompletion];
 
   XCTAssertNil(_authSessionStore.savedAuthSession, @"should not save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
+  XCTAssertEqual(_alertPresenter.dismissCount, 1u);
 }
 
 // Verifies that an authorization error the EMM handler declines is reported as unknown.
 - (void)testAuthEndpointEMMError_NotHandled {
-  if (!_isEligibleForEMM) {
-    return;
-  }
-
-  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
-  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^completion)(BOOL handled);
-  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"invalid_request" };
-  [[mockEMMErrorHandler expect]
-      handleErrorFromResponse:callbackParams
-                   completion:[OCMArg checkWithBlock:^BOOL(id arg) {
-                     completion = [arg copy];
-                     return YES;
-                   }]];
-
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil
                                               nonce:nil
-                                        errorString:callbackParams[@"error"]];
-
-  [mockEMMErrorHandler verify];
-  [mockEMMErrorHandler stopMocking];
-  XCTAssertNotNil(completion);
-  completion(NO);
-
+                                        errorString:@"invalid_request"];
   [self waitForCompletion];
 
-  XCTAssertNil(_authSessionStore.savedAuthSession, @"should not save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
-  XCTAssertNotNil(_authError, @"should have error");
+  XCTAssertNil(_alertPresenter.presentedAlert);
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeUnknown);
-  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+  XCTAssertNil(_signIn.currentUser);
+  XCTAssertNil(_authSessionStore.savedAuthSession);
 }
 
-// Verifies that access_denied is reported as canceled even when the EMM handler claims it.
-- (void)testAuthEndpointEMMError_AccessDeniedTakesPriority {
-  if (!_isEligibleForEMM) {
-    return;
-  }
-
-  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
-  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^completion)(BOOL handled);
-  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"access_denied" };
-  [[mockEMMErrorHandler expect]
-      handleErrorFromResponse:callbackParams
-                   completion:[OCMArg checkWithBlock:^BOOL(id arg) {
-                     completion = [arg copy];
-                     return YES;
-                   }]];
-
+// Verifies that access_denied is reported as canceled after the EMM handler declines it; with the real handler access_denied is never claimed as an EMM error, so the "priority over a claiming handler" branch of -authorizationErrorWithParameters:isEMMError: cannot be reached from this test.
+- (void)testAuthEndpointEMMError_AccessDenied {
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil
                                               nonce:nil
-                                        errorString:callbackParams[@"error"]];
-
-  [mockEMMErrorHandler verify];
-  [mockEMMErrorHandler stopMocking];
-  XCTAssertNotNil(completion);
-  completion(YES);
-
+                                        errorString:@"access_denied"];
   [self waitForCompletion];
 
-  XCTAssertNil(_authSessionStore.savedAuthSession, @"should not save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
-  XCTAssertNotNil(_authError, @"should have error");
+  XCTAssertNil(_alertPresenter.presentedAlert);
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
-  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+  XCTAssertNil(_signIn.currentUser);
+  XCTAssertNil(_authSessionStore.savedAuthSession);
 }
 
 - (void)testTokenEndpointEMMError {
-  if (!_isEligibleForEMM) {
-    return;
-  }
-
-  __block void (^completion)(NSError *);
-  NSDictionary *errorJSON = @{ @"error" : @"EMM Specific Error" };
   NSError *emmError = [NSError errorWithDomain:@"anydomain"
                                           code:12345
-                                      userInfo:@{ OIDOAuthErrorFieldError : errorJSON }];
-  id emmSupport = OCMStrictClassMock([GIDEMMSupport class]);
-  [[[emmSupport expect] classMethod]
-      handleTokenFetchEMMError:emmError
-                    completion:[OCMArg checkWithBlock:^BOOL(id arg) {
-                      completion = [arg copy];
-                      return YES;
-                    }]];
+                                      userInfo:@{
+                                        OIDOAuthErrorResponseErrorKey :
+                                            @{ @"error" : @"emm_passcode_required" }
+                                      }];
 
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil nonce:nil errorString:nil];
   [self failTokenRequestWithError:emmError];
 
-  [emmSupport verify];
-  [emmSupport stopMocking];
+  XCTestExpectation *mainQueueExpectation =
+      [self expectationWithDescription:@"Main queue drained"];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [mainQueueExpectation fulfill];
+  });
+  [self waitForExpectations:@[ mainQueueExpectation ] timeout:1];
 
-  NSError *handledError = [NSError errorWithDomain:kGIDSignInErrorDomain
-                                              code:kGIDSignInErrorCodeEMM
-                                          userInfo:emmError.userInfo];
-  XCTAssertNotNil(completion);
-  completion(handledError);
+  UIAlertController *alert = _alertPresenter.presentedAlert;
+  XCTAssertNotNil(alert);
+  XCTAssertEqualObjects([alert.actions valueForKey:@"title"], (@[ @"Cancel", @"Settings" ]));
+  XCTAssertFalse(_completionCalled);
 
+  alert.actions[0].actionHandler(alert.actions[0]);
   [self waitForCompletion];
 
   XCTAssertNil(_authSessionStore.savedAuthSession, @"should not save to keychain");
-  XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
+  XCTAssertEqualObjects(_authError.userInfo, emmError.userInfo);
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
+  XCTAssertEqual(_alertPresenter.dismissCount, 1u);
 }
 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -1461,12 +1394,23 @@ static NSString *const kMultipleClaimsJsonString =
   _signInResult = nil;
   _authError = nil;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  _signIn = [[GIDSignIn alloc] initWithKeychainStore:_authSessionStore
+                           authStateMigrationService:_authStateMigrationService
+                                            appCheck:nil
+                                          emmSupport:_emmSupport
+                                              bundle:_fakeMainBundle
+                                        userDefaults:_testUserDefaults
+                                authorizationService:_authorizationService
+                                      fetcherService:_fetcherService];
+#else
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_authSessionStore
                            authStateMigrationService:_authStateMigrationService
                                               bundle:_fakeMainBundle
                                         userDefaults:_testUserDefaults
                                 authorizationService:_authorizationService
                                       fetcherService:_fetcherService];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
   __weak GIDSignInTest *weakSelf = self;
   _completion = ^(GIDSignInResult *_Nullable signInResult, NSError *_Nullable error) {
