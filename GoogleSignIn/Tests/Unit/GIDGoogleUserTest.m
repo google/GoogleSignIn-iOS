@@ -46,6 +46,7 @@
 #import <AppAuth/OIDAuthorizationService.h>
 #import <AppAuth/OIDError.h>
 #import <AppAuth/OIDIDToken.h>
+#import <AppAuth/OIDScopeUtilities.h>
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
 #import <GoogleUtilities/GULSwizzler.h>
@@ -269,6 +270,23 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertIdentical(user.accessToken, accessTokenBeforeUpdate);
   XCTAssertIdentical(user.idToken, idTokenBeforeUpdate);
   XCTAssertIdentical(user.refreshToken, refreshTokenBeforeUpdate);
+}
+
+- (void)testUpdateAuthState_publishesGrantedScopesWithTokens {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  XCTAssertEqualObjects(user.grantedScopes, @[ OIDAuthorizationRequestTestingScope2 ]);
+
+  NSArray<NSString *> *updatedScopes = @[ OIDAuthorizationRequestTestingScope2, kNewScope ];
+  OIDAuthState *updatedAuthState = [self authStateWithGrantedScopes:updatedScopes
+                                                        accessToken:kNewAccessToken];
+
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
+                    profileData:nil];
+
+  XCTAssertEqualObjects(user.grantedScopes, updatedScopes);
+  XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
 }
 
 - (void)testConfiguration_isFixedAfterTokenUpdate {
@@ -1077,6 +1095,24 @@ static NSString *const kNewScope = @"newScope";
                                             refreshTokenExpiresIn:refreshTokenExpiresIn];
   
   return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+}
+
+// Returns an auth state whose token response grants `scopes`. The OIDTokenResponse test helpers
+// always grant OIDAuthorizationRequestTestingScope2, so this builds the response directly.
+- (OIDAuthState *)authStateWithGrantedScopes:(NSArray<NSString *> *)scopes
+                                 accessToken:(NSString *)accessToken {
+  NSDictionary<NSString *, NSObject<NSCopying> *> *parameters = @{
+    @"access_token" : accessToken,
+    @"expires_in" : @(kAccessTokenExpiresIn),
+    @"token_type" : @"example_token_type",
+    @"refresh_token" : kNewRefreshToken,
+    @"scope" : [OIDScopeUtilities scopesWithArray:scopes],
+    @"id_token" : [self idTokenWithExpiresIn:kNewIDTokenExpiresIn],
+  };
+  OIDTokenResponse *tokenResponse =
+      [[OIDTokenResponse alloc] initWithRequest:[OIDTokenRequest testInstance]
+                                     parameters:parameters];
+  return [OIDAuthState testInstanceWithTokenResponse:tokenResponse];
 }
 
 - (NSString *)idTokenWithExpiresIn:(NSTimeInterval)expiresIn {
