@@ -1,4 +1,5 @@
 # Unreleased
+- Update App Check to 12.x for compatibility with Firebase iOS SDK 13.x, migrate Objective-C imports to the Swift-backed module, and avoid treating placeholder tokens as successful App Check preparation.
 - Fix a crash when a server error response carries a non-string value under its `error` key. The EMM error handler sent `-hasPrefix:` to whatever value was present, raising an unrecognized selector exception on a number, array or object.
 - Fix a custom `nonce` and requested token `claims` being dropped when a sign-in is continued after a Device Policy app restart.
 

@@ -17,7 +17,7 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import <XCTest/XCTest.h>
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
@@ -65,6 +65,27 @@ NS_CLASS_AVAILABLE_IOS(14)
   }];
 
   [self waitForExpectations:@[tokenFailExpectation] timeout:timeout];
+  XCTAssertFalse(appCheck.isPrepared);
+}
+
+- (void)testPreparationFailureDoesNotMarkPrepared {
+  XCTestExpectation *prepareExpectation =
+      [self expectationWithDescription:@"Preparation returns provider error"];
+  NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                             code:kGIDAppCheckProviderFakeError
+                                         userInfo:nil];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
+                                                      userDefaults:self.userDefaults];
+
+  [appCheck prepareForAppCheckWithCompletion:^(NSError *error) {
+    XCTAssertEqualObjects(error, expectedError);
+    [prepareExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[prepareExpectation] timeout:timeout];
+  XCTAssertFalse(appCheck.isPrepared);
 }
 
 - (void)testIsPreparedError {
@@ -137,6 +158,30 @@ NS_CLASS_AVAILABLE_IOS(14)
   [self waitForExpectations:@[getLimitedUseTokenSucceedsExpectation] timeout:timeout];
 
   XCTAssertTrue([appCheck isPrepared]);
+}
+
+- (void)testGetLimitedUseTokenWithoutPreparation {
+  XCTestExpectation *tokenExpectation =
+      [self expectationWithDescription:@"Limited-use token without preparation"];
+  NSDate *expirationDate = [NSDate distantFuture];
+  GACAppCheckToken *expectedToken = [[GACAppCheckToken alloc] initWithToken:@"limited-use-token"
+                                                         expirationDate:expirationDate];
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:expectedToken error:nil];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
+                                                      userDefaults:self.userDefaults];
+
+  XCTAssertFalse(appCheck.isPrepared);
+
+  [appCheck getLimitedUseTokenWithCompletion:^(GACAppCheckToken *token, NSError *error) {
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(token.token, @"limited-use-token");
+    XCTAssertEqualObjects(token.expirationDate, expirationDate);
+    XCTAssertTrue(appCheck.isPrepared);
+    [tokenExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[tokenExpectation] timeout:timeout];
 }
 
 - (void)testAsyncCompletions {

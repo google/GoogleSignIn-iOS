@@ -18,11 +18,7 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-#import <AppCheckCore/GACAppCheck.h>
-#import <AppCheckCore/GACAppCheckSettings.h>
-#import <AppCheckCore/GACAppCheckTokenResult.h>
-#import <AppCheckCore/GACAppAttestProvider.h>
-#import <AppCheckCore/GACAppCheckDebugProvider.h>
+@import AppCheckCore;
 
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
@@ -123,7 +119,7 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullabl
                                        userInfo:nil];
         }
 
-        if (result.token) {
+        if (result.token && !maybeError) {
           [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
         }
 
@@ -143,7 +139,7 @@ typedef void (^GIDAppCheckTokenCompletion)(GACAppCheckToken *,NSError * _Nullabl
 - (void)getLimitedUseTokenWithCompletion:(nullable GIDAppCheckTokenCompletion)completion {
   dispatch_async(self.workerQueue, ^{
     [self.appCheck limitedUseTokenWithCompletion:^(GACAppCheckTokenResult * _Nonnull result) {
-      if (result.token) {
+      if (result.token && !result.error) {
         [self.userDefaults setBool:YES forKey:kGIDAppCheckPreparedKey];
       }
       if (completion) {
