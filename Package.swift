@@ -57,12 +57,6 @@ let package = Package(
     .package(
       url: "https://github.com/google/gtm-session-fetcher.git",
       "3.3.0" ..< "6.0.0"),
-    .package(
-      url: "https://github.com/firebase/ocmock.git",
-      revision: "7291762d3551c5c7e31c49cce40a0e391a52e889"),
-    .package(
-      url: "https://github.com/google/GoogleUtilities.git",
-      from: "8.0.0"),
   ],
   targets: [
     .target(
@@ -108,15 +102,12 @@ let package = Package(
       name: "GoogleSignIn-UnitTests",
       dependencies: [
         "GoogleSignIn",
-        .product(name: "OCMock", package: "ocmock"),
         .product(name: "AppAuth", package: "AppAuth-iOS"),
         .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
         .product(name: "AppAuthTestHelpers", package: "AppAuth-iOS"),
         .product(name: "GTMAppAuthTestHelpers", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "gtm-session-fetcher"),
-        .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
-        .product(name: "GULSwizzlerTestHelpers", package: "GoogleUtilities"),
       ],
       path: "GoogleSignIn/Tests/Unit",
       cSettings: [

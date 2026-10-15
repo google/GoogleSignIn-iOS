@@ -55,8 +55,7 @@ The Google Sign-In SDK allows users to sign in with their Google account from th
       'GoogleSignIn/Tests/Unit/**/*.[mh]',
     ]
     unit_tests.requires_app_host = true
-    unit_tests.dependency 'OCMock'
-    unit_tests.dependency 'GoogleUtilities/MethodSwizzler', '~> 8.0'
-    unit_tests.dependency 'GoogleUtilities/SwizzlerTestHelpers', '~> 8.0'
+    unit_tests.dependency 'AppAuth/TestHelpers'
+    # GTMAuthSessionStoreFake and GTMKeychainHelperFake come from the GTMAppAuthTestHelpers SwiftPM product; there is no CocoaPods equivalent yet.
   end
 end

@@ -41,6 +41,8 @@ let package = Package(
     ),
   ],
   dependencies: [
+    // The unit tests need the AppAuthTestHelpers product, first published after 3.0.0; bump `from:`
+    // once a release containing it is tagged.
     .package(
       name: "AppAuth",
       url: "https://github.com/openid/AppAuth-iOS.git",
@@ -49,6 +51,8 @@ let package = Package(
       name: "AppCheck",
       url: "https://github.com/google/app-check.git",
       from: "11.0.0"),
+    // The unit tests need the GTMAppAuthTestHelpers product, first published after 6.0.0; bump
+    // `from:` once a release containing it is tagged.
     .package(
       name: "GTMAppAuth",
       url: "https://github.com/google/GTMAppAuth.git",
@@ -57,14 +61,6 @@ let package = Package(
       name: "GTMSessionFetcher",
       url: "https://github.com/google/gtm-session-fetcher.git",
       "3.3.0" ..< "6.0.0"),
-    .package(
-      name: "OCMock",
-      url: "https://github.com/firebase/ocmock.git",
-      .revision("7291762d3551c5c7e31c49cce40a0e391a52e889")),
-    .package(
-      name: "GoogleUtilities",
-      url: "https://github.com/google/GoogleUtilities.git",
-      from: "8.0.0"),
   ],
   targets: [
     .target(
@@ -110,13 +106,12 @@ let package = Package(
       name: "GoogleSignIn-UnitTests",
       dependencies: [
         "GoogleSignIn",
-        "OCMock",
         .product(name: "AppAuth", package: "AppAuth"),
         .product(name: "AppCheckCore", package: "AppCheck"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
+        .product(name: "AppAuthTestHelpers", package: "AppAuth"),
+        .product(name: "GTMAppAuthTestHelpers", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "GTMSessionFetcher"),
-        .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
-        .product(name: "GULSwizzlerTestHelpers", package: "GoogleUtilities"),
       ],
       path: "GoogleSignIn/Tests/Unit",
       cSettings: [
