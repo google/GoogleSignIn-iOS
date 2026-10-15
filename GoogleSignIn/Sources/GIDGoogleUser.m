@@ -230,13 +230,13 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     }
   }
   // This is the first handler in the queue, a fetch is needed.
-  // Read the auth state under `_authStateLock` so building the request cannot interleave with
-  // -updateWithTokenResponse:authorizationResponse:profileData:, and build the parameter
-  // dictionary outside the lock so helper calls do not run while it is held.
+  // Build the request under `_authStateLock` so the parameters, the authorization response and
+  // the refresh token all come from the same auth state, and building the request cannot
+  // interleave with -updateWithTokenResponse:authorizationResponse:profileData:. The helpers
+  // called here only build dictionaries and never call back into this object.
   [self lockAuthState];
   NSDictionary<NSString *, NSString *> *lastTokenAdditionalParameters =
       self.authState.lastTokenResponse.request.additionalParameters;
-  [self unlockAuthState];
 
   NSMutableDictionary *additionalParameters = [@{} mutableCopy];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -247,7 +247,6 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
-  [self lockAuthState];
   OIDAuthorizationResponse *authorizationResponse = self.authState.lastAuthorizationResponse;
   OIDTokenRequest *tokenRefreshRequest =
       [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
