@@ -321,18 +321,18 @@ static NSString *const kMultipleClaimsJsonString =
   });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
-  OCMStub([_oidAuthorizationService
+  OCMStub(ClassMethod([_oidAuthorizationService
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
            presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
 #elif TARGET_OS_OSX
            presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
-  OCMStub([self->_oidAuthorizationService
+                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]));
+  OCMStub(ClassMethod([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
       originalAuthorizationResponse:[OCMArg any]
-      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
+      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]));
 
   // Fakes
   _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
