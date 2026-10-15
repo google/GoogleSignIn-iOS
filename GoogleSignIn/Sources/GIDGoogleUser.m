@@ -128,12 +128,11 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
   GIDProfileData *_pendingProfile;
   BOOL _hasPendingProfile;
 
-  // Guards `authState` updates and reads that span several of its fields. Recursive because
-  // AppAuth calls -didChangeState: synchronously while it is held, and KVO observers of the
-  // token and profile properties also run while it is held: same-thread re-entry is fine
-  // (see -testTokenObserver_reentersUserDuringUpdate), but an observer must not synchronously
-  // wait on another thread that is updating the same user, as that would deadlock. Take it via
-  // -lockAuthState.
+  // This lock guards `authState` updates and reads.
+  // The lock is recursive due to a) synchronous AppAuth -didChangeState: calls and b) KVO
+  // observers of the token / profile properties.
+  // Observers must not synchronously wait on another thread that is updating the same user! It
+  // would deadlock. Take the lock via -lockAuthState.
   NSRecursiveLock *_authStateLock;
 }
 
@@ -231,10 +230,9 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     }
   }
   // This is the first handler in the queue, a fetch is needed.
-  // Build the request under `_authStateLock` so the parameters, the authorization response and
-  // the refresh token all come from the same auth state, and building the request cannot
-  // interleave with -updateWithTokenResponse:authorizationResponse:profileData:. The helpers
-  // called here only build dictionaries and never call back into this object.
+  // Build the request under `_authStateLock`. This prevents the request-building from
+  // interleaving with token response updates.
+  // These helpers do not (and must not) call back into this object.
   [self lockAuthState];
   NSDictionary<NSString *, NSString *> *lastTokenAdditionalParameters =
       self.authState.lastTokenResponse.request.additionalParameters;
