@@ -22,6 +22,7 @@
 #import <AppAuth/AppAuth.h>
 #endif
 
+@class GIDToken;
 @class OIDAuthState;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,17 +30,31 @@ NS_ASSUME_NONNULL_BEGIN
 /// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
+/// An immutable snapshot of a user's access, refresh and ID tokens.
+/// This value is replaced as a whole so that readers never see a mix of old and new tokens.
+@interface GIDGoogleUserTokens : NSObject
+
+@property(nonatomic, readonly) GIDToken *accessToken;
+@property(nonatomic, readonly) GIDToken *refreshToken;
+@property(nonatomic, readonly, nullable) GIDToken *idToken;
+
+- (instancetype)initWithAccessToken:(GIDToken *)accessToken
+                       refreshToken:(GIDToken *)refreshToken
+                            idToken:(nullable GIDToken *)idToken NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
 /// Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser () <OIDAuthStateChangeDelegate>
 
-@property(nonatomic, readwrite) GIDToken *accessToken;
-
-@property(nonatomic, readwrite) GIDToken *refreshToken;
-
-@property(nonatomic, readwrite, nullable) GIDToken *idToken;
-
 /// A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
+
+/// The user's current tokens. Read once - accessing individual properties in sequence is not
+/// recommended. Reading once ensures that each property is from the same update. Writes are
+/// serialized by `@synchronized(self)`.
+@property(atomic, strong, nullable) GIDGoogleUserTokens *tokens;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
