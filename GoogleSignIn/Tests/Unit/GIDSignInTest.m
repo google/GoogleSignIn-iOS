@@ -228,6 +228,9 @@ static NSString *const kMultipleClaimsJsonString =
   // Mock for |OIDAuthorizationService|
   id _oidAuthorizationService;
 
+  // Mock for |OIDExternalUserAgentSession|.
+  id _authorizationFlow;
+
   // Parameter saved from delegate call.
   NSError *_authError;
 
@@ -332,6 +335,7 @@ static NSString *const kMultipleClaimsJsonString =
   });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
+  _authorizationFlow = OCMProtocolMock(@protocol(OIDExternalUserAgentSession));
   OCMStub([_oidAuthorizationService
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -339,7 +343,8 @@ static NSString *const kMultipleClaimsJsonString =
 #elif TARGET_OS_OSX
            presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
+                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)])
+      .andReturn(_authorizationFlow);
   OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
       originalAuthorizationResponse:[OCMArg any]
@@ -379,6 +384,7 @@ static NSString *const kMultipleClaimsJsonString =
   OCMVerifyAll(_authorization);
   OCMVerifyAll(_user);
   OCMVerifyAll(_oidAuthorizationService);
+  OCMVerifyAll(_authorizationFlow);
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
   OCMVerifyAll(_presentingViewController);
@@ -1312,6 +1318,74 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertTrue(_completionCalled, @"should call delegate");
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
 }
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+- (void)testOAuthLogin_BackgroundedAuthFlowCanceledWhenAuthUIClears {
+  OCMStub([_presentingViewController presentedViewController]).andReturn(nil);
+
+  XCTestExpectation *completionExpectation =
+      [self expectationWithDescription:@"Completion should be called"];
+  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                     NSError *_Nullable error) {
+    [completionExpectation fulfill];
+    self->_completion(signInResult, error);
+  };
+  [self beginInteractiveSignInWithCompletion:completion];
+
+  [[[_authorizationFlow expect] andDo:^(NSInvocation *invocation) {
+    self->_savedAuthorizationCallback(nil, [self authorizationFlowCancellationError]);
+  }] cancel];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
+}
+
+- (void)testOAuthLogin_BackgroundedAuthFlowIgnoresCompletedFlow {
+  OCMStub([_presentingViewController presentedViewController]).andReturn(nil);
+  [[_authorizationFlow reject] cancel];
+
+  XCTestExpectation *completionExpectation =
+      [self expectationWithDescription:@"Completion should be called"];
+  GIDSignInCompletion completion = ^(GIDSignInResult *_Nullable signInResult,
+                                     NSError *_Nullable error) {
+    [completionExpectation fulfill];
+    self->_completion(signInResult, error);
+  };
+  [self beginInteractiveSignInWithCompletion:completion];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+  _savedAuthorizationCallback(nil, [self authorizationFlowCancellationError]);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+  [self waitForInterruptedAuthFlowDelay];
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
+}
+
+- (void)testOAuthLogin_DidBecomeActiveWithoutBackgroundDoesNotCancel {
+  OCMStub([_presentingViewController presentedViewController]).andReturn(nil);
+  [[_authorizationFlow reject] cancel];
+
+  [self beginInteractiveSignInWithCompletion:_completion];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+
+  [self waitForInterruptedAuthFlowDelay];
+  XCTAssertFalse(_completionCalled, @"should not call delegate");
+}
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (void)testOAuthLogin_KeychainError {
   // This error is going be overidden by `-[GIDSignIn errorWithString:code:]`
@@ -2275,6 +2349,33 @@ static NSString *const kMultipleClaimsJsonString =
 }
 
 #pragma mark - Private Helpers
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+
+- (void)beginInteractiveSignInWithCompletion:(nullable GIDSignInCompletion)completion {
+  [_signIn signInWithPresentingViewController:_presentingViewController completion:completion];
+  XCTAssertNotNil(_savedAuthorizationRequest);
+  XCTAssertNotNil(_savedAuthorizationCallback);
+  XCTAssertEqual(_savedPresentingViewController, _presentingViewController);
+}
+
+- (NSError *)authorizationFlowCancellationError {
+  return [NSError errorWithDomain:OIDGeneralErrorDomain
+                             code:OIDErrorCodeUserCanceledAuthorizationFlow
+                         userInfo:nil];
+}
+
+- (void)waitForInterruptedAuthFlowDelay {
+  XCTestExpectation *expectation =
+      [self expectationWithDescription:@"Interrupted auth flow delay"];
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)),
+                 dispatch_get_main_queue(), ^{
+    [expectation fulfill];
+  });
+  [self waitForExpectationsWithTimeout:2 handler:nil];
+}
+
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 - (NSDictionary<NSString *, NSString *> *)
     additionalParametersWithEMMPasscodeInfoRequired:(BOOL)emmPasscodeInfoRequired
