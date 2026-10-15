@@ -14,26 +14,21 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
+#import "GoogleSignIn/Sources/GIDBundle/Fake/GIDFakeBundle.h"
 
 /**
  * @class GIDFakeMainBundle
- * @brief Helps fake [NSBundle mainBundle]
+ * @brief A `GIDFakeBundle` pre-populated the way a host app's Info.plist would be for Google
+ *     Sign-In, with helpers to describe common URL-scheme configurations.
  */
-@interface GIDFakeMainBundle : NSObject
+@interface GIDFakeMainBundle : GIDFakeBundle
 
 /**
- * @fn startFakingWithClientID:
- * @brief Starts faking [NSBundle mainBundle]
- * @param clientID The fake client idenfitier for the app.
+ * @fn initWithClientID:
+ * @brief Creates a bundle whose `GIDClientID` Info.plist value is `clientID`.
+ * @param clientID The fake client identifier for the app.
  */
-- (void)startFakingWithClientID:(NSString *)clientID;
-
-/**
- * @fn stopFaking
- * @brief Stops faking [NSBundle mainBundle]
- */
-- (void)stopFaking;
+- (instancetype)initWithClientID:(NSString *)clientID;
 
 #pragma mark - URL Schemes
 
