@@ -41,12 +41,16 @@ let package = Package(
     ),
   ],
   dependencies: [
+    // The unit tests need the AppAuthTestHelpers product, first published after 3.0.0; bump `from:`
+    // once a release containing it is tagged.
     .package(
       url: "https://github.com/openid/AppAuth-iOS.git",
       from: "3.0.0"),
     .package(
       url: "https://github.com/google/app-check.git",
       from: "11.0.0"),
+    // The unit tests need the GTMAppAuthTestHelpers product, first published after 6.0.0; bump
+    // `from:` once a release containing it is tagged.
     .package(
       url: "https://github.com/google/GTMAppAuth.git",
       from: "6.0.0"),
@@ -108,6 +112,8 @@ let package = Package(
         .product(name: "AppAuth", package: "AppAuth-iOS"),
         .product(name: "AppCheckCore", package: "app-check"),
         .product(name: "GTMAppAuth", package: "GTMAppAuth"),
+        .product(name: "AppAuthTestHelpers", package: "AppAuth-iOS"),
+        .product(name: "GTMAppAuthTestHelpers", package: "GTMAppAuth"),
         .product(name: "GTMSessionFetcherCore", package: "gtm-session-fetcher"),
         .product(name: "GULMethodSwizzler", package: "GoogleUtilities"),
         .product(name: "GULSwizzlerTestHelpers", package: "GoogleUtilities"),
