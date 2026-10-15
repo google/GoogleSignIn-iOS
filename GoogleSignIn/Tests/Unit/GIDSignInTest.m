@@ -321,18 +321,18 @@ static NSString *const kMultipleClaimsJsonString =
   });
   _user = OCMStrictClassMock([GIDGoogleUser class]);
   _oidAuthorizationService = OCMStrictClassMock([OIDAuthorizationService class]);
-  OCMStub(ClassMethod([_oidAuthorizationService
+  OCMStub([_oidAuthorizationService
       presentAuthorizationRequest:SAVE_TO_ARG_BLOCK(self->_savedAuthorizationRequest)
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
            presentingViewController:SAVE_TO_ARG_BLOCK(self->_savedPresentingViewController)
 #elif TARGET_OS_OSX
            presentingWindow:SAVE_TO_ARG_BLOCK(self->_savedPresentingWindow)
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]));
-  OCMStub(ClassMethod([self->_oidAuthorizationService
+                         callback:COPY_TO_ARG_BLOCK(self->_savedAuthorizationCallback)]);
+  OCMStub([self->_oidAuthorizationService
       performTokenRequest:SAVE_TO_ARG_BLOCK(self->_savedTokenRequest)
       originalAuthorizationResponse:[OCMArg any]
-      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]));
+      callback:COPY_TO_ARG_BLOCK(self->_savedTokenCallback)]);
 
   // Fakes
   _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
@@ -347,7 +347,9 @@ static NSString *const kMultipleClaimsJsonString =
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                            authStateMigrationService:_authStateMigrationService
                                               bundle:_fakeMainBundle
-                                        userDefaults:_testUserDefaults];
+                                        userDefaults:_testUserDefaults
+                                authorizationService:_oidAuthorizationService
+                                      fetcherService:_fetcherService];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -395,7 +397,9 @@ static NSString *const kMultipleClaimsJsonString =
                                        authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck
                                                           bundle:_fakeMainBundle
-                                                    userDefaults:_testUserDefaults];
+                                                    userDefaults:_testUserDefaults
+                                            authorizationService:_oidAuthorizationService
+                                                  fetcherService:_fetcherService];
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
@@ -421,7 +425,9 @@ static NSString *const kMultipleClaimsJsonString =
                                        authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck
                                                           bundle:_fakeMainBundle
-                                                    userDefaults:_testUserDefaults];
+                                                    userDefaults:_testUserDefaults
+                                            authorizationService:_oidAuthorizationService
+                                                  fetcherService:_fetcherService];
 
     // Should fail if missing both token and error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
@@ -442,7 +448,9 @@ static NSString *const kMultipleClaimsJsonString =
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                           authStateMigrationService:_authStateMigrationService
                                              bundle:_fakeMainBundle
-                                       userDefaults:_testUserDefaults];
+                                       userDefaults:_testUserDefaults
+                               authorizationService:_oidAuthorizationService
+                                     fetcherService:_fetcherService];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -460,7 +468,9 @@ static NSString *const kMultipleClaimsJsonString =
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                           authStateMigrationService:_authStateMigrationService
                                              bundle:_fakeMainBundle
-                                       userDefaults:_testUserDefaults];
+                                       userDefaults:_testUserDefaults
+                               authorizationService:_oidAuthorizationService
+                                     fetcherService:_fetcherService];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -475,7 +485,9 @@ static NSString *const kMultipleClaimsJsonString =
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                           authStateMigrationService:_authStateMigrationService
                                              bundle:_fakeMainBundle
-                                       userDefaults:_testUserDefaults];
+                                       userDefaults:_testUserDefaults
+                               authorizationService:_oidAuthorizationService
+                                     fetcherService:_fetcherService];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -493,7 +505,9 @@ static NSString *const kMultipleClaimsJsonString =
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                           authStateMigrationService:_authStateMigrationService
                                              bundle:_fakeMainBundle
-                                       userDefaults:_testUserDefaults];
+                                       userDefaults:_testUserDefaults
+                               authorizationService:_oidAuthorizationService
+                                     fetcherService:_fetcherService];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -509,7 +523,9 @@ static NSString *const kMultipleClaimsJsonString =
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
                                      authStateMigrationService:_authStateMigrationService
                                                         bundle:_fakeMainBundle
-                                                  userDefaults:_testUserDefaults];
+                                                  userDefaults:_testUserDefaults
+                                          authorizationService:_oidAuthorizationService
+                                                fetcherService:_fetcherService];
 
   XCTAssertNotNil(signIn.configuration);
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -629,7 +645,8 @@ static NSString *const kMultipleClaimsJsonString =
   // TODO: Create a real GIDGoogleUser to verify the signed in user value(#306).
   [[[_user stub] andReturn:_user] alloc];
   (void)[[[_user expect] andReturn:_user] initWithAuthState:OCMOCK_ANY
-                                                profileData:OCMOCK_ANY];
+                                                profileData:OCMOCK_ANY
+                                       authorizationService:OCMOCK_ANY];
   XCTAssertNil(_signIn.currentUser);
 
   [_signIn restorePreviousSignInWithCompletion:nil];
@@ -1227,7 +1244,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
 
   [_signIn disconnectWithCompletion:nil];
 
@@ -1256,7 +1272,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
 
   [_signIn disconnectWithCompletion:nil];
 
@@ -1372,7 +1387,6 @@ static NSString *const kMultipleClaimsJsonString =
 #if TARGET_OS_IOS || !TARGET_OS_MACCATALYST
 //  OCMStub([_authorization authState]).andReturn(_authState);
 #endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
-  OCMStub([_authorization fetcherService]).andReturn(_fetcherService);
   OCMStub(
     [_keychainStore saveAuthSession:OCMOCK_ANY error:OCMArg.anyObjectRef]
   ).andDo(^(NSInvocation *invocation) {
@@ -1421,7 +1435,9 @@ static NSString *const kMultipleClaimsJsonString =
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                      authStateMigrationService:_authStateMigrationService
                                                         bundle:_fakeMainBundle
-                                                  userDefaults:_testUserDefaults];
+                                                  userDefaults:_testUserDefaults
+                                          authorizationService:_oidAuthorizationService
+                                                fetcherService:_fetcherService];
   // If `isFreshInstall`, keychain entries should be removed.
   XCTAssertNotNil(signIn);
   XCTAssertTrue(self->_keychainRemoved);
@@ -1434,7 +1450,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *accessTokenExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
@@ -1455,7 +1470,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
   [self verifyAndRevokeToken:kAccessToken hasCallback:NO waitingForExpectations:@[]];
   [_authorization verify];
@@ -1470,7 +1484,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:tokenWithReservedCharacters] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
   [self verifyAndRevokeToken:tokenWithReservedCharacters
                  hasCallback:NO
@@ -1488,7 +1501,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
 
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
@@ -1529,7 +1541,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:tokenWithSpace] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
 
   NSString *query = [[self fetchedURL] query];
@@ -1550,7 +1561,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:tokenWithPlusCharacter] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
 
   [self verifyAndRevokeToken:tokenWithPlusCharacter
@@ -1568,7 +1578,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_tokenResponse expect] andReturn:nil] accessToken];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kRefreshToken] refreshToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *refreshTokenExpectation =
       [self expectationWithDescription:@"Callback called with nil error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
@@ -1589,7 +1598,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   XCTestExpectation *errorExpectation =
       [self expectationWithDescription:@"Callback called with an error"];
   [_signIn disconnectWithCompletion:^(NSError * _Nullable error) {
@@ -1612,7 +1620,6 @@ static NSString *const kMultipleClaimsJsonString =
   [[[_authorization expect] andReturn:_authState] authState];
   [[[_authState expect] andReturn:_tokenResponse] lastTokenResponse];
   [[[_tokenResponse expect] andReturn:kAccessToken] accessToken];
-  [[[_authorization expect] andReturn:_fetcherService] fetcherService];
   [_signIn disconnectWithCompletion:nil];
   XCTAssertTrue([self isFetcherStarted], @"should start fetching");
   // Emulate result back from server.
@@ -2273,7 +2280,8 @@ static NSString *const kMultipleClaimsJsonString =
     } else {
       [[[_user expect] andReturn:_user] alloc];
       (void)[[[_user expect] andReturn:_user] initWithAuthState:SAVE_TO_ARG_BLOCK(authState)
-                                                    profileData:SAVE_TO_ARG_BLOCK(profileData)];
+                                                    profileData:SAVE_TO_ARG_BLOCK(profileData)
+                                           authorizationService:OCMOCK_ANY];
     }
   }
 
