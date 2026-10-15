@@ -14,6 +14,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Implementation/GIDLegacyKeychainImpl.h"
 #import "GoogleSignIn/Sources/GIDBundle/Implementation/NSBundle+GIDBundle.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
@@ -34,12 +35,6 @@ static NSString *const kGTMAppAuthMigrationCheckPerformedKey = @"GID_MigrationCh
 static NSString *const kDataProtectedMigrationCheckPerformedKey =
                                                       @"GID_DataProtectedMigrationCheckPerformed";
 
-// Keychain account used to store additional state in SDKs previous to v5, including GPPSignIn.
-static NSString *const kOldKeychainAccount = @"GooglePlus";
-
-// The value used for the kSecAttrGeneric key by GTMAppAuth and GTMOAuth2.
-static NSString *const kGenericAttribute = @"OAuth";
-
 // Keychain service name used to store the last used fingerprint value.
 static NSString *const kFingerprintService = @"fingerprint";
 
@@ -50,6 +45,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 @end
 
 @implementation GIDAuthStateMigration {
+  id<GIDLegacyKeychain> _legacyKeychain;
   // The user defaults in which the migration-check flags are recorded.
   NSUserDefaults *_userDefaults;
   // The bundle whose identifier fingerprints legacy auth state.
@@ -57,15 +53,26 @@ static NSString *const kFingerprintService = @"fingerprint";
 }
 
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                       legacyKeychain:(id<GIDLegacyKeychain>)legacyKeychain
                          userDefaults:(NSUserDefaults *)userDefaults
                                bundle:(id<GIDBundle>)bundle {
   self = [super init];
   if (self) {
     _keychainStore = keychainStore;
+    _legacyKeychain = legacyKeychain;
     _userDefaults = userDefaults;
     _bundle = bundle;
   }
   return self;
+}
+
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                         userDefaults:(NSUserDefaults *)userDefaults
+                               bundle:(id<GIDBundle>)bundle {
+  return [self initWithKeychainStore:keychainStore
+                      legacyKeychain:[[GIDLegacyKeychainImpl alloc] init]
+                        userDefaults:userDefaults
+                              bundle:bundle];
 }
 
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
@@ -155,7 +162,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 - (nullable GTMAuthSession *)extractAuthSessionWithTokenURL:(NSURL *)tokenURL
                                                callbackPath:(NSString *)callbackPath {
   // Retrieve the last used fingerprint.
-  NSString *fingerprint = [GIDAuthStateMigration passwordForService:kFingerprintService];
+  NSString *fingerprint = [_legacyKeychain passwordForService:kFingerprintService];
   if (!fingerprint) {
     return nil;
   }
@@ -197,7 +204,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   NSString *additionalTokenRequestParametersService =
       [NSString stringWithFormat:@"%@~~atrp", fingerprint];
   NSString *additionalTokenRequestParameters =
-      [GIDAuthStateMigration passwordForService:additionalTokenRequestParametersService];
+      [_legacyKeychain passwordForService:additionalTokenRequestParametersService];
 
   // Generate a persistence string that includes additional token request parameters if present.
   NSString *persistenceString = GTMOAuth2PersistenceString;
@@ -218,36 +225,6 @@ static NSString *const kFingerprintService = @"fingerprint";
                                                         error:nil];
 
   return authSession;
-}
-
-// Returns the password string for a given service string stored by an old version of the SDK or
-// |nil| if no matching keychain item was found.
-+ (nullable NSString *)passwordForService:(NSString *)service {
-  if (!service.length) {
-    return nil;
-  }
-  CFDataRef result = NULL;
-  NSDictionary<id, id> *query = @{
-    (id)kSecClass : (id)kSecClassGenericPassword,
-    (id)kSecAttrGeneric : kGenericAttribute,
-    (id)kSecAttrAccount : kOldKeychainAccount,
-    (id)kSecAttrService : service,
-    (id)kSecReturnData : (id)kCFBooleanTrue,
-    (id)kSecMatchLimit : (id)kSecMatchLimitOne,
-  };
-  OSStatus status = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result);
-  NSData *passwordData;
-  if (status == noErr && [(__bridge NSData *)result length] > 0) {
-    passwordData = [(__bridge NSData *)result copy];
-  }
-  if (result != NULL) {
-    CFRelease(result);
-  }
-  if (!passwordData) {
-    return nil;
-  }
-  NSString *password = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
-  return password;
 }
 #endif // TARGET_OS_OSX
 

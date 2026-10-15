@@ -16,6 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/API/GIDLegacyKeychain.h"
 #import "GoogleSignIn/Sources/GIDBundle/API/GIDBundle.h"
 
 @class GTMKeychainStore;
@@ -27,15 +28,21 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GIDAuthStateMigration : NSObject
 
 /// Creates an instance of this migration type with the keychain storage wrapper it will use, the
-/// user defaults in which it records that a migration check has run, and the bundle whose
-/// identifier was used to fingerprint legacy auth state.
+/// legacy keychain it migrates from, the user defaults in which it records that a migration check
+/// has run, and the bundle whose identifier was used to fingerprint legacy auth state.
 ///
 /// `bundle` must report the identifier of the app that wrote the legacy keychain entries, which in
 /// production is `NSBundle.mainBundle`. With any other identifier the fingerprint never matches and
 /// the migration silently finds nothing.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                       legacyKeychain:(id<GIDLegacyKeychain>)legacyKeychain
                          userDefaults:(NSUserDefaults *)userDefaults
                                bundle:(id<GIDBundle>)bundle NS_DESIGNATED_INITIALIZER;
+
+/// Same as above, reading the legacy keychain through `GIDLegacyKeychainImpl`.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                         userDefaults:(NSUserDefaults *)userDefaults
+                               bundle:(id<GIDBundle>)bundle;
 
 /// Same as above, using `[NSUserDefaults standardUserDefaults]` and `[NSBundle mainBundle]`.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
