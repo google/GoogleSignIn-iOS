@@ -18,6 +18,8 @@
 
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 
+#import "GoogleSignIn/Sources/GIDBundle/API/GIDBundle.h"
+
 #if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
 #elif __has_include(<AppKit/AppKit.h>)
@@ -60,6 +62,23 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
                              appCheck:(GIDAppCheck *)appCheck
 API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
+
+/// Private initializer taking a `GTMKeychainStore`, the bundle whose Info.plist supplies the
+/// configuration and URL schemes, and the user defaults that record whether the app has run before.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults;
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+/// Same as above, also taking the `GIDAppCheck` to use.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                             appCheck:(GIDAppCheck *)appCheck
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults
+API_AVAILABLE(ios(14));
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;

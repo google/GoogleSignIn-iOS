@@ -22,6 +22,7 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignInResult.h"
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
+#import "GoogleSignIn/Sources/GIDBundle/Implementation/NSBundle+GIDBundle.h"
 #import "GoogleSignIn/Sources/GIDEMMSupport.h"
 #import "GoogleSignIn/Sources/GIDSignInInternalOptions.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
@@ -193,6 +194,8 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
   GTMKeychainStore *_keychainStore;
+  id<GIDBundle> _bundle;
+  NSUserDefaults *_userDefaults;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // The class used to manage presenting the loading screen for fetching app check tokens.
   GIDTimedLoader *_timedLoader;
@@ -688,18 +691,25 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService {
+  return [self initWithKeychainStore:keychainStore
+           authStateMigrationService:authStateMigrationService
+                              bundle:NSBundle.mainBundle
+                        userDefaults:NSUserDefaults.standardUserDefaults];
+}
+
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults {
   self = [super init];
   if (self) {
+    _bundle = bundle;
+    _userDefaults = userDefaults;
     _keychainStore = keychainStore;
     _claimsInternalOptions = [[GIDClaimsInternalOptions alloc] init];
 
-    // Get the bundle of the current executable.
-    NSBundle *bundle = NSBundle.mainBundle;
-
-    // If we have a bundle, try to set the active configuration from the bundle's Info.plist.
-    if (bundle) {
-      _configuration = [GIDSignIn configurationFromBundle:bundle];
-    }
+    // Try to set the active configuration from the bundle's Info.plist.
+    _configuration = [GIDSignIn configurationFromBundle:_bundle];
 
     // Check to see if the 3P app is being run for the first time after a fresh install.
     BOOL isFreshInstall = [self isFreshInstall];
@@ -728,8 +738,22 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
             authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
                              appCheck:(GIDAppCheck *)appCheck {
+  return [self initWithKeychainStore:keychainStore
+           authStateMigrationService:authStateMigrationService
+                            appCheck:appCheck
+                              bundle:NSBundle.mainBundle
+                        userDefaults:NSUserDefaults.standardUserDefaults];
+}
+
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                             appCheck:(GIDAppCheck *)appCheck
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults {
   self = [self initWithKeychainStore:keychainStore
-           authStateMigrationService:authStateMigrationService];
+           authStateMigrationService:authStateMigrationService
+                              bundle:bundle
+                        userDefaults:userDefaults];
   if (self) {
     _appCheck = appCheck;
     _configureAppCheckCalled = NO;
@@ -764,7 +788,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
     // If the application does not support the required URL schemes tell the developer so.
     GIDSignInCallbackSchemes *schemes =
-        [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+        [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID
+                                                            bundle:_bundle];
     NSArray<NSString *> *unsupportedSchemes = [schemes unsupportedSchemes];
     if (unsupportedSchemes.count != 0) {
       // NOLINTNEXTLINE(google-objc-avoid-throwing-exception)
@@ -957,7 +982,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 - (NSURL *)redirectURLWithOptions:(GIDSignInInternalOptions *)options {
   GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:options.configuration.clientID
+                                                          bundle:_bundle];
   NSURL *redirectURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%@",
                                              [schemes clientIdentifierScheme],
                                              kBrowserCallbackPath]];
@@ -1336,11 +1362,10 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 
 // Checks whether or not this is the first time the app runs.
 - (BOOL)isFreshInstall {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  if ([defaults boolForKey:kAppHasRunBeforeKey]) {
+  if ([_userDefaults boolForKey:kAppHasRunBeforeKey]) {
     return NO;
   }
-  [defaults setBool:YES forKey:kAppHasRunBeforeKey];
+  [_userDefaults setBool:YES forKey:kAppHasRunBeforeKey];
   return YES;
 }
 
@@ -1378,8 +1403,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
             imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
-// Try to retrieve a configuration value from an |NSBundle|'s Info.plist for a given key.
-+ (nullable NSString *)configValueFromBundle:(NSBundle *)bundle forKey:(NSString *)key {
+// Try to retrieve a configuration value from the bundle's Info.plist for a given key.
++ (nullable NSString *)configValueFromBundle:(id<GIDBundle>)bundle forKey:(NSString *)key {
   NSString *value;
   id configValue = [bundle objectForInfoDictionaryKey:key];
   if ([configValue isKindOfClass:[NSString class]]) {
@@ -1388,8 +1413,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   return value;
 }
 
-// Try to generate a |GIDConfiguration| from an |NSBundle|'s Info.plist.
-+ (nullable GIDConfiguration *)configurationFromBundle:(NSBundle *)bundle {
+// Try to generate a |GIDConfiguration| from the bundle's Info.plist.
++ (nullable GIDConfiguration *)configurationFromBundle:(id<GIDBundle>)bundle {
   GIDConfiguration *configuration;
 
   // Retrieve any valid config parameters from the bundle's Info.plist.

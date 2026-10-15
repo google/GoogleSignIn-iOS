@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/GIDBundle/API/GIDBundle.h"
+
 @class GTMKeychainStore;
 @class GTMAuthSession;
 
@@ -24,8 +26,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// A class providing migration support for auth state saved by older versions of the SDK.
 @interface GIDAuthStateMigration : NSObject
 
-/// Creates an instance of this migration type with the keychain storage wrapper it will use.
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore NS_DESIGNATED_INITIALIZER;
+/// Creates an instance of this migration type with the keychain storage wrapper it will use, the
+/// user defaults in which it records that a migration check has run, and the bundle whose
+/// identifier was used to fingerprint legacy auth state.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                         userDefaults:(NSUserDefaults *)userDefaults
+                               bundle:(id<GIDBundle>)bundle NS_DESIGNATED_INITIALIZER;
+
+/// Same as above, using `[NSUserDefaults standardUserDefaults]` and `[NSBundle mainBundle]`.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore;
 
 /// Perform necessary migrations from legacy auth state storage to most recent GTMAppAuth version.
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL

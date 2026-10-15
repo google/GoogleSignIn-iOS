@@ -14,23 +14,25 @@
 
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
+#import "GoogleSignIn/Sources/GIDBundle/Implementation/NSBundle+GIDBundle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInCallbackSchemes {
   NSString *_clientIdentifier;
+  id<GIDBundle> _bundle;
 }
 
 /**
  * @fn relevantURLSchemes
- * @brief Extracts CFBundleURLSchemes from the host app's info.plist.
- * @return An array of lowercase NSString *'s representing the URL schemes the host app has declared
+ * @brief Extracts CFBundleURLSchemes from the injected bundle's Info.plist.
+ * @return An array of lowercase NSString *'s representing the URL schemes the bundle has declared
  *     support for.
  * @remarks Branched from google3/googlemac/iPhone/Firebase/Source/GGLBundleUtil.m
  */
-+ (NSArray *)relevantURLSchemes {
+- (NSArray *)relevantURLSchemes {
   NSMutableArray *result = [NSMutableArray array];
-  NSBundle *bundle = [NSBundle mainBundle];
-  NSArray *urlTypes = [bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+  NSArray *urlTypes = [_bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
   for (NSDictionary *urlType in urlTypes) {
     NSArray *urlTypeSchemes = urlType[@"CFBundleURLSchemes"];
     for (NSString *urlTypeScheme in urlTypeSchemes) {
@@ -40,12 +42,18 @@ NS_ASSUME_NONNULL_BEGIN
   return result;
 }
 
-- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier {
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier
+                                  bundle:(id<GIDBundle>)bundle {
   self = [super init];
   if (self) {
     _clientIdentifier = [clientIdentifier copy];
+    _bundle = bundle;
   }
   return self;
+}
+
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier {
+  return [self initWithClientIdentifier:clientIdentifier bundle:[NSBundle mainBundle]];
 }
 
 - (NSString *)clientIdentifierScheme {
@@ -66,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSMutableArray *)unsupportedSchemes {
   NSMutableArray *unsupportedSchemes = [NSMutableArray arrayWithArray:[self allSchemes]];
-  NSArray *supportedSchemes = [[self class] relevantURLSchemes];
+  NSArray *supportedSchemes = [self relevantURLSchemes];
   [unsupportedSchemes removeObjectsInArray:supportedSchemes];
   return unsupportedSchemes;
 }

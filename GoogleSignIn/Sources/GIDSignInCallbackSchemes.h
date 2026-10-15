@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GoogleSignIn/Sources/GIDBundle/API/GIDBundle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 // A utility class for dealing with callback schemes.
@@ -24,8 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
 // Please call the designated initializer.
 - (instancetype)init NS_UNAVAILABLE;
 
-// The designated initializer.
-- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier NS_DESIGNATED_INITIALIZER;
+// Creates an instance that validates the host app's URL schemes against `bundle`'s Info.plist.
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier
+                                  bundle:(id<GIDBundle>)bundle NS_DESIGNATED_INITIALIZER;
+
+// Same as above, using `[NSBundle mainBundle]`.
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier;
 
 // The canonical client identifier callback scheme. Requires clientId to be set on GIDSignIn.
 - (NSString *)clientIdentifierScheme;

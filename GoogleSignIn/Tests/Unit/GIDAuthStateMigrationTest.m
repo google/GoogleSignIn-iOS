@@ -291,7 +291,7 @@ NS_ASSUME_NONNULL_BEGIN
   [[[_mockNSBundle expect] andReturn:kBundleID] bundleIdentifier];
   [[[_mockGIDSignInCallbackSchemes expect] andReturn:_mockGIDSignInCallbackSchemes] alloc];
   (void)[[[_mockGIDSignInCallbackSchemes expect] andReturn:_mockGIDSignInCallbackSchemes]
-      initWithClientIdentifier:kClientID];
+      initWithClientIdentifier:kClientID bundle:OCMOCK_ANY];
   [[[_mockGIDSignInCallbackSchemes expect] andReturn:kDotReversedClientID] clientIdentifierScheme];
   [[[_mockGIDAuthStateMigration expect] andReturn:kAdditionalTokenRequestParameters]
       passwordForService:[self additionalTokenRequestParametersKeyFromFingerprint:fingerprint]];

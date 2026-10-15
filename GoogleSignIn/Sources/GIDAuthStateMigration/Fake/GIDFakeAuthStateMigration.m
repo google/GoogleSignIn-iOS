@@ -22,11 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @synthesize migrationInvokedCallback = _migrationInvokedCallback;
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
-  self = [super initWithKeychainStore:keychainStore];
-  return self;
-}
-
 - (void)migrateIfNeededWithTokenURL:(NSURL *)tokenURL
                        callbackPath:(NSString *)callbackPath
                      isFreshInstall:(BOOL)isFreshInstall {

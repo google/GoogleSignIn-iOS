@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
+
+#import "GoogleSignIn/Sources/GIDBundle/Implementation/NSBundle+GIDBundle.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
 @import GTMAppAuth;
@@ -47,14 +49,27 @@ static NSString *const kFingerprintService = @"fingerprint";
 
 @end
 
-@implementation GIDAuthStateMigration
+@implementation GIDAuthStateMigration {
+  NSUserDefaults *_userDefaults;
+  id<GIDBundle> _bundle;
+}
 
-- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+                         userDefaults:(NSUserDefaults *)userDefaults
+                               bundle:(id<GIDBundle>)bundle {
   self = [super init];
   if (self) {
     _keychainStore = keychainStore;
+    _userDefaults = userDefaults;
+    _bundle = bundle;
   }
   return self;
+}
+
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore {
+  return [self initWithKeychainStore:keychainStore
+                        userDefaults:[NSUserDefaults standardUserDefaults]
+                              bundle:[NSBundle mainBundle]];
 }
 
 - (instancetype)init {
@@ -68,7 +83,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   // If this is a fresh install, take no action and mark the migration checks as having been
   // performed.
   if (isFreshInstall) {
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* defaults = _userDefaults;
 #if TARGET_OS_OSX
     [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
 #elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -89,7 +104,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
 - (void)performDataProtectedMigrationIfNeeded {
   // See if we've performed the migration check previously.
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSUserDefaults* defaults = _userDefaults;
   if ([defaults boolForKey:kDataProtectedMigrationCheckPerformedKey]) {
     return;
   }
@@ -117,7 +132,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 - (void)performGIDMigrationIfNeededWithTokenURL:(NSURL *)tokenURL
                                    callbackPath:(NSString *)callbackPath {
   // See if we've performed the migration check previously.
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSUserDefaults* defaults = _userDefaults;
   if ([defaults boolForKey:kGTMAppAuthMigrationCheckPerformedKey]) {
     return;
   }
@@ -155,7 +170,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   }
 
   // Parse the fingerprint.
-  NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+  NSString *bundleID = _bundle.bundleIdentifier;
   NSString *pattern =
       [NSString stringWithFormat:@"^%@-(.+)-(?:email|profile|https:\\/\\/).*$", bundleID];
   NSError *error;
@@ -174,8 +189,9 @@ static NSString *const kFingerprintService = @"fingerprint";
   NSString *clientID = [fingerprint substringWithRange:[matches[0] rangeAtIndex:1]];
 
   // Generate the redirect URI from the extracted client ID.
-  NSString *scheme =
-      [[[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:clientID] clientIdentifierScheme];
+  NSString *scheme = [[[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:clientID
+                                                                          bundle:_bundle]
+      clientIdentifierScheme];
   NSString *redirectURI = [NSString stringWithFormat:@"%@:%@", scheme, callbackPath];
 
   // Retrieve the additional token request parameters value.
