@@ -22,8 +22,12 @@
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDToken.h"
 
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Fake/GIDFakeAuthStateMigration.h"
 #import "GoogleSignIn/Sources/GIDGoogleUser_Private.h"
 #import "GoogleSignIn/Sources/GIDSignInPreferences.h"
+#import "GoogleSignIn/Sources/GIDSignIn_Private.h"
+#import "GoogleSignIn/Tests/Unit/GIDFakeFetcherService.h"
+#import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
 #import "GoogleSignIn/Tests/Unit/GIDGoogleUser+Testing.h"
 #import "GoogleSignIn/Tests/Unit/GIDProfileData+Testing.h"
 #import "GoogleSignIn/Tests/Unit/OIDAuthState+Testing.h"
@@ -37,7 +41,7 @@
 @import AppAuth;
 @import AppAuthTestHelpers;
 @import GTMAppAuth;
-@import OCMock;
+@import GTMAppAuthTestHelpers;
 #else
 #import <AppAuth/OIDAuthState.h>
 #import <AppAuth/OIDAuthorizationRequest.h>
@@ -48,7 +52,6 @@
 #import <AppAuth/OIDIDToken.h>
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
-#import <OCMock/OCMock.h>
 #endif
 
 // Observer that runs `onChange` and `onChangeWithDictionary` whenever an observed key path changes.
@@ -84,6 +87,7 @@ static NSTimeInterval const kIDTokenExpiresIn = 100;
 static NSTimeInterval const kNewIDTokenExpiresIn = 200;
 
 static NSString *const kNewScope = @"newScope";
+static NSString *const kUserDefaultsSuiteName = @"GIDGoogleUserTestSuiteName";
 
 @interface GIDGoogleUserTest : XCTestCase
 @end
@@ -98,6 +102,8 @@ static NSString *const kNewScope = @"newScope";
 }
 
 - (void)tearDown {
+  [[[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName]
+      removePersistentDomainForName:kUserDefaultsSuiteName];
   [GIDSignInPreferences resetWrapperIdentifier];
 }
 
@@ -891,47 +897,34 @@ static NSString *const kNewScope = @"newScope";
 # pragma mark - Test `addScopes:`
 
 - (void)testAddScopes_success {
-  id signIn = OCMClassMock([GIDSignIn class]);
-  OCMStub([signIn sharedInstance]).andReturn(signIn);
-  [[signIn expect] addScopes:OCMOCK_ANY
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-      presentingViewController:OCMOCK_ANY
-#elif TARGET_OS_OSX
-              presentingWindow:OCMOCK_ANY
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-                    completion:OCMOCK_ANY];
-  
-  GIDGoogleUser *currentUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
-                                                       idTokenExpiresIn:kIDTokenExpiresIn];
-  
-  OCMStub([signIn currentUser]).andReturn(currentUser);
-  
-  [currentUser addScopes:@[kNewScope]
+  GIDSignIn *signIn = [self signInWithFakes];
+  GIDGoogleUser *user = [self googleUserOwnedBySignIn:signIn];
+  signIn.currentUser = user;
+
+  [user addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       presentingViewController:[[UIViewController alloc] init]
 #elif TARGET_OS_OSX
               presentingWindow:[[NSWindow alloc] init]
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
                     completion:nil];
-  
-  [signIn verify];
+
+  XCTAssertNotNil(_authorizationService.lastAuthorizationRequest);
+  NSSet<NSString *> *requestedScopes = [NSSet setWithArray:
+      [_authorizationService.lastAuthorizationRequest.scope componentsSeparatedByString:@" "]];
+  NSSet<NSString *> *expectedScopes =
+      [NSSet setWithObjects:kNewScope, OIDAuthorizationRequestTestingScope2, nil];
+  XCTAssertEqualObjects(requestedScopes, expectedScopes);
 }
 
 - (void)testAddScopes_failure_addScopesToPreviousUser {
-  id signIn = OCMClassMock([GIDSignIn class]);
-  OCMStub([signIn sharedInstance]).andReturn(signIn);
+  GIDSignIn *signIn = [self signInWithFakes];
+  signIn.currentUser = [self googleUserOwnedBySignIn:signIn];
+  GIDGoogleUser *previousUser = [self googleUserOwnedBySignIn:signIn];
 
-  GIDGoogleUser *currentUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
-                                                       idTokenExpiresIn:kIDTokenExpiresIn];
-  
-  OCMStub([signIn currentUser]).andReturn(currentUser);
-  
-  GIDGoogleUser *previousUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
-                                                        idTokenExpiresIn:kNewIDTokenExpiresIn];
-  
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Completion is called."];
-  
+
   [previousUser addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       presentingViewController:[[UIViewController alloc] init]
@@ -943,23 +936,19 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNil(signInResult);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
-  
+
   [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertNil(_authorizationService.lastAuthorizationRequest);
 }
 
 - (void)testAddScopes_failure_addScopesToPreviousUser_currentUserIsNull {
-  id signIn = OCMClassMock([GIDSignIn class]);
-  OCMStub([signIn sharedInstance]).andReturn(signIn);
+  GIDSignIn *signIn = [self signInWithFakes];
+  signIn.currentUser = nil;
+  GIDGoogleUser *previousUser = [self googleUserOwnedBySignIn:signIn];
 
-  GIDGoogleUser *currentUser = nil;
-  OCMStub([signIn currentUser]).andReturn(currentUser);
-  
-  GIDGoogleUser *previousUser = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
-                                                        idTokenExpiresIn:kNewIDTokenExpiresIn];
-  
   XCTestExpectation *expectation =
       [self expectationWithDescription:@"Completion is called."];
-  
+
   [previousUser addScopes:@[kNewScope]
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
       presentingViewController:[[UIViewController alloc] init]
@@ -971,11 +960,36 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNil(signInResult);
     XCTAssertEqual(error.code, kGIDSignInErrorCodeMismatchWithCurrentUser);
   }];
-  
+
   [self waitForExpectationsWithTimeout:1 handler:nil];
+  XCTAssertNil(_authorizationService.lastAuthorizationRequest);
 }
 
 #pragma mark - Helpers
+
+- (GIDSignIn *)signInWithFakes {
+  GIDFakeMainBundle *fakeMainBundle =
+      [[GIDFakeMainBundle alloc] initWithClientID:OIDAuthorizationRequestTestingClientID];
+  [fakeMainBundle fakeAllSchemesSupported];
+
+  NSUserDefaults *userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
+  [userDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
+  [userDefaults setBool:YES forKey:kAppHasRunBeforeKey];
+
+  return [[GIDSignIn alloc] initWithKeychainStore:[[GTMAuthSessionStoreFake alloc] init]
+                        authStateMigrationService:[[GIDFakeAuthStateMigration alloc] init]
+                                           bundle:fakeMainBundle
+                                     userDefaults:userDefaults
+                             authorizationService:_authorizationService
+                                   fetcherService:[[GIDFakeFetcherService alloc] init]];
+}
+
+- (GIDGoogleUser *)googleUserOwnedBySignIn:(GIDSignIn *)signIn {
+  return [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
+                                      profileData:nil
+                             authorizationService:_authorizationService
+                                           signIn:signIn];
+}
 
 // Returns a GIDGoogleUser with different tokens expiresIn time. The token strings are constants.
 - (GIDGoogleUser *)googleUserWithAccessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
