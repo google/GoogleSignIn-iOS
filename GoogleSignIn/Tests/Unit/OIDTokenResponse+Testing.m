@@ -42,11 +42,13 @@ NSString *const kAuthTime = @"1757753868";
 NSTimeInterval const kIDTokenExpires = 1000;
 NSTimeInterval const kIssuedAt = 0;
 
+NSString *const kFatEmailKey = @"email";
 NSString *const kFatNameKey = @"name";
 NSString *const kFatGivenNameKey = @"given_name";
 NSString *const kFatFamilyNameKey = @"family_name";
 NSString *const kFatPictureURLKey = @"picture";
 
+NSString * const kFatEmail = @"fake.username@example.com";
 NSString * const kFatName = @"fake username";
 NSString * const kFatGivenName = @"fake";
 NSString * const kFatFamilyName = @"username";
@@ -156,6 +158,7 @@ NSString * const kFatPictureURL = @"fake_user_picture_url";
   }];
   if (fat) {
     [payloadContents addEntriesFromDictionary:@{
+      kFatEmailKey : kFatEmail,
       kFatNameKey : kFatName,
       kFatGivenNameKey : kFatGivenName,
       kFatFamilyNameKey : kFatFamilyName,

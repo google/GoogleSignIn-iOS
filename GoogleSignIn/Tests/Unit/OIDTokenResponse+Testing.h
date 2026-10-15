@@ -37,11 +37,13 @@ extern NSString *const kAuthTime;
 extern NSTimeInterval const kIDTokenExpires;
 extern NSTimeInterval const kIssuedAt;
 
+extern NSString *const kFatEmailKey;
 extern NSString *const kFatNameKey;
 extern NSString *const kFatGivenNameKey;
 extern NSString *const kFatFamilyNameKey;
 extern NSString *const kFatPictureURLKey;
 
+extern NSString * const kFatEmail;
 extern NSString * const kFatName;
 extern NSString * const kFatGivenName;
 extern NSString * const kFatFamilyName;
