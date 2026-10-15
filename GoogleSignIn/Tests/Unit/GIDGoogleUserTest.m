@@ -35,8 +35,7 @@
 
 #ifdef SWIFT_PACKAGE
 @import AppAuth;
-@import GoogleUtilities_MethodSwizzler;
-@import GoogleUtilities_SwizzlerTestHelpers;
+@import AppAuthTestHelpers;
 @import GTMAppAuth;
 @import OCMock;
 #else
@@ -45,11 +44,10 @@
 #import <AppAuth/OIDAuthorizationResponse.h>
 #import <AppAuth/OIDAuthorizationService.h>
 #import <AppAuth/OIDError.h>
+#import <AppAuth/OIDFakeAuthorizationService.h>
 #import <AppAuth/OIDIDToken.h>
 #import <AppAuth/OIDTokenRequest.h>
 #import <AppAuth/OIDTokenResponse.h>
-#import <GoogleUtilities/GULSwizzler.h>
-#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
 #import <OCMock/OCMock.h>
 #endif
 
@@ -91,34 +89,15 @@ static NSString *const kNewScope = @"newScope";
 @end
 
 @implementation GIDGoogleUserTest {
-  // The saved token fetch handler.
-  OIDTokenCallback _tokenFetchHandler;
-  // The saved token request.
-  OIDTokenRequest *_savedTokenRequest;
+  // Stands in for AppAuth; records the token requests the user makes.
+  OIDFakeAuthorizationService *_authorizationService;
 }
 
 - (void)setUp {
-  _tokenFetchHandler = nil;
-  _savedTokenRequest = nil;
-  
-  // We need to use swizzle here because OCMock can not stub class method with arguments.
-  [GULSwizzler swizzleClass:[OIDAuthorizationService class]
-                    selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
-            isClassSelector:YES
-                  withBlock:^(id sender,
-                              OIDTokenRequest *request,
-                              OIDAuthorizationResponse *authorizationResponse,
-                              OIDTokenCallback callback) {
-    // Save the OIDTokenRequest and OIDTokenCallback.
-    self->_savedTokenRequest = request;
-    self->_tokenFetchHandler = [callback copy];
-  }];
+  _authorizationService = [[OIDFakeAuthorizationService alloc] init];
 }
 
 - (void)tearDown {
-  [GULSwizzler unswizzleClass:[OIDAuthorizationService class]
-                     selector:@selector(performTokenRequest:originalAuthorizationResponse:callback:)
-              isClassSelector:YES];
   [GIDSignInPreferences resetWrapperIdentifier];
 }
 
@@ -596,7 +575,8 @@ static NSString *const kNewScope = @"newScope";
                                                                 refreshToken:kRefreshToken
                                                                 tokenRequest:nil];
   
-  _tokenFetchHandler(fakeResponse, nil);
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -623,8 +603,8 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNil(user.idToken);
   }];
   
-  
-  _tokenFetchHandler(fakeResponse, nil);
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -652,8 +632,8 @@ static NSString *const kNewScope = @"newScope";
     [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
   }];
   
-  
-  _tokenFetchHandler(fakeResponse, nil);
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -683,8 +663,8 @@ static NSString *const kNewScope = @"newScope";
     [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
   }];
   
-  
-  _tokenFetchHandler(fakeResponse, nil);
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -708,6 +688,7 @@ static NSString *const kNewScope = @"newScope";
   
   [self waitForExpectationsWithTimeout:1 handler:nil];
   
+  XCTAssertEqual(_authorizationService.tokenRequestCount, 0u);
   XCTAssertEqualObjects(user.accessToken.tokenString, accessTokenStringBeforeRefresh);
   [self verifyUser:user accessTokenExpiresIn:expiresIn];
   XCTAssertEqualObjects(user.idToken.tokenString, idTokenStringBeforeRefresh);
@@ -733,7 +714,8 @@ static NSString *const kNewScope = @"newScope";
     XCTAssertNil(user);
   }];
   
-  _tokenFetchHandler(nil, [self fakeError]);
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(nil, [self fakeError]);
   [self waitForExpectationsWithTimeout:1 handler:nil];
   
   XCTAssertEqualObjects(user.accessToken.tokenString, accessTokenStringBeforeRefresh);
@@ -780,8 +762,9 @@ static NSString *const kNewScope = @"newScope";
     [self verifyUser:user idTokenExpiresIn:kNewIDTokenExpiresIn];
   }];
   
-  
-  _tokenFetchHandler(fakeResponse, nil);
+  XCTAssertEqual(_authorizationService.tokenRequestCount, 1u);
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -819,15 +802,18 @@ static NSString *const kNewScope = @"newScope";
     [expectation fulfill];
   }];
 
-  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[@"gidwrapper"], @"firebase");
+  XCTAssertEqualObjects(_authorizationService.lastTokenRequest.additionalParameters[@"gidwrapper"],
+                        @"firebase");
 
   // Clean up the handler by providing a fake response to fulfill any internal state.
-  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
-                                                                 accessToken:kNewAccessToken
-                                                                   expiresIn:@(kAccessTokenExpiresIn)
-                                                                refreshToken:kRefreshToken
-                                                                tokenRequest:_savedTokenRequest];
-  _tokenFetchHandler(fakeResponse, nil);
+  OIDTokenResponse *fakeResponse =
+      [OIDTokenResponse testInstanceWithIDToken:nil
+                                    accessToken:kNewAccessToken
+                                      expiresIn:@(kAccessTokenExpiresIn)
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:_authorizationService.lastTokenRequest];
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -846,15 +832,17 @@ static NSString *const kNewScope = @"newScope";
     [expectation fulfill];
   }];
 
-  XCTAssertNil(_savedTokenRequest.additionalParameters[@"gidwrapper"]);
+  XCTAssertNil(_authorizationService.lastTokenRequest.additionalParameters[@"gidwrapper"]);
 
   // Clean up the handler by providing a fake response.
-  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
-                                                                 accessToken:kNewAccessToken
-                                                                   expiresIn:@(kAccessTokenExpiresIn)
-                                                                refreshToken:kRefreshToken
-                                                                tokenRequest:_savedTokenRequest];
-  _tokenFetchHandler(fakeResponse, nil);
+  OIDTokenResponse *fakeResponse =
+      [OIDTokenResponse testInstanceWithIDToken:nil
+                                    accessToken:kNewAccessToken
+                                      expiresIn:@(kAccessTokenExpiresIn)
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:_authorizationService.lastTokenRequest];
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -878,21 +866,25 @@ static NSString *const kNewScope = @"newScope";
   }];
 
   // Assert the captured token request additionalParameters does NOT contain key @"gidwrapper".
-  XCTAssertNil(_savedTokenRequest.additionalParameters[@"gidwrapper"]);
+  XCTAssertNil(_authorizationService.lastTokenRequest.additionalParameters[@"gidwrapper"]);
 
   // Assert it DOES contain kSDKVersionLoggingParameter and kEnvironmentLoggingParameter.
-  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[kSDKVersionLoggingParameter],
-                        [GIDSignInPreferences sdkVersion]);
-  XCTAssertEqualObjects(_savedTokenRequest.additionalParameters[kEnvironmentLoggingParameter],
-                        [GIDSignInPreferences environment]);
+  XCTAssertEqualObjects(
+      _authorizationService.lastTokenRequest.additionalParameters[kSDKVersionLoggingParameter],
+      [GIDSignInPreferences sdkVersion]);
+  XCTAssertEqualObjects(
+      _authorizationService.lastTokenRequest.additionalParameters[kEnvironmentLoggingParameter],
+      [GIDSignInPreferences environment]);
 
   // Clean up the handler by providing a fake response.
-  OIDTokenResponse *fakeResponse = [OIDTokenResponse testInstanceWithIDToken:nil
-                                                                 accessToken:kNewAccessToken
-                                                                   expiresIn:@(kAccessTokenExpiresIn)
-                                                                refreshToken:kRefreshToken
-                                                                tokenRequest:_savedTokenRequest];
-  _tokenFetchHandler(fakeResponse, nil);
+  OIDTokenResponse *fakeResponse =
+      [OIDTokenResponse testInstanceWithIDToken:nil
+                                    accessToken:kNewAccessToken
+                                      expiresIn:@(kAccessTokenExpiresIn)
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:_authorizationService.lastTokenRequest];
+  XCTAssertNotNil(_authorizationService.lastTokenCallback);
+  _authorizationService.lastTokenCallback(fakeResponse, nil);
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
@@ -994,7 +986,9 @@ static NSString *const kNewScope = @"newScope";
                                              accessTokenExpiresIn:accessTokenExpiresIn
                                                      refreshToken:kRefreshToken];
   
-  return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  return [[GIDGoogleUser alloc] initWithAuthState:authState
+                                      profileData:nil
+                             authorizationService:_authorizationService];
 }
 
 - (GIDGoogleUser *)googleUserWithAccessTokenExpiresIn:(NSTimeInterval)accessTokenExpiresIn
@@ -1008,7 +1002,9 @@ static NSString *const kNewScope = @"newScope";
                                                      refreshToken:kRefreshToken
                                             refreshTokenExpiresIn:refreshTokenExpiresIn];
   
-  return [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+  return [[GIDGoogleUser alloc] initWithAuthState:authState
+                                      profileData:nil
+                             authorizationService:_authorizationService];
 }
 
 - (NSString *)idTokenWithExpiresIn:(NSTimeInterval)expiresIn {

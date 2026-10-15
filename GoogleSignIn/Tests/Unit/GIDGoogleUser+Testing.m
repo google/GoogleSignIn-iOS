@@ -63,7 +63,9 @@ static NSString *const kAuthentication = @"authentication";
 
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(GIDProfileData *)profileData {
-  self = [super initWithAuthState:authState profileData:profileData];
+  self = [super initWithAuthState:authState
+                      profileData:profileData
+             authorizationService:[[OIDAuthorizationService alloc] init]];
   if (self) {
     _authentication = [[GIDAuthentication alloc] initWithAuthState:authState];
     _profile = profileData;
