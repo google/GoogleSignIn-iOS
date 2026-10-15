@@ -19,6 +19,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "GoogleSignIn/Sources/GIDApplication/Implementation/GIDSharedApplication.h"
+#import "GoogleSignIn/Sources/GIDEMMAlertPresenter/Implementation/GIDEMMAlertWindowPresenter.h"
 #import "GoogleSignIn/Sources/GIDSignInStrings.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,6 +45,8 @@ typedef enum {
 } ErrorCode;
 
 @implementation GIDEMMErrorHandler {
+  id<GIDApplication> _application;
+  id<GIDEMMAlertPresenter> _alertPresenter;
   // Whether or not a dialog is pending user interaction.
   BOOL _pendingDialog;
 }
@@ -54,6 +58,21 @@ typedef enum {
     sharedInstance = [[self alloc] init];
   });
   return sharedInstance;
+}
+
+- (instancetype)initWithApplication:(id<GIDApplication>)application
+                     alertPresenter:(id<GIDEMMAlertPresenter>)alertPresenter {
+  self = [super init];
+  if (self) {
+    _application = application;
+    _alertPresenter = alertPresenter;
+  }
+  return self;
+}
+
+- (instancetype)init {
+  return [self initWithApplication:[[GIDSharedApplication alloc] init]
+                    alertPresenter:[[GIDEMMAlertWindowPresenter alloc] init]];
 }
 
 - (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
@@ -119,26 +138,8 @@ typedef enum {
       completion(YES);
       return;
     }
-    UIWindow *alertWindow;
-    if (@available(iOS 13, *)) {
-      if (keyWindow.windowScene) {
-        alertWindow = [[UIWindow alloc] initWithWindowScene:keyWindow.windowScene];
-      }
-    }
-    if (!alertWindow) {
-      CGRect keyWindowBounds = CGRectIsEmpty(keyWindow.bounds) ?
-        keyWindow.bounds : [UIScreen mainScreen].bounds;
-      alertWindow = [[UIWindow alloc] initWithFrame:keyWindowBounds];
-    }
-    alertWindow.backgroundColor = [UIColor clearColor];
-    alertWindow.rootViewController = [[UIViewController alloc] init];
-    alertWindow.rootViewController.view.backgroundColor = [UIColor clearColor];
-    alertWindow.windowLevel = UIWindowLevelAlert;
-    [alertWindow makeKeyAndVisible];
     void (^finish)(void) = ^{
-      alertWindow.hidden = YES;
-      alertWindow.rootViewController = nil;
-      [keyWindow makeKeyAndVisible];
+      [self->_alertPresenter dismissAlert];
       clearPendingDialog();
       completion(YES);
     };
@@ -157,7 +158,7 @@ typedef enum {
         break;
     }
     if (alert) {
-      [alertWindow.rootViewController presentViewController:alert animated:YES completion:nil];
+      [self->_alertPresenter presentAlert:alert overKeyWindow:keyWindow];
     } else {
       // Should not happen but just in case.
       finish();
@@ -167,32 +168,7 @@ typedef enum {
 
 // This method is exposed to the unit test.
 - (nullable UIWindow *)keyWindow {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
-  if (@available(iOS 15, *)) {
-    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
-      if ([scene isKindOfClass:[UIWindowScene class]] &&
-          scene.activationState == UISceneActivationStateForegroundActive) {
-        return ((UIWindowScene *)scene).keyWindow;
-      }
-    }
-  } else
-#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
-  {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-    if (@available(iOS 13, *)) {
-      for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        if (window.isKeyWindow) {
-          return window;
-        }
-      }
-    } else {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-      return UIApplication.sharedApplication.keyWindow;
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-    }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-  }
-  return nil;
+  return [_application keyWindow];
 }
 
 #pragma mark - Alerts
@@ -286,7 +262,7 @@ typedef enum {
 }
 
 - (void)openURL:(NSURL *)url {
-  [UIApplication.sharedApplication openURL:url options:@{} completionHandler:nil];
+  [_application openURL:url];
 }
 
 #pragma mark - Localization
