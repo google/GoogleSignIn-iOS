@@ -289,6 +289,31 @@ static NSString *const kNewScope = @"newScope";
   XCTAssertEqualObjects(user.accessToken.tokenString, kNewAccessToken);
 }
 
+// The `scope` parameter is space-delimited (RFC 6749 section 3.3); surrounding whitespace and runs
+// of spaces must not produce empty scopes.
+- (void)testGrantedScopes_parsesSpaceDelimitedScopeString {
+  NSString *scopeString = [NSString stringWithFormat:@"  %@   %@ ",
+                                                     OIDAuthorizationRequestTestingScope,
+                                                     OIDAuthorizationRequestTestingScope2];
+  OIDAuthState *authState = [self authStateWithScopeString:scopeString
+                                               accessToken:kAccessToken];
+
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+
+  NSArray<NSString *> *expectedScopes =
+      @[ OIDAuthorizationRequestTestingScope, OIDAuthorizationRequestTestingScope2 ];
+  XCTAssertEqualObjects(user.grantedScopes, expectedScopes);
+}
+
+// A token response without a `scope` parameter (RFC 6749 section 5.1) yields nil granted scopes.
+- (void)testGrantedScopes_isNilWithoutScopeParameter {
+  OIDAuthState *authState = [self authStateWithScopeString:nil accessToken:kAccessToken];
+
+  GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState profileData:nil];
+
+  XCTAssertNil(user.grantedScopes);
+}
+
 - (void)testConfiguration_isFixedAfterTokenUpdate {
   // The configuration is computed once at init and is fixed for the user's lifetime.
   GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:kAccessTokenExpiresIn
@@ -1101,14 +1126,24 @@ static NSString *const kNewScope = @"newScope";
 // always grant OIDAuthorizationRequestTestingScope2, so this builds the response directly.
 - (OIDAuthState *)authStateWithGrantedScopes:(NSArray<NSString *> *)scopes
                                  accessToken:(NSString *)accessToken {
-  NSDictionary<NSString *, NSObject<NSCopying> *> *parameters = @{
+  return [self authStateWithScopeString:[OIDScopeUtilities scopesWithArray:scopes]
+                            accessToken:accessToken];
+}
+
+// Returns an auth state whose token response carries `scopeString` verbatim as its `scope`
+// parameter, or no `scope` parameter at all when `scopeString` is nil.
+- (OIDAuthState *)authStateWithScopeString:(nullable NSString *)scopeString
+                               accessToken:(NSString *)accessToken {
+  NSMutableDictionary<NSString *, NSObject<NSCopying> *> *parameters = [@{
     @"access_token" : accessToken,
     @"expires_in" : @(kAccessTokenExpiresIn),
     @"token_type" : @"example_token_type",
     @"refresh_token" : kNewRefreshToken,
-    @"scope" : [OIDScopeUtilities scopesWithArray:scopes],
     @"id_token" : [self idTokenWithExpiresIn:kNewIDTokenExpiresIn],
-  };
+  } mutableCopy];
+  if (scopeString) {
+    parameters[@"scope"] = scopeString;
+  }
   OIDTokenResponse *tokenResponse =
       [[OIDTokenResponse alloc] initWithRequest:[OIDTokenRequest testInstance]
                                      parameters:parameters];

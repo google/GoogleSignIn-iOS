@@ -83,7 +83,10 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 @end
 
-// Parses the `scope` parameter returned by the backend, which is authoritative when present.
+// Parses the `scope` parameter of a token response, which is authoritative when present
+// (https://datatracker.ietf.org/doc/html/rfc6749#section-5.1). Scopes are space-delimited
+// (https://datatracker.ietf.org/doc/html/rfc6749#section-3.3); surrounding whitespace and runs of
+// spaces are tolerated. Returns nil when the response carries no `scope` parameter.
 static NSArray<NSString *> *_Nullable GIDGrantedScopesFromScopeString(
     NSString *_Nullable scopeString) {
   if (!scopeString) {
@@ -116,9 +119,11 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
   // Access to this ivar should be synchronized.
   NSMutableArray<GIDGoogleUserCompletion> *_tokenRefreshHandlerQueue;
 
-  // A pending profile set by -initWithAuthState:profileData: or
-  // -updateWithTokenResponse:authorizationResponse:profileData:, folded into the next snapshot.
-  // Guarded by `@synchronized(self)`.
+  // The profile is not part of the auth state, so a profile supplied to
+  // -initWithAuthState:profileData: or -updateWithTokenResponse:authorizationResponse:profileData:
+  // is parked here and folded into the next snapshot that -updateTokensWithAuthState: builds.
+  // `_hasPendingProfile` distinguishes a supplied nil profile, which replaces the current one,
+  // from no profile having been supplied, which keeps the current one.
   GIDProfileData *_pendingProfile;
   BOOL _hasPendingProfile;
 }
@@ -309,6 +314,8 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
   self = [super init];
   if (self) {
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
+
+    // Park the profile for the first snapshot, built by -updateTokensWithAuthState: below.
     _pendingProfile = profileData;
     _hasPendingProfile = YES;
     
@@ -329,6 +336,8 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
   @synchronized(self) {
+    // Park the profile for the snapshot built when the token response update below calls back
+    // through -didChangeState:.
     _pendingProfile = profileData;
     _hasPendingProfile = YES;
 
@@ -340,15 +349,14 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     [self.authState updateWithAuthorizationResponse:authorizationResponse error:nil];
     self.authState.stateChangeDelegate = self;
     [self.authState updateWithTokenResponse:tokenResponse error:nil];
+    // AppAuth does not call -didChangeState: for a nil token response, so if the profile was not
+    // folded into a snapshot above, build one here.
     if (_hasPendingProfile) {
       [self updateTokensWithAuthState:self.authState];
     }
   }
 }
 
-// KVO observers of the token and profile properties run while `@synchronized(self)` is held;
-// same-thread re-entry is fine because it is recursive, but an observer must not synchronously
-// wait on another thread that is updating the same user.
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
   @synchronized(self) {
     GIDGoogleUserTokens *current = self.tokens;
@@ -418,16 +426,19 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     if ([current.idToken isEqualToToken:idToken]) {
       idToken = current.idToken;
     }
-
-    BOOL grantedScopesChanged = !((!grantedScopes && !current.grantedScopes) ||
-        [grantedScopes isEqualToArray:current.grantedScopes]);
+    if ((!grantedScopes && !current.grantedScopes) ||
+        [grantedScopes isEqualToArray:current.grantedScopes]) {
+      grantedScopes = current.grantedScopes;
+    }
 
     if (!current ||
         accessToken != current.accessToken ||
         refreshToken != current.refreshToken ||
         idToken != current.idToken ||
-        grantedScopesChanged ||
+        grantedScopes != current.grantedScopes ||
         profile != current.profile) {
+      // Replacing `tokens` notifies KVO observers of the derived properties while the lock is
+      // held; see the key-value observing note on GIDGoogleUser in GIDGoogleUser.h.
       self.tokens = [[GIDGoogleUserTokens alloc] initWithAccessToken:accessToken
                                                         refreshToken:refreshToken
                                                              idToken:idToken
