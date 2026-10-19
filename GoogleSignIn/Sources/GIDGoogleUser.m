@@ -427,6 +427,7 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     if ([current.idToken isEqualToToken:idToken]) {
       idToken = current.idToken;
     }
+    // Both nil must be checked explicitly: isEqualToArray: returns NO when either side is nil.
     if ((!grantedScopes && !current.grantedScopes) ||
         [grantedScopes isEqualToArray:current.grantedScopes]) {
       grantedScopes = current.grantedScopes;
