@@ -28,6 +28,30 @@ Google Sign-In depends on `AppAuth`, `GTMAppAuth`, `GTMSessionFetcher`, and `App
 
 You can stay on Google Sign-In 10.1.0 via CocoaPods.
 
+### Building with Xcode 27
+
+Xcode 27 refuses to build any target whose iOS deployment target is below 15.0. Several of Google Sign-In's transitive pods (`AppCheckCore`, `GoogleUtilities`, `RecaptchaInterop`, `PromisesObjC`, and `PromisesSwift`) still declare lower floors in their podspecs, so a project that installs Google Sign-In through CocoaPods and builds under Xcode 26 fails under Xcode 27 with deployment-target errors in the generated Pods project. Those floors belong to the upstream pods, and Google Sign-In cannot raise them from its own podspec.
+
+Until you migrate, add a `post_install` hook to your `Podfile` that raises the generated Pods targets to your app's own minimum. The sample apps in this repository use the same hook.
+
+```ruby
+post_install do |installer|
+  # Xcode 27 refuses to build a target whose deployment target is below iOS 15.0.
+  # Several transitive pods still declare lower floors in their own podspecs, so
+  # raise the generated Pods project targets to match the app's own minimum.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      ios = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if ios && Gem::Version.new(ios) < Gem::Version.new('15.0')
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
+end
+```
+
+Run `pod install` again after adding the hook.
+
 ## Cross-platform wrappers
 
 Flutter's `google_sign_in_ios` plugin already ships a `Package.swift` alongside its podspec. For other wrappers (React Native, Unity, etc.), check the plugin's own documentation for its Swift Package Manager support rather than editing its `Podfile` entries directly.
