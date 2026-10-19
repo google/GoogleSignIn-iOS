@@ -35,7 +35,7 @@
 #import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -421,13 +421,16 @@ static NSString *const kMultipleClaimsJsonString =
   }
 }
 
-- (void)testConfigureFailsNoTokenOrError {
+- (void)testConfigureFailsWithProviderError {
   if (@available(iOS 14, *)) {
     XCTestExpectation *configureFailsExpecation =
     [self expectationWithDescription:@"Configure fails expectation"];
 
+    NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                                 code:kGIDAppCheckProviderFakeError
+                                             userInfo:nil];
     GIDAppCheckProviderFake *fakeProvider =
-        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
     GIDAppCheck *appCheck =
         [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
                                          userDefaults:_testUserDefaults];
@@ -436,10 +439,10 @@ static NSString *const kMultipleClaimsJsonString =
                                        authStateMigrationService:_authStateMigrationService
                                                         appCheck:appCheck];
 
-    // Should fail if missing both token and error
+    // Should fail and stay unprepared when the provider returns an error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
-      XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+      XCTAssertEqualObjects(error, expectedError);
       [configureFailsExpecation fulfill];
     }];
 
@@ -1819,9 +1822,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^completion)(void);
+  __block void (^completion)(BOOL handled);
   NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"EMM Specific Error" };
-  [[[mockEMMErrorHandler expect] andReturnValue:@YES]
+  [[mockEMMErrorHandler expect]
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
 
 
@@ -1837,7 +1840,7 @@ static NSString *const kMultipleClaimsJsonString =
 
   [mockEMMErrorHandler verify];
   [mockEMMErrorHandler stopMocking];
-  completion();
+  completion(YES);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
@@ -1846,6 +1849,78 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
+  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+}
+
+// Verifies that an authorization error the EMM handler declines is reported as unknown.
+- (void)testAuthEndpointEMMError_NotHandled {
+  if (!_isEligibleForEMM) {
+    return;
+  }
+
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^completion)(BOOL handled);
+  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"invalid_request" };
+  [[mockEMMErrorHandler expect]
+      handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  [mockEMMErrorHandler verify];
+  [mockEMMErrorHandler stopMocking];
+  completion(NO);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertNotNil(_authError, @"should have error");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeUnknown);
+  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+}
+
+// Verifies that access_denied is reported as canceled even when the EMM handler claims it.
+- (void)testAuthEndpointEMMError_AccessDeniedTakesPriority {
+  if (!_isEligibleForEMM) {
+    return;
+  }
+
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^completion)(BOOL handled);
+  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"access_denied" };
+  [[mockEMMErrorHandler expect]
+      handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  [mockEMMErrorHandler verify];
+  [mockEMMErrorHandler stopMocking];
+  completion(YES);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
 }
 

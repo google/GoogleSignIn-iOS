@@ -30,7 +30,7 @@
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 #import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/UI/GIDActivityIndicatorViewController.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -984,29 +984,23 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
       [self maybeFetchToken:authFlow];
     } else {
       // There was a failure, convert to appropriate error code.
-      NSString *errorString;
-      GIDSignInErrorCode errorCode = kGIDSignInErrorCodeUnknown;
       NSDictionary<NSString *, NSObject *> *params = authorizationResponse.additionalParameters;
-
+      BOOL deferredToEMMHandler = NO;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
       if (authFlow.emmSupport) {
+        deferredToEMMHandler = YES;
         [authFlow wait];
-        BOOL isEMMError = [[GIDEMMErrorHandler sharedInstance]
-            handleErrorFromResponse:params
-                         completion:^{
-                           [authFlow next];
-                         }];
-        if (isEMMError) {
-          errorCode = kGIDSignInErrorCodeEMM;
-        }
+        [[GIDEMMErrorHandler sharedInstance] handleErrorFromResponse:params
+                                                          completion:^(BOOL handled) {
+          // Set the error before -next, which runs the queued callbacks that read it.
+          authFlow.error = [self authorizationErrorWithParameters:params isEMMError:handled];
+          [authFlow next];
+        }];
       }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-      errorString = (NSString *)params[kOAuth2ErrorKeyName];
-      if ([errorString isEqualToString:kOAuth2AccessDenied]) {
-        errorCode = kGIDSignInErrorCodeCanceled;
+      if (!deferredToEMMHandler) {
+        authFlow.error = [self authorizationErrorWithParameters:params isEMMError:NO];
       }
-
-      authFlow.error = [self errorWithString:errorString code:errorCode];
     }
   } else {
     NSString *errorString = [error localizedDescription];
@@ -1288,6 +1282,18 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 }
 
 #pragma mark - Helpers
+
+// Returns the error for an authorization response that carried no authorization code.
+- (NSError *)authorizationErrorWithParameters:(NSDictionary<NSString *, NSObject *> *)params
+                                   isEMMError:(BOOL)isEMMError {
+  NSString *errorString = (NSString *)params[kOAuth2ErrorKeyName];
+  GIDSignInErrorCode errorCode =
+      isEMMError ? kGIDSignInErrorCodeEMM : kGIDSignInErrorCodeUnknown;
+  if ([errorString isEqualToString:kOAuth2AccessDenied]) {
+    errorCode = kGIDSignInErrorCodeCanceled;
+  }
+  return [self errorWithString:errorString code:errorCode];
+}
 
 - (NSError *)errorWithString:(NSString *)errorString code:(GIDSignInErrorCode)code {
   if (errorString == nil) {
