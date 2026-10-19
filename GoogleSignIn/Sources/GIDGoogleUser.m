@@ -105,13 +105,14 @@ static NSArray<NSString *> *_Nullable GIDGrantedScopesFromScopeString(
 
 // Returns the hosted domain claim of the given ID token, if it has one.
 static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable idTokenString) {
-  if (idTokenString) {
-    OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
-    if (idTokenDecoded && idTokenDecoded.claims[kHostedDomainIDTokenClaimKey]) {
-      return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
-    }
+  if (!idTokenString) {
+    return nil;
   }
-  return nil;
+  OIDIDToken *idTokenDecoded = [[OIDIDToken alloc] initWithIDTokenString:idTokenString];
+  if (!idTokenDecoded) {
+    return nil;
+  }
+  return idTokenDecoded.claims[kHostedDomainIDTokenClaimKey];
 }
 
 @implementation GIDGoogleUser {
