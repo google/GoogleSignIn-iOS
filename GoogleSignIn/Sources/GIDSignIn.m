@@ -721,7 +721,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults
                  authorizationService:(OIDAuthorizationService *)authorizationService
-                       fetcherService:(nullable id<GTMSessionFetcherServiceProtocol>)fetcherService {
+                       fetcherService:
+                           (nullable id<GTMSessionFetcherServiceProtocol>)fetcherService {
   self = [super init];
   if (self) {
     _bundle = bundle;
@@ -788,7 +789,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
                                bundle:(id<GIDBundle>)bundle
                          userDefaults:(NSUserDefaults *)userDefaults
                  authorizationService:(OIDAuthorizationService *)authorizationService
-                       fetcherService:(nullable id<GTMSessionFetcherServiceProtocol>)fetcherService {
+                       fetcherService:
+                           (nullable id<GTMSessionFetcherServiceProtocol>)fetcherService {
   self = [self initWithKeychainStore:keychainStore
            authStateMigrationService:authStateMigrationService
                               bundle:bundle
@@ -892,6 +894,12 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   [self authorizationRequestWithOptions:options
                              completion:^(OIDAuthorizationRequest * _Nullable request,
                                           NSError * _Nullable error) {
+    OIDAuthorizationCallback callback =
+        ^(OIDAuthorizationResponse *_Nullable authorizationResponse, NSError *_Nullable error) {
+      [self processAuthorizationResponse:authorizationResponse
+                                   error:error
+                              emmSupport:emmSupport];
+    };
     self->_currentAuthorizationFlow =
         [self->_authorizationService presentAuthorizationRequest:request
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -899,13 +907,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
 #elif TARGET_OS_OSX
                                                 presentingWindow:options.presentingWindow
 #endif // TARGET_OS_OSX
-                                                        callback:
-                                                          ^(OIDAuthorizationResponse *_Nullable authorizationResponse,
-                                                            NSError *_Nullable error) {
-      [self processAuthorizationResponse:authorizationResponse
-                                   error:error
-                              emmSupport:emmSupport];
-    }];
+                                                        callback:callback];
   }];
 }
 

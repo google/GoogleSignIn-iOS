@@ -79,6 +79,7 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
 
 @implementation GIDGoogleUser {
   GIDConfiguration *_cachedConfiguration;
+  // AppAuth service that performs the token refresh requests.
   OIDAuthorizationService *_authorizationService;
   
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.

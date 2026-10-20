@@ -62,21 +62,23 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 #pragma clang diagnostic pop
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-// A string indicating support for Enterprise Mobility Management.
+/// A string indicating support for Enterprise Mobility Management.
 @property(nonatomic, readonly, nullable) NSString *emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-// Create a object with an auth state, profile data, and the service used to refresh tokens.
+/// Creates an instance with an auth state, profile data, and the service used to refresh
+/// tokens. The designated initializer.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData
              authorizationService:(OIDAuthorizationService *)authorizationService
     NS_DESIGNATED_INITIALIZER;
 
-// Same as above, using a new `OIDAuthorizationService`.
+/// Creates an instance with an auth state and profile data, using a new
+/// `OIDAuthorizationService` to refresh tokens.
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData;
 
-// Update the auth state and profile data.
+/// Updates the auth state and profile data.
 - (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData;
