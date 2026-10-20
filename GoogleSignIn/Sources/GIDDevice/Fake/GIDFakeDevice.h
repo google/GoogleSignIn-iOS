@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithSystemName:(NSString *)systemName
                      systemVersion:(NSString *)systemVersion NS_DESIGNATED_INITIALIZER;
 
+/// Unavailable. Use `-initWithSystemName:systemVersion:`.
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

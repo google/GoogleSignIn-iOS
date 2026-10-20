@@ -42,14 +42,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion;
 
-/// Gets a new set of URL parameters that contains updated EMM-related URL parameters if needed.
+/// Returns a new set of URL parameters that contains updated EMM-related URL parameters if needed.
 - (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
-    (NSDictionary *)parameters;
+    (NSDictionary<NSString *, id> *)parameters;
 
-/// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
+/// Returns a new set of URL parameters that also contains EMM-related URL parameters if needed.
 ///
 /// @note This function only returns parameter keys in the `NSDictionary` for string/number/bools.
-- (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+- (NSDictionary<NSString *,NSString *> *)parametersWithParameters:
+    (NSDictionary<NSString *, id> *)parameters
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;
 
@@ -58,16 +59,17 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)handleTokenFetchEMMError:(nullable NSError *)error
                       completion:(void (^)(NSError *_Nullable))completion;
 
-/// Gets a new set of URL parameters that contains updated EMM-related URL parameters if needed.
+/// Returns a new set of URL parameters that contains updated EMM-related URL parameters if needed.
 /// Equivalent to calling the instance method on `[[GIDEMMSupport alloc] init]`.
 + (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
-    (NSDictionary *)parameters;
+    (NSDictionary<NSString *, id> *)parameters;
 
-/// Gets a new set of URL parameters that also contains EMM-related URL parameters if needed.
+/// Returns a new set of URL parameters that also contains EMM-related URL parameters if needed.
 /// Equivalent to calling the instance method on `[[GIDEMMSupport alloc] init]`.
 ///
 /// @note This function only returns parameter keys in the `NSDictionary` for string/number/bools.
-+ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
++ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:
+    (NSDictionary<NSString *, id> *)parameters
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired;
 

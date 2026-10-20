@@ -18,7 +18,7 @@
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
-#import "GoogleSignIn/Sources/GIDLocalAuthentication/Implementation/LAContext+GIDLocalAuthenticationContext.h"
+#import "GoogleSignIn/Sources/GIDLocalAuthentication/Implementation/LAContext+GIDLocalAuthenticationContext.h"  // NOLINT
 
 NS_ASSUME_NONNULL_BEGIN
 

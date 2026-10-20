@@ -23,6 +23,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDFakeLocalAuthenticationContext {
+  // Every policy passed to `-canEvaluatePolicy:error:`, in call order.
   NSMutableArray<NSNumber *> *_evaluatedPolicies;
 }
 
