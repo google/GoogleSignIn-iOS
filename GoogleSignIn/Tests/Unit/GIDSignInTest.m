@@ -153,9 +153,9 @@ static NSString *const kMultipleClaimsJsonString =
   GIDSignInResult *_signInResult;    // result passed to _completion
   NSError *_authError;               // error passed to _completion
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-  GIDFakeApplication *_application;
-  GIDFakeEMMAlertPresenter *_alertPresenter;
-  GIDEMMSupport *_emmSupport;
+  GIDFakeApplication *_application;          // stands in for UIApplication
+  GIDFakeEMMAlertPresenter *_alertPresenter;  // records the EMM alert instead of showing it
+  GIDEMMSupport *_emmSupport;                 // real EMM support over the fakes above
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 }
 @end
@@ -1333,7 +1333,10 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertNil(_authSessionStore.savedAuthSession);
 }
 
-// Verifies that access_denied is reported as canceled after the EMM handler declines it; with the real handler access_denied is never claimed as an EMM error, so the "priority over a claiming handler" branch of -authorizationErrorWithParameters:isEMMError: cannot be reached from this test.
+// Verifies that access_denied is reported as canceled after the EMM handler declines it. With
+// the real handler, access_denied is never claimed as an EMM error, so the "priority over a
+// claiming handler" branch of -authorizationErrorWithParameters:isEMMError: cannot be reached
+// from this test.
 - (void)testAuthEndpointEMMError_AccessDenied {
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil

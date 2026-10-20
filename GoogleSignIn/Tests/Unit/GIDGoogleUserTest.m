@@ -967,6 +967,8 @@ static NSString *const kUserDefaultsSuiteName = @"GIDGoogleUserTestSuiteName";
 
 #pragma mark - Helpers
 
+// Returns a GIDSignIn wired to the fake authorization service, store, fetcher, migration and
+// bundle, with isolated user defaults.
 - (GIDSignIn *)signInWithFakes {
   GIDFakeMainBundle *fakeMainBundle =
       [[GIDFakeMainBundle alloc] initWithClientID:OIDAuthorizationRequestTestingClientID];
@@ -984,6 +986,7 @@ static NSString *const kUserDefaultsSuiteName = @"GIDGoogleUserTestSuiteName";
                                    fetcherService:[[GIDFakeFetcherService alloc] init]];
 }
 
+// Returns a user whose owning sign-in instance is `signIn`.
 - (GIDGoogleUser *)googleUserOwnedBySignIn:(GIDSignIn *)signIn {
   return [[GIDGoogleUser alloc] initWithAuthState:[OIDAuthState testInstance]
                                       profileData:nil

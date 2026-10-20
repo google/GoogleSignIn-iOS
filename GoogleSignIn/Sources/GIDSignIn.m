@@ -184,6 +184,7 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   GIDClaimsInternalOptions *_claimsInternalOptions;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   GIDAppCheck *_appCheck API_AVAILABLE(ios(14));
+  // Builds the EMM request parameters and handles EMM errors.
   GIDEMMSupport *_emmSupport;
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // AppAuth configuration object.

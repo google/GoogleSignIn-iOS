@@ -81,6 +81,8 @@ static NSTimeInterval const kMinimalTimeToExpire = 60.0;
   GIDConfiguration *_cachedConfiguration;
   // AppAuth service that performs the token refresh requests.
   OIDAuthorizationService *_authorizationService;
+  // The sign-in instance that produced this user, or nil for users restored from an archive.
+  // Weak because the sign-in instance owns its current user.
   __weak GIDSignIn *_signIn;
   
   // A queue for pending token refresh handlers so we don't fire multiple requests in parallel.
