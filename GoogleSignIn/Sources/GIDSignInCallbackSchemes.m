@@ -25,16 +25,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /**
- * @fn relevantURLSchemes
- * @brief Extracts CFBundleURLSchemes from the injected bundle's Info.plist.
+ * @fn relevantURLSchemesInBundle:
+ * @brief Extracts CFBundleURLSchemes from a bundle's Info.plist.
+ * @param bundle The bundle whose Info.plist declares the URL schemes.
  * @return An array of lowercase NSString *'s representing the URL schemes the bundle has declared
  *     support for.
  * @remarks Branched from google3/googlemac/iPhone/Firebase/Source/GGLBundleUtil.m
  */
-- (NSArray<NSString *> *)relevantURLSchemes {
++ (NSArray<NSString *> *)relevantURLSchemesInBundle:(id<GIDBundle>)bundle {
   NSMutableArray<NSString *> *result = [NSMutableArray array];
   NSArray<NSDictionary<NSString *, id> *> *urlTypes =
-      [_bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+      [bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
   for (NSDictionary *urlType in urlTypes) {
     NSArray *urlTypeSchemes = urlType[@"CFBundleURLSchemes"];
     for (NSString *urlTypeScheme in urlTypeSchemes) {
@@ -76,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSMutableArray<NSString *> *)unsupportedSchemes {
   NSMutableArray *unsupportedSchemes = [NSMutableArray arrayWithArray:[self allSchemes]];
-  NSArray<NSString *> *supportedSchemes = [self relevantURLSchemes];
+  NSArray<NSString *> *supportedSchemes = [[self class] relevantURLSchemesInBundle:_bundle];
   [unsupportedSchemes removeObjectsInArray:supportedSchemes];
   return unsupportedSchemes;
 }
