@@ -33,6 +33,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// This class represents a signed-in user.
+///
+/// The `accessToken`, `refreshToken`, `idToken` and `profile` properties are published together,
+/// so key-value observers of any one of them are notified whenever any of them changes. Observers
+/// are notified while the user holds an internal lock: an observer may call back into the same
+/// user on the notifying thread, but must not synchronously wait (for example with
+/// `dispatch_sync`) on another thread that is updating the same user.
 @interface GIDGoogleUser : NSObject <NSSecureCoding>
 
 /// The Google user ID.

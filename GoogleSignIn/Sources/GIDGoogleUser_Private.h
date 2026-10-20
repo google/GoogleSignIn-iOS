@@ -22,6 +22,8 @@
 #import <AppAuth/AppAuth.h>
 #endif
 
+@class GIDConfiguration;
+@class GIDProfileData;
 @class GIDToken;
 @class OIDAuthState;
 
@@ -30,17 +32,24 @@ NS_ASSUME_NONNULL_BEGIN
 /// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
-/// An immutable snapshot of a user's access, refresh and ID tokens.
-/// This value is replaced as a whole so that readers never see a mix of old and new tokens.
+/// An immutable snapshot of a user's tokens, profile, and the values derived from the same
+/// auth state.
+/// This value is replaced as a whole so that readers never see a mix of old and new values.
 @interface GIDGoogleUserTokens : NSObject
 
 @property(nonatomic, readonly) GIDToken *accessToken;
 @property(nonatomic, readonly) GIDToken *refreshToken;
 @property(nonatomic, readonly, nullable) GIDToken *idToken;
+@property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
+@property(nonatomic, readonly) GIDConfiguration *configuration;
+@property(nonatomic, readonly, nullable) GIDProfileData *profile;
 
 - (instancetype)initWithAccessToken:(GIDToken *)accessToken
                        refreshToken:(GIDToken *)refreshToken
-                            idToken:(nullable GIDToken *)idToken NS_DESIGNATED_INITIALIZER;
+                            idToken:(nullable GIDToken *)idToken
+                      grantedScopes:(nullable NSArray<NSString *> *)grantedScopes
+                      configuration:(GIDConfiguration *)configuration
+                            profile:(nullable GIDProfileData *)profile NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
@@ -51,9 +60,9 @@ typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *
 /// A representation of the state of the OAuth session for this instance.
 @property(nonatomic, readonly) OIDAuthState *authState;
 
-/// The user's current tokens. Read once - accessing individual properties in sequence is not
-/// recommended. Reading once ensures that each property is from the same update. Writes are
-/// serialized by `@synchronized(self)`.
+/// The user's current tokens, granted scopes, configuration and profile. Read once - accessing
+/// individual properties in sequence is not recommended. Reading once ensures that each property is
+/// from the same update. Writes are serialized by `@synchronized(self)`.
 @property(atomic, strong, nullable) GIDGoogleUserTokens *tokens;
 
 #pragma clang diagnostic push
