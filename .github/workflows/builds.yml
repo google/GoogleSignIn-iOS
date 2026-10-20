@@ -60,7 +60,7 @@ jobs:
        xcodebuild \
          -scheme GoogleSignIn-Package \
          -sdk iphonesimulator \
-         -destination "platform=iOS Simulator,name=iPhone 16" \
+         -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
          -onlyUsePackageVersionsFromResolvedFile \
          build-for-testing
     - name: Run unit test target
@@ -68,7 +68,7 @@ jobs:
        xcodebuild \
          -scheme GoogleSignIn-Package \
          -sdk iphonesimulator \
-         -destination "platform=iOS Simulator,name=iPhone 16,OS=18.5" \
+         -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
          -onlyUsePackageVersionsFromResolvedFile \
          test-without-building
 
