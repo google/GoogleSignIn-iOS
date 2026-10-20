@@ -257,8 +257,14 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
                                                  NSError *_Nullable error) {
     // Update the auth state under `_authStateLock` so this refresh cannot interleave with
     // -updateWithTokenResponse:authorizationResponse:profileData:.
+    NSError *effectiveError = error;
     @synchronized(self->_authStateLock) {
-      if (tokenResponse) {
+      if (self.authState.lastAuthorizationResponse != authorizationResponse) {
+        // Drop the response if a new authorization (such as from add-scopes) replaced the one this
+        // refresh was requested for while it was in flight, so the old grant cannot overwrite the
+        // newer tokens.
+        effectiveError = nil;
+      } else if (tokenResponse) {
         [self.authState updateWithTokenResponse:tokenResponse error:nil];
       } else {
         if (error.domain == OIDOAuthTokenErrorDomain) {
@@ -267,7 +273,7 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
       }
     }
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    [GIDEMMSupport handleTokenFetchEMMError:error completion:^(NSError *_Nullable error) {
+    [GIDEMMSupport handleTokenFetchEMMError:effectiveError completion:^(NSError *_Nullable error) {
       // Process the handler queue to call back.
       NSArray<GIDGoogleUserCompletion> *refreshTokensHandlerQueue;
       @synchronized(self->_tokenRefreshHandlerQueue) {
@@ -288,7 +294,7 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     }
     for (GIDGoogleUserCompletion completion in refreshTokensHandlerQueue) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        completion(error ? nil : self, error);
+        completion(effectiveError ? nil : self, effectiveError);
       });
     }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST

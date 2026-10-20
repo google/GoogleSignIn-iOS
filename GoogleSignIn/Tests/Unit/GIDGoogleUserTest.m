@@ -1041,6 +1041,74 @@ static NSString *const kNewScope = @"newScope";
   [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testRefreshTokensIfNeeded_dropsResponseForReplacedAuthorization {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+  XCTAssertEqualObjects(user.grantedScopes, @[ OIDAuthorizationRequestTestingScope2 ]);
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser *_Nullable refreshedUser,
+                                              NSError *_Nullable error) {
+    [expectation fulfill];
+    XCTAssertNotNil(refreshedUser);
+    XCTAssertNil(error);
+  }];
+
+  // The add-scopes flow replaces the authorization while the refresh is in flight.
+  NSArray<NSString *> *scopesAfterAddScopes = @[ OIDAuthorizationRequestTestingScope2, kNewScope ];
+  OIDAuthState *updatedAuthState =
+      [self authStateWithGrantedScopes:scopesAfterAddScopes
+                           accessToken:@"access_token_after_add_scopes"];
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
+                    profileData:nil];
+
+  // The stale response carries the old grant's scope and a different access token.
+  OIDTokenResponse *staleResponse =
+      [OIDTokenResponse testInstanceWithIDToken:[self idTokenWithExpiresIn:kNewIDTokenExpiresIn]
+                                    accessToken:kNewAccessToken
+                                      expiresIn:@(kAccessTokenExpiresIn)
+                                   refreshToken:kRefreshToken
+                                   tokenRequest:nil];
+  _tokenFetchHandler(staleResponse, nil);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertEqualObjects(user.accessToken.tokenString, @"access_token_after_add_scopes");
+  XCTAssertEqualObjects(user.grantedScopes, scopesAfterAddScopes);
+}
+
+- (void)testRefreshTokensIfNeeded_dropsErrorForReplacedAuthorization {
+  GIDGoogleUser *user = [self googleUserWithAccessTokenExpiresIn:-10
+                                                idTokenExpiresIn:kIDTokenExpiresIn];
+
+  XCTestExpectation *expectation = [self expectationWithDescription:@"Callback is called"];
+  [user refreshTokensIfNeededWithCompletion:^(GIDGoogleUser *_Nullable refreshedUser,
+                                              NSError *_Nullable error) {
+    [expectation fulfill];
+    XCTAssertNotNil(refreshedUser);
+    XCTAssertNil(error);
+  }];
+
+  // The add-scopes flow replaces the authorization while the refresh is in flight.
+  OIDAuthState *updatedAuthState =
+      [self authStateWithGrantedScopes:@[ OIDAuthorizationRequestTestingScope2, kNewScope ]
+                           accessToken:@"access_token_after_add_scopes"];
+  [user updateWithTokenResponse:updatedAuthState.lastTokenResponse
+          authorizationResponse:updatedAuthState.lastAuthorizationResponse
+                    profileData:nil];
+
+  // A stale OAuth token error for the old grant must not invalidate the new authorization.
+  NSError *staleError = [NSError errorWithDomain:OIDOAuthTokenErrorDomain
+                                            code:OIDErrorCodeOAuthTokenInvalidGrant
+                                        userInfo:nil];
+  _tokenFetchHandler(nil, staleError);
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue(user.authState.isAuthorized);
+  XCTAssertNil(user.authState.authorizationError);
+  XCTAssertEqualObjects(user.accessToken.tokenString, @"access_token_after_add_scopes");
+}
+
 - (void)testWrapperIdentifier_PresentOnRefreshRequestWhenSet {
   GIDSignIn.wrapperIdentifier = @"firebase";
 
