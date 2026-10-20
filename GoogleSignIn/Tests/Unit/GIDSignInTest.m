@@ -136,7 +136,7 @@ static NSString *const kMultipleClaimsJsonString =
   OIDFakeAuthorizationService *_authorizationService;   // stands in for AppAuth
   GTMAuthSessionStoreFake *_authSessionStore;           // stands in for the keychain
   GIDFakeFetcherService *_fetcherService;               // records the SDK's own HTTPS requests
-  GIDFakeAuthStateMigration *_authStateMigrationService; // records migration invocations
+  GIDFakeAuthStateMigration *_authStateMigrationService;  // records migration invocations
   GIDFakeMainBundle *_fakeMainBundle;                   // supplies Info.plist config and schemes
   NSUserDefaults *_testUserDefaults;                    // isolated user defaults suite
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
@@ -535,7 +535,9 @@ static NSString *const kMultipleClaimsJsonString =
            additionalScopes:nil
                       nonce:nil
                      claims:[NSSet setWithObject:essentialAuthTimeClaim]];
-  XCTAssertEqualObjects(_authorizationService.lastAuthorizationRequest.additionalParameters[@"claims"],
+  NSDictionary<NSString *, NSObject *> *params =
+      _authorizationService.lastAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(params[@"claims"],
                         kEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 
@@ -544,7 +546,9 @@ static NSString *const kMultipleClaimsJsonString =
            additionalScopes:nil
                       nonce:nil
                      claims:[NSSet setWithObject:authTimeClaim]];
-  XCTAssertEqualObjects(_authorizationService.lastAuthorizationRequest.additionalParameters[@"claims"],
+  NSDictionary<NSString *, NSObject *> *authParams =
+      _authorizationService.lastAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(authParams[@"claims"],
                         kNonEssentialAuthTimeClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 }
@@ -557,7 +561,9 @@ static NSString *const kMultipleClaimsJsonString =
            additionalScopes:nil
                       nonce:nil
                      claims:[NSSet setWithObject:essentialAMRClaim]];
-  XCTAssertEqualObjects(_authorizationService.lastAuthorizationRequest.additionalParameters[@"claims"],
+  NSDictionary<NSString *, NSObject *> *params =
+      _authorizationService.lastAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(params[@"claims"],
                         kEssentialAMRClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 
@@ -566,7 +572,9 @@ static NSString *const kMultipleClaimsJsonString =
            additionalScopes:nil
                       nonce:nil
                      claims:[NSSet setWithObject:AMRClaim]];
-  XCTAssertEqualObjects(_authorizationService.lastAuthorizationRequest.additionalParameters[@"claims"],
+  NSDictionary<NSString *, NSObject *> *authParams =
+      _authorizationService.lastAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(authParams[@"claims"],
                         kNonEssentialAMRClaimJsonString,
                         @"Claims JSON should be correctly formatted");
 }
@@ -577,7 +585,9 @@ static NSString *const kMultipleClaimsJsonString =
   NSSet<GIDClaim *> *claims = [NSSet setWithArray:@[ authTimeClaim, AMRClaim ]];
 
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:claims];
-  XCTAssertEqualObjects(_authorizationService.lastAuthorizationRequest.additionalParameters[@"claims"],
+  NSDictionary<NSString *, NSObject *> *params =
+      _authorizationService.lastAuthorizationRequest.additionalParameters;
+  XCTAssertEqualObjects(params[@"claims"],
                         kMultipleClaimsJsonString,
                         @"Claims JSON should be correctly formatted");
 }
@@ -603,9 +613,10 @@ static NSString *const kMultipleClaimsJsonString =
   NSData *payloadData = [[NSData alloc]
       initWithBase64EncodedString:components[1]
                           options:NSDataBase64DecodingIgnoreUnknownCharacters];
-  NSDictionary *receivedClaims = [NSJSONSerialization JSONObjectWithData:payloadData
-                                                                 options:0
-                                                                   error:nil];
+  NSDictionary<NSString *, id> *receivedClaims =
+      [NSJSONSerialization JSONObjectWithData:payloadData
+                                      options:0
+                                        error:nil];
   XCTAssertEqualObjects(receivedClaims[@"auth_time"],
                         kAuthTime,
                         @"The 'auth_time' claim should be present and correct.");
@@ -628,13 +639,14 @@ static NSString *const kMultipleClaimsJsonString =
       presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
   [_signIn addScopes:@[ kNewScope ]
-      presentingWindow:_presentingWindow
+              presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            completion:^(GIDSignInResult *_Nullable signInResult, NSError *_Nullable error) {
-              addScopesResult = signInResult;
-              addScopesError = error;
-              [addScopesExpectation fulfill];
-            }];
+                    completion:^(GIDSignInResult *_Nullable signInResult,
+                                 NSError *_Nullable error) {
+    addScopesResult = signInResult;
+    addScopesError = error;
+    [addScopesExpectation fulfill];
+  }];
 
   OIDAuthorizationRequest *authRequest = _authorizationService.lastAuthorizationRequest;
   XCTAssertNotNil(authRequest);
@@ -678,13 +690,14 @@ static NSString *const kMultipleClaimsJsonString =
       presentingViewController:_presentingViewController
 #elif TARGET_OS_OSX
   [_signIn addScopes:@[ kNewScope ]
-      presentingWindow:_presentingWindow
+              presentingWindow:_presentingWindow
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-            completion:^(GIDSignInResult *_Nullable signInResult, NSError *_Nullable error) {
-              addScopesResult = signInResult;
-              addScopesError = error;
-              [addScopesExpectation fulfill];
-            }];
+                    completion:^(GIDSignInResult *_Nullable signInResult,
+                                 NSError *_Nullable error) {
+    addScopesResult = signInResult;
+    addScopesError = error;
+    [addScopesExpectation fulfill];
+  }];
 
   OIDAuthorizationRequest *authRequest = _authorizationService.lastAuthorizationRequest;
   XCTAssertNotNil(authRequest);
@@ -1477,7 +1490,8 @@ static NSString *const kMultipleClaimsJsonString =
   return [OIDTokenResponse idTokenWithSub:kUserID exp:@(exp) fat:YES];
 }
 
-// Returns an OIDAuthState holding a token response built from the arguments (fat ID token by default).
+// Returns an OIDAuthState holding a token response built from the arguments (fat ID token by
+// default).
 - (OIDAuthState *)authStateWithIDToken:(nullable NSString *)idToken
                            accessToken:(NSString *)accessToken
                              expiresIn:(nullable NSNumber *)expiresIn {
@@ -1497,7 +1511,8 @@ static NSString *const kMultipleClaimsJsonString =
   return session;
 }
 
-// Starts an interactive sign-in with the given options and asserts the fake service received the request.
+// Starts an interactive sign-in with the given options and asserts that the fake service
+// received the request.
 - (void)startSignInWithHint:(nullable NSString *)hint
            additionalScopes:(nullable NSArray<NSString *> *)additionalScopes
                       nonce:(nullable NSString *)nonce
@@ -1578,7 +1593,7 @@ static NSString *const kMultipleClaimsJsonString =
   _authorizationService.lastAuthorizationCallback(nil, error);
 }
 
-// Completes the pending token request with a response (or error) and returns after the completion ran.
+// Completes the pending token request with a response built from the arguments.
 - (void)finishTokenRequestWithIDToken:(nullable NSString *)idToken
                           accessToken:(NSString *)accessToken
                             expiresIn:(nullable NSNumber *)expiresIn {
@@ -1593,6 +1608,7 @@ static NSString *const kMultipleClaimsJsonString =
   _authorizationService.lastTokenCallback(response, nil);
 }
 
+// Completes the pending token request with an AppAuth error (no response).
 - (void)failTokenRequestWithError:(NSError *)error {
   XCTAssertNotNil(_authorizationService.lastTokenRequest);
   XCTAssertNotNil(_authorizationService.lastTokenCallback);
@@ -1609,7 +1625,8 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertTrue(_completionCalled, @"the sign-in completion was not called within 1s");
 }
 
-// Full happy path: start, authorize, exchange the code for the fat ID token, wait. Returns the user.
+// Runs the full happy path (start, authorize, exchange the code for the fat ID token, wait) and
+// returns the signed-in user.
 - (GIDGoogleUser *)signInSuccessfully {
   [self startSignInWithHint:_hint additionalScopes:nil nonce:nil claims:nil];
   [self finishAuthorizationWithAdditionalParameters:nil nonce:nil errorString:nil];
