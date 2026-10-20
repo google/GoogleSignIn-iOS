@@ -63,6 +63,12 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Select Xcode
       run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    # Registers the simulator runtimes before xcodebuild asks for a destination;
+    # without it the job intermittently fails with "Unable to find a device
+    # matching the provided destination specifier" on the macos-15 image.
+    # https://github.com/actions/runner-images/issues/12948
+    - name: Warm up simulator runtimes
+      run: xcrun simctl list devices available
     - name: Build unit test target
       run: |
         xcodebuild \
@@ -132,6 +138,8 @@ jobs:
             destination: '"platform=iOS Simulator,name=iPhone 17,OS=27.0"'
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Warm up simulator runtimes
+      run: xcrun simctl list devices available
     - name: Build unit test target
       run: |
         xcodebuild \

@@ -55,6 +55,8 @@ jobs:
        # `resolve <name> --version` can only re-pin an already-resolved dependency.
        swift package resolve
        swift package resolve app-check --version "$version"
+    - name: Warm up simulator runtimes
+      run: xcrun simctl list devices available
     - name: Build unit test target
       run: |
        xcodebuild \
