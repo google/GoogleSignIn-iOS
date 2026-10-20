@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#import "GoogleSignIn/Sources/GIDAuthStateMigration/Implementation/GIDLegacyKeychainImpl.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Implementation/GIDSystemLegacyKeychain.h"
 
 #import <Security/Security.h>
 
@@ -26,7 +26,7 @@ static NSString *const kOldKeychainAccount = @"GooglePlus";
 // The value used for the kSecAttrGeneric key by GTMAppAuth and GTMOAuth2.
 static NSString *const kGenericAttribute = @"OAuth";
 
-@implementation GIDLegacyKeychainImpl
+@implementation GIDSystemLegacyKeychain
 
 - (nullable NSString *)passwordForService:(NSString *)service {
   if (!service.length) {

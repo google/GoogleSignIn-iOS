@@ -19,6 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDFakeLegacyKeychain {
+  // The passwords `-passwordForService:` returns, keyed by service.
   NSMutableDictionary<NSString *, NSString *> *_passwordsByService;
 }
 

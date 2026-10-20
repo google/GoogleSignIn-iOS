@@ -14,7 +14,7 @@
 
 #import "GoogleSignIn/Sources/GIDAuthStateMigration/GIDAuthStateMigration.h"
 
-#import "GoogleSignIn/Sources/GIDAuthStateMigration/Implementation/GIDLegacyKeychainImpl.h"
+#import "GoogleSignIn/Sources/GIDAuthStateMigration/Implementation/GIDSystemLegacyKeychain.h"
 #import "GoogleSignIn/Sources/GIDBundle/Implementation/NSBundle+GIDBundle.h"
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
@@ -45,6 +45,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 @end
 
 @implementation GIDAuthStateMigration {
+  // The pre-5.0 keychain items the migration reads from.
   id<GIDLegacyKeychain> _legacyKeychain;
   // The user defaults in which the migration-check flags are recorded.
   NSUserDefaults *_userDefaults;
@@ -70,7 +71,7 @@ static NSString *const kFingerprintService = @"fingerprint";
                          userDefaults:(NSUserDefaults *)userDefaults
                                bundle:(id<GIDBundle>)bundle {
   return [self initWithKeychainStore:keychainStore
-                      legacyKeychain:[[GIDLegacyKeychainImpl alloc] init]
+                      legacyKeychain:[[GIDSystemLegacyKeychain alloc] init]
                         userDefaults:userDefaults
                               bundle:bundle];
 }

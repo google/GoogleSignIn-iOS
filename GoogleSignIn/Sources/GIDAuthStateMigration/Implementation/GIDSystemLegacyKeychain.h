@@ -20,8 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A `GIDLegacyKeychain` backed by the system keychain via `SecItemCopyMatching`.
-@interface GIDLegacyKeychainImpl : NSObject <GIDLegacyKeychain>
+/// A `GIDLegacyKeychain` backed by the system keychain, read through `SecItemCopyMatching`.
+@interface GIDSystemLegacyKeychain : NSObject <GIDLegacyKeychain>
 @end
 
 NS_ASSUME_NONNULL_END

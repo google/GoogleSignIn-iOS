@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
                          userDefaults:(NSUserDefaults *)userDefaults
                                bundle:(id<GIDBundle>)bundle NS_DESIGNATED_INITIALIZER;
 
-/// Same as above, reading the legacy keychain through `GIDLegacyKeychainImpl`.
+/// Creates an instance that reads the legacy keychain through `GIDSystemLegacyKeychain`.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
                          userDefaults:(NSUserDefaults *)userDefaults
                                bundle:(id<GIDBundle>)bundle;

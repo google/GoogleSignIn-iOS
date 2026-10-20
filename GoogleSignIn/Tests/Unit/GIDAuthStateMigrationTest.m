@@ -306,7 +306,8 @@ NS_ASSUME_NONNULL_BEGIN
   return [NSString stringWithFormat:@"%@%@", fingerprint, kAdditionalTokenRequestParametersPostfix];
 }
 
-// Seed the legacy keychain items that a pre-5.0 authorization with `fingerprint` would have stored.
+// Seeds the legacy keychain items that a pre-5.0 authorization with `fingerprint` would have
+// stored.
 - (void)seedLegacyAuthStateWithFingerprint:(NSString *)fingerprint {
   [_legacyKeychain setPassword:fingerprint forService:kFingerprintService];
   XCTAssertTrue([_keychainHelper setPassword:kGTMOAuth2PersistenceString
