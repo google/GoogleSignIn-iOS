@@ -41,7 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
  * when LocalAuthentication is unavailable; the cache then reports only the Keychain probe.
  */
 - (instancetype)initWithLocalAuthenticationContext:
-    (nullable id<GIDLocalAuthenticationContext>)localAuthenticationContext NS_DESIGNATED_INITIALIZER;
+    (nullable id<GIDLocalAuthenticationContext>)localAuthenticationContext
+    NS_DESIGNATED_INITIALIZER;
 
 /** Unavailable; use `+sharedInstance` or the designated initializer. */
 - (instancetype)init NS_UNAVAILABLE;

@@ -60,7 +60,9 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
 };
 
 @implementation GIDEMMSupport {
+  // Reports EMM errors from token fetch responses.
   GIDEMMErrorHandler *_errorHandler;
+  // Describes the device to the EMM backend.
   id<GIDDevice> _device;
 }
 
@@ -99,13 +101,14 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
 }
 
 - (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
-    (NSDictionary *)parameters {
+    (NSDictionary<NSString *, id> *)parameters {
   return [self parametersWithParameters:parameters
                              emmSupport:parameters[kEMMSupportParameterName]
                  isPasscodeInfoRequired:parameters[kEMMPasscodeInfoParameterName] != nil];
 }
 
-- (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
+- (NSDictionary<NSString *,NSString *> *)parametersWithParameters:
+    (NSDictionary<NSString *, id> *)parameters
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
   if (!emmSupport) {
@@ -113,13 +116,12 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
   }
   NSMutableDictionary *allParameters = [(parameters ?: @{}) mutableCopy];
   allParameters[kEMMSupportParameterName] = emmSupport;
-  id<GIDDevice> device = _device;
-  NSString *systemName = device.systemName;
+  NSString *systemName = _device.systemName;
   if ([systemName isEqualToString:kOldIOSSystemName]) {
     systemName = kNewIOSSystemName;
   }
   allParameters[kEMMOSVersionParameterName] =
-      [NSString stringWithFormat:@"%@ %@", systemName, device.systemVersion];
+      [NSString stringWithFormat:@"%@ %@", systemName, _device.systemVersion];
   if (isPasscodeInfoRequired) {
     allParameters[kEMMPasscodeInfoParameterName] = [GIDMDMPasscodeState passcodeState].info;
   }
@@ -132,11 +134,12 @@ typedef NS_ENUM(NSInteger, ErrorCode) {
 }
 
 + (NSDictionary<NSString *,NSString *> *)updatedEMMParametersWithParameters:
-    (NSDictionary *)parameters {
+    (NSDictionary<NSString *, id> *)parameters {
   return [[[self alloc] init] updatedEMMParametersWithParameters:parameters];
 }
 
-+ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:(NSDictionary *)parameters
++ (NSDictionary<NSString *,NSString *> *)parametersWithParameters:
+    (NSDictionary<NSString *, id> *)parameters
                                                        emmSupport:(nullable NSString *)emmSupport
                                            isPasscodeInfoRequired:(BOOL)isPasscodeInfoRequired {
   return [[[self alloc] init] parametersWithParameters:parameters
