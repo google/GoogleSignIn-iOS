@@ -127,6 +127,14 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
   // from no profile having been supplied, which keeps the current one.
   GIDProfileData *_pendingProfile;
   BOOL _hasPendingProfile;
+
+  // A private object to `@synchronized` on, guarding `authState` updates and reads. Private so
+  // that callers cannot contend on the user object's own monitor. `@synchronized` is recursive,
+  // which a) synchronous AppAuth -didChangeState: calls and b) KVO observers of the token /
+  // profile properties rely on, and it releases the lock if an observer throws.
+  // Observers must not synchronously wait on another thread that is updating the same user! It
+  // would deadlock.
+  NSObject *_authStateLock;
 }
 
 - (GIDToken *)accessToken {
@@ -215,28 +223,47 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     }
   }
   // This is the first handler in the queue, a fetch is needed.
+  // Read the auth state under `_authStateLock` so the reads cannot interleave with token
+  // response updates. Only the reads are locked: building the parameters can block (the EMM
+  // helper may wait on a keychain probe), so it runs outside the lock.
+  NSDictionary<NSString *, NSString *> *lastTokenAdditionalParameters;
+  @synchronized(_authStateLock) {
+    lastTokenAdditionalParameters = self.authState.lastTokenResponse.request.additionalParameters;
+  }
+
   NSMutableDictionary *additionalParameters = [@{} mutableCopy];
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:
-      [GIDEMMSupport updatedEMMParametersWithParameters:
-          self.authState.lastTokenResponse.request.additionalParameters]];
+      [GIDEMMSupport updatedEMMParametersWithParameters:lastTokenAdditionalParameters]];
 #elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-  [additionalParameters addEntriesFromDictionary:
-      self.authState.lastTokenResponse.request.additionalParameters];
+  [additionalParameters addEntriesFromDictionary:lastTokenAdditionalParameters];
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
 
-  OIDTokenRequest *tokenRefreshRequest =
-      [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  // Read the authorization response and build the request in one lock window so they come
+  // from the same auth state. `tokenRefreshRequestWithAdditionalParameters:` does not call back
+  // into this object.
+  OIDAuthorizationResponse *authorizationResponse;
+  OIDTokenRequest *tokenRefreshRequest;
+  @synchronized(_authStateLock) {
+    authorizationResponse = self.authState.lastAuthorizationResponse;
+    tokenRefreshRequest =
+        [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
+  }
+
   [OIDAuthorizationService performTokenRequest:tokenRefreshRequest
-                 originalAuthorizationResponse:self.authState.lastAuthorizationResponse
+                 originalAuthorizationResponse:authorizationResponse
                                       callback:^(OIDTokenResponse *_Nullable tokenResponse,
                                                  NSError *_Nullable error) {
-    if (tokenResponse) {
-      [self.authState updateWithTokenResponse:tokenResponse error:nil];
-    } else {
-      if (error.domain == OIDOAuthTokenErrorDomain) {
-        [self.authState updateWithAuthorizationError:error];
+    // Update the auth state under `_authStateLock` so this refresh cannot interleave with
+    // -updateWithTokenResponse:authorizationResponse:profileData:.
+    @synchronized(self->_authStateLock) {
+      if (tokenResponse) {
+        [self.authState updateWithTokenResponse:tokenResponse error:nil];
+      } else {
+        if (error.domain == OIDOAuthTokenErrorDomain) {
+          [self.authState updateWithAuthorizationError:error];
+        }
       }
     }
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -305,8 +332,10 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (nullable NSString *)emmSupport {
-  return self.authState.lastAuthorizationResponse
-      .request.additionalParameters[kEMMSupportParameterName];
+  @synchronized(_authStateLock) {
+    return self.authState.lastAuthorizationResponse
+        .request.additionalParameters[kEMMSupportParameterName];
+  }
 }
 #endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
@@ -314,6 +343,9 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
                       profileData:(nullable GIDProfileData *)profileData {
   self = [super init];
   if (self) {
+    // Create the lock object before -updateTokensWithAuthState: below synchronizes on it.
+    _authStateLock = [[NSObject alloc] init];
+
     _tokenRefreshHandlerQueue = [[NSMutableArray alloc] init];
 
     // Park the profile for the first snapshot, built by -updateTokensWithAuthState: below.
@@ -336,7 +368,7 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 - (void)updateWithTokenResponse:(OIDTokenResponse *)tokenResponse
           authorizationResponse:(OIDAuthorizationResponse *)authorizationResponse
                     profileData:(nullable GIDProfileData *)profileData {
-  @synchronized(self) {
+  @synchronized(_authStateLock) {
     // Park the profile for the snapshot built when the token response update below calls back
     // through -didChangeState:.
     _pendingProfile = profileData;
@@ -359,7 +391,7 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 }
 
 - (void)updateTokensWithAuthState:(OIDAuthState *)authState {
-  @synchronized(self) {
+  @synchronized(_authStateLock) {
     GIDGoogleUserTokens *current = self.tokens;
     GIDProfileData *profile = _hasPendingProfile ? _pendingProfile : current.profile;
     _pendingProfile = nil;
@@ -480,8 +512,11 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-  [encoder encodeObject:self.profile forKey:kProfileDataKey];
-  [encoder encodeObject:self.authState forKey:kAuthStateKey];
+  // Holds `_authStateLock` so the encoded profile and auth state come from the same update.
+  @synchronized(_authStateLock) {
+    [encoder encodeObject:self.profile forKey:kProfileDataKey];
+    [encoder encodeObject:self.authState forKey:kAuthStateKey];
+  }
 }
 
 @end
