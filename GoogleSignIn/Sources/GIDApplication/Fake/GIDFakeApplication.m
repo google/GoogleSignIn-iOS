@@ -23,6 +23,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDFakeApplication {
+  // Every URL passed to `-openURL:`, in call order.
   NSMutableArray<NSURL *> *_openedURLs;
 }
 

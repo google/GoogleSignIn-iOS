@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The subset of `UIApplication` that Google Sign-In's EMM error handling depends on.
 ///
-/// Production code uses `GIDSharedApplication`, which forwards to `UIApplication.sharedApplication`;
-/// tests use `GIDFakeApplication`.
+/// Production code uses `GIDSharedApplication`, which forwards to
+/// `UIApplication.sharedApplication`; tests use `GIDFakeApplication`.
 @protocol GIDApplication <NSObject>
 
 /// The window that currently receives keyboard and other non-touch events, if any.
