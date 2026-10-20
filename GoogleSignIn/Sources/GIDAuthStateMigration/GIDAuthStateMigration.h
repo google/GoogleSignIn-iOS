@@ -29,6 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// Creates an instance of this migration type with the keychain storage wrapper it will use, the
 /// user defaults in which it records that a migration check has run, and the bundle whose
 /// identifier was used to fingerprint legacy auth state.
+///
+/// `bundle` must report the identifier of the app that wrote the legacy keychain entries, which in
+/// production is `NSBundle.mainBundle`. With any other identifier the fingerprint never matches and
+/// the migration silently finds nothing.
 - (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
                          userDefaults:(NSUserDefaults *)userDefaults
                                bundle:(id<GIDBundle>)bundle NS_DESIGNATED_INITIALIZER;

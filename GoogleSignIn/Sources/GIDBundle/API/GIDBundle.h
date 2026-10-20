@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// The SDK depends on this protocol rather than on `NSBundle` directly so that the host app's
 /// `Info.plist` can be substituted in tests. `NSBundle` conforms; see `NSBundle+GIDBundle.h`.
+/// Production code always passes `NSBundle.mainBundle`: the URL schemes and bundle identifier the
+/// SDK reads here must match the app the OS is actually running.
 @protocol GIDBundle <NSObject>
 
 /// The receiver's bundle identifier, if any.
