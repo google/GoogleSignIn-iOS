@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInCallbackSchemes {
   NSString *_clientIdentifier;
+  // The bundle whose Info.plist declares the host app's URL schemes.
   id<GIDBundle> _bundle;
 }
 
@@ -30,9 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
  *     support for.
  * @remarks Branched from google3/googlemac/iPhone/Firebase/Source/GGLBundleUtil.m
  */
-- (NSArray *)relevantURLSchemes {
-  NSMutableArray *result = [NSMutableArray array];
-  NSArray *urlTypes = [_bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+- (NSArray<NSString *> *)relevantURLSchemes {
+  NSMutableArray<NSString *> *result = [NSMutableArray array];
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes =
+      [_bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
   for (NSDictionary *urlType in urlTypes) {
     NSArray *urlTypeSchemes = urlType[@"CFBundleURLSchemes"];
     for (NSString *urlTypeScheme in urlTypeSchemes) {
@@ -63,8 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
   return reversedClientIdentifier.lowercaseString;
 }
 
-- (NSArray *)allSchemes {
-  NSMutableArray *schemes = [NSMutableArray array];
+- (NSArray<NSString *> *)allSchemes {
+  NSMutableArray<NSString *> *schemes = [NSMutableArray array];
   NSString *clientIdentifierScheme = [self clientIdentifierScheme];
   if (clientIdentifierScheme) {
     [schemes addObject:clientIdentifierScheme];
@@ -72,9 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
   return schemes;
 }
 
-- (NSMutableArray *)unsupportedSchemes {
+- (NSMutableArray<NSString *> *)unsupportedSchemes {
   NSMutableArray *unsupportedSchemes = [NSMutableArray arrayWithArray:[self allSchemes]];
-  NSArray *supportedSchemes = [self relevantURLSchemes];
+  NSArray<NSString *> *supportedSchemes = [self relevantURLSchemes];
   [unsupportedSchemes removeObjectsInArray:supportedSchemes];
   return unsupportedSchemes;
 }

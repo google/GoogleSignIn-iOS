@@ -19,17 +19,24 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDFakeBundle {
+  // The entries `-objectForInfoDictionaryKey:` reads.
   NSMutableDictionary<NSString *, id> *_infoDictionary;
 }
 
 @synthesize bundleIdentifier = _bundleIdentifier;
 
-- (instancetype)init {
+- (instancetype)initWithBundleIdentifier:(nullable NSString *)bundleIdentifier
+                          infoDictionary:(NSDictionary<NSString *, id> *)infoDictionary {
   self = [super init];
   if (self) {
-    _infoDictionary = [NSMutableDictionary dictionary];
+    _bundleIdentifier = [bundleIdentifier copy];
+    _infoDictionary = [infoDictionary mutableCopy];
   }
   return self;
+}
+
+- (instancetype)init {
+  return [self initWithBundleIdentifier:nil infoDictionary:@{}];
 }
 
 - (nullable id)objectForInfoDictionaryKey:(NSString *)key {

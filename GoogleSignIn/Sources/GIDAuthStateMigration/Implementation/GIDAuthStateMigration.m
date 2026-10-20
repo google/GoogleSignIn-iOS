@@ -50,7 +50,9 @@ static NSString *const kFingerprintService = @"fingerprint";
 @end
 
 @implementation GIDAuthStateMigration {
+  // The user defaults in which the migration-check flags are recorded.
   NSUserDefaults *_userDefaults;
+  // The bundle whose identifier fingerprints legacy auth state.
   id<GIDBundle> _bundle;
 }
 
@@ -83,11 +85,10 @@ static NSString *const kFingerprintService = @"fingerprint";
   // If this is a fresh install, take no action and mark the migration checks as having been
   // performed.
   if (isFreshInstall) {
-    NSUserDefaults* defaults = _userDefaults;
 #if TARGET_OS_OSX
-    [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
+    [_userDefaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
 #elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    [defaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
+    [_userDefaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
 #endif // TARGET_OS_OSX
     return;
   }
@@ -104,8 +105,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 // Migrate from the fileBasedKeychain to dataProtectedKeychain with GTMAppAuth 5.0.
 - (void)performDataProtectedMigrationIfNeeded {
   // See if we've performed the migration check previously.
-  NSUserDefaults* defaults = _userDefaults;
-  if ([defaults boolForKey:kDataProtectedMigrationCheckPerformedKey]) {
+  if ([_userDefaults boolForKey:kDataProtectedMigrationCheckPerformedKey]) {
     return;
   }
 
@@ -123,7 +123,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   }
 
   // Mark the migration check as having been performed.
-  [defaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
+  [_userDefaults setBool:YES forKey:kDataProtectedMigrationCheckPerformedKey];
 }
 
 #elif TARGET_OS_IOS && !TARGET_OS_MACCATALYST
@@ -132,8 +132,7 @@ static NSString *const kFingerprintService = @"fingerprint";
 - (void)performGIDMigrationIfNeededWithTokenURL:(NSURL *)tokenURL
                                    callbackPath:(NSString *)callbackPath {
   // See if we've performed the migration check previously.
-  NSUserDefaults* defaults = _userDefaults;
-  if ([defaults boolForKey:kGTMAppAuthMigrationCheckPerformedKey]) {
+  if ([_userDefaults boolForKey:kGTMAppAuthMigrationCheckPerformedKey]) {
     return;
   }
 
@@ -148,7 +147,7 @@ static NSString *const kFingerprintService = @"fingerprint";
   }
 
   // Mark the migration check as having been performed.
-  [defaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
+  [_userDefaults setBool:YES forKey:kGTMAppAuthMigrationCheckPerformedKey];
 }
 
 // Returns a |GTMAuthSession| object containing any old auth state or |nil| if none
@@ -189,9 +188,9 @@ static NSString *const kFingerprintService = @"fingerprint";
   NSString *clientID = [fingerprint substringWithRange:[matches[0] rangeAtIndex:1]];
 
   // Generate the redirect URI from the extracted client ID.
-  NSString *scheme = [[[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:clientID
-                                                                          bundle:_bundle]
-      clientIdentifierScheme];
+  GIDSignInCallbackSchemes *schemes =
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:clientID bundle:_bundle];
+  NSString *scheme = [schemes clientIdentifierScheme];
   NSString *redirectURI = [NSString stringWithFormat:@"%@:%@", scheme, callbackPath];
 
   // Retrieve the additional token request parameters value.

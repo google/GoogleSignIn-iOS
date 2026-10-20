@@ -20,11 +20,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// An in-memory `GIDBundle` for tests. Owned by the `GIDBundle` seam.
+/// An in-memory `GIDBundle` for tests. Tests populate it with the Info.plist values and bundle
+/// identifier the code under test reads.
 @interface GIDFakeBundle : NSObject <GIDBundle>
 
 /// The bundle identifier to report. Defaults to nil.
 @property(nonatomic, copy, nullable) NSString *bundleIdentifier;
+
+/// Creates a bundle that reports `bundleIdentifier` and whose Info.plist holds the entries of
+/// `infoDictionary`.
+- (instancetype)initWithBundleIdentifier:(nullable NSString *)bundleIdentifier
+                          infoDictionary:(NSDictionary<NSString *, id> *)infoDictionary
+    NS_DESIGNATED_INITIALIZER;
+
+/// Creates a bundle with no identifier and an empty Info.plist.
+- (instancetype)init;
 
 /// Sets (or, with nil, removes) the value returned by `-objectForInfoDictionaryKey:` for `key`.
 - (void)setObject:(nullable id)object forInfoDictionaryKey:(NSString *)key;

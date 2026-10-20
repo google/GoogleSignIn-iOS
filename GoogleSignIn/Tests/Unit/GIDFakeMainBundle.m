@@ -28,11 +28,11 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   NSString *_clientId;
 }
 
-- (instancetype)initWithClientID:(NSString *)clientId {
-  self = [super init];
+- (instancetype)initWithClientID:(NSString *)clientID {
+  self = [super initWithBundleIdentifier:nil
+                          infoDictionary:@{kConfigClientIDKey : clientID}];
   if (self) {
-    _clientId = clientId;
-    [self setObject:clientId forInfoDictionaryKey:kConfigClientIDKey];
+    _clientId = [clientID copy];
   }
   return self;
 }
@@ -76,34 +76,34 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - URL Schemes
 
 - (void)fakeAllSchemesSupported {
-  [self setObject:@[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
-  ]
-      forInfoDictionaryKey:kCFBundleURLTypesKey];
+  ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeAllSchemesSupportedAndMerged {
-  [self setObject:@[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[
         [self reversedClientId]
       ]
     },
-  ]
-      forInfoDictionaryKey:kCFBundleURLTypesKey];
+  ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeAllSchemesSupportedWithCasesMangled {
   NSString *caseFlippedReverseClientId =
       [self stringByFlippingCasesInString:[self reversedClientId]];
-  [self setObject:@[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ caseFlippedReverseClientId ]
     }
-  ]
-      forInfoDictionaryKey:kCFBundleURLTypesKey];
+  ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeMissingClientIdScheme {
@@ -115,24 +115,24 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)fakeOtherSchemes {
-  [self setObject:@[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     }
-  ]
-      forInfoDictionaryKey:kCFBundleURLTypesKey];
+  ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeOtherSchemesAndAllSchemes {
-  [self setObject:@[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     },
     @{
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
-  ]
-      forInfoDictionaryKey:kCFBundleURLTypesKey];
+  ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeWithClientID:(id)clientID

@@ -194,7 +194,9 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
   BOOL _restarting;
   // Keychain manager for GTMAppAuth
   GTMKeychainStore *_keychainStore;
+  // The bundle whose Info.plist supplies the configuration and URL schemes.
   id<GIDBundle> _bundle;
+  // The user defaults that record whether the app has run before.
   NSUserDefaults *_userDefaults;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   // The class used to manage presenting the loading screen for fetching app check tokens.
@@ -1403,7 +1405,8 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
             imageURL:[NSURL URLWithString:idToken.claims[kBasicProfilePictureKey]]];
 }
 
-// Try to retrieve a configuration value from the bundle's Info.plist for a given key.
+// Returns the string value for `key` in the bundle's Info.plist, or nil if there is none or it
+// is not a string.
 + (nullable NSString *)configValueFromBundle:(id<GIDBundle>)bundle forKey:(NSString *)key {
   NSString *value;
   id configValue = [bundle objectForInfoDictionaryKey:key];
@@ -1413,7 +1416,7 @@ static void GIDPercentEncodePlusInQuery(NSURLComponents *components) {
   return value;
 }
 
-// Try to generate a |GIDConfiguration| from the bundle's Info.plist.
+// Returns a |GIDConfiguration| built from the bundle's Info.plist, or nil if it has no client ID.
 + (nullable GIDConfiguration *)configurationFromBundle:(id<GIDBundle>)bundle {
   GIDConfiguration *configuration;
 

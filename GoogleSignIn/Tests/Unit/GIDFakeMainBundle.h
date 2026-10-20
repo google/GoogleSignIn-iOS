@@ -28,7 +28,15 @@
  * @brief Creates a bundle whose `GIDClientID` Info.plist value is `clientID`.
  * @param clientID The fake client identifier for the app.
  */
-- (instancetype)initWithClientID:(NSString *)clientID;
+- (instancetype)initWithClientID:(NSString *)clientID NS_DESIGNATED_INITIALIZER;
+
+/** Unavailable. Use `-initWithClientID:`. */
+- (instancetype)init NS_UNAVAILABLE;
+
+/** Unavailable. Use `-initWithClientID:`. */
+- (instancetype)initWithBundleIdentifier:(nullable NSString *)bundleIdentifier
+                          infoDictionary:(NSDictionary<NSString *, id> *)infoDictionary
+    NS_UNAVAILABLE;
 
 #pragma mark - URL Schemes
 

@@ -78,11 +78,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation GIDAuthStateMigrationTest {
+  // Suite-scoped user defaults injected into the migration under test.
   NSUserDefaults *_userDefaults;
   id _mockGTMAppAuthFetcherAuthorization;
   id _mockGIDAuthStateMigration;
   id _mockGTMKeychainStore;
   id _mockKeychainHelper;
+  // The bundle injected into the migration under test.
   GIDFakeBundle *_bundle;
   id _mockGIDSignInCallbackSchemes;
   id _mockGTMOAuth2Compatibility;
@@ -96,8 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 
   _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kUserDefaultsSuiteName];
   [_userDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
-  _bundle = [[GIDFakeBundle alloc] init];
-  _bundle.bundleIdentifier = kBundleID;
+  _bundle = [[GIDFakeBundle alloc] initWithBundleIdentifier:kBundleID infoDictionary:@{}];
   _mockGTMAppAuthFetcherAuthorization = OCMStrictClassMock([GTMAuthSession class]);
   _mockGIDAuthStateMigration = OCMStrictClassMock([GIDAuthStateMigration class]);
   _mockGTMKeychainStore = OCMStrictClassMock([GTMKeychainStore class]);
