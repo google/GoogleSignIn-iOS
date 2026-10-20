@@ -223,24 +223,29 @@ static NSString *_Nullable GIDHostedDomainFromIDTokenString(NSString *_Nullable 
     }
   }
   // This is the first handler in the queue, a fetch is needed.
-  // Build the request under `_authStateLock`. This prevents the request-building from
-  // interleaving with token response updates.
-  // These helpers do not (and must not) call back into this object.
+  // Read the auth state under `_authStateLock` so the reads cannot interleave with token
+  // response updates. Only the reads are locked: building the parameters can block (the EMM
+  // helper may wait on a keychain probe), so it runs outside the lock.
+  NSDictionary<NSString *, NSString *> *lastTokenAdditionalParameters;
+  @synchronized(_authStateLock) {
+    lastTokenAdditionalParameters = self.authState.lastTokenResponse.request.additionalParameters;
+  }
+
+  NSMutableDictionary *additionalParameters = [@{} mutableCopy];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:
+      [GIDEMMSupport updatedEMMParametersWithParameters:lastTokenAdditionalParameters]];
+#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:lastTokenAdditionalParameters];
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+  [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
+
+  // Read the authorization response and build the request in one lock window so they come
+  // from the same auth state. `tokenRefreshRequestWithAdditionalParameters:` does not call back
+  // into this object.
   OIDAuthorizationResponse *authorizationResponse;
   OIDTokenRequest *tokenRefreshRequest;
   @synchronized(_authStateLock) {
-    NSDictionary<NSString *, NSString *> *lastTokenAdditionalParameters =
-        self.authState.lastTokenResponse.request.additionalParameters;
-
-    NSMutableDictionary *additionalParameters = [@{} mutableCopy];
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    [additionalParameters addEntriesFromDictionary:
-        [GIDEMMSupport updatedEMMParametersWithParameters:lastTokenAdditionalParameters]];
-#elif TARGET_OS_OSX || TARGET_OS_MACCATALYST
-    [additionalParameters addEntriesFromDictionary:lastTokenAdditionalParameters];
-#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    [additionalParameters addEntriesFromDictionary:[GIDSignInPreferences loggingParameters]];
-
     authorizationResponse = self.authState.lastAuthorizationResponse;
     tokenRefreshRequest =
         [self.authState tokenRefreshRequestWithAdditionalParameters:additionalParameters];
