@@ -25,7 +25,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDEMMAlertWindowPresenter {
+  // The transparent window the alert is presented in while it is showing, or nil.
   UIWindow *_alertWindow;
+  // The window that was key before the alert was shown; made key again on dismissal.
   UIWindow *_keyWindow;
 }
 

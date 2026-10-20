@@ -25,30 +25,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// The handler for displaying EMM-specific errors to users.
+/// The handler for displaying EMM-specific errors to users.
 @interface GIDEMMErrorHandler : NSObject
 
-// Retrieve the shared instance of this class.
+/// Returns the shared instance of this class.
 + (instancetype)sharedInstance;
 
-// Creates a handler that finds the key window and opens URLs through `application`, and shows its
-// alerts through `alertPresenter`.
+/// Creates a handler that finds the key window and opens URLs through `application`, and shows its
+/// alerts through `alertPresenter`.
 - (instancetype)initWithApplication:(id<GIDApplication>)application
                      alertPresenter:(id<GIDEMMAlertPresenter>)alertPresenter
     NS_DESIGNATED_INITIALIZER;
 
-// Creates a handler backed by `UIApplication.sharedApplication` and a `GIDEMMAlertWindowPresenter`.
+/// Creates a handler backed by `UIApplication.sharedApplication` and a
+/// `GIDEMMAlertWindowPresenter`.
 - (instancetype)init;
 
-// Returns the application's key window, or nil if there is none.
-// Exposed for the unit tests.
+/// Returns the application's key window, or nil if there is none.
+/// Exposed for the unit tests.
 - (nullable UIWindow *)keyWindow;
 
-// Handles EMM-specific errors in the server |response|. |completion| is always called
-// exactly once, asynchronously on the main thread, with |YES| if |response| carries an EMM
-// error and |NO| otherwise. For an EMM error, a remediation dialog is presented and
-// |completion| is called after the user dismisses it — unless another EMM dialog is already
-// pending or no dialog can be presented, in which case it is called as soon as possible.
+/// Handles EMM-specific errors in the server |response|. |completion| is always called
+/// exactly once, asynchronously on the main thread, with |YES| if |response| carries an EMM
+/// error and |NO| otherwise. For an EMM error, a remediation dialog is presented and
+/// |completion| is called after the user dismisses it — unless another EMM dialog is already
+/// pending or no dialog can be presented, in which case it is called as soon as possible.
 - (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
                      completion:(void (^)(BOOL handled))completion;
 
