@@ -16,6 +16,8 @@
 
 #import "GoogleSignIn/Sources/GIDBundle/Fake/GIDFakeBundle.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * @class GIDFakeMainBundle
  * @brief A `GIDFakeBundle` pre-populated the way a host app's Info.plist would be for Google
@@ -90,9 +92,11 @@
  * @param hostedDomain The fake hosted domain for the app.
  * @param openIDRealm The fake OpenID realm for the app.
  */
-- (void)fakeWithClientID:(id)clientID
-          serverClientID:(id)serverClientID
-            hostedDomain:(id)hostedDomain
-             openIDRealm:(id)openIDRealm;
+- (void)fakeWithClientID:(nullable id)clientID
+          serverClientID:(nullable id)serverClientID
+            hostedDomain:(nullable id)hostedDomain
+             openIDRealm:(nullable id)openIDRealm;
 
 @end
+
+NS_ASSUME_NONNULL_END
