@@ -14,9 +14,6 @@
 
 #import "GoogleSignIn/Tests/Unit/GIDFakeMainBundle.h"
 
-#import <GoogleUtilities/GULSwizzler.h>
-#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
-
 static NSString *const kCFBundleURLTypesKey = @"CFBundleURLTypes";
 
 static NSString *const kCFBundleURLSchemesKey = @"CFBundleURLSchemes";
@@ -29,44 +26,15 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 
 @implementation GIDFakeMainBundle {
   NSString *_clientId;
-
-  // Represents the Info.plist keys to fake.
-  NSArray *_fakedKeys;
-
-  // Represents the values for any Info.plist keys to be faked.
-  NSMutableDictionary *_fakeConfig;
 }
 
-- (void)startFakingWithClientID:(NSString *)clientId {
-  _clientId = clientId;
-
-  _fakedKeys = @[ kCFBundleURLTypesKey,
-                  kConfigClientIDKey,
-                  kConfigServerClientIDKey,
-                  kConfigHostedDomainKey,
-                  kConfigOpenIDRealmKey ];
-  
-  _fakeConfig = [@{ @"GIDClientID" : clientId } mutableCopy];
-
-  [GULSwizzler swizzleClass:[NSBundle class]
-                   selector:@selector(objectForInfoDictionaryKey:)
-            isClassSelector:NO
-                  withBlock:^id(id _self, NSString *key) {
-    if ([self->_fakedKeys containsObject:key]) {
-      return self->_fakeConfig[key];
-    } else {
-      @throw [NSException exceptionWithName:@"Requested unexpected info.plist key."
-                                     reason:nil
-                                   userInfo:nil];
-    }
-  }];
-}
-
-- (void)stopFaking {
-  [GULSwizzler unswizzleClass:[NSBundle class]
-                     selector:@selector(objectForInfoDictionaryKey:)
-              isClassSelector:NO];
-  _fakeConfig = nil;
+- (instancetype)initWithClientID:(NSString *)clientID {
+  self = [super initWithBundleIdentifier:nil
+                          infoDictionary:@{kConfigClientIDKey : clientID}];
+  if (self) {
+    _clientId = [clientID copy];
+  }
+  return self;
 }
 
 #pragma mark - Utilities
@@ -108,31 +76,34 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 #pragma mark - URL Schemes
 
 - (void)fakeAllSchemesSupported {
-  _fakeConfig[kCFBundleURLTypesKey] = @[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
   ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeAllSchemesSupportedAndMerged {
-  _fakeConfig[kCFBundleURLTypesKey] = @[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[
         [self reversedClientId]
       ]
     },
   ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeAllSchemesSupportedWithCasesMangled {
   NSString *caseFlippedReverseClientId =
       [self stringByFlippingCasesInString:[self reversedClientId]];
-  _fakeConfig[kCFBundleURLTypesKey] = @[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ caseFlippedReverseClientId ]
     }
   ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeMissingClientIdScheme {
@@ -140,19 +111,20 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
 }
 
 - (void)fakeMissingAllSchemes {
-  _fakeConfig[kCFBundleURLTypesKey] = nil;
+  [self setObject:nil forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeOtherSchemes {
-  _fakeConfig[kCFBundleURLTypesKey] = @[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     }
   ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeOtherSchemesAndAllSchemes {
-  _fakeConfig[kCFBundleURLTypesKey] = @[
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes = @[
     @{
       kCFBundleURLSchemesKey : @[ @"junk" ]
     },
@@ -160,16 +132,17 @@ static NSString *const kConfigOpenIDRealmKey = @"GIDOpenIDRealm";
       kCFBundleURLSchemesKey : @[ [self reversedClientId] ]
     }
   ];
+  [self setObject:urlTypes forInfoDictionaryKey:kCFBundleURLTypesKey];
 }
 
 - (void)fakeWithClientID:(id)clientID
           serverClientID:(id)serverClientID
             hostedDomain:(id)hostedDomain
              openIDRealm:(id)openIDRealm {
-  _fakeConfig[kConfigClientIDKey] = clientID;
-  _fakeConfig[kConfigServerClientIDKey] = serverClientID;
-  _fakeConfig[kConfigHostedDomainKey] = hostedDomain;
-  _fakeConfig[kConfigOpenIDRealmKey] = openIDRealm;
+  [self setObject:clientID forInfoDictionaryKey:kConfigClientIDKey];
+  [self setObject:serverClientID forInfoDictionaryKey:kConfigServerClientIDKey];
+  [self setObject:hostedDomain forInfoDictionaryKey:kConfigHostedDomainKey];
+  [self setObject:openIDRealm forInfoDictionaryKey:kConfigOpenIDRealmKey];
 }
 
 @end

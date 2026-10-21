@@ -24,6 +24,8 @@
 #import <AppKit/AppKit.h>
 #endif
 
+#import "GoogleSignIn/Sources/GIDBundle/API/GIDBundle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class GIDGoogleUser;
@@ -60,6 +62,29 @@ typedef void (^GIDDisconnectCompletion)(NSError *_Nullable error);
                              appCheck:(GIDAppCheck *)appCheck
 API_AVAILABLE(ios(14));
 #endif // TARGET_OS_IOS || !TARGET_OS_MACCATALYST
+
+/// Creates an instance with the keychain store, the migration service, the bundle whose Info.plist
+/// supplies the configuration and URL schemes, and the user defaults that record whether the app
+/// has run before. The designated initializer; the other initializers call through to it.
+///
+/// `bundle` must describe the running app. The OS delivers sign-in callbacks to the URL schemes
+/// declared in the main bundle's Info.plist, and `-signInWithOptions:` raises
+/// `NSInvalidArgumentException` when the bundle it is given does not declare them. Production code
+/// passes `NSBundle.mainBundle`; anything else is for tests only.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults NS_DESIGNATED_INITIALIZER;
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+/// Same as above, also taking the `GIDAppCheck` to use.
+- (instancetype)initWithKeychainStore:(GTMKeychainStore *)keychainStore
+            authStateMigrationService:(GIDAuthStateMigration *)authStateMigrationService
+                             appCheck:(GIDAppCheck *)appCheck
+                               bundle:(id<GIDBundle>)bundle
+                         userDefaults:(NSUserDefaults *)userDefaults
+API_AVAILABLE(ios(14));
+#endif // TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 /// Authenticates with extra options.
 - (void)signInWithOptions:(GIDSignInInternalOptions *)options;

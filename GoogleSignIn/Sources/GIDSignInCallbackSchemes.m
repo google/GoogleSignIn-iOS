@@ -14,23 +14,28 @@
 
 #import "GoogleSignIn/Sources/GIDSignInCallbackSchemes.h"
 
+#import "GoogleSignIn/Sources/GIDBundle/Implementation/NSBundle+GIDBundle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation GIDSignInCallbackSchemes {
   NSString *_clientIdentifier;
+  // The bundle whose Info.plist declares the host app's URL schemes.
+  id<GIDBundle> _bundle;
 }
 
 /**
- * @fn relevantURLSchemes
- * @brief Extracts CFBundleURLSchemes from the host app's info.plist.
- * @return An array of lowercase NSString *'s representing the URL schemes the host app has declared
+ * @fn relevantURLSchemesInBundle:
+ * @brief Extracts CFBundleURLSchemes from a bundle's Info.plist.
+ * @param bundle The bundle whose Info.plist declares the URL schemes.
+ * @return An array of lowercase NSString *'s representing the URL schemes the bundle has declared
  *     support for.
  * @remarks Branched from google3/googlemac/iPhone/Firebase/Source/GGLBundleUtil.m
  */
-+ (NSArray *)relevantURLSchemes {
-  NSMutableArray *result = [NSMutableArray array];
-  NSBundle *bundle = [NSBundle mainBundle];
-  NSArray *urlTypes = [bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
++ (NSArray<NSString *> *)relevantURLSchemesInBundle:(id<GIDBundle>)bundle {
+  NSMutableArray<NSString *> *result = [NSMutableArray array];
+  NSArray<NSDictionary<NSString *, id> *> *urlTypes =
+      [bundle objectForInfoDictionaryKey:@"CFBundleURLTypes"];
   for (NSDictionary *urlType in urlTypes) {
     NSArray *urlTypeSchemes = urlType[@"CFBundleURLSchemes"];
     for (NSString *urlTypeScheme in urlTypeSchemes) {
@@ -40,12 +45,18 @@ NS_ASSUME_NONNULL_BEGIN
   return result;
 }
 
-- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier {
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier
+                                  bundle:(id<GIDBundle>)bundle {
   self = [super init];
   if (self) {
     _clientIdentifier = [clientIdentifier copy];
+    _bundle = bundle;
   }
   return self;
+}
+
+- (instancetype)initWithClientIdentifier:(NSString *)clientIdentifier {
+  return [self initWithClientIdentifier:clientIdentifier bundle:[NSBundle mainBundle]];
 }
 
 - (NSString *)clientIdentifierScheme {
@@ -55,8 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
   return reversedClientIdentifier.lowercaseString;
 }
 
-- (NSArray *)allSchemes {
-  NSMutableArray *schemes = [NSMutableArray array];
+- (NSArray<NSString *> *)allSchemes {
+  NSMutableArray<NSString *> *schemes = [NSMutableArray array];
   NSString *clientIdentifierScheme = [self clientIdentifierScheme];
   if (clientIdentifierScheme) {
     [schemes addObject:clientIdentifierScheme];
@@ -64,9 +75,9 @@ NS_ASSUME_NONNULL_BEGIN
   return schemes;
 }
 
-- (NSMutableArray *)unsupportedSchemes {
+- (NSMutableArray<NSString *> *)unsupportedSchemes {
   NSMutableArray *unsupportedSchemes = [NSMutableArray arrayWithArray:[self allSchemes]];
-  NSArray *supportedSchemes = [[self class] relevantURLSchemes];
+  NSArray<NSString *> *supportedSchemes = [[self class] relevantURLSchemesInBundle:_bundle];
   [unsupportedSchemes removeObjectsInArray:supportedSchemes];
   return unsupportedSchemes;
 }

@@ -14,26 +14,31 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
+#import "GoogleSignIn/Sources/GIDBundle/Fake/GIDFakeBundle.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * @class GIDFakeMainBundle
- * @brief Helps fake [NSBundle mainBundle]
+ * @brief A `GIDFakeBundle` pre-populated the way a host app's Info.plist would be for Google
+ *     Sign-In, with helpers to describe common URL-scheme configurations.
  */
-@interface GIDFakeMainBundle : NSObject
+@interface GIDFakeMainBundle : GIDFakeBundle
 
 /**
- * @fn startFakingWithClientID:
- * @brief Starts faking [NSBundle mainBundle]
- * @param clientID The fake client idenfitier for the app.
+ * @fn initWithClientID:
+ * @brief Creates a bundle whose `GIDClientID` Info.plist value is `clientID`.
+ * @param clientID The fake client identifier for the app.
  */
-- (void)startFakingWithClientID:(NSString *)clientID;
+- (instancetype)initWithClientID:(NSString *)clientID NS_DESIGNATED_INITIALIZER;
 
-/**
- * @fn stopFaking
- * @brief Stops faking [NSBundle mainBundle]
- */
-- (void)stopFaking;
+/** Unavailable. Use `-initWithClientID:`. */
+- (instancetype)init NS_UNAVAILABLE;
+
+/** Unavailable. Use `-initWithClientID:`. */
+- (instancetype)initWithBundleIdentifier:(nullable NSString *)bundleIdentifier
+                          infoDictionary:(NSDictionary<NSString *, id> *)infoDictionary
+    NS_UNAVAILABLE;
 
 #pragma mark - URL Schemes
 
@@ -87,9 +92,11 @@
  * @param hostedDomain The fake hosted domain for the app.
  * @param openIDRealm The fake OpenID realm for the app.
  */
-- (void)fakeWithClientID:(id)clientID
-          serverClientID:(id)serverClientID
-            hostedDomain:(id)hostedDomain
-             openIDRealm:(id)openIDRealm;
+- (void)fakeWithClientID:(nullable id)clientID
+          serverClientID:(nullable id)serverClientID
+            hostedDomain:(nullable id)hostedDomain
+             openIDRealm:(nullable id)openIDRealm;
 
 @end
+
+NS_ASSUME_NONNULL_END
