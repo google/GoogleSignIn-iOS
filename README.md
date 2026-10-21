@@ -1,8 +1,11 @@
-[![Version](https://img.shields.io/cocoapods/v/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
-[![Platform](https://img.shields.io/cocoapods/p/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
-[![License](https://img.shields.io/cocoapods/l/GoogleSignIn.svg?style=flat)](https://cocoapods.org/pods/GoogleSignIn)
+[![Release](https://img.shields.io/github/v/release/google/GoogleSignIn-iOS?style=flat)](https://github.com/google/GoogleSignIn-iOS/releases)
+[![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-brightgreen?style=flat)](https://swift.org/package-manager/)
+[![License](https://img.shields.io/github/license/google/GoogleSignIn-iOS?style=flat)](LICENSE)
 [![unit_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml)
 [![integration_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml)
+
+> [!IMPORTANT]
+> **CocoaPods distribution is deprecated.** CocoaPods trunk becomes read-only on December 2, 2026, and future Google Sign-In releases will be distributed through Swift Package Manager only. See [Migrating from CocoaPods to Swift Package Manager](MIGRATING_FROM_COCOAPODS.md).
 
 # Google Sign-In for iOS and macOS
 
@@ -13,21 +16,34 @@ Visit [our developer site](https://developers.google.com/identity/sign-in/ios/)
 for integration instructions, documentation, support information, and terms of
 service.
 
+## Installation
+
+Google Sign-In is distributed with [Swift Package Manager](https://swift.org/package-manager/).
+
+In Xcode, choose **File > Add Package Dependencies…**, enter
+`https://github.com/google/GoogleSignIn-iOS`, and add the product you need to your target:
+
+* `GoogleSignIn` — the core SDK (Swift and Objective-C).
+* `GoogleSignInSwift` — the SwiftUI `GoogleSignInButton`.
+
+Or add it to your `Package.swift`:
+
+```swift
+dependencies: [
+  .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "10.0.0")
+]
+```
+
+and depend on `.product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")` (and, for SwiftUI,
+`.product(name: "GoogleSignInSwift", package: "GoogleSignIn-iOS")`) in your target.
+
+If you currently use CocoaPods, see
+[Migrating from CocoaPods to Swift Package Manager](MIGRATING_FROM_COCOAPODS.md).
+
 ## Getting Started
 
 Try either the [Objective-C](Samples/ObjC) or [Swift](Samples/Swift) sample app.
-For example, to demo the Objective-C sample project, you have two options:
-
-1. Using CocoaPod's `install` method:
-
-```
-git clone https://github.com/google/GoogleSignIn-iOS
-cd GoogleSignIn-iOS/Samples/ObjC/SignInSample/
-pod install
-open SignInSampleForPod.xcworkspace
-```
-
-2. Using [Swift Package Manager](https://swift.org/package-manager/):
+For example, to demo the Objective-C sample project:
 
 ```
 git clone https://github.com/google/GoogleSignIn-iOS
