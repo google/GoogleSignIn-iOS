@@ -37,6 +37,42 @@ jobs:
           -scheme GoogleSignIn-Package \
           -destination "platform=OS X"
 
+  spm-app-check-11:
+    # Package.swift accepts app-check 11.x and 12.x, but Package.resolved is gitignored, so
+    # spm-build-test always gets the newest (12.x). Pin the latest 11.x (what Firebase 12
+    # apps resolve) to keep SPM + AppCheckCore 11 covered. iOS only: all App Check code is
+    # behind TARGET_OS_IOS && !TARGET_OS_MACCATALYST.
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+    - name: Pin app-check to the latest 11.x
+      run: |
+       version=$(git ls-remote --tags --refs https://github.com/google/app-check.git '11.*' \
+         | sed 's|.*refs/tags/||' | sort -V | tail -1)
+       echo "Pinning app-check $version"
+       # `resolve <name> --version` can only re-pin an already-resolved dependency.
+       swift package resolve
+       swift package resolve app-check --version "$version"
+    - name: Build unit test target
+      run: |
+       xcodebuild \
+         -scheme GoogleSignIn-Package \
+         -sdk iphonesimulator \
+         -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
+         -onlyUsePackageVersionsFromResolvedFile \
+         build-for-testing
+    - name: Run unit test target
+      run: |
+       xcodebuild \
+         -scheme GoogleSignIn-Package \
+         -sdk iphonesimulator \
+         -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6" \
+         -onlyUsePackageVersionsFromResolvedFile \
+         test-without-building
+
+
   xcode-27-preview-archive:
     # Archive every supported platform against the Xcode 27 preview image. The
     # image is preview, so this job does not block merges.

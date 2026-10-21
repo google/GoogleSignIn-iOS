@@ -35,7 +35,7 @@
 #import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -406,13 +406,16 @@ static NSString *const kMultipleClaimsJsonString =
   }
 }
 
-- (void)testConfigureFailsNoTokenOrError {
+- (void)testConfigureFailsWithProviderError {
   if (@available(iOS 14, *)) {
     XCTestExpectation *configureFailsExpecation =
     [self expectationWithDescription:@"Configure fails expectation"];
 
+    NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                                 code:kGIDAppCheckProviderFakeError
+                                             userInfo:nil];
     GIDAppCheckProviderFake *fakeProvider =
-        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
     GIDAppCheck *appCheck =
         [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
                                          userDefaults:_testUserDefaults];
@@ -423,10 +426,10 @@ static NSString *const kMultipleClaimsJsonString =
                                                           bundle:_fakeMainBundle
                                                     userDefaults:_testUserDefaults];
 
-    // Should fail if missing both token and error
+    // Should fail and stay unprepared when the provider returns an error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
-      XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+      XCTAssertEqualObjects(error, expectedError);
       [configureFailsExpecation fulfill];
     }];
 
@@ -529,7 +532,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
 
-  // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
+  // Mock generating the token snapshot (tokens, granted scopes and GIDConfiguration) when
+  // initializing GIDGoogleUser.
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstance];
 
@@ -539,6 +543,7 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
+  OCMStub([_tokenResponse scope]).andReturn(nil);
 
   [_signIn restorePreviousSignInNoRefresh];
 
