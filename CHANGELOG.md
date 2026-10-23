@@ -1,18 +1,20 @@
-# Unreleased
-- Fix a crash when a server error response carries a non-string value under its `error` key. The EMM error handler sent `-hasPrefix:` to whatever value was present, raising an unrecognized selector exception on a number, array or object.
-- Fix a custom `nonce` and requested token `claims` being dropped when a sign-in is continued after a Device Policy app restart.
-- Deprecate CocoaPods distribution. This is the last release published to CocoaPods; CocoaPods trunk becomes read-only on December 2, 2026. Migrate to Swift Package Manager using [MIGRATING_FROM_COCOAPODS.md](MIGRATING_FROM_COCOAPODS.md). ([#607](https://github.com/google/GoogleSignIn-iOS/issues/607))
-- Add Swift Package Manager support for AppCheckCore 12.x, enabling compatibility with Firebase 13. The CocoaPods podspec also accepts AppCheckCore 11.x or 12.x. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
-- Fix a failed App Check preparation being recorded as successful, which made later calls to `-[GIDSignIn configureWithCompletion:]` report success without retrying. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
-- With AppCheckCore 11.x (including all CocoaPods installations), a custom App Check provider that returns neither a token nor an error is now treated as success instead of failing with `kGIDAppCheckUnexpectedError`. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
-- Fix a data race on `GIDGoogleUser`'s tokens. Concurrent token updates could write the access, refresh and ID tokens from different threads at once, and readers could observe a partially updated set. The tokens, granted scopes, configuration and profile are now published together as one snapshot.
-- `GIDGoogleUser`'s `accessToken`, `refreshToken`, `idToken` and `profile` are now all derived from that snapshot, so key-value observers of any one of them are notified whenever any of them changes, not only when that property's own value changes. `profile` now sends key-value notifications; previously it sent none.
-- Key-value observers of those properties are notified while `GIDGoogleUser` holds its internal lock. Calling back into the same user from the observer is fine, but an observer must not synchronously wait (for example with `dispatch_sync`) on another thread that is updating the same user.
-- `GIDGoogleUser`'s `configuration` is now computed once, when the user is created, and stays fixed for the user's lifetime. Previously it was computed on first access, so a first read after a token update could reflect that update's client ID, server client ID or hosted domain.
-- Fix a token refresh that was in flight while scopes were added overwriting the newer tokens. `GIDGoogleUser` now drops a refresh response when the authorization it was requested for has been replaced, so `grantedScopes` and `accessToken` no longer revert to their pre-add-scopes values.
-- Fix EMM remediation dialogs being suppressed for the rest of the app's lifetime after a single error arrived while no key window was available. The pending-dialog flag is now cleared on every exit path, and its clearing write is synchronized to match the read.
-- Fix a token request that failed with an EMM error sometimes being reported with the underlying OAuth error instead of `kGIDSignInErrorCodeEMM` when no remediation dialog could be presented.
-- Fix an EMM error that arrived while a remediation dialog was already showing being reported as `kGIDSignInErrorCodeUnknown` (or as the underlying OAuth error, for a token request) instead of `kGIDSignInErrorCodeEMM`. No second dialog is shown.
+# 10.1.0
+- DEPRECATE COCOAPODS DISTRIBUTION. This is the last release published to CocoaPods, which becomes read-only on December 2, 2026 - migrate to Swift Package Manager using [MIGRATING_FROM_COCOAPODS.md](MIGRATING_FROM_COCOAPODS.md). ([#656](https://github.com/google/GoogleSignIn-iOS/pull/656))
+- Support AppCheckCore 12.x, so apps using Swift Package Manager can now upgrade to Firebase 13 (the podspec also accepts AppCheckCore 11.x or 12.x). With AppCheckCore 11.x, a custom App Check provider that returns neither a token nor an error now counts as success, and a failed App Check preparation is no longer reported as successful. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
+- Fix concurrency issues in `GIDGoogleUser`:
+  - Key-value observers of `accessToken`, `refreshToken`, `idToken` and `profile` are now notified whenever any of them changes, so they never see a half-updated user (`profile` previously sent no notifications). `configuration` is now fixed when the user is created, instead of possibly reflecting a later token update. ([#651](https://github.com/google/GoogleSignIn-iOS/pull/651))
+  - Key-value observers are now notified while `GIDGoogleUser` holds its internal lock. Calling back into the same user is fine, but an observer must not synchronously wait (e.g. with `dispatch_sync`) on another thread that is updating that user. ([#652](https://github.com/google/GoogleSignIn-iOS/pull/652))
+  - `grantedScopes` and `accessToken` no longer revert to their pre-add-scopes values when a token refresh was in flight while scopes were added. ([#653](https://github.com/google/GoogleSignIn-iOS/pull/653))
+  - Readers no longer see a mix of old and new tokens during a concurrent update. ([#645](https://github.com/google/GoogleSignIn-iOS/pull/645))
+- Fix a custom `nonce` and requested `claims` being dropped when a sign-in is continued after a Device Policy app restart. ([#637](https://github.com/google/GoogleSignIn-iOS/pull/637))
+- Fix EMM remediation dialogs being suppressed for the rest of the app's lifetime after an error arrived with no key window, and EMM errors sometimes being reported as `kGIDSignInErrorCodeUnknown` or the underlying OAuth error instead of `kGIDSignInErrorCodeEMM`. ([#642](https://github.com/google/GoogleSignIn-iOS/pull/642))
+- Fix a crash when a server error response carries a non-string value under its `error` key. ([#638](https://github.com/google/GoogleSignIn-iOS/pull/638))
+- Internal
+  - Replace the `NSBundle` swizzle in tests with an injected `GIDBundle` seam ([#658](https://github.com/google/GoogleSignIn-iOS/pull/658))
+  - Warm up simulator runtimes before iOS simulator CI jobs ([#657](https://github.com/google/GoogleSignIn-iOS/pull/657))
+  - Run unit tests under Thread Sanitizer for iOS ([#644](https://github.com/google/GoogleSignIn-iOS/pull/644))
+  - Simplify EMM tests ([#641](https://github.com/google/GoogleSignIn-iOS/pull/641))
+  - Update push and PR notifications to use Cards v2 ([#636](https://github.com/google/GoogleSignIn-iOS/pull/636))
 
 # 10.0.0
 - **BREAKING**: Update to AppAuth 3.0.0 and GTMAppAuth 6.0.0, which raises the minimum deployment targets to iOS 15.0 and macOS 12.0, widens the `GTMSessionFetcher` dependency to allow 4.x and 5.x, and renames the version-specific Swift Package Manager manifest to `Package@swift-5.7.swift`. Projects that must keep supporting earlier OS versions should stay on GoogleSignIn 9.2.0. ([#628](https://github.com/google/GoogleSignIn-iOS/pull/628))
