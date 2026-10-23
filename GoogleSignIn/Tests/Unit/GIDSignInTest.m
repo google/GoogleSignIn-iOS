@@ -1936,8 +1936,8 @@ static NSString *const kMultipleClaimsJsonString =
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorFieldError : errorJSON }];
   id emmSupport = OCMStrictClassMock([GIDEMMSupport class]);
-  [[emmSupport expect] handleTokenFetchEMMError:emmError
-                                     completion:SAVE_TO_ARG_BLOCK(completion)];
+  [[[emmSupport expect] classMethod] handleTokenFetchEMMError:emmError
+                                                   completion:SAVE_TO_ARG_BLOCK(completion)];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil
