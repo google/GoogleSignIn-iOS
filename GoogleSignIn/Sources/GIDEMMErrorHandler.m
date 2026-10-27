@@ -45,7 +45,9 @@ typedef enum {
 } ErrorCode;
 
 @implementation GIDEMMErrorHandler {
+  // Finds the key window and opens URLs.
   id<GIDApplication> _application;
+  // Shows and hides the remediation alert.
   id<GIDEMMAlertPresenter> _alertPresenter;
   // Whether or not a dialog is pending user interaction.
   BOOL _pendingDialog;
