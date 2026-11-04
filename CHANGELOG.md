@@ -1,5 +1,5 @@
 # 10.1.0
-- DEPRECATE COCOAPODS DISTRIBUTION. This is the last release published to CocoaPods, which becomes read-only on December 2, 2026 - migrate to Swift Package Manager using [MIGRATING_FROM_COCOAPODS.md](MIGRATING_FROM_COCOAPODS.md). ([#656](https://github.com/google/GoogleSignIn-iOS/pull/656))
+- DEPRECATE COCOAPODS DISTRIBUTION. This is the last release published to CocoaPods, which becomes read-only on December 2, 2026 - migrate to Swift Package Manager using [MIGRATING_FROM_COCOAPODS.md](https://github.com/google/GoogleSignIn-iOS/blob/main/MIGRATING_FROM_COCOAPODS.md). ([#656](https://github.com/google/GoogleSignIn-iOS/pull/656))
 - Support AppCheckCore 12.x, so apps using Swift Package Manager can now upgrade to Firebase 13 (the podspec also accepts AppCheckCore 11.x or 12.x). With AppCheckCore 11.x, a custom App Check provider that returns neither a token nor an error now counts as success, and a failed App Check preparation is no longer reported as successful. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))
 - Fix concurrency issues in `GIDGoogleUser`:
   - Key-value observers of `accessToken`, `refreshToken`, `idToken` and `profile` are now notified whenever any of them changes, so they never see a half-updated user (`profile` previously sent no notifications). `configuration` is now fixed when the user is created, instead of possibly reflecting a later token update. ([#651](https://github.com/google/GoogleSignIn-iOS/pull/651))
@@ -47,7 +47,7 @@
   - Upgrade GitHub Actions to the latest versions for Node 24 compatibility ([#592](https://github.com/google/GoogleSignIn-iOS/pull/592), [#593](https://github.com/google/GoogleSignIn-iOS/pull/593))
 
 # 9.1.0
-- Allow requesting `claims` (currently, only `auth_time`) via [Sign-in methods](https://github.com/google/GoogleSignIn-iOS/blob/gandhiakshat/update-changelog-for-9.1.0-release/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240) ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
+- Allow requesting `claims` (currently, only `auth_time`) via [Sign-in methods](https://github.com/google/GoogleSignIn-iOS/blob/9.1.0/GoogleSignIn/Sources/Public/GoogleSignIn/GIDSignIn.h#L240) ([#550](https://github.com/google/GoogleSignIn-iOS/pull/550), [#552](https://github.com/google/GoogleSignIn-iOS/pull/552), [#553](https://github.com/google/GoogleSignIn-iOS/pull/553), [#569](https://github.com/google/GoogleSignIn-iOS/pull/569))
 - Update `addScopes:` methods in `GIDSignIn` to include previously requested `claims` ([#557](https://github.com/google/GoogleSignIn-iOS/pull/557))
 - Internal
   - Assign to `keychainStore` asap in initializer ([#540](https://github.com/google/GoogleSignIn-iOS/pull/540))
