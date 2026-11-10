@@ -4,8 +4,7 @@
 [![unit_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/unit_tests.yml)
 [![integration_tests](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml/badge.svg?branch=main)](https://github.com/google/GoogleSignIn-iOS/actions/workflows/integration_tests.yml)
 
-> [!IMPORTANT]
-> **CocoaPods distribution is deprecated.** CocoaPods trunk becomes read-only on December 2, 2026, and future Google Sign-In releases will be distributed through Swift Package Manager only. See [Migrating from CocoaPods to Swift Package Manager](MIGRATING_FROM_COCOAPODS.md).
+> **CocoaPods support ended with Google Sign-In 10.1.0.** Later releases are distributed through Swift Package Manager only. See [Migrating from CocoaPods to Swift Package Manager](MIGRATING_FROM_COCOAPODS.md).
 
 # Google Sign-In for iOS and macOS
 

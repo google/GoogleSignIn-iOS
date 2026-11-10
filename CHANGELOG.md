@@ -1,3 +1,6 @@
+# Unreleased
+- Removed the podspecs, the samples' Podfiles and `ForPod` projects, and the CocoaPods CI jobs. Google Sign-In 10.1.0 remains the last version on CocoaPods; later releases are distributed through Swift Package Manager only. See [MIGRATING_FROM_COCOAPODS.md](https://github.com/google/GoogleSignIn-iOS/blob/main/MIGRATING_FROM_COCOAPODS.md). ([#607](https://github.com/google/GoogleSignIn-iOS/issues/607))
+
 # 10.1.0
 - DEPRECATE COCOAPODS DISTRIBUTION. This is the last release published to CocoaPods, which becomes read-only on December 2, 2026 - migrate to Swift Package Manager using [MIGRATING_FROM_COCOAPODS.md](https://github.com/google/GoogleSignIn-iOS/blob/main/MIGRATING_FROM_COCOAPODS.md). ([#656](https://github.com/google/GoogleSignIn-iOS/pull/656))
 - Support AppCheckCore 12.x, so apps using Swift Package Manager can now upgrade to Firebase 13 (the podspec also accepts AppCheckCore 11.x or 12.x). With AppCheckCore 11.x, a custom App Check provider that returns neither a token nor an error now counts as success, and a failed App Check preparation is no longer reported as successful. ([#626](https://github.com/google/GoogleSignIn-iOS/pull/626))

@@ -1,22 +1,5 @@
 # Google Sign-In with Firebase App Check Sample App
 
-## CocoaPods
-
-1. In the `../Samples/Swift/AppAttestExample/` folder, run the following 
-[CocoaPods](https://cocoapods.org) command.
-
-```
-pod install
-```
-
-2. Open the generated workspace:
-
-```
-open AppAttestExample.xcworkspace
-```
-
-3. Run the `AppAttestExampleForPod` target.
-
 ## Swift Package Manager
 
 1. In the `../Samples/Swift/AppAttestExample/` folder, open the project:

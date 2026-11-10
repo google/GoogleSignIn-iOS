@@ -15,4 +15,5 @@
  */
 
 
-// This is necessary for `SignInSample`'s `Podfile` to use `use_frameworks! :linkage => :static`
+// This file keeps Swift support enabled for the `SignInSample` target, which its Swift package
+// dependencies need.
