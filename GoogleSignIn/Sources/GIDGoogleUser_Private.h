@@ -22,6 +22,9 @@
 #import <AppAuth/AppAuth.h>
 #endif
 
+@class GIDConfiguration;
+@class GIDProfileData;
+@class GIDToken;
 @class OIDAuthState;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,17 +32,41 @@ NS_ASSUME_NONNULL_BEGIN
 /// A completion block that takes a `GIDGoogleUser` or an error if the attempt to refresh tokens was unsuccessful.
 typedef void (^GIDGoogleUserCompletion)(GIDGoogleUser *_Nullable user, NSError *_Nullable error);
 
+/// An immutable snapshot of a user's tokens, profile, and the values derived from the same
+/// auth state.
+/// This value is replaced as a whole so that readers never see a mix of old and new values.
+@interface GIDGoogleUserTokens : NSObject
+
+@property(nonatomic, readonly) GIDToken *accessToken;
+@property(nonatomic, readonly) GIDToken *refreshToken;
+@property(nonatomic, readonly, nullable) GIDToken *idToken;
+@property(nonatomic, readonly, nullable) NSArray<NSString *> *grantedScopes;
+@property(nonatomic, readonly) GIDConfiguration *configuration;
+@property(nonatomic, readonly, nullable) GIDProfileData *profile;
+
+- (instancetype)initWithAccessToken:(GIDToken *)accessToken
+                       refreshToken:(GIDToken *)refreshToken
+                            idToken:(nullable GIDToken *)idToken
+                      grantedScopes:(nullable NSArray<NSString *> *)grantedScopes
+                      configuration:(GIDConfiguration *)configuration
+                            profile:(nullable GIDProfileData *)profile NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
 /// Internal methods for the class that are not part of the public API.
 @interface GIDGoogleUser () <OIDAuthStateChangeDelegate>
 
-@property(nonatomic, readwrite) GIDToken *accessToken;
-
-@property(nonatomic, readwrite) GIDToken *refreshToken;
-
-@property(nonatomic, readwrite, nullable) GIDToken *idToken;
-
 /// A representation of the state of the OAuth session for this instance.
+// TODO: Reads through this property bypass the lock GIDGoogleUser takes around its own auth
+// state updates, and apps can reach the same object through `fetcherAuthorizer`. Fixing this
+// may need a public API change. Tracked in https://github.com/google/GoogleSignIn-iOS/issues/648.
 @property(nonatomic, readonly) OIDAuthState *authState;
+
+/// The user's current tokens, granted scopes, configuration and profile. Read once - accessing
+/// individual properties in sequence is not recommended. Reading once ensures that each property is
+/// from the same update. Writes are serialized by `_authStateLock`.
+@property(atomic, strong, nullable) GIDGoogleUserTokens *tokens;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

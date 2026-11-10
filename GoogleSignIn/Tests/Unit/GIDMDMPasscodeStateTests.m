@@ -21,71 +21,34 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "GoogleSignIn/Sources/GIDLocalAuthentication/Fake/GIDFakeLocalAuthenticationContext.h"
+#import "GoogleSignIn/Sources/GIDMDMPasscodeCache.h"
 #import "GoogleSignIn/Sources/GIDMDMPasscodeState.h"
-
-#import <GoogleUtilities/GULSwizzler.h>
-#import <GoogleUtilities/GULSwizzler+Unswizzle.h>
 
 @interface GIDMDMPasscodeStateTests : XCTestCase
 @end
 
 @implementation GIDMDMPasscodeStateTests {
-  /** Whether or not the iOS version is equal or greater than 9.0. */
-  BOOL _isIOS9orAbove;
-
-  /** Whether or not `canEvaluatePolicy:error:` method has been called. */
-  BOOL _canEvaluatePolicyCalled;
-
-  /** The next result to be returned from the `canEvaluatePolicy:error:` method. */
-  BOOL _nextCanEvaluatePolicyResult;
-
-  /** The next error to be returned from the `canEvaluatePolicy:error:` method. */
-  NSError *_nextCanEvaluatePolicyError;
+  /** Stands in for the `LAContext` the cache probes. */
+  GIDFakeLocalAuthenticationContext *_context;
+  /** The cache under test. */
+  GIDMDMPasscodeCache *_cache;
 }
 
 - (void)setUp {
   [super setUp];
-  _isIOS9orAbove = [[NSProcessInfo processInfo]
-      isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){.majorVersion = 9}];
-  if (!_isIOS9orAbove) {
-    return;
-  }
-  _canEvaluatePolicyCalled = NO;
-  id canEvaluatePolicyError = ^BOOL(id context, LAPolicy policy, NSError * _Nullable *error) {
-    self->_canEvaluatePolicyCalled = YES;
-    XCTAssertEqual(policy, LAPolicyDeviceOwnerAuthentication);
-    if (error) {
-      *error = self->_nextCanEvaluatePolicyError;
-    }
-    return self->_nextCanEvaluatePolicyResult;
-  };
-  [GULSwizzler swizzleClass:[LAContext class]
-                   selector:@selector(canEvaluatePolicy:error:)
-            isClassSelector:NO
-                  withBlock:canEvaluatePolicyError];
-  [self postApplicationDidEnterBackgroundNotification];
-}
-
-- (void)tearDown {
-  if (!_isIOS9orAbove) {
-    return;
-  }
-  [GULSwizzler unswizzleClass:[LAContext class]
-                     selector:@selector(canEvaluatePolicy:error:)
-              isClassSelector:NO];
+  _context = [[GIDFakeLocalAuthenticationContext alloc] init];
+  _cache = [[GIDMDMPasscodeCache alloc] initWithLocalAuthenticationContext:_context];
 }
 
 /**
  * Verifies the correct response when LocalAuthentication API returns without an error.
  */
 - (void)testLocalAuthenticationNoError {
-  if (!_isIOS9orAbove) {
-    return;
-  }
-  _nextCanEvaluatePolicyResult = YES;
-  _nextCanEvaluatePolicyError = nil;
-  GIDMDMPasscodeState *passcodeState = [GIDMDMPasscodeState passcodeState];
-  XCTAssertTrue(_canEvaluatePolicyCalled);
+  _context.canEvaluatePolicyResult = YES;
+  _context.canEvaluatePolicyError = nil;
+  GIDMDMPasscodeState *passcodeState = [_cache passcodeState];
+  XCTAssertEqualObjects(_context.evaluatedPolicies, @[ @(LAPolicyDeviceOwnerAuthentication) ]);
   XCTAssertEqualObjects(passcodeState.status, @"YES");
   NSDictionary *dict = [self dictWithEncodedString:passcodeState.info];
   [self assertJSONNumber:dict[@"LocalAuthentication"][@"result"] isInteger:1];
@@ -97,17 +60,14 @@
  * Verifies the correct response when LocalAuthentication API returns with an error.
  */
 - (void)testLocalAuthenticationHasError {
-  if (!_isIOS9orAbove) {
-    return;
-  }
   NSString *fakeErrorDomain = @"asdf.hjkl";
   NSInteger fakeErrorCode = -12345;
-  _nextCanEvaluatePolicyResult = NO;
-  _nextCanEvaluatePolicyError = [NSError errorWithDomain:fakeErrorDomain
-                                                    code:fakeErrorCode
-                                                userInfo:nil];
-  GIDMDMPasscodeState *passcodeState = [GIDMDMPasscodeState passcodeState];
-  XCTAssertTrue(_canEvaluatePolicyCalled);
+  _context.canEvaluatePolicyResult = NO;
+  _context.canEvaluatePolicyError = [NSError errorWithDomain:fakeErrorDomain
+                                                        code:fakeErrorCode
+                                                    userInfo:nil];
+  GIDMDMPasscodeState *passcodeState = [_cache passcodeState];
+  XCTAssertEqualObjects(_context.evaluatedPolicies, @[ @(LAPolicyDeviceOwnerAuthentication) ]);
   XCTAssertEqualObjects(passcodeState.status, @"NO");
   NSDictionary *dict = [self dictWithEncodedString:passcodeState.info];
   [self assertJSONNumber:dict[@"LocalAuthentication"][@"result"] isInteger:0];
@@ -119,20 +79,16 @@
  * Verifies caching behavior regarding to calling LocalAuthentication API.
  */
 - (void)testLocalAuthenticationCache {
-  if (!_isIOS9orAbove) {
-    return;
-  }
-  GIDMDMPasscodeState *oldPasscodeState = [GIDMDMPasscodeState passcodeState];
-  _canEvaluatePolicyCalled = false;
-  GIDMDMPasscodeState *newPasscodeState = [GIDMDMPasscodeState passcodeState];
-  XCTAssertFalse(_canEvaluatePolicyCalled);
+  GIDMDMPasscodeState *oldPasscodeState = [_cache passcodeState];
+  GIDMDMPasscodeState *newPasscodeState = [_cache passcodeState];
+  XCTAssertEqual(_context.evaluatedPolicies.count, 1u);
   XCTAssertEqualObjects(oldPasscodeState.status, newPasscodeState.status);
   XCTAssertEqualObjects(oldPasscodeState.info, newPasscodeState.info);
 
-  // Verify that the cache is cleared after background notification.
+  // Verify that the cache re-probes LocalAuthentication after the app enters the background.
   [self postApplicationDidEnterBackgroundNotification];
-  [GIDMDMPasscodeState passcodeState];
-  XCTAssertTrue(_canEvaluatePolicyCalled);
+  [_cache passcodeState];
+  XCTAssertEqual(_context.evaluatedPolicies.count, 2u);
 }
 
 /**
@@ -140,9 +96,16 @@
  * Keychain API is in C thus there is no easy way to swizzler them.
  */
 - (void)testKeychain {
-  GIDMDMPasscodeState *passcodeState = [GIDMDMPasscodeState passcodeState];
+  GIDMDMPasscodeState *passcodeState = [_cache passcodeState];
   NSDictionary *dict = [self dictWithEncodedString:passcodeState.info];
   XCTAssertTrue([dict[@"Keychain"][@"result"] isKindOfClass:[NSNumber class]]);
+}
+
+/** Verifies `+[GIDMDMPasscodeState passcodeState]` returns a state with a status and info. */
+- (void)testPasscodeStateClassMethod {
+  GIDMDMPasscodeState *passcodeState = [GIDMDMPasscodeState passcodeState];
+  XCTAssertNotNil(passcodeState.status);
+  XCTAssertNotNil([self dictWithEncodedString:passcodeState.info]);
 }
 
 #pragma mark - Helpers

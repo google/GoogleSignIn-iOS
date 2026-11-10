@@ -27,25 +27,20 @@ static NSString *const kClientId = @"FakeClientID";
 }
 
 - (void)setUp {
-  _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithClientID:kClientId];
-}
-
-- (void)tearDown {
-  [_fakeMainBundle stopFaking];
+  _fakeMainBundle = [[GIDFakeMainBundle alloc] initWithClientID:kClientId];
 }
 
 #pragma mark - Tests
 
 - (void)testClientIdentifierScheme {
   GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId bundle:_fakeMainBundle];
   XCTAssertEqualObjects(schemes.clientIdentifierScheme, kClientId.lowercaseString);
 }
 
 - (void)testAllSchemes {
   GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId bundle:_fakeMainBundle];
   XCTAssertEqual(schemes.allSchemes.count, 1U);
   for (NSString *scheme in schemes.allSchemes) {
     if ([scheme isEqual:kClientId.lowercaseString]) {
@@ -64,7 +59,7 @@ static NSString *const kClientId = @"FakeClientID";
  */
 - (void)testUnsupportedSchemes {
   GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId bundle:_fakeMainBundle];
 
   [_fakeMainBundle fakeAllSchemesSupported];
   XCTAssertEqual([schemes unsupportedSchemes].count, 0ul);
@@ -90,7 +85,7 @@ static NSString *const kClientId = @"FakeClientID";
 
 - (void)testURLSchemeIsCallbackScheme {
   GIDSignInCallbackSchemes *schemes =
-      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId];
+      [[GIDSignInCallbackSchemes alloc] initWithClientIdentifier:kClientId bundle:_fakeMainBundle];
 
   NSURL *clientIdentifierURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:/", kClientId]];
   NSURL *junkIdentifierURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@:/", @"junk"]];

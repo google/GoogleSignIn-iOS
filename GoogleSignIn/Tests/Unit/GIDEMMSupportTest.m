@@ -220,8 +220,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                       userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^savedCompletion)(void);
-  [[[mockEMMErrorHandler stub] andReturnValue:@YES]
+  __block void (^savedCompletion)(BOOL);
+  [[mockEMMErrorHandler stub]
       handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
     savedCompletion = arg;
     return YES;
@@ -239,7 +239,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   }];
   
   [self waitForExpectations:@[ notCalled ] timeout:1];
-  savedCompletion();
+  savedCompletion(YES);
   [self waitForExpectations:@[ called ] timeout:1];
 }
 
@@ -251,8 +251,8 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
                                       userInfo:@{ OIDOAuthErrorResponseErrorKey : errorJSON }];
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^savedCompletion)(void);
-  [[[mockEMMErrorHandler stub] andReturnValue:@NO]
+  __block void (^savedCompletion)(BOOL);
+  [[mockEMMErrorHandler stub]
       handleErrorFromResponse:errorJSON completion:[OCMArg checkWithBlock:^(id arg) {
     savedCompletion = arg;
     return YES;
@@ -270,7 +270,7 @@ static NSString *const kEMMPasscodeInfoKey = @"emm_passcode_info";
   }];
 
   [self waitForExpectations:@[ notCalled ] timeout:1];
-  savedCompletion();
+  savedCompletion(NO);
   [self waitForExpectations:@[ called ] timeout:1];
 }
 

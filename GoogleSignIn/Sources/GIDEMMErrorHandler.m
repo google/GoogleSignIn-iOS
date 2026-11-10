@@ -56,13 +56,13 @@ typedef enum {
   return sharedInstance;
 }
 
-- (BOOL)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
-                     completion:(void (^)(void))completion {
+- (void)handleErrorFromResponse:(NSDictionary<NSString *, id> *)response
+                     completion:(void (^)(BOOL handled))completion {
   ErrorCode errorCode = ErrorCodeNone;
   NSURL *appVerificationURL;
+  BOOL dialogAlreadyPending = NO;
   @synchronized(self) {  // for accessing _pendingDialog
-    if (!_pendingDialog && [UIAlertController class] &&
-        [response isKindOfClass:[NSDictionary class]]) {
+    if ([UIAlertController class] && [response isKindOfClass:[NSDictionary class]]) {
       id errorValue = response[kErrorKey];
       if ([errorValue isKindOfClass:[NSString class]]) {
         if ([errorValue isEqual:kScreenlockRequiredError]) {
@@ -85,20 +85,38 @@ typedef enum {
         }
       }
       if (errorCode) {
-        _pendingDialog = YES;
+        if (_pendingDialog) {
+          dialogAlreadyPending = YES;
+        } else {
+          _pendingDialog = YES;
+        }
       }
     }
   }
   if (!errorCode) {
-    completion();
-    return NO;
+    dispatch_async(dispatch_get_main_queue(), ^() {
+      completion(NO);
+    });
+    return;
+  }
+  if (dialogAlreadyPending) {
+    // Another EMM dialog is on screen; report this error as EMM without stacking a second
+    // dialog on top of it.
+    dispatch_async(dispatch_get_main_queue(), ^() {
+      completion(YES);
+    });
+    return;
   }
   // All UI must happen in the main thread.
   dispatch_async(dispatch_get_main_queue(), ^() {
+    void (^clearPendingDialog)(void) = ^{
+      @synchronized(self) { self->_pendingDialog = NO; }
+    };
     UIWindow *keyWindow = [self keyWindow];
     if (!keyWindow) {
       // Shouldn't happen, just in case.
-      completion();
+      clearPendingDialog();
+      completion(YES);
       return;
     }
     UIWindow *alertWindow;
@@ -121,8 +139,8 @@ typedef enum {
       alertWindow.hidden = YES;
       alertWindow.rootViewController = nil;
       [keyWindow makeKeyAndVisible];
-      self->_pendingDialog = NO;
-      completion();
+      clearPendingDialog();
+      completion(YES);
     };
     UIAlertController *alert;
     switch (errorCode) {
@@ -145,7 +163,6 @@ typedef enum {
       finish();
     }
   });
-  return YES;
 }
 
 // This method is exposed to the unit test.

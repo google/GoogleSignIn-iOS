@@ -17,7 +17,7 @@
 
 import PackageDescription
 
-let googleSignInVersion = "10.0.0"
+let googleSignInVersion = "10.1.0"
 
 let package = Package(
   name: "GoogleSignIn",
@@ -46,7 +46,7 @@ let package = Package(
       from: "3.0.0"),
     .package(
       url: "https://github.com/google/app-check.git",
-      from: "11.0.0"),
+      "11.0.0" ..< "13.0.0"),
     .package(
       url: "https://github.com/google/GTMAppAuth.git",
       from: "6.0.0"),

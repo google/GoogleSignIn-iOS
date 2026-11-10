@@ -35,7 +35,7 @@
 #import "GoogleSignIn/Sources/GIDClaimsInternalOptions.h"
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/GIDEMMErrorHandler.h"
@@ -171,17 +171,6 @@ static NSString *const kNonEssentialAMRClaimJsonString =
 static NSString *const kMultipleClaimsJsonString =
     @"{\"id_token\":{\"amr\":{\"essential\":false},\"auth_time\":{\"essential\":false}}}";
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-// This category is used to allow the test to swizzle a private method.
-@interface UIViewController (Testing)
-
-// This private method provides access to the window. It's declared here to avoid a warning about
-// an unrecognized selector in the test.
-- (UIWindow *)_window;
-
-@end
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
 // This class extension exposes GIDSignIn methods to our tests.
 @interface GIDSignIn ()
 
@@ -215,11 +204,11 @@ static NSString *const kMultipleClaimsJsonString =
   id _keychainStore;
 
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  // Mock |UIViewController|.
-  id _presentingViewController;
+  // The presenting view controller passed to the sign-in calls.
+  UIViewController *_presentingViewController;
 #elif TARGET_OS_OSX
-  // Mock |NSWindow|.
-  id _presentingWindow;
+  // The presenting window passed to the sign-in calls.
+  NSWindow *_presentingWindow;
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
 
   // Mock for |GIDGoogleUser|.
@@ -240,7 +229,7 @@ static NSString *const kMultipleClaimsJsonString =
   // Fake fetcher service to emulate network requests.
   GIDFakeFetcherService *_fetcherService;
 
-  // Fake [NSBundle mainBundle];
+  // The bundle injected into |GIDSignIn| in place of the host app's main bundle.
   GIDFakeMainBundle *_fakeMainBundle;
 
   // Whether |saveParamsToKeychainForName:authentication:| has been called.
@@ -284,7 +273,7 @@ static NSString *const kMultipleClaimsJsonString =
   // Status returned by saveAuthorization:toKeychainForName:
   BOOL _saveAuthorizationReturnValue;
 
-  // Test userDefaults for use with `GIDAppCheck`
+  // Test user defaults injected into |GIDSignIn| (and used by |GIDAppCheck|).
   NSUserDefaults *_testUserDefaults;
 }
 @end
@@ -307,9 +296,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   // Mocks
 #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  _presentingViewController = OCMStrictClassMock([UIViewController class]);
+  _presentingViewController = [[UIViewController alloc] init];
 #elif TARGET_OS_OSX
-  _presentingWindow = OCMStrictClassMock([NSWindow class]);
+  _presentingWindow = [[NSWindow alloc] init];
 #endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
   _authState = OCMClassMock([OIDAuthState class]);
   OCMStub([_authState alloc]).andReturn(_authState);
@@ -348,8 +337,7 @@ static NSString *const kMultipleClaimsJsonString =
   // Fakes
   _authStateMigrationService = [[GIDFakeAuthStateMigration alloc] init];
   _fetcherService = [[GIDFakeFetcherService alloc] init];
-  _fakeMainBundle = [[GIDFakeMainBundle alloc] init];
-  [_fakeMainBundle startFakingWithClientID:kClientId];
+  _fakeMainBundle = [[GIDFakeMainBundle alloc] initWithClientID:kClientId];
   [_fakeMainBundle fakeAllSchemesSupported];
 
   // Object under test
@@ -357,7 +345,9 @@ static NSString *const kMultipleClaimsJsonString =
   [_testUserDefaults setBool:YES forKey:kAppHasRunBeforeKey];
 
   _signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                           authStateMigrationService:_authStateMigrationService];
+                           authStateMigrationService:_authStateMigrationService
+                                              bundle:_fakeMainBundle
+                                        userDefaults:_testUserDefaults];
   _hint = nil;
 
   __weak GIDSignInTest *weakSelf = self;
@@ -380,15 +370,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMVerifyAll(_user);
   OCMVerifyAll(_oidAuthorizationService);
 
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
-  OCMVerifyAll(_presentingViewController);
-#elif TARGET_OS_OSX
-  OCMVerifyAll(_presentingWindow);
-#endif // TARGET_OS_IOS || TARGET_OS_MACCATALYST
-
   [_testUserDefaults removePersistentDomainForName:kUserDefaultsSuiteName];
 
-  [_fakeMainBundle stopFaking];
   [GIDSignInPreferences resetWrapperIdentifier];
   [super tearDown];
 }
@@ -410,7 +393,9 @@ static NSString *const kMultipleClaimsJsonString =
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                        authStateMigrationService:_authStateMigrationService
-                                                        appCheck:appCheck];
+                                                        appCheck:appCheck
+                                                          bundle:_fakeMainBundle
+                                                    userDefaults:_testUserDefaults];
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNil(error);
       [configureSucceedsExpecation fulfill];
@@ -421,25 +406,30 @@ static NSString *const kMultipleClaimsJsonString =
   }
 }
 
-- (void)testConfigureFailsNoTokenOrError {
+- (void)testConfigureFailsWithProviderError {
   if (@available(iOS 14, *)) {
     XCTestExpectation *configureFailsExpecation =
     [self expectationWithDescription:@"Configure fails expectation"];
 
+    NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                                 code:kGIDAppCheckProviderFakeError
+                                             userInfo:nil];
     GIDAppCheckProviderFake *fakeProvider =
-        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:nil];
+        [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
     GIDAppCheck *appCheck =
         [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
                                          userDefaults:_testUserDefaults];
 
     GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
                                        authStateMigrationService:_authStateMigrationService
-                                                        appCheck:appCheck];
+                                                        appCheck:appCheck
+                                                          bundle:_fakeMainBundle
+                                                    userDefaults:_testUserDefaults];
 
-    // Should fail if missing both token and error
+    // Should fail and stay unprepared when the provider returns an error
     [signIn configureWithCompletion:^(NSError * _Nullable error) {
       XCTAssertNotNil(error);
-      XCTAssertEqual(error.code, kGIDAppCheckUnexpectedError);
+      XCTAssertEqualObjects(error, expectedError);
       [configureFailsExpecation fulfill];
     }];
 
@@ -453,7 +443,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertNil(signIn.configuration.serverClientID);
@@ -469,7 +461,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -482,7 +476,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNotNil(signIn.configuration);
   XCTAssertEqual(signIn.configuration.clientID, kClientId);
   XCTAssertEqual(signIn.configuration.serverClientID, kServerClientId);
@@ -498,7 +494,9 @@ static NSString *const kMultipleClaimsJsonString =
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:@"foo"];
   GIDSignIn *signIn;
   signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                          authStateMigrationService:_authStateMigrationService];
+                          authStateMigrationService:_authStateMigrationService
+                                             bundle:_fakeMainBundle
+                                       userDefaults:_testUserDefaults];
   XCTAssertNil(signIn.configuration);
 }
 
@@ -512,7 +510,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   GTMKeychainStore *store = [[GTMKeychainStore alloc] initWithItemName:kKeychainName];
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:store
-                                     authStateMigrationService:_authStateMigrationService];
+                                     authStateMigrationService:_authStateMigrationService
+                                                        bundle:_fakeMainBundle
+                                                  userDefaults:_testUserDefaults];
 
   XCTAssertNotNil(signIn.configuration);
   [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -532,7 +532,8 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([idTokenDecoded initWithIDTokenString:OCMOCK_ANY]).andReturn(idTokenDecoded);
   OCMStub([idTokenDecoded subject]).andReturn(kFakeGaiaID);
 
-  // Mock generating a GIDConfiguration when initializing GIDGoogleUser.
+  // Mock generating the token snapshot (tokens, granted scopes and GIDConfiguration) when
+  // initializing GIDGoogleUser.
   OIDAuthorizationResponse *authResponse =
       [OIDAuthorizationResponse testInstance];
 
@@ -542,6 +543,7 @@ static NSString *const kMultipleClaimsJsonString =
   OCMStub([_tokenRequest additionalParameters]).andReturn(nil);
   OCMStub([_tokenResponse accessToken]).andReturn(kAccessToken);
   OCMStub([_tokenResponse accessTokenExpirationDate]).andReturn(nil);
+  OCMStub([_tokenResponse scope]).andReturn(nil);
 
   [_signIn restorePreviousSignInNoRefresh];
 
@@ -1418,11 +1420,13 @@ static NSString *const kMultipleClaimsJsonString =
 #pragma mark - Test Fresh Install
 
 - (void)testFreshInstall_removesKeychainEntries {
-  // Simulate that the app has been deleted and user defaults removed.
-  [NSUserDefaults.standardUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
+  // Simulate that the app has been deleted and the key removed from the test user defaults.
+  [_testUserDefaults removeObjectForKey:kAppHasRunBeforeKey];
   // Initialization should check `isFreshInstall`.
   GIDSignIn *signIn = [[GIDSignIn alloc] initWithKeychainStore:_keychainStore
-                                     authStateMigrationService:_authStateMigrationService];
+                                     authStateMigrationService:_authStateMigrationService
+                                                        bundle:_fakeMainBundle
+                                                  userDefaults:_testUserDefaults];
   // If `isFreshInstall`, keychain entries should be removed.
   XCTAssertNotNil(signIn);
   XCTAssertTrue(self->_keychainRemoved);
@@ -1819,9 +1823,9 @@ static NSString *const kMultipleClaimsJsonString =
 
   id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
   [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
-  __block void (^completion)(void);
+  __block void (^completion)(BOOL handled);
   NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"EMM Specific Error" };
-  [[[mockEMMErrorHandler expect] andReturnValue:@YES]
+  [[mockEMMErrorHandler expect]
       handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
 
 
@@ -1837,7 +1841,7 @@ static NSString *const kMultipleClaimsJsonString =
 
   [mockEMMErrorHandler verify];
   [mockEMMErrorHandler stopMocking];
-  completion();
+  completion(YES);
 
   [self waitForExpectationsWithTimeout:1 handler:nil];
 
@@ -1846,6 +1850,78 @@ static NSString *const kMultipleClaimsJsonString =
   XCTAssertNotNil(_authError, @"should have error");
   XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
   XCTAssertEqual(_authError.code, kGIDSignInErrorCodeEMM);
+  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+}
+
+// Verifies that an authorization error the EMM handler declines is reported as unknown.
+- (void)testAuthEndpointEMMError_NotHandled {
+  if (!_isEligibleForEMM) {
+    return;
+  }
+
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^completion)(BOOL handled);
+  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"invalid_request" };
+  [[mockEMMErrorHandler expect]
+      handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  [mockEMMErrorHandler verify];
+  [mockEMMErrorHandler stopMocking];
+  completion(NO);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertFalse(_keychainSaved, @"should not save to keychain");
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertNotNil(_authError, @"should have error");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeUnknown);
+  XCTAssertNil(_signIn.currentUser, @"should not have current user");
+}
+
+// Verifies that access_denied is reported as canceled even when the EMM handler claims it.
+- (void)testAuthEndpointEMMError_AccessDeniedTakesPriority {
+  if (!_isEligibleForEMM) {
+    return;
+  }
+
+  id mockEMMErrorHandler = OCMStrictClassMock([GIDEMMErrorHandler class]);
+  [[[mockEMMErrorHandler stub] andReturn:mockEMMErrorHandler] sharedInstance];
+  __block void (^completion)(BOOL handled);
+  NSDictionary<NSString *, NSString *> *callbackParams = @{ @"error" : @"access_denied" };
+  [[mockEMMErrorHandler expect]
+      handleErrorFromResponse:callbackParams completion:SAVE_TO_ARG_BLOCK(completion)];
+
+  [self OAuthLoginWithAddScopesFlow:NO
+                          authError:callbackParams[@"error"]
+                         tokenError:nil
+            emmPasscodeInfoRequired:NO
+               claimsAsJSONRequired:NO
+                      keychainError:NO
+                     restoredSignIn:NO
+                     oldAccessToken:NO
+                        modalCancel:NO];
+
+  [mockEMMErrorHandler verify];
+  [mockEMMErrorHandler stopMocking];
+  completion(YES);
+
+  [self waitForExpectationsWithTimeout:1 handler:nil];
+
+  XCTAssertTrue(_completionCalled, @"should call delegate");
+  XCTAssertEqualObjects(_authError.domain, kGIDSignInErrorDomain);
+  XCTAssertEqual(_authError.code, kGIDSignInErrorCodeCanceled);
   XCTAssertNil(_signIn.currentUser, @"should not have current user");
 }
 
@@ -1860,8 +1936,8 @@ static NSString *const kMultipleClaimsJsonString =
                                           code:12345
                                       userInfo:@{ OIDOAuthErrorFieldError : errorJSON }];
   id emmSupport = OCMStrictClassMock([GIDEMMSupport class]);
-  [[emmSupport expect] handleTokenFetchEMMError:emmError
-                                     completion:SAVE_TO_ARG_BLOCK(completion)];
+  [[[emmSupport expect] classMethod] handleTokenFetchEMMError:emmError
+                                                   completion:SAVE_TO_ARG_BLOCK(completion)];
 
   [self OAuthLoginWithAddScopesFlow:NO
                           authError:nil

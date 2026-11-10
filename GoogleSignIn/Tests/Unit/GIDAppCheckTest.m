@@ -17,7 +17,7 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 
 #import <XCTest/XCTest.h>
-#import <AppCheckCore/GACAppCheckToken.h>
+@import AppCheckCore;
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/GIDAppCheck.h"
 #import "GoogleSignIn/Sources/GIDAppCheck/Implementations/Fake/GIDAppCheckProviderFake.h"
 #import "GoogleSignIn/Sources/Public/GoogleSignIn/GIDAppCheckError.h"
@@ -65,6 +65,42 @@ NS_CLASS_AVAILABLE_IOS(14)
   }];
 
   [self waitForExpectations:@[tokenFailExpectation] timeout:timeout];
+
+  XCTAssertFalse([appCheck isPrepared]);
+}
+
+- (void)testPrepareFailureDoesNotMarkPrepared {
+  XCTestExpectation *firstPrepareFailExpectation =
+      [self expectationWithDescription:@"First App Check prepare fail"];
+  NSError *expectedError = [NSError errorWithDomain:kGIDAppCheckErrorDomain
+                                               code:kGIDAppCheckProviderFakeError
+                                           userInfo:nil];
+
+  GIDAppCheckProviderFake *fakeProvider =
+      [[GIDAppCheckProviderFake alloc] initWithAppCheckToken:nil error:expectedError];
+  GIDAppCheck *appCheck = [[GIDAppCheck alloc] initWithAppCheckProvider:fakeProvider
+                                                           userDefaults:self.userDefaults];
+
+  [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
+    XCTAssertEqualObjects(expectedError, error);
+    [firstPrepareFailExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[firstPrepareFailExpectation] timeout:timeout];
+
+  XCTAssertFalse([appCheck isPrepared]);
+
+  XCTestExpectation *secondPrepareFailExpectation =
+      [self expectationWithDescription:@"Second App Check prepare fail"];
+
+  [appCheck prepareForAppCheckWithCompletion:^(NSError * _Nullable error) {
+    XCTAssertEqualObjects(expectedError, error);
+    [secondPrepareFailExpectation fulfill];
+  }];
+
+  [self waitForExpectations:@[secondPrepareFailExpectation] timeout:timeout];
+
+  XCTAssertFalse([appCheck isPrepared]);
 }
 
 - (void)testIsPreparedError {
